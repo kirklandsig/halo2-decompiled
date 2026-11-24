@@ -1588,7 +1588,7 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 	data->scale_b = scale;
 }
 
-// score 555 (was 688): statement-by-statement walk against retail found no logic differences. What still differs is
+// score 586 (was 651): statement-by-statement walk against retail found no logic differences. What still differs is
 // register and stack allocation. Retail keeps the impulse block's scale in xmm5 (spilled at [esp+8], reloaded right after
 // each call) where ours reloads xmm0 before each use. It also passes the impact to 0x2284c0 in ECX where ours uses EAX,
 // and passes both materials through stack temporaries ([esp+0x24] and [esp+0x94]) where ours reads material_a directly.
@@ -1598,6 +1598,14 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 // level folded into the condition (640).
 // Permuter, 35 minutes (11-05): its best form needs a flag set inside a test, the impact object lookup written out,
 // temporaries and casts. Its one plain part, impact->type read at each use instead of the `type` local, gives 553.
+// M3 lane 8 r235 (H2M_FAST with 0x228770, 0x2284c0 and the matched 0x2266a0, 0x2268e0, 0x226f80, 0x2277b0, 0x2285d0;
+// baseline 651): the entry type local gone, the field read at its four uses 586 (kept: the impulse block loads it where
+// retail does); declared in each block instead 586 (same code); the else block's `type` read at each use 586 (same
+// code). Retail copies both materials into stack temporaries before the 0x2284c0 call (a converting construction):
+// both passed directly 725 (frame 0xc8), with `local_3` removed 725, as `c_type_47f957(x.m_index)` temporaries 620 at
+// 2997 B (aligned 72, frame 0xd0 = retail; left: 0x2284c0 takes the impact in EAX, retail ECX, BLOCKED-BY 0x2284c0,
+// contributor code; the effect fill's colour constant in EAX with a re-zero, retail ECX; the continuing arm's spilled
+// entry value; two byte homes swapped); the effect fills through the unused inline twin above 1424 (not expanded).
 // @retail 0x2294a0
 void function_2294a0(
 	long impact_index,
@@ -1617,16 +1625,14 @@ void function_2294a0(
 	effect_location.normal = impact->normal;
 	effect_location.unknown18 = 0x600022b;
 
-	char previous_type = impact->unknown1d;
-
 	if (impact->unknown11 && g_47f07a && impact->unknown1c > 2)
 	{
 		impulse = true;
-		if (impact_type_is_continuous(previous_type))
+		if (impact_type_is_continuous(impact->unknown1d))
 		{
 			real level = impact->unknown1d == 3 ? impact->unknown48 : impact->unknown4c;
 
-			if (previous_type != 2 || !(level < 0.5f || impact->unknown18 > 0.25f))
+			if (impact->unknown1d != 2 || !(level < 0.5f || impact->unknown18 > 0.25f))
 			{
 				impulse = false;
 			}
@@ -1715,7 +1721,7 @@ void function_2294a0(
 		}
 		else if (impact_type_is_continuous(type) && impact->unknown91 > 2)
 		{
-			if (type != previous_type && impact->unknown1e * g_510c54->rate > 0.5f)
+			if (type != impact->unknown1d && impact->unknown1e * g_510c54->rate > 0.5f)
 			{
 				bool continuing = false;
 
@@ -1730,7 +1736,7 @@ void function_2294a0(
 					{
 						if (impact_has_sounds_or_effects(impact))
 						{
-							continuing = impact_type_is_continuous(previous_type) && impact_type_is_continuous(impact->unknown1f);
+							continuing = impact_type_is_continuous(impact->unknown1d) && impact_type_is_continuous(impact->unknown1f);
 							impact_sounds_stop(impact, !continuing, true);
 						}
 						impact->unknown1d = NONE;
@@ -1873,6 +1879,17 @@ void function_2294a0(
 // and homes then line up; not kept, as retail rereads the size on every pass (latch 0x228bfa: `mov edx, [ecx+0x8c]`
 // with the component reloaded from [esp+0x18] at 0x228bf2). The take block's sums in another order give 480; the
 // constraint test inverted or the mass-ratio test as nested ifs change nothing.
+// M3 lane 8 r235 (H2M_FAST with 0x2294a0 and the matched 0x2266a0, 0x2268e0, 0x226f80, 0x2277b0): the allocator has no
+// candidate for the position's address at all (impact 459, constraint 254, component 88), so retail's EBX pointer
+// (and with it the component's own home, frame 0x70) needs the address kept as a value. Forms, all folded back into
+// `[edi + 0x68]`: the component through the pool data bound to a const reference 490; a position pointer local at all
+// eleven uses 484; that pointer bound as `point3f *const &` 485; a `point3f &` local 484; pool reference + pointer 489.
+// Shared separation with point setter, scaled add, half-separation helper, in-place half-separation, or staged half offsets 231/485/379/454/456.
+// Averaged-position setter, both setters, and staged midpoint with x-z-y squared dot 509/242/236.
+// In-place full separation, indexed additions, separate midpoint, or in-place separation with setter 485/396/383/232.
+// Staged midpoint with one position pointer, displacement first, both, or precomputed coordinates 485/231/485/485.
+// Staged midpoint with shared scaler before copy, direct scale, rejection continuation, or continuation with scaler and copy 231/242/231/231.
+// NOT kept: the best setter form recovers the 0x70 frame and EBX position base but grows to 1988 bytes and groups the last two coordinate calculations before the first store.
 // @retail 0x228770
 void function_228770(
 	long impact_index,

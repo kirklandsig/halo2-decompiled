@@ -4739,6 +4739,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the end), that with the disconnect under `!result || (!same && !better)` 219, either with the `!result &&` tail 219
 // (same code each). Re-measured: the kept arms `return true;` or `return result;` on the 96 form 100 (a `mov al, 1`
 // return block of their own: the constant is not held in AL across the tests). Body unchanged.
+// Initial refusal code before the active gate, conditional/explicit 383/383; after state-nine bypass 386/386;
+// active range first 393/376; admitted range through state nine 394/381.
+// NOT kept: the common refusal shortens the body and does not recover both reason-2 edges or the acceptance reload.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

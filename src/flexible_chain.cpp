@@ -1079,6 +1079,10 @@ void __stdcall function_1160c0(real dt)
 // (float priorities one step up or down, the dot's and the crosses' register picks; diagnostic, not source), none
 // below 59 (the nearest 62). Left on it: retail loads the offset's i late into the register of a dead dot temporary and
 // keeps axis j in a register through the dot, where ours loads all six components ahead of the first product.
+// Separate recurrent prior coordinates, reconstructed before or after physics by
+// aggregate initialization or point setter, 331 each. With separate prediction
+// coordinates, 332 each. NOT kept: the frame and extent shrink and the
+// selected segment still has a different spill.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

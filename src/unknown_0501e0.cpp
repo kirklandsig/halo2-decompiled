@@ -883,6 +883,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // ranks it 123; the second view's z 230 and x 190), where retail stores it at once, gives XMM6 to the scale and XMM7 to
 // right.i, carried into the second view; in ours a coefficient is carried only when a register is left over (right.j at
 // rank 73 in the 196 form, the three forward ones in the all-below state), never right.i ahead of the second offset.
+// Component-range subtraction for the first or second view 264/292, both 274, segment alone 286;
+// first and segment 289; second and segment 269; all three 298; both views with a saved origin 294.
+// Second-view range subtraction reduces the frame to 0x1c, still above 0x14, and raises the score.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

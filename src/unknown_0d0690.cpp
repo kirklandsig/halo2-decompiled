@@ -1784,6 +1784,16 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // exits. Without any reordered statement or moved declaration: existing helpers, live axis, scale helper, single-exit
 // result and aggregate copies in both functions 397 but 0xd4080 432 (all 48 combinations of 0xd4080's own forms without
 // its early square 426 to 497); with 0xd4080 and the shared rotate left alone 560 to 622 with 0x3db00 lost (nine forms).
+// Frame packing by local names: normal first 529; biased lightmap last 529; primary clamp by lightmap 529; bounded
+// base first 529; bounded lightmap before base 529; saved magnitude last 529; normal/lightmap/primary names in
+// frame order 529; reflected pair before normal 529. The selection byte still takes the incoming output slot,
+// leaving the 0x2c frame.
+// Round 469: selected entry reference (read-only or mutable) 530/530, scan-entry reference 530,
+// scan and selected entry references 529/529, one flag word from the scan reference 529,
+// also with the two selected entry references 530/530. Frame and selection spill persist. Restored.
+// Existing in-place vector scaler for primary/secondary/both/ambient/primary and ambient/
+// secondary and ambient/all colors 534/529/524/529/534/529/524; all with constant returns 565.
+// NOT kept: 524 gains five and grows two bytes. Constant returns recover the frame only.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2184,6 +2194,14 @@ real function_30bf0(vector3f *vector);
 // the direction2 negate; the final clamp's compare placed ahead of the previous component's store. With 0xd37f0's body
 // as main has it and the shared rotate reading the axis live this body reads 426 to 497 in all 48 combinations of its
 // own forms without the early square, so the two functions change together or not at all.
+// In round 641, retail turns direction2 in place; the original turn input and helper leave 12 extra frame bytes. Shared negate into
+// direction2 then in-place turn 479; shared axis turn on direction2 475, on the local then publish 485; private turn
+// in place on the local then publish 495. The x-z-y basis dot for the normal 474; early tag-table pointer 395
+// (0x3db00 lost in preview); shared negate in place on direction1 479, shared negate into direction0 471. Body restored.
+// Shared axis rotation with record output and live axis, staged/direct trig 475/476; record output and axis value
+// 463/382; local direction and axis value 474/503; local direction with live axis and direct trig 486; record
+// output with shared negation and live axis 484. Live-axis forms recover frame 0x40 and shorten past retail, while
+// the exact-length form leaves frame 0x44.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

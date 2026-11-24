@@ -1010,6 +1010,16 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // test, compared and updated in place 78, with the compare on the saved mask 78, with the store as `new | present` 78
 // (all the uncast store's code: the copy is forwarded); that local without the carrier 77; the team bit through a
 // file-local forceinline helper at its three uses 23 (same code). Body unchanged.
+// M3 lane 1 r166 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23). Allocator reading of the plain present: it
+// ranks 15 against the pool pointer's 11 and the globals pointer's 3 and takes EDI, because the change block computes
+// the OR into present (three references there: OR source, OR result, the store); with present held out of the first
+// pass (a forced decision, not source) the loop is retail's byte for byte and only the post-loop block differs, where
+// present then also takes the OR result. Retail computes the OR into the mask (`or ecx, [present]`), which would leave
+// present one reference in that block and rank it below both pointers. Every spelling keeps present as the OR's
+// destination: plain present with `old_team_mask |= (word)present_teams` then stored 63, `word` local of the OR 63,
+// `present_teams | old_team_mask` uncast 63, present declared first 63, present declared last 63, the old mask read
+// from `globals->team_mask` 139 (368 B), `present_teams = playing_teams = 0` chained 63 (plain) / 23 (volatile, same
+// code); 0..7 dead locals (diagnostic) 63 / 23 each (no operand-order phase).
 // @retail 0x158140
 void function_158140(void)
 {

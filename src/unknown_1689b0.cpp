@@ -2351,6 +2351,27 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // reverse ray, query and ray, square and ray, or all three
 // 562/562/560/560/560/560/558/558. NOT kept: all grow to 2889 bytes;
 // the tally homes and pre-branch square remain.
+// M3 lane 4 r260 (h2m fast with 0x120790 and 0x2469b0, both MATCH each run; control 551 at 2877 B, aligned 363; body
+// unchanged). A 96-cell screen of six retail-evidenced forms together: A the four tallies declared edge count, edge
+// radius, face count, face radius; B the square at its one use (1) or named at the top of the prism loop (2); C the
+// nearest reset and `inside` right after the plane distance; D the edge loop zero-based with the successor
+// `(vertex + 1) % point_count` named at its top; E the normal ray arm first (`if (use_normal)`); F both averages as
+// three divisions by the count (no inverse local). New against earlier screens is F together with the others. F alone
+// 578 (2891 B); E + F 537 at retail's 2882 B and frame 0xb964 (aligned 297, first difference +0x92: the head through
+// the first distance row is retail's); C + E + F 531; A + C + E + F 530; B2 + C + E + F 528; A + B2 + C + E + F 527
+// (2882 B, aligned 292; saved as build/r260/lead-16a8e0-527.patch, E + F alone as lead-16a8e0-537.patch). Every cell
+// with D has frame 0xb968; the best of them is all six, 541 at 2897 B (aligned 293), and B1 + C + D + E + F 537 at
+// 2893 B (aligned 275). Not kept: E is an arm swap, A, B2 and C are moved declarations and D names a one-use value,
+// all match-only, and F without E raises the count. Left on the 527 form: the two rows that read plane.j (retail
+// multiplies point->y by it from memory in the distance and loads it into XMM7 ahead of the projection's y row, ours
+// the reverse of each), the edge loop's head (retail's zero-based form with `inc; cdq; idiv` at its top, which costs
+// the extra frame cell in every D cell) and the cross-product rows behind it. Operand-rank reading on main: the three
+// point loads rank 6, 4, 4 and every load through the prism pointer 0, so all three distance rows come out point
+// first where retail has plane.k first in the z row; with one shared level for the prism's loads, retail's mix
+// (plane.j second in one row and first in another) needs plane.j to reach the projection as something other than a
+// plain load.
+// Zero-clamped short range 609, long range 608, each with < or != and the square before or inside.
+// The inside forms recover the +0xd4 square slot with an extra count test.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

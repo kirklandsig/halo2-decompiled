@@ -1036,6 +1036,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // update as `if (!left_start) left_start = points2d_differ(...)` 162; `current` as a long 281 (746 B, 0x239d50 34); the lowest
 // scan's index as a long 645 (1095 B: the scan unrolls); `hull_count = pass + 1` ahead of the index store 207; the departure
 // flag declared after the lowest scan 240.
+// The result and departure homes still differ. Post-pass short/long hull counter with one terminal continuation
+// 254/237, completion test 245/254, three terminal returns 256/239, one merged terminal return 256/239.
+// NOT kept: the short counter reaches the frame size with different homes and every form raises the score.
+// Minimum point with coordinate/whole-point updates 144/244, with heading initialized first 215/233,
+// with the start index seeded before the classifier 264/224, and with both changes 242/216.
+// NOT kept: the aggregate copy moves the frame away from retail. The early start index variants
+// that reach frame 0x14 shorten the body to 762 bytes. Every early start variant changes the caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

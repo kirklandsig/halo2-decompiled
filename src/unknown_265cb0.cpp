@@ -1113,6 +1113,9 @@ real function_30bf0(vector3f *vector);
 // member at or above forward.k and its second at or above forward.i. Forms: the up axis through a pointer local in the
 // occupant block 90 (1308 B: up becomes (6, 0, 6), the i subtrahend flips too), the same pointer ahead of the seat loop
 // 156; `forward` declared after `side, up` 84 (same code). Body unchanged.
+// The initial result remains four bytes high and the clip output still shares the seat-count slot.
+// Setting the secondary tier then promoting it scores 136 with long, short, unsigned long and int.
+// Starting with the near tier then demoting it scores 138 with all four. The original tier test is restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

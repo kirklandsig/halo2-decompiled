@@ -348,6 +348,17 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 173 (977 B: the empty else sends the block to the end); the threaded form with `local_5 = false;` repeated after
 // the clear 173 (977 B, the first store dropped as dead, the same layout). Lead: the 31 form (a flag tested after the
 // if/else, kept only with a byte match); its clear block needs the result store after the clear in one block.
+// M3 lane 7 r227 (fast with 0x1e1f20, MATCH; control 12). Reading of the final frame (from the listing): the 4-byte
+// cells in creation order are the 0x261280 result with the record flag (11 references), the long output (6), the actor
+// (4), the 0x25d690 result (3), the 0x1e4be0/scratch pair (5), the offset temporary with the 0x262b40 result (4), the
+// bool output (2), the saved reference group (9) and the node (2); sorted densest first, the two ties (actor/offset
+// 1000, node/bool output 500) come out of the frame sort in our order. A model of that sort gives retail's order only
+// when the offset temporary's cell is made after the bool output's (its second reference later than the bool output's
+// second, as in the 31 form above), or with one big aggregate cell fewer (not retail: its four aggregates sit apart);
+// no one- or two-cell reference-count change does it. Forms: the short array declared in the 0x1ac610 call's block 12
+// (same code); the bool output initialised false 201 (979 B); the equal arm's `local_5 = false;` ahead of the clear 12
+// (same code); the clear and the result store as one chained assignment 12 (same code); the equal arm's inner test
+// positive with the result store first 29; re-measured: the not-equal arm first with the equal arm as else-if arms 187.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
