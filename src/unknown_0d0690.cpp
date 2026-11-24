@@ -1740,6 +1740,50 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // through magnitude3d ahead of the normal copy 528 (one point); the first luminance as `(...) * 2.0f` 529 (same code); `bool
 // result = false;` with `result = true;` opening the found block 573 (2172 B); the square from `record->length` read back
 // at both operands 586 (2166 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
+// M3 lane 2 r146 (h2m fast with 0xd4080, 0x3db00, 0x3dfe0, 0xd1e10, 0x117c80, 0x13b390; control 529, 0xd4080 378, 0x3db00
+// MATCH; a = aligned rows, control 365; body unchanged). LEAD 182 at retail's 2189 B and 0x28 frame (a 99, 40 with
+// registers masked) with 0xd4080 at 295 (1870 B), 0x3db00 still MATCH; fast, check.py --fast and the plain check over the
+// file agree; build/r146/lead-d37f0-182-d4080-295.patch in the m3-lane2 worktree. Not kept: it rests on statements and
+// declarations placed in retail's order (kept only with a byte match), and no part of it stands without them (see the end
+// of this entry). The lead is retail's order read statement by statement: the scan as one loop over `block->count` with
+// the mask in its test; `bool result = false;` with `result = true;` closing the found block; the lightmap copied whole
+// and the bias read once ahead of the length store (retail loads through the lightmap and parameters pointers before it
+// stores through the record), the normal copied whole; the existing normalize3d at both normalizes (the x87 length with
+// all three components loaded first); the square right after the direction1 negate and the lightmap pin ahead of the
+// base pin; direction0 through the existing vector3f_negate_ab (retail stores the three differences from the stack copy;
+// a copy negated in place stores through a formed address, per-field statements forward the value and fold the pin);
+// the first luminance pinned in a statement of its own; both length curves taken before either colour is scaled (retail
+// calls the second curve before it stores colour1, the first result waiting in a stack cell); the three scales through a
+// by-address colour-scale helper shared with 0xd4080 (retail scales colour1 through the address formed for its aggregate
+// copy); scale0 started from the falloff term ahead of the last luminance and multiplied in after the curve call; the
+// shared rotate reading its axis through the pointer global. Steps: constant returns 566 (re-measure); `bool result =
+// false;` with `result = true;` closing the found block 573 (0x3db00 lost: the allocator then ranks the record above the
+// parameters, 208 against 201, the record takes ESI and becomes a register argument), opening it 547 (0x3db00 lost);
+// lane 5 r182's lead with lane 8 r217's 0xd4080 lead 452 (a 284; 0xd4080 331), on main's parameter order 456 (0xd4080
+// 316); with direction0 through vector3f_negate_ab in both functions and normalize3d for direction0 405 (a 194; 0xd4080
+// 308); the found block opening lightmap copy, normal copy, bias, length 451 (2172 B, a 145; ten orders 405 to 542); with
+// both curves ahead of both scales, a named falloff and normalize3d for the first normalize 189; the first luminance pinned
+// in its own statement 182; the falloff as one expression (the call first, the falloff first, the luminance inline) 243
+// each (2195 B: a single expression evaluates the call first); the falloff as scale0's first value 182 (the lead). On
+// the lead: (type, query, block) or (query, type, block) 178 (first +0x19, but 0xd4080 323 / 325); a two-return curve
+// helper 182 (scale1's store as retail, the first product of each colour scale flips); one limited variable for both
+// lightmap pins 199; the blend's product written lightmap first 372 at 2192 B (a 89: the second lightmap pin then matches
+// retail row for row, the base pin's three registers are permuted), with the two addends exchanged or the complement
+// written first 372 (same code), base first with the same exchanges 182 (same code), `* square * 2.0f` flat 312, `2.0f *`
+// leading 372, `lightmap * (base * square)` 371, `(square * 2.0f)` grouped 311, a named `1.0f - square` 222; on the
+// lightmap-first blend: base declared first 372, one limited variable 403, the two-return helper 375, the scale helper
+// as `scale * channel` 372, result declared first 374, a named pinned luminance 372, a named falloff 372. Drop-one on the
+// lead (the part put back to main's form): the falloff statement 243; constant returns 551; `result = parameters != NULL`
+// 562; the count and mask locals with the outer test 560, without the test 550; the square after the pins 486; the base
+// pin first 461, both 437; each scale after its own curve 278; the length ahead of the copies 527; without the scale
+// helper 561 (0x3db00 lost); without the live axis 549. Left on the lead: the block and query arrive in each other's
+// registers (EDX/EAX for retail's EAX/EDX) and the scan tests `test ebx, eax`; one store of the normal copy lands a row
+// late; the first normalize sums its squares (i, k, j) for retail's (k, j, i); the second lightmap pin keeps its results
+// in registers where retail stores green and blue in the first pin's cells and pins red in place; the rotation's product
+// and cross operand orders; scale1 is stored ahead of the curve's remap where retail stores it at each of the curve's
+// exits. Without any reordered statement or moved declaration: existing helpers, live axis, scale helper, single-exit
+// result and aggregate copies in both functions 397 but 0xd4080 432 (all 48 combinations of 0xd4080's own forms without
+// its early square 426 to 497); with 0xd4080 and the shared rotate left alone 560 to 622 with 0x3db00 lost (nine forms).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2118,6 +2162,28 @@ real function_30bf0(vector3f *vector);
 // with a match. On in place: the shared rotate reading its axis through `vector3f const *axis = g_4687b0` 496 (S 51),
 // with the projection summed (k + i) + j 462 (S 53), with each row written projection term first 462 (same code); the
 // (k + i) + j sum over the copied axis 452 (S 56); the live axis without in place 515. Body unchanged.
+// M3 lane 2 r146 (h2m fast with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10, 0x117c80, 0x13b390; control 378, 0xd37f0 529; a =
+// aligned rows, control 202; body unchanged). LEAD 295 at retail's 1870 B and 0x40 frame (a 133, 55 with registers
+// masked) together with 0xd37f0's retail-order lead (182); build/r146/lead-d37f0-182-d4080-295.patch in the m3-lane2
+// worktree; not kept: it needs the square placed right after the direction1 negate and the three scales placed at their
+// uses (declarations placed in retail's order, kept only with a byte match). The lead: the first normalize through
+// normalize3d; the square right after the direction1 negate (retail multiplies it there, ahead of the first limited-colour
+// compare); the colour2 floor as a select that stores on both paths; direction2 copied, negated and rotated in place;
+// direction0 through the existing vector3f_negate_ab (retail stores the three differences through the pointer it then
+// hands to 0x30bf0 and re-reads k from the record for the doubling; lane 8 r217's copy negated in place gave 316 on that
+// set, this 308); the shared rotate reading the axis through the pointer and the shared colour-scale helper; each scale
+// computed and applied in turn (retail scales colour0, then forms 0.05 * length + 0.4 for colour1, then 0.4 - 0.05 *
+// length for colour2) 295; the scales as arguments 298, scale0 named and the other two as arguments 297; all three named
+// first (main's order) 308. Drop-one on the 308 set: main's first normalize 451; the square after the selects 419;
+// if-form floors 333; the `turned` local 301 (a 152 against 124); without the live axis 399; without the scale helper 421
+// (0x3db00 lost). On the lead: the mobile flag started false and set under the test 292, 279 with the scales in turn
+// (retail's entry-block clear; a flag form kept only with a match); the luminance ahead of the mobile select 305, 306 with
+// the scales in turn (a 104, retail's order); 0xd37f0 as (type, query, block) 323 and (query, type, block) 325. Left on
+// the lead: the mobile flag's clear in the entry block; the first normalize's square order; the tag table load that
+// retail hoists above the NONE test and the call's block register; the rotation angle's load, which retail leaves after
+// the direction2 negate; the final clamp's compare placed ahead of the previous component's store. With 0xd37f0's body
+// as main has it and the shared rotate reading the axis live this body reads 426 to 497 in all 48 combinations of its
+// own forms without the early square, so the two functions change together or not at all.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

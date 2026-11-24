@@ -2974,6 +2974,23 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // global aggregate (0x2df00 updated to it, still matched) 278; `delta` assigned i, j, k 280; both 277 (difflib-aligned 149
 // against main's 142); both with the opacity arms under a negated test 274; that with the vertex-data value through PIN
 // 267 (two match-only parts: the swapped arms and PIN at one of five clamp sites). Body unchanged.
+// M3 lane 13 r153 (h2m fast with 0x2f2d0/0x2e3f0/0x222d0/0x2df00; control 281, aligned 142). Operand-rank reading of the
+// opening block: the compiler forms each product in a copy of its higher-ranked operand and sums products in falling rank.
+// Retail's sides (axis j above delta j, delta i above axis i, delta k above axis k, every axis component above `forward`,
+// sum j, i, k) need the order delta i > axis j > delta j > delta k > axis i > axis k > forward. Here the three deltas rank
+// below the three axis reads in every statement form, and `forward` ranks above them all through a late temporary, so its
+// rows copy `forward` where retail multiplies each loaded axis in place. With delta through vector3d_from_points3d and
+// forward through dot3f (0x2dba0's own spelling) `forward` ranks lowest and the three rows multiply in place as retail,
+// and the last delta takes the late temporary: with `attenuation` beside `animated` and the rows as statements j, i, k
+// 511 (2296 B, aligned 160); dot3f(axis, delta) 511 (same code); the rows through vector3f_assign 513 (2302 B, aligned
+// 150); both helpers on main's order (attenuation after the rows) 280 with vector3f_assign (2286 B, aligned 152) and 420
+// with the statement rows (2285 B). The helper delta with the dot written out in main's order 511 (2296 B), i, j, k 507,
+// with vector3f_assign and the late attenuation 284. Statement deltas i, j, k with the early attenuation: every forward
+// spelling (main's, i, j, k, dot3f) the same code per row form, 504 with vector3f_assign (2290 B), 496 with statement
+// rows in either order (2285 B, aligned 179), and with the late attenuation 280 / 416. On the 495 lead: `forward`
+// declared at the top and assigned at its place 495 (same code); forward accumulated in three statements 511 (2296 B);
+// the near distance read ahead of the rows 516 (2296 B). Diagnostic, restored at once: `forward` given an early zero
+// ranks it lowest (rows in place) and moves the late temporary to the last delta assigned.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4551,6 +4568,20 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // with its `++first` dropped 317, pass 1's swap target as `state->entries` 317, both 317 (same code each: `first` keeps
 // EBP, the base EDX); pass 2's test through a `byte *flags` as pass 1's 317; passes 1-2 in their own block with `found`
 // declared there 317; `found` declared beside `first` 355 (first +0xc). Body unchanged.
+// M3 lane 13 r153 (h2m fast with 0x4b160, MATCH each run; control 317, aligned 133). Allocator ranking of the open cause:
+// after pass 4's cursor (55) takes EBP for its own blocks, `first` is re-ranked at 55 over passes 1 to 3 and takes EBP,
+// and pass 3's index (48: one reference at its start, one in the swap block, two in the step block, less 14 for the
+// four blocks it only lives through) is left without a register that survives the swap's copies. The index goes ahead
+// of `first` on equal rank (it is the later-created value), so the gap is 7. R149's repeated loop test closes it with a
+// block at the loop top that reads the index and `last`: the index 56, `first` 50 (re-measured 227 at 1305 B, aligned 68;
+// passes 1 to 4 are then retail's but for the order of the two reloads after pass 4's swap). Tried in pass 3: every
+// access through state->entries[i] with no entry pointer 318 (the ranks do not move: the indexed accesses are reduced to
+// the cursor before the ranking); the entry pointer kept with the swap from `&state->entries[i]` 368 (1335 B); a `byte
+// *flags` for the test with indexed accesses 318; the swap written out in the body with a local record 375 (1342 B);
+// `swap(entry, &state->entries[last]); --last; --i;` 317; the swap helper's record declared and then assigned 317 (same
+// code; the last three leave the ranks at 48 / 55). An empty `do {} while (false);` (what a compiled-out statement
+// leaves) at the top of pass 3's body, after the entry pointer, at the end of the body or after the loop 317 each (same
+// code: an empty block reads nothing, so it moves neither rank).
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

@@ -973,6 +973,24 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // combination: the ending as `if (...) return true; return false;` 1619 (6031 B, aligned 1421, 9 movss short, but two
 // epilogues with 8 pops against retail's 4 pops ahead of the final tests); as one `return a && b && c && d;` 1621 (6002
 // B, aligned 1437). Body unchanged.
+// M3 lane 16 r185 (h2m fast with 0x2056e0, MATCH each run; control 1346, register-masked aligned 922). Frame reading: the
+// five magnitude snapshot copies each keep a 12-byte home of their own (their ranges do not share one), 60 of the 68
+// extra frame bytes; retail's first normalise site (0x206c25-0x206c66) stores the vector's own three components to
+// its home and squares them from there in x87, so retail's helper reads its input in place and the 264 bytes that form
+// loses are elsewhere. Re-measured: magnitude in place 1624 (5990 B, masked 929), with the straight-line scale 1649
+// (5974 B, 987), with the slip arm's root first 1665 (5986 B, 940), with two returns 1619 (6031 B, 885). New: magnitude
+// in place with two returns 1599 (5987 B, masked 903), with the straight-line scale too 1620 (6019 B, 943); the frame is
+// 0x590 in each of the six here, with 13 vector homes (retail has no contact-velocity one). First loop: retail preloads
+// all three components of the first cross operand at the loop top, forms the six products before any store, stores
+// the cross (j, k, i) and re-reads j and k for the sum. cross3f_staged there 1421 (6238 B, masked 955: three preloads,
+// but the sum folds into the cross registers and the first stores go); the file's k/j/i helper there 1405 (6238 B, masked
+// 975: two preloads, k and j stored and re-read, the i product folds into the sum). That helper's statements as i, j, k
+// with the first loop through it 1385 (masked 967), at its three sites only 1375 (938); as j, k, i with the first loop
+// 1415 (6238 B, 936), at its three sites only 1345 (934; one point, not kept). The first loop's element pointer is
+// biased +0xe4 (retail +0xe0) in every form. The two joins retail pads like loop heads (0x207420, 0x207640) each follow
+// the statement whose else arm is the skip call; retail's wheel loop head is unpadded only because it would need 12
+// bytes. `do {} while (false);` after the hit/skip statement, at the end of the contact loop's body, or both: 1346 each
+// (same code, no new padding). Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

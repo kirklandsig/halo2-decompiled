@@ -415,6 +415,13 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // centroid sum and count ahead of the separation block 770 (3771 B); between the alignment and separation terms 770; the
 // nearest arm first under the negated radius test 252 (same code), with the sum ahead of the separation block 770; the
 // nearest point copied by components 275 (3727 B).
+// M3 lane 2 r146 (h2m fast listing 0x293b30, 0x293d30, 0x294050, 0x295600, 0x11c380 and 0x293130 with this function, all
+// MATCH each run; control 252, aligned 62, 14 with registers and stack offsets masked; body unchanged): the final speed
+// floor as a select that stores on both paths 252 (same code); the wander strength cap as a select 252 (same code); the
+// speed vector's three zero stores through the existing vector3f_assign 449 (3712 B, aligned 58, masked 12: retail's dead
+// store goes); the centroid's reciprocal written inside the scale call 455 (3712 B, aligned 59); the centroid offset in a
+// vector of its own instead of the shared steering vector 745 (3736 B); the walk's self test as an early `continue` 704
+// (first +0x72, aligned 53); the target block's default radius as a select 273.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
