@@ -1114,6 +1114,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // write-only barrier in place of the second store 71 with the word read, 77 (160 B) with the plain index; the second
 // store written as a read of the field stored back 8 with the word read (same code), 42 with the plain index; the first
 // field stored back in place of the second store 77 (160 B, plain or field index), 50 with the word read. Body unchanged.
+// M3 lane 7 r225 (H2M_FAST; control 8; R = retail's shape, no second store, plain index, 77 at 160 B): R with the header
+// test on `entity->object_index` 77; R with the object read as `OBJECT_HEADER(object_index)->object` 77; R with the
+// result declared after the creation call 80 (158 B); `value != 0` 8 (same code); the second store moved after the
+// object read 69. Diagnostic: the back end's allocator search on R (20 forced decisions) finds nothing near a match
+// (best 51): the difference is made before allocation (the two lookups merged), so the allocator readings do not reach
+// it. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1675,6 +1681,16 @@ bool c_projectile_type::v8(long a, long b)
 // neither store block gains a candidate); the flags read through a `dword const *` to the parameter at all three uses
 // 12, at the two tests only 12, at the 0x800 test only 12, once into the flags local through a `long const *` 12 (a plain
 // read through the parameter's address folds back to the parameter). Word-read body kept (5).
+// M3 lane 7 r225 (H2M_FAST; word read 5, mask 12). Allocator readings on the mask form: with `b` forced into EDI it is a
+// byte match (so the mask form is retail's code); `b` ranks 37 (40 in the entry block, -3 and -4 through the 0x400 arm,
+// +4 at the 0x800 test) against the object's 36 (20 + 6 + 8 - 2 + 4), and a tie would go to the object. The entry
+// block counts ten candidates: this, a, the object table pointer, the object, b, d, result and three constants, 0xffff,
+// 0x400 and the 0x44 of the two real compares (a constant used in two blocks is counted in their common dominator, here
+// the entry; with the second compare made integer, diagnostic, the entry counts nine and the object wins); with the
+// definition copy removed (diagnostic) the entry counts nine and the registers are retail's. So one entry candidate
+// fewer, or one more in the 0x400 compare, the 0x400 store or the NONE test block, gives retail's registers. All with
+// the mask: the copy as `static_cast` to the base 12; `NONE != index` 12; `result = result | 0x800` 12; a `long` flags
+// local 12; `(flags & 0x800) != 0` 12; the index as a value local 12; a const entry pointer 12 (all the mask's code).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

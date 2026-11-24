@@ -6118,6 +6118,17 @@ void __stdcall function_d6bc0(long object_index);
 // stored field; the object's NULL declared ahead of the loop-top index read; the tail's reset as `countdown = 1; value04
 // = countdown`; the tail's index read once into a block local for its test and 0x158ff0; the delay through a named
 // `short` before its store. Re-measured: the reset limit named once for both uses 182 (869 B). Body unchanged.
+// M3 lane 7 r225 (H2M_FAST; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B). Allocator
+// readings on the field-test form: `entries` is left uncoloured in the first pass (-203) and coloured in the fourth on
+// its B6..B53 piece at 8 (+132 where referenced: the loop-top index read 24, the reset and countdown stores 16 each, the
+// index test 12, the countdown block's index read 12, the 0xd6bc0 argument 8, the 0x15aad0 call 28; -124 where live and
+// not referenced), so it takes EDI, the only register left, and the timer address, coloured in the next pass, gets EBX;
+// with the local test the index-test block counts -6 instead of +12 and `entries` (-10) stays uncoloured, as retail's.
+// One forced decision that keeps EDI busy in the object-lookup block gives 24 with retail's allocation everywhere else,
+// so the field-test form needs `entries` at least 8 lower in that pass. On the field-test form: the object's NULL
+// declared ahead of the index read 172; the countdown block's index read into the loop-top `index` for its test and
+// 0x158ff0 172; the countdown decremented in the field (`if (--entries[i].value04 == 0)`) 172; 0x15aad0 given
+// `&entries[0]` 172; the reset arms in the other order 172 (all the same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
