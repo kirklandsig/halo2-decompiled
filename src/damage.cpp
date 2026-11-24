@@ -2797,6 +2797,9 @@ struct s_unit_event
 // Named section count with sentinel 420; bounded section index 450; bound-and-name section loop 450;
 // selecting the result after the loop 448; bound-and-label seat loop 420; both loop conditions 450;
 // word section kind 425; direct nonzero kind ranges 462. Body restored.
+// Byte displacement for the typed datum lookups 511; with the slot helper 419, retained pool 459,
+// or shared vehicle datum 511. Helper/pool 419, helper/vehicle 419, pool/vehicle 459, all 419.
+// NOT kept: the one-point gain leaves the exchanged region and permutation registers.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5666,6 +5669,10 @@ struct s_damage_object_creation
 // Model early guard, component early guard, split guards and combined early
 // guard 167 each. Reused component index and typed component lookups 167/167.
 // The section count still takes EDI and the node-loop pad remains absent.
+// Masked unsigned ordinal bit for section tests/stores/both 205/204/193; shared test bit 205,
+// shared test and store bit 205, with word setters 205. With masked node bits 232, or with
+// word setters and masked node bits 224. NOT kept: the extra mask moves the count and ordinal
+// away from the retail allocation. The exact-length form changes the frame and raises the score.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

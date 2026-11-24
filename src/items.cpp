@@ -1897,6 +1897,10 @@ struct s_item_flags_view_10b850
 // Floor/slow test producers, true default on floor/slow/both, false default on both,
 // explicit/complementary arms on both, true floor with complementary slow, or opposite defaults:
 // 824/871/855/855/824/824/824/855/855. NOT kept: the equivalent test forms tie or regress, with the same 0x154 frame.
+// Impact/bounce offsets as component stores, point setter, or shared scaled add:
+// components/setter 821, components/scaled add 824; setter with components/setter/scaled add
+// 904/911/904; scaled add with components/setter/scaled add 824/821/824.
+// NOT kept: the bounce setter alone gains three and the impact setter shortens the body.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

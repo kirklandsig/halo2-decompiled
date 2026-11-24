@@ -770,6 +770,9 @@ struct s_24e9c7_points
 // or both scalar stores between offsets, or with the origin split into X and Y
 // across those stores: 125/125/125/124/152/152/153/153. NOT kept: the across-Y spill and
 // returned-height home remain different.
+// In-place perpendicular scaling after one upper corner with reverse scalars, direct negation,
+// reverse scalars at first use, or subtraction 172/152/163/152. After both upper corners
+// 154/151/142/151. NOT kept: the return slot stays high or the frame grows.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

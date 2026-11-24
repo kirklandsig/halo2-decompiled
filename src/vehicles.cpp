@@ -897,6 +897,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // root plus steering arc/both arcs/all three: 109/107/109/107/109/107/109.
 // Explicit float CRT calls for the root, arcs and absolute values: 109.
 // NOT kept: the independent SSE square and x87 sum still diverge at +0x69.
+// Shared planar dot directly at the speed root or through a named squared speed,
+// with either heading alignment form, 112 each. Squared speed before the input
+// magnitude 114 each. Input magnitude after the speed root 142 each.
+// All move the first difference back to the velocity loads at +0x2e.
 // The first SSE square still follows the x87 sum and unity still takes XMM2. Separate scalar/point outputs:
 // scaled arm first 219/219, raw arm first 225/225, raw initializer 301/301, component selection 171/171.
 // NOT kept: each form increases the score and length.
@@ -7162,6 +7166,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Independent transpose values 959, stage three 1032, stage six 1032, stage the two forward coefficients 969,
 // up pairs first 971, reciprocal-side reads first 971, forced inline 959, and forced inline with six staged 1032.
 // NOT kept: every form leaves frame 0xfc versus 0xd8 and ties or raises the score.
+// The 0xfc frame, index and header displacement still differ. Select the computed flip or ordinary basis
+// by address: conditional 1260, assigned in the two arms 1260, ordinary default 1259, late ordinary assignment 1244.
+// Independent scoped relative output with library flip copy, state copy or both 1129 each. Relative output
+// at the transpose with the library flip copy 1031. NOT kept: frame 0xf4 for the selected-address forms,
+// 0xdc for the scoped result and 0xfc for the transpose declaration. Every form shortens and raises the score.
 // Pitch vertical read through the vehicle 1031, all three pitch inputs through the vehicle
 // 978, including the forward receiver established afterwards 978. Named horizontal root
 // through the receiver or vehicle 959/978, root and pitch before the receiver 978,
