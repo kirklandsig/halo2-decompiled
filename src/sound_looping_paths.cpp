@@ -971,6 +971,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Existing approach helper for target decibels 857, target gain 859, fading decibels 840, fading gain 840,
 // both target updates 857, both fade updates 839, both stored gains 864, or all four updates 857.
 // NOT kept: the 0x4dc frame and displaced query homes persist, and every form raises the score.
+// Active-index count-first record, increment then index or capture append slot: 877/900.
+// With full-width query and choice counts: 937/934. Overlaid on the query gain buffer:
+// 877/900 with short counts and 937/934 with full-width counts.
+// NOT kept: the records recover the 0x4e0 frame, but the entry zero and target home still differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

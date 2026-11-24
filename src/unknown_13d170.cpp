@@ -1018,6 +1018,10 @@ struct s_physical_block_iterator
 // allocation test on, retail the reverse); by `best.previous == NONE` tested directly in both stages 93 (same code); on
 // that, the overlap end as `pages + best.offset` 93 (same code) and the second overlap test as `best.offset < offset +
 // pages` 93 (masked 21). Body unchanged.
+// The time-and-page rule still threads into the take branch. Earlier-timestamp branches 212, later-timestamp
+// branches 246, tie first with earlier and later time 219/219, combined earlier and later time expressions
+// 247/242, packed time and signed-page ranks 356, packed ranks with symmetric age clamps 390. The packed form
+// changes the frame probe.
 // M3 lane 13 r153 (h2m fast with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201; lane 1 r124's 40 lead rebuilt,
 // 40 at 1213 B). Readings on the lead. The walk: the overlap end is formed in a copy of its higher-ranked operand, here
 // best.offset (its member is first named late, pages at the top), and best.offset is then read from memory again; retail
