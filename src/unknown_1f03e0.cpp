@@ -1587,6 +1587,15 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // by [input] where retail (and main) load [input] and multiply by the speed register, which lifts the speed load two
 // rows early. On that order: the first arm's scale reading `&state->input` 480 (3055 B); the input pointer declared
 // between damping and gravity 262; right after flying 244. No placement gives both the entry order and the product side.
+// M3 lane 8 r234 (H2M_FAST with 0x1f0450, 0x24590, 0x30bf0, 0xa75d0 and 0x1f03e0, all MATCH each run; control 234, aligned 194,
+// masked 119; body unchanged). The input length at 0x1f0b07 is 0x24590's own body instruction for instruction (k, j, i loaded,
+// used in place on the x87 stack, three pops after the root), so retail expands magnitude3d there. `magnitude3d(input)` re-measured
+// 297 (3036 B: the loads and pops are then retail's, but the squares sum j, k, i for retail's i, j, k: the zero-offset load ranks
+// below the other two here and not in retail), with the flags declared flying, damping, direct, gravity and the input pointer
+// declared at each of the five positions among them 297 / 311 / 297 / 325 / 309, with flying, direct, damping, gravity 293 / 307 /
+// 293 / 321 / 305; 1-7 unused locals ahead of the input pointer on the 297 form (diagnostic) 483 / 499 / 431 / 434 / 430 / 430 /
+// 573. The direct arm: speed declared after the rotated pair 558 (3050 B); the rotated pair as two reals declared ahead of speed
+// or after it 449 / 449 (3055 B).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
