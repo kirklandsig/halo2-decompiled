@@ -500,3 +500,35 @@ def test_circular_second_projection_observes_angular_home(solver_images,precisio
             assert snapshot[1]==1
             snapshots.append((snapshot,projection))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+def test_spin_first_projection_precedes_linear_home(solver_images,precision):
+    frame=STACK+32768-0xd0
+    body_b=HEAP+0x80
+    for rounding in range(4):
+        data=solver_case(8,0)
+        put(data,STEP,'7fi',0,1,1,1,1,0,0,1)
+        put(data,OPS+12,'2I',frame,body_b)
+        put(data,OPS+24,'7I',8|(24<<8)|(6<<16),FRICTION_RESULTS,0,0,8,0x3f800000,0x400)
+        put(data,TERMS,'32f',
+            0,0,0,0, 1,0,0,1, 0,0,0,1,
+            0,0,0,0, 0,0,0,1, 0,0,0,1,
+            0,0,0,1, 0,0,0,0)
+        put(data,HEAP,'B',3)
+        put(data,body_b+0x10,'4f',0,0,0,0)
+        put(data,body_b+0x20,'4f',0,0,0,0)
+        put(data,body_b+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'3f',0,0,0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in ((retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))):
+            machine.mem_write(frame+0x10,b'\0'*0xb0)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            projection=words(machine,frame+0x40,1)
+            assert projection==(0,),('retail'if machine is retail else'compiled',precision,rounding,projection)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,projection))
+        assert snapshots[0]==snapshots[1]
