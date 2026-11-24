@@ -1018,6 +1018,9 @@ static __forceinline void solve_unilateral_linear(float target,
 		__m128 scalar = _mm_load_ss(&simd_scratch);
 		__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 		__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b.body->inverse_inertia);
+		// Capture B before either body write can replace its saved address.
+		__m128 *const angular_receiver = angular_b_pointer;
+
 		// Form both linear contributions before reloading and writing either body.
 		__m128 linear_delta[2] =
 		{
@@ -1036,9 +1039,9 @@ static __forceinline void solve_unilateral_linear(float target,
 		linear_delta[0]=a->angular;
 		linear_delta[0]=_mm_add_ps(linear_delta[0],change_a);
 		a->angular=linear_delta[0];
-		change_a=(*angular_b_pointer);
+		change_a=*angular_receiver;
 		change_a=_mm_add_ps(change_a,change_b);
-		(*angular_b_pointer)=change_a;
+		*angular_receiver=change_a;
 		*result += impulse;
 	}
 }
@@ -1216,7 +1219,7 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1977. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1982. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.

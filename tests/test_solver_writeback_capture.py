@@ -96,6 +96,52 @@ def test_friction_writeback_reads_first_error_before_time_home(
 
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_unilateral_retains_b_angular_receiver_before_a_write(
+        solver_images, precision):
+    def as_float(bits):
+        return struct.unpack('<f', struct.pack('<I', bits))[0]
+
+    frame = STACK + 32768 - 0xd0
+    body_a = frame - 0x10
+    original_b = HEAP + 0xa0
+    replacement_b = original_b + 0x100
+    axis = (as_float(replacement_b) - as_float(original_b)) / as_float(body_a)
+    for rounding in range(4):
+        data = solver_case(2, 0)
+        put(data, STEP, '7fi', 0, 1, 0, 0, 1, 0, 0, 1)
+        put(data, OPS + 12, '2I', body_a, HEAP + 0x80)
+        put(data, OPS + 24, '2I', 2 | (4 << 8) | (3 << 16), 0x400)
+        put(data, TERMS, '12f', 0, 0, 0, 1, 0, axis, 0, 1, 1, 0, 0, 0)
+        put(data, HEAP, 'B', 3)
+        put(data, HEAP + 0x90, '4f', 0, 0, 0, 0)
+        put(data, original_b, '4f', 0, 0, 0, 0)
+        put(data, HEAP + 0xb0, '4f', 1, 1, 1, 0)
+        put(data, replacement_b, '4f', 0, 0, 0, 0)
+        put(data, IMPULSES, 'f', 0)
+        retail, compiled, symbols = solver_images
+        snapshots = []
+        for machine, entry, gate in (
+                (retail, 0x31c940, 0x480c60),
+                (compiled, address(symbols, 'solve_operations_31c940'),
+                 address(symbols, 'g_480c60'))):
+            # A's linear vector covers the saved registers but has zero delta.
+            # Its angular Y component replaces the B-angular pointer at +0x14.
+            machine.mem_write(frame + 0x10, b'\0' * 32)
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data, [STEP, OPS, HEAP, IMPULSES],
+                               precision=precision | (rounding << 10))
+            actual_pointer = words(machine, frame + 0x14, 1)[0]
+            assert actual_pointer == replacement_b, (precision, rounding)
+            old_output = words(machine, original_b, 4)
+            new_output = words(machine, replacement_b, 4)
+            assert old_output == (0x3f800000, 0, 0, 0)
+            assert new_output == (0, 0, 0, 0)
+            assert snapshot[1] == 1
+            snapshots.append((snapshot, old_output, new_output, actual_pointer))
+        assert snapshots[0] == snapshots[1]
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_paired_writeback_captures_step_after_first_output(solver_images, precision):
     data = solver_case(3, 0)
     replacement_step = STEP + 0x80
