@@ -1216,20 +1216,23 @@ typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 
 typedef char solver_projection_pool_size_31c940[sizeof(solver_scalar_arena_31c940) == 128 ? 1 : -1];
 typedef char solver_scalar_frame_size_31c940[sizeof(solver_complete_scalars_31c940) == 176 ? 1 : -1];
 
-// Ordinary reduced-check score 1984. Stack allocation is 0xB4, as in retail.
+// Ordinary reduced-check score 1977. Stack allocation is 0xB4, as in retail.
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // The second normal pair retains a biased row cursor; friction can dispatch
 // directly into the next body header.
-static __forceinline unsigned char *decode_solver_header_31c940(unsigned char *op, __m128 *&terms, solver_velocity_31c940 *&a, solver_velocity_31c940 *&b, solver_velocity_31c940 *&a_home)
+// Publish the header inputs, then advance the shared stream cursor.
+static __forceinline void decode_solver_header_31c940(unsigned char *&op,
+ __m128 *&terms, solver_velocity_31c940 *&a, solver_velocity_31c940 *&b,
+ solver_velocity_31c940 *&a_home)
 {
-	solver_header_31c940 *header=(solver_header_31c940*)op;
-	terms=header->terms;
-	a=header->a;
-	b=header->b;
-	a_home=a;
-	return op+sizeof(*header);
+	solver_header_31c940 *header = (solver_header_31c940 *)op;
+	a = header->a;
+	a_home = a;
+	b = header->b;
+	terms = header->terms;
+	op += sizeof(*header);
 }
 
 // @retail 0x31c940
@@ -1258,7 +1261,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 
 		solver_velocity_31c940 *&b = pointer_phase.body_b;
 		float *result = impulses;
-		op=decode_solver_header_31c940(op,terms,a,b,state.solving.a_home);
+		decode_solver_header_31c940(op,terms,a,b,state.solving.a_home);
 		__m128 *normal_axes;
 		normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
 		bool dispatch_done = false;
@@ -1313,7 +1316,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 
 			case 1:
 			{
-				op=decode_solver_header_31c940(op,terms,a,b,state.solving.a_home);
+				decode_solver_header_31c940(op,terms,a,b,state.solving.a_home);
 				normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
 				continue;
 			}
