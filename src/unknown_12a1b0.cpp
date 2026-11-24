@@ -1557,6 +1557,25 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // 3); the fading-bit setter right after the gain's join 28 (0x126df0 7); the gain in a local defaulted to the silence
 // value, set by the fading test and stored once 29 (203 B; 0x126df0 50); the curve stored ahead of the gain test 38
 // (0x126df0 9). Restored.
+// M3 lane 4 r257 (h2m fast with 0x126df0, 0x12a810, 0x21bd00, 0x21b870 and 0x21b0e0; control 24). Measured ranking:
+// the allocator colours the index ahead of the element, 166 against 144, and the first one coloured takes ESI. 120 of
+// the index's 166 come from the shared step's stepped arm (five references to it in a block that touches six values:
+// the mask and the multiply are done on the index itself); the element has 80 from the stores after the gain's join
+// and 40 from the lookup block. On equal weight the element (created later) would go first, so 22 more for the
+// element or 22 less for the index is the whole difference; one more value referenced in the post-join block would
+// give exactly 164 each. The store-then-overwrite step gives the index 98 (three references in the stepped arm, the
+// lookup done on a copy), which is why this function matches with it. On that step 0x21bd00's two rows are a
+// scheduling tie: its two latch reloads have equal height and come out in the order of their split pieces' numbers;
+// with main's step the count's piece takes the lower free number, with the other step the first index's does
+// (main's next-link temporary keeps one number busy that the other step frees), and no spelling below moves that.
+// Forms: the store-then-overwrite step with the lookup written without the by-value helper MATCH (0x21bd00 2, same
+// code as with the helper), main's step with it 24; on the store-then-overwrite step, 0x21bd00's body with the
+// promotion index unnamed 43, the promotion-table accessor written out without its table local 2, a for loop whose init and
+// step are the next call 116 (318 B), an endless loop with its own exit 2, a do-while around a guarded body 2, no
+// index local outside the loop (a body copy of iterator.index) 2. Main's conditional step with no links local 54
+// (207 B; 0x21bd00 71, 0x21b870 32), with a named next link 54 (same code), with a whole-sound pointer 46 (208 B;
+// 0x21bd00 52, 0x21b870 8, 0x21b0e0 418), the compare written `first != next` 24 (0x21bd00 1, 0x21b870 1), a named
+// next link and no links local 54. 0x21b0e0 with the store-then-overwrite step: 418, aligned rows 167 -> 153. Restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
