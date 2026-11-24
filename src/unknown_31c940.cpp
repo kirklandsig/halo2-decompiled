@@ -1818,12 +1818,12 @@ result+=2;
 					do
 					{
 						solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-						// Capture the mass before projection, retaining its x87 value.
+						// Capture the row inputs before projection, retaining their x87 values.
+						float target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 						float const &mass_source = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
 						float mass = mass_source;
 						__m128 *linear_b_pointer = &body_b.body->linear;
 						__m128 *angular_b_pointer = &body_b.body->angular;
-						float target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 						// Match the same mass-before-step-scale order as the angular path.
 
 						// Reuse the consumed projection vectors through the bounded update.
@@ -1842,8 +1842,8 @@ result+=2;
 						bounded_work[0]=_mm_add_ps(bounded_work[0],bounded_work[3]);
 						bounded_work[0]=_mm_add_ps(bounded_work[0],bounded_work[1]);
 						sum_three_to_arena_31c940(bounded_work[0],projection_pool.bounded_linear);
-						double mass_error = (target - projection_pool.bounded_linear) * mass;
-						float impulse = mass_error * load_error_scale(step);
+						mass = (target - projection_pool.bounded_linear) * mass;
+						float impulse = mass * load_error_scale(step);
 						// Keep the divide followed by multiply on both clamp paths;
 						// reassociating them changes rounding at 24-bit x87 precision.
 						if (impulse > operation_float(op, 4))
