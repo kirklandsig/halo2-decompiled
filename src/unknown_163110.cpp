@@ -616,7 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115; m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
 // computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
 // with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
@@ -1285,6 +1285,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // negations 119; the normal negated from `forward` again (the copy read by the dot only) 452 (1819 B); the distance
 // negated ahead of the normal's negations 143 (first +0xae); the dot's terms written j, k, i 133 (first +0xaf); the i
 // product added to a parenthesised k + j 145. Body unchanged.
+// M3 lane 8 r231 (h2m fast with 0x1648d0 and 0x320b0, both MATCH each run; control 115): the segment flags typed bool 115
+// (same code); the planes typed plane3f and read through its scalar members (`planes[0].i`, `plane->j`) 115 (same code);
+// the classification index typed short 648 (1579 B: the loop is no longer unrolled); the pass index typed short 363; the
+// `negated` vector declared with the top locals 115 (same code). Body unchanged.
+// Near normal memcpy 115; reflected normal memcpy 115; named near/far plane references 306;
+// indexed plane-enable array 482; guarded output cursor 254; success from projected count 459;
+// count each projected vertex 116; retained cull byte 384. NOT kept: none restores the near x preload
+// or the subsequent XMM roles.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

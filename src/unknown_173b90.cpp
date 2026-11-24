@@ -2265,6 +2265,11 @@ bool function_17afd0(long effect_index, long value);
 // in EBP and the owner in EDI (`mov edi, ebx`), where retail has the data in EBX and NONE coalesced with the owner in EBP.
 // On that diagnostic: the owner NONE-defaulted 122, as a ternary 121, NONE-defaulted above the effect index 125, the
 // draw compare `view_pass == same_view` 121.
+// M3 lane 16 r183 (h2m fast with 0x174420, MATCH each run; control 12, P re-measured 138): draw set in each arm
+// (`view_pass` in the same_view arm, `!view_pass` in the other, one fewer same_view read) on P 128 (508 B), on this body 90
+// (504 B); the else arm as `draw = !view_pass && !(attached && mode == 2)` on P 124 (505 B), on this body 88 (501 B);
+// `bool same_view = owner != NONE && g == owner;` ahead of the availability, cleared by `if (!available)` 147 (473 B), or
+// in the availability's else arm 147 (473 B). All restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

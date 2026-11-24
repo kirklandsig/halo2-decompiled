@@ -538,7 +538,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
 // eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
 
-// score 1346 (was 1346; m3 lane 13 r149, m3 lane 8 r221, m3 lane 1 r154, m3 lane 5 r234 and m3 lane 11 r157 unchanged, their lines just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
+// score 1346 (was 1346): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // Earlier header line, a second stacked score line merged here in m3 lane 13 r149: 1346 (was 1346; m3 lane 2 r139, m3 lane 8 r221 and m3 lane 1 r154 unchanged, their lines just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // Earlier header line, a stack merged here in m3 lane 2 r139: 1346 (was 1346; m3 lane 8 r221 and m3 lane 5 r234 unchanged, its line just above the marker): Frame 0x5d0 versus retail 0x58c. Component and velocity stack homes still differ (an earlier
 // header line, 1375 (was 1375), sits further up this file).
@@ -954,6 +954,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // census moves to retail's (mulss 118 -> 126 against 127, fld 35 -> 32 against 29): retail's scale helper is straight-line
 // and its normalisation scalar-replaces the copy. Retail still has 25 more movss, three imul (the contact loop indexed from
 // its counter each pass) and a second ret. Body unchanged.
+// The 0x5d0 frame and velocity homes remain. Typed point pointer/reference/direct access 1346/1346/1413.
+// Base-first shared point/both velocity sums 1346/1346; shared output sums 1346; read-only point definition 1346; ray-origin aggregate 1426.
+// NOT kept: direct typed reads reach 6238 bytes but regress at the same frame. The ray aggregate grows the body and the other forms tie.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

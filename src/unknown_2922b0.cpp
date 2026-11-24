@@ -901,6 +901,20 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // ray product): three orientation states only (axis i folded alone; both b.j/b.k ahead of the whole axis; every product
 // direction-first), never axis i first; the axis pointer alone 582 (2886 B, the loop pad goes); the clamp helper's
 // product as `local_0 * arg_2` 331 (same code). Body unchanged.
+// M3 lane 3 r303 (h2m fast, control 521, aligned 364): on the kept body the shared cross helpers one call site at a time:
+// cross3f_staged at the second cross 521 (same code), cross3f there 518 (aligned 361, under the bar), cross3f_staged at the
+// first 653 (2873 B), at the tail 523, at the third 521 (same code). On lane 2 r113's lead (rebuilt, 331 at 2896 B, aligned
+// 183): a dead-local count scan at the function top (diagnostic), K = 0..40: 331/331/604/611/403/338/334/331/330/334, then
+// 589/615/460/455/439/403/403/406/638/481/461/456/408/406/406/406/638/645/461/456/396/394/394/397/639/646/463/423/398 and
+// K 39 331, K 40 330 (a 32-period, lowest aligned 168 at K 9 with 2907 B): no count matches, and the second cross's folded
+// axis i is the same in every state of the lead's window. The second cross through a pointer-parameter helper with direct
+// stores 331 (same code as the staged helper: stores to the local output do not stop the axis loads being shared); that
+// helper reading the direction's three components into scalars first 570 (2886 B, aligned 182: the first row
+// direction-first with copied registers, the later rows axis-first); the same written in the body with no helper 565
+// (2864 B: axis i then loads first, axis j and k fold). Reading: retail loads all three axis components up front and again
+// for their second products (six loads, every product axis-first); in every form here only the bare indirection (axis i,
+// offset 0) sits on the other side of the direction, as the parameter-index rule for offset-0 operands predicts. Body
+// unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

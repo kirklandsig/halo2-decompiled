@@ -1331,6 +1331,11 @@ void function_1e3b60(long actor_index);
 // is top-tested (the walk test at the loop head, `mov edi, edi` aligned) with sample/update/sampled_one in stack bytes
 // 0x11/0x12/0x13 and the actor index in EBX throughout; ours is rotated and keeps sample in BL, so the actor index is
 // spilled in the loop and LTCG keeps it a stack argument. Still BLOCKED-BY 0x262ba0.
+// M3 lane 16 r183 (h2m fast with 0x262ba0, control 404; 25 here in every form): in 0x262ba0 the context record declared
+// ahead of the motion record, the two flags declared after the 0x263670 call, the prior state read ahead of the next
+// link, case 1's tracking pointer in its own block, the prior state as a `word` at both uses: 404 each (same code).
+// Retail expands 0x2641c0 inside 0x262ba0 and calls it elsewhere; its noinline declaration sat in a file held by another
+// lane this round. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

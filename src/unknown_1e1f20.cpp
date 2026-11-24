@@ -1133,6 +1133,11 @@ void swarm_leader_detach(long actor_index);
 // type read 4, all three together 4 (same code each). Diagnostic, restored at once: the handler read as a four-byte
 // memcpy of its table entry 297 (996 B, frame 0x24, EDI pushed after the loop: the listed whole-allocation flip, now in the reduced image too).
 // Body unchanged (59).
+// M3 lane 5 r240 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH throughout; on the listed 4 form, rebuilt: 4 at 980 B): the
+// stop call split into two calls by `slot_index < 4` arms 282 (964 B, a branch for the select); a `slots` base local for
+// both the type read and the argument 4 (same code); the handler bound by `s_slot_handler const &`, its stop tested and
+// called through it 297 (996 B); the loop's actor pointer bound by `s_actor_view *const &` 4 (same code); the stop bound
+// by `t_slot_proc const &` to the handler's field 299 (996 B). Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

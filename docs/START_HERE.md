@@ -69,8 +69,10 @@ holds (an `@user` row on that issue), and the lanes will leave it alone.
 3. Open a **draft pull request** that says what you are taking. The tool
    prints the line to use, for example
    "Retail range claimed: `0x224240`-`0x224da0` (src/unknown_224240.cpp)".
-   That is your claim; the maintainers add it to the issue. A claim with no
-   activity for two weeks lapses.
+   That is your claim; the maintainers add it to the issue. A claim stays
+   held while it shows work: a pushed match or score gain within 48 hours
+   of the claim, and again within every 48 hours after that. Otherwise it
+   lapses and is open to everyone.
 
 Rather work on physics? Havok, the physics library linked into the game, is
 being decompiled too, and its functions are open for claims the same way:
@@ -80,7 +82,9 @@ small, and they match without any whole-program effects. See
 
 Want to improve code someone else wrote and already merged? Ask its author
 first, on the claims issue or their pull request. If they haven't answered
-within 7 days, you may go ahead; their work and credit stay.
+within 48 hours, you may go ahead; their work and credit stay. Functions in
+it that don't match yet open to everyone after 48 hours without a pushed
+match or score gain.
 
 ## 3. Decompile
 

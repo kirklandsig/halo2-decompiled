@@ -2339,6 +2339,14 @@ bool function_1900a5(long index);
 // != 6) failed = true;` for the `failed = failed || ...` update 679 (2830 B). Reading: retail lays out the request's
 // failure arm (the expanded restore loop, then the failure count) ahead of the read poll, and tests that poll's range
 // (`jl`, `cmp 1; jle`, `cmp 2; jne`) before the completion block. Body unchanged.
+// M3 lane 4 r256 (h2m fast with 0x72700, 0x75890 and 0x75870; control 643 at 2862 B, aligned 440; body unchanged). The
+// function does not answer to names, declaration order or the number of locals: the request outputs' third local renamed
+// to sort first or last 643 / 643, the team flag renamed to sort first or last 643 / 643 (same-size slots do not follow
+// the names here: retail has the request's third output at +0x28 beside the other two, ours at +0x30; the team byte at
+// +0x13, ours +0x17), the flag pair declared team first 643, the request outputs declared third-first, or in three other
+// orders 643 each, and 1 to 8 unused initialised longs at the top (diagnostic) 643 each; every one is the same code.
+// What is left is not a spelling: the users cursor (retail the record itself in a stack cell, with the copy chain of
+// expanded pointer getters), the slot test's conditional move and the elapsed-time copy, as the lines above record.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

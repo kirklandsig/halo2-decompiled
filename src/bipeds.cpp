@@ -6490,6 +6490,14 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // body-only forms): `up` declared at its copy 79 and `side` declared ahead of `up` 79 (same code); the side cross
 // reading `&biped->forward` 79, the first normalize reading it 79; the staged cross reading it (a field/pointer mix,
 // match-only) 83 at 887 B, retail's length. Body unchanged.
+// M3 lane 7 r222 (H2M_FAST with 0x1ecf50, 0x30bf0 and 0xe3c90 MATCH, 0xd0080 58, 0x1e5bb0 111, 0x26d570 26 throughout;
+// control 79, aligned 49, 20 with XMM numbers and stack offsets masked). Diagnostics on where the helpers are expanded
+// (copies in a third file, inlined at link time like rotate_direction; none kept): both crosses, the side cross alone
+// or the staged cross alone through such copies of cross3f / cross3f_staged 79 each (the same code: a header inline
+// and a link-time inline of a body that uses its parameters directly do not differ); the rotation through such a copy
+// of rotate_direction 79 (same code); that copy with a local copy of its axis argument 120 at retail's 887 B (aligned
+// 119, masked 45: the frame address of the axis is then folded late, which moves the first rotation's operand sides
+// but not onto retail's), with a local copy of its vector argument 79 (same code), with both 130 (904 B). Body unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
