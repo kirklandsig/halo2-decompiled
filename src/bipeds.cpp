@@ -1850,6 +1850,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // animation flags reference 137, typed state 137, distinct case-four/five state 137, named recovery duration
 // 137, and named contact point 137. NOT kept: the preload stages a one-use settings pointer across a call
 // and the material and point homes still differ.
+// The definition, material and point slots remain displaced.
+// Unit, biped or both references at their consumers 176 each. Movement, unit and movement,
+// or all three references 617 each. All three pointers at the consumers or beside the position
+// query 617/652. NOT kept: each increases the score and the movement views grow the frame to 0x100.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4607,6 +4611,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Shared turn-state byte, implicit or explicit zero test 629/629; named moving or stationary decision 601/601.
 // Special byte assigned in both arms, named for byte ordering, positive permission in both arms, or direct named
 // comparison 628/628/628/628. NOT kept: the best gains one against reduced control 602 and keeps that image's larger frame.
+// The changed byte and flight threshold still occupy different stack homes.
+// Movement pointer or reference, at entry or in the movement gate, with conditional or
+// branch-assigned threshold: 646 in all eight forms. NOT kept: all enlarge the existing
+// 0x7c reduced image and leave the frame there against retail's 0x78. Reduced control 598.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

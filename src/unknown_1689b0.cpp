@@ -2343,6 +2343,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 99); as `dot3f(point, &plane normal) - d` 584 (masked 116); without the tally order 584 (110), without the early reset
 // 585 (114), with the square ahead of the loop 585 (116), with the ray arm first 617 (2904 B, masked 191). Frame 0xb968
 // in every one.
+// Empty query return 656; immediate face or edge result 575/589; empty query with separate
+// result returns 677; signed last-index bound 573; complete normal selection 551;
+// plane reference across all consumers 558; midpoint and average point setters 551.
+// Tied forms keep the split counter and clearance homes and the pre-branch square.
 // Initial-radius local for the clearance seeds, with query, square, both,
 // reverse ray, query and ray, square and ray, or all three
 // 562/562/560/560/560/560/558/558. NOT kept: all grow to 2889 bytes;

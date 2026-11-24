@@ -1375,6 +1375,16 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // helper's three row statements in other orders (the operand sorts follow the order values are first defined): up,
 // forward, left 491 (2812 B); left, forward, up 295 (2832 B); up, then the perspective scale, then forward and left 502
 // (2798 B); up, left, forward 318 (2831 B); forward, up, left 491 (2809 B). Body unchanged.
+// M3 lane 11 r165 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 199 / 77).
+// Operand-rank reading of the projection rows (each row's three products are sorted by rank, the second and third
+// summed first, the top one added last): the products' ranks follow the matrix member loads' rank levels, with the
+// scaled point's three locals (i, j, k in creation order) only breaking ties. In our sphere projections the levels are
+// forward i 4, j 6, k 4; left i 0, j 2, k 0; up i 4, j 4, k 6, which gives the rows (k + i) + j, (k + i) + j, (j + i) + k;
+// retail's rows need forward k, up j and left j on top. Since up i and up j share a level, no uniform shift of the late
+// load levels (what extra parentheses or symbols do) can give retail's up row; the loads have to be numbered in another
+// order. Forms (row pointers change those numbers): a `vector3f const *` for the forward row 589 (2791 B), for the up row
+// 578 (2787 B), for the forward and left rows 575 (2791 B: the forward row then sums as retail's), for the forward and
+// up rows 581 (2798 B), forward and left with the scale statements k, j, i 575. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
