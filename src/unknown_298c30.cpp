@@ -817,6 +817,22 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // the distant arm 384, narrowed at each distant use 384, named wide differences with distant narrowing 380,
 // named wide squares with distant narrowing 384. Fixed-turn cosine, sine, both names, and both with y renamed
 // 305 each. NOT kept: raw-root comparisons grow the frame and require a byte match at the boundary.
+// M3 lane 4 r260 (h2m fast with 0x29a190 and 0x298c30, both MATCH each run; control 305, aligned 171; body unchanged; all
+// on lane 2 r134's p1 lead, rebuilt 249 at 1722 B, aligned 47 by this round's count). Diagnostic: 1 to 7 unused longs at
+// the top of p1 give aligned 47, 49, 47, 34, 34, 46, 46 (positional 249 to 252): four or five more symbols put the
+// emitter's copies and dot in retail's registers and order, so that group is a symbol-count phase. Left on p1 then:
+// (1) the frame's 4-byte cells: retail's first cell holds the wrapped angle, its third the root and the sine, and the
+// cosine joins a later cell; retail's sine and cosine cells have three references per quarter turn (one store, one SSE
+// product, one x87 load), p1's duplicated rows give six and five, which puts them first; (2) the near arm: retail
+// loads y, stores the cosine and multiplies y by the stored cosine, loads x, and only then branches for the sine's
+// argument, so the y row holds the sine's evaluation and the x row reuses its stored value; (3) the far arm's second
+// normalization (retail loads x and multiplies by the reciprocal, stores it, then forms y) and the inner loop's pad
+// that follows from its four bytes. Forms on p1's near arm, none lower: both trig calls written inside the y row and
+// again in the x row 446 (1739 B, aligned 234: no `push ebx`, the whole colouring moves); the cosine named and the
+// sine written in both rows 443; a file-local inline taking (in, sine, cosine, out) with the calls as arguments 450
+// (1709 B); a file-local inline taking the side and the angle with the calls in both rows 440 (1728 B); main's split y
+// row with the sine assigned by an if/else 418 (1738 B), by the ternary 464 (1693 B). In each the unity constant goes
+// back to XMM1: p1's duplicated arms are what lower its rank (four more blocks where it is live and unread).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

@@ -3652,6 +3652,9 @@ struct s_ammo_conversion_entry
 // Generic source view mutable/const, generic destination view, and paired mutable/const views 190 each.
 // Existing header accessors for the destination, source with generic refresh, and both with generic refresh
 // 190 each. NOT kept: all preserve the exchanged saved-register roles and 731-byte extent.
+// Destination, source and tag-array lvalues, single and paired loop-entry bindings 190 each;
+// all three bound together at loop entry or per iteration 190 each. Saved destination and
+// conversion-key registers remain different.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4090,6 +4093,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Named accumulated heat 593; shared tag cap 612; merged cap publication 604; native barrel accumulator 593.
 // Native item flag 629; chained failure flags 593; nested destruction test 593; named no-magazine heat rejection 593.
 // NOT kept: ties or regressions. The 0x1c64 frame and early weapon/tag register assignments remain.
+// Holder, magazine, effect tags, selected entries, owner and barrel role-name trials 630 each (reduced control 630).
+// Shared effect-history word setter 627, pending weapon byte setters 630, both 627. NOT kept: a three-point
+// preview change. The full probe still differs by four bytes and the weapon index and barrel occupy different registers.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4643,6 +4649,9 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Conditional decay result 1413; named cooling adjustment 1412; one cooling coefficient read 1416; retained cooled heat 1412.
 // Single clamped write 1412; named recovery time or excess heat 1412 each; nested recovery guard 1412.
 // NOT kept: ties and regressions. The 0x34 frame, entry roles and dual spill remain.
+// Trigger/barrel runtime-array lvalues, tag pointer fields, paired lvalues, and array bases with
+// tag field pointers: 1413/1412/1413/1413 before their loops, 1412 each inside. The loop-entry
+// runtime array forms shorten the barrel phase by four bytes. The 0x34 frame and dual spill remain.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
