@@ -87,7 +87,7 @@ address range or by source file:
      and [docs/DECOMPILING.md](docs/DECOMPILING.md#havok) has its flags and
      conventions.
    - Merged work is open for follow-up, but ask its author first, on the
-     issue or on their pull request. If they haven't answered within 7 days,
+     issue or on their pull request. If they haven't answered within 48 hours,
      others may go ahead. The author's work and credit stay, and the change
      is noted on the issue. Functions in merged work that don't match yet
      follow the 48-hour rule above: without a pushed match or score gain

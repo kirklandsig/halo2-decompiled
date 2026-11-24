@@ -82,7 +82,7 @@ small, and they match without any whole-program effects. See
 
 Want to improve code someone else wrote and already merged? Ask its author
 first, on the claims issue or their pull request. If they haven't answered
-within 7 days, you may go ahead; their work and credit stay. Functions in
+within 48 hours, you may go ahead; their work and credit stay. Functions in
 it that don't match yet open to everyone after 48 hours without a pushed
 match or score gain.
 
