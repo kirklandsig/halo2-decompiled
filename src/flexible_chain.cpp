@@ -1031,6 +1031,11 @@ void __stdcall function_1160c0(real dt)
 // the existing vector3f_add 204 (1368 B, retail's length, aligned 46); the chain delta through vector3d_from_points3d in
 // place of its initializer 259 (1368 B); `previous = node->position = position;` 144 (same code); vector3f_add with the
 // helper delta 282 (1355 B). Body unchanged.
+// M3 lane 15 r139 (h2m fast with 0x116750 and 0x1160c0, MATCH each; control 144). Reading: retail's integer registers are
+// this build's moved one step along EAX, ECX, EDX (physics index ECX for EAX, node copy pointer ECX for EDX, segment EDX for
+// ECX, base EDX for EDI). Forms: the node through a file-local inline getter 144 and the tick through a file-local inline
+// setter 144 (same code each: neither shifts the rotation); the node as a reference 144 (same code); the node position
+// copied member by member 198 (1384 B); the segment pointer declared const 144 and register 144 (same code). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -382,7 +382,8 @@ void contrail_update(long contrail_index, bool detach, real dt)
 	contrail->unknown2c += dt;
 }
 
-// score 4 (was 6): a shared `one` local for the three literal 1s (the
+// score 6 (was 4; 2026-11-23: rose with data_find_index reading its two fields directly for 0x2689d0's match, lane 8 r230;
+// the text below describes the 4): a shared `one` local for the three literal 1s (the
 // 0x17c0e0 count, the flags03 bit and the index step) fixes the two locals'
 // EBX/EDI load order. The remaining differences are the two `frame_time`
 // updates' remaining/elapsed XMM registers.
@@ -394,6 +395,10 @@ void contrail_update(long contrail_index, bool detach, real dt)
 // only because of that order. Tried (fast build): `remaining` declared inside the `rate > 0` branch (6), `if (!(rate
 // > 0)) {no-rate} else {loop}` (118), `if (rate <= 0)` first (119), while(true) with a bottom break (138), a
 // for(;;) with continue (275), `while (remaining > 0)` and a hoisted `step` (4, same layout), else using `remaining`.
+// M3 lane 8 r230 (h2m fast over this file, with data_find_index rewritten without its count and bits locals, the
+// 0x2689d0 lead): 6 with or without `one` (EBX/EDI reloads swapped again); there, literal 1s 6; the definition read
+// ahead of the elapsed time 6; a named next index 6; the definition declared ahead of the elapsed time 6; the step through
+// data_next_absolute_index_inlined 6 (with `one` 6); `flag0 = active` 168; the two `active` tests merged 105.
 // @retail 0x17bc40
 void function_17bc40(real dt)
 {
