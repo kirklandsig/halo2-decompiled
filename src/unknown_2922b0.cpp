@@ -941,6 +941,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // The clearance byte, hit slots and range still differ. A cursor on the actual ray-length array,
 // with long or dword index and equal-end or upper-bound tests: for 561 in all four forms, do-while 556 in all four.
 // NOT kept: each drops the frame from 0x108 to 0x104 and shortens the body.
+// Assign angle zero on first-axis miss 637, second-axis miss 571, or both 648. Separate
+// scaled side or up contribution 519/525, both 554. Shared i-k-j rotation projection 524,
+// immutable origin copy 518. NOT kept: first-axis definite assignment recovers the success
+// byte home, but shortens the body and leaves the early zero in XMM1.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

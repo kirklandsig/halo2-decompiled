@@ -2171,6 +2171,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // The unit and mode slots remain exchanged. Unit receiver scoped through the aiming springs or all four springs,
 // with its vector address acquired before the mode call, before the first spring, between springs or after aiming:
 // 562/190/190/172 in each scope. NOT kept: early address acquisition shortens and raises the score.
+// Activity preset on physical admission with readiness rejection 345, fully admitted
+// result 373, nested readiness result 371, admission conditional 172. Scope after the
+// suppression query 357, shared suppression result 378, nonsuppressed overlay result 179,
+// complete optical guard 185. The unit and mode homes still exchange.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

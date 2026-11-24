@@ -459,6 +459,9 @@ static __forceinline long real_to_long(real value);
 // function_259d0 372 (1843 B); that with the two lower bounds written in the calls 367 (1843 B, first difference
 // +0x1ab: retail's head, the third input in ESI and one seed store); the same on the global at each draw, no state
 // local, 437 (1853 B). Not kept: the 367 form is six points on two one-use locals. BLOCKED-BY 0x210850 as above.
+// Local range seed with one final write. Sign-result inputs 440/440, stored inputs 440/440,
+// after-first-draw inputs 434/436, shared sign-step inputs 440/440. All keep the 0x4c frame
+// and leave the third input off ESI. Original draws and result stores restored.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

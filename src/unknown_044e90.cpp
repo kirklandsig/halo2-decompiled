@@ -688,6 +688,12 @@ struct s_visibility_bound_record
 // frustum address in one `lea` (retail two); the plane copy's j/k registers; the capacity loads ahead of the releases
 // (retail second, first, third); the part loop's counter and bit (retail ESI/EBX); the scale products (0x142570's
 // body, BLOCKED-BY 0x142570's /Ob1 file); the homes. Body unchanged.
+// Fallback through the existing object lookup 430, header lookup 430, node base helper 430, object-plus-node 430,
+// header-plus-node 430. Each single helper with one view state read through the parts test 434. Entry/table
+// allocation and the geometry home through node composition are unchanged.
+// Scalar-input shared rotation with coordinate stores/vector add/in-place input/independent rotation 430/426/457/426;
+// axes rotation with the same four consumers 430/426/514/430.
+// NOT kept: the 426 forms gain four at 1745 bytes and leave entry/table allocation unresolved.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
