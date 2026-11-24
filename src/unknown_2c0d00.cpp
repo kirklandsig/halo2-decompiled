@@ -931,6 +931,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the conditional store there, so not kept), both 920; the self-unit test as a nested `if (self_unit) { if (...)
 // continue; }` 925 (same code); the self-unit test ahead of the hidden-object test 923; the actor's unit type test with a
 // `(char)` cast 925.
+// One three-state direction result, strict-first, wide-first, conditional or default-preserving:
+// enum 909/903/909/923, byte 913/905/913/912. NOT kept: the best enum retains 0x2cb0.
+// The byte forms recover 0x2cac but combine two independent retail byte stores and leave the entry register exchange.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
