@@ -604,3 +604,93 @@ def test_angular_error_a_inertia_precedes_scalar_copy(solver_images,precision):
             assert snapshot[1]==1
             snapshots.append((snapshot,observed))
         assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+@pytest.mark.parametrize('case',['projection','receiver'])
+def test_angular_error_published_receiver_capture_epochs(solver_images,precision,case):
+    def as_float(v):return struct.unpack('<f',struct.pack('<I',v))[0]
+    frame=STACK+32768-0xd0
+    body_a=frame-0x10
+    body_b=HEAP+0x80
+    other_b=body_b+0x100
+    delta=as_float(other_b+0x20)-as_float(body_b+0x20)
+    for rounding in range(4):
+        data=solver_case(12,0)
+        put(data,STEP,'7fi',0,1,1 if case=='projection'else 0,1,1,0,0,1)
+        put(data,OPS+12,'2I',body_a,body_b)
+        put(data,OPS+24,'2I',12|(4<<8)|(4<<16),0x400)
+        if case=='projection':rows=(0,1,0,0,0,0,0,0)
+        else:rows=(0,delta/as_float(body_a),0,1,0,0,0,1)
+        put(data,TERMS,'8f',*rows)
+        put(data,HEAP,'B',3)
+        for body in [body_b,other_b]:
+            put(data,body+0x10,'4f',0,0,0,0)
+            put(data,body+0x20,'4f',0,0,0,0)
+            put(data,body+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'f',0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in [(retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,IMPULSES],precision=precision|(rounding<<10))
+            label='retail'if machine is retail else'compiled'
+            if case=='projection':
+                observed=words(machine,frame+0x54,1)
+                assert observed==(body_b+0x20,),(label,case,precision,rounding,observed)
+            else:
+                observed=words(machine,frame+0x14,1)
+                assert observed==(other_b+0x20,),(label,case,precision,rounding,observed)
+                original=words(machine,body_b+0x20,4)
+                redirected=words(machine,other_b+0x20,4)
+                assert original==(0,0,0,0x3f800000),(label,case,precision,rounding,original,redirected)
+                assert redirected==(0,0,0,0)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,observed))
+        assert snapshots[0]==snapshots[1]
+
+
+@pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
+@pytest.mark.parametrize('writer',['body','result'])
+def test_angular_error_reloads_published_receiver_for_next_row(solver_images,precision,writer):
+    def as_float(bits):return struct.unpack('<f',struct.pack('<I',bits))[0]
+    frame=STACK+32768-0xd0
+    body_a=frame-0x10 if writer=='body'else HEAP
+    body_b=HEAP+0x80
+    other_b=body_b+0x100
+    delta=as_float(other_b+0x20)-as_float(body_b+0x20)
+    output=IMPULSES if writer=='body'else frame+0x14
+    for rounding in range(4):
+        data=solver_case(12,0)
+        put(data,STEP,'7fi',0,1,0,1,1,0,0,1)
+        put(data,OPS+12,'2I',body_a,body_b)
+        put(data,OPS+24,'3I',0x4040c,0x4040c,0x400)
+        rows=(0,delta/as_float(body_a),0,1,0,0,0,1) if writer=='body'else (0,0,0,1,0,0,0,delta)
+        put(data,TERMS,'16f',*rows,0,0,0,1,0,0,0,1)
+        put(data,HEAP,'B',3)
+        for body in [HEAP,body_b,other_b]:
+            put(data,body+0x10,'4f',0,0,0,0)
+            put(data,body+0x20,'4f',0,0,0,0)
+            put(data,body+0x30,'4f',1,1,1,1)
+        put(data,IMPULSES,'2f',0,0)
+        retail,compiled,symbols=solver_images
+        snapshots=[]
+        for machine,entry,gate in [(retail,0x31c940,0x480c60),
+                (compiled,address(symbols,'solve_operations_31c940'),address(symbols,'g_480c60'))]:
+            machine.mem_write(frame-0x10,b'\0'*16)
+            machine.mem_write(frame+0x10,b'\0'*32)
+            machine.mem_write(gate,b'\x01')
+            snapshot=execute(machine,entry,data,[STEP,OPS,HEAP,output],precision=precision|(rounding<<10))
+            label='retail'if machine is retail else'compiled'
+            actual_home=words(machine,frame+0x14,1)
+            original=words(machine,body_b+0x20,4)
+            redirected=words(machine,other_b+0x20,4)
+            assert actual_home==(other_b+0x20,),(label,writer,precision,rounding,actual_home)
+            assert original==(0,0,0,0x3f800000 if writer=='body'else 0),(label,writer,precision,rounding,original,redirected)
+            assert redirected==(0,0,0,0x3f800000),(label,writer,precision,rounding,original,redirected)
+            assert snapshot[1]==1
+            snapshots.append((snapshot,actual_home,original,redirected))
+        assert snapshots[0]==snapshots[1]
