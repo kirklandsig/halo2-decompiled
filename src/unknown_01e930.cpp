@@ -634,6 +634,16 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // P608: Library copies into surround bins/volumes, stereo bins/volumes, then surround pair,
 // stereo pair, both bins and all: 301/302/296/292/315/300/307/334.
 // NOT kept: longer bodies and no retail memory-status/clock/audio frame recovery.
+// M465: 64 KiB count long 278; 64 KiB count dword 277; page count long 280; page count dword 280; MiB
+// count long 279; MiB count dword 280; selected bytes long 290; selected bytes dword 292.
+// NOT kept: all reservation-size carriers shrink the frame to 0x38 against retail 0x40.
+// The dword mode, status and clock homes still differ.
+// M3 lane 8 r230 (h2m fast, own /arch:SSE file from M3 lane 1 r99's 150 lead, this file's other functions MATCH; 0x163890
+// reads 174 in this image with or without the move): the elapsed clock zeroed at the top in place of the start 302 (1085
+// bytes; the elapsed initialiser vanishes), both zeroed 150 (same code as start alone); the start as an unsigned 64-bit
+// value 302 (1085); the start zeroed by its own statement after its declaration, ahead of the memory-status helper 150
+// (same code); the copy flags and texture format as named locals (3 and 10) used for the stores, the texture call and
+// the bitmap 150 (same code: they propagate, retail holds 10 in EBP and 3 in EDX). Not moved.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

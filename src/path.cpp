@@ -374,6 +374,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// score 286 (was 286; m3 lane 11 r152 unchanged, its line just above the marker): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
+// homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // MiniMax B (11-20): no new form, no lower score (286): the link count's increment split out of the copy's index
 // (`memcpy(&links[link_count], ...)` then `link_count++`) measures 298, so the post-increment form is the better one;
 // retail still counts the links in a dword (`inc dword ptr [esp + 0x1c]`) but compares it as a word (`cmp dx, word ptr
@@ -395,8 +397,6 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `previous` pointer, set to NULL here and left alone there; dropping that initializer gives retail's frame but the body grows
 // by two bytes and the score rises to 357), the node depth is still read at one address here and through a lea there, and the
 // prologue's saves and stores are in another order; the permuter (27 tries in 313 s, annealing) found no variant under 286.
-// score 286 (was 286): frame 0xe8 versus retail 0xe4, the folded entry depth read, and the link/special flag
-// homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
 // (1388 bytes, masked 0, re-measured; only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back
 // edge). On that 2, looking for retail's extra loop block that is gone after allocation: the projection clamp with the
@@ -1037,10 +1037,44 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // guard block folds before allocation); the truncation test written in both distance arms 488 (1489 B, the tails are not
 // cross-jumped and the state leaves EBX); the truncation storing `complete` before `count` 4 (the two stores swap, the pair
 // stays); the previous point chosen by an if/else statement in place of the ternary 2 (same code). Body unchanged.
-// score 286 (was 286): Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
+// M3 lane 16 r173 (H2M_FAST with 0x270930, MATCH each run; control 286): the r154 two-flag lead re-applied to today's
+// file 2 again (the same back-edge pair). On it: `special ||` tested first in the type chain 341 (1372 B); the special
+// test as a one-case `switch (node->target.type)` 79; the scan's count read through `short const &` 2; the scan's steps
+// read through `s_path_step_view *const &` 2 (same code each); the truncation as `count = ++j;` 35 (1392 B). Body unchanged.
+// Short output ordinal and indexed fill with split negative/range/sentinel guards 391/391/391;
 // short capped fill bound with the same guards 396/396/396. Separate seed node 390,
 // shared edge-table receiver 391. NOT kept: frame 0xe4 returns but the state is stacked
 // and the matched caller changes. The opening extra cursor and flag homes remain.
+// M3 lane 11 r152 (H2M_FAST with 0x270930, MATCH each run): the two-flag lead rebuilt on today's body 2 again (the same
+// scan-latch pair). On it: one file-local inline range predicate shared by the link test and the scan's edge test,
+// expression return 2, `if` with `return true; return false;` 2 (same code each: no vanishing block); the link test
+// through an inline edge getter returning the edge or NULL 314 (1389 B); the previous point as a default then
+// `if (j > 0)` 280 (1396 B, 0x270930 260); `*const steps` in the definition 2 (same code). Body unchanged.
+// M3 lane 2 r141 (H2M_FAST with 0x270930, MATCH each run; control 286): `previous` dropped, the predecessor read through
+// `lookup->nodes[previous_index]` 287 (1393 B, but frame 0xe4 as retail: first difference +0x19); the truncation test
+// as `j < count - 1 && distance > 1600` 287; the edge-index test with `!= 0xffff` first 286; the special test written
+// into the type chain (no named bool) 330. Round 110's saved two-flag lead re-applied to today's file 2 (the latch's
+// steps/j reload pair only); on it the truncation's two stores swapped 4. Retail's link test stores the edge bit to the
+// +0xf byte that the surface flag reuses (two block-scoped bools sharing a slot). Body unchanged.
+// M3 lane 6 r237 (H2M_FAST with 0x270930 and 0x270750, MATCH each run; control 286, aligned/masked 179/57): lane 16's
+// saved two-flag lead applied to today's file 2 again at 1388 B (the scan latch's steps/j reloads swapped). Tested on it
+// as a whole-function allocation phase (redundant parentheses and new used locals shift such phases elsewhere): the
+// margin initializer in one to three redundant pairs 2/2/2, the radius leaf in one to three pairs and both operands in
+// one 2/2/2/2, `count = (j) + 1` with one to three pairs 2/2/2, the projection clamp's `length - margin` named and used
+// twice 2, the length test's `margin * 2.0f` named 2, both 2, both plus `short last = count - 1` for the truncation test
+// 26 (first difference +0x2c2). The pair is not a parenthesis or symbol-count phase. Body unchanged.
+// M3 lane 3 r305 (H2M_FAST with 0x270930 and 0x270750, MATCH each run; control 286). The saved two-flag lead re-applied
+// to today's file is 2 again. Reading of the pair: both loads are reloads at the head of the scan latch (the step array
+// parameter into EBP and the index into EDX, both live in registers across the latch), they form a block of their own
+// ahead of the count load, and with equal scheduling priority they keep the order the reloads were emitted in, the
+// array's first; a forced change of either load's height or ready cycle in that block gives a full match, a forced
+// change of either value's colouring priority does not. On the lead: the fill count as an `if` clamp in place of MIN 176
+// (1391 B); `distance` declared after the origin pointer 2; the origin pointer hoisted ahead of the scan loop 396 (1422 B);
+// one `v` shared by both distance arms 2; the edge pointer formed ahead of the previous point 25; `++j` 2; `j` declared
+// ahead of the loop, after or before the margin 2/2; the truncation's two stores swapped 4; a data pointer for the four
+// pathfinding casts inside the scan loop 397 (1416 B), ahead of it 336 (1410 B); the current step through an element
+// pointer 2; the edge index through a pointer to its slot 2; the truncation test with the index compare first 16; the
+// clamp's `length - margin` as a named const used twice 27. Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

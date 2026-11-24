@@ -11,7 +11,7 @@ struct s_visibility_bound_record
     byte transform_index;
     byte padding[3];
 };
-// score 430 (was 430): r275 and lane 11 r145 unchanged. The geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
+// score 430 (was 430): r239, r275 and lane 11 r145 unchanged. The geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
 // MiniMax E (11-20): no new form, no lower score (430): the frame 0x74a4 agrees with retail's, but the head still differs - retail forms the entry address with a lea into EBX from the scaled index and keeps the tag table in ESI from there to the bottom arm, while this build reads the tag through a displacement from the scaled index and hoists the table into ECX at the top, with the entry spilled at [esp+0x48] against retail's [esp+0x30]; making the header's geometry lookup take the caller's entry pointer leaves 0x458d0 and 0x45a80 matched but gives 449 here, so the lookup stays index-based.
 // MiniMax E (11-16): no new form tried this round, no lower score (443): the frame still agrees with retail's, and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from a sign-extended index before the
@@ -646,6 +646,23 @@ struct s_visibility_bound_record
 // `parts` first 449 (1760 B); the geometry lookup ahead of the entry pointer 430 (same code); the bottom arm's node transforms
 // named once from the tag 436 (1749 B); the visibility word as a `dword *` formed once per part for the test and the set 430
 // (same code).
+// M3 lane 16 r180 (H2M_FAST with 0x458d0, MATCH each run; control 430): the plane copy written i, k, j 427 (re-measured,
+// lane 1 r141's form); the plane local declared ahead of the plane loop and assigned in it 430 (same code); the frustum index
+// as `short` 440 (1760 B); the view counter as `short` 455 (1760 B); the copy through a `plane3f &` to the element 430 (same
+// code); the transform reading the frustum plane straight into the local with the copy in an else arm 440 (1760 B, aligned
+// 339). Body unchanged.
+// M3 lane 5 r239 (H2M_FAST with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH; control 430): the shared geometry
+// lookup reading the tag table into a local ahead of its tag test (retail's hoisted ESI load) 430 (same code: the load
+// still sinks into the arm; header restored); the four index pointers set second, first, third, fourth 430 (same code);
+// each list set up whole in that order 457 (1760 B); the plane copy as a `for` with `++j, ++source` 2599 (3481 B: a
+// constant-count `for` is unrolled, the do-while is what keeps retail's loop), as a `for` over `source[j]` 2599.
+// M3 lane 8 r233 (h2m fast with 0x458d0, 0x45a80 and 0x142570, all MATCH; control 430). Allocator reading: the
+// transform and frustum values take ECX/EDX/ESI over the plane loop and the part index EBX, so the entry (retail EBX)
+// and the tag table (retail ESI from the tag test to the bottom arm) never get callee-saved homes here. Forms: the view
+// ranges computed inside the count test 451; the geometry looked up ahead of the entry pointer 430 (same code); the
+// visible-mask pointer read before the node loop 397 (1778 B, the listed match-only lead); the containment flag
+// declared ahead of the part bit 430 (same code); the planes and plane query declared ahead of the list set-up 430
+// (same code). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

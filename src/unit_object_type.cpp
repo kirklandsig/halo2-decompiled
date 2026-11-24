@@ -1115,7 +1115,7 @@ bool function_d03b0(long unit_index)
 
 /* starts listing the units among the object's children */
 // @retail 0xd0590
-void function_d0590(s_unit_child_iterator *iterator, long object_index)
+void function_d0590(long object_index, s_unit_child_iterator *iterator)
 {
 	s_unit *object = UNIT_GET(object_index);
 
@@ -3251,6 +3251,11 @@ void function_c5740(long unit_index, bool start)
 // common header type for both acquisitions, pool reference, common post-gate headers only,
 // read-only arrays, and early masked unit index with separate arrays: 97 each.
 // NOT kept: the same header data stays live across the gate and the material stays in BP.
+// Combined direct-slot gate or its failed arm first 97/97; conditional slot and separate fallback
+// tags 123; returned weapon or final definition call 97/97; borrowed fallback or weapon tag fields
+// 100/90; immutable tag values and returned final call 97. NOT kept: 90 gains seven at 350 bytes and
+// leaves the different prologue, pool-data lifetime and a spare field-address instruction. The
+// 331-byte form changes 0xcf040.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -5667,6 +5672,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // 210; transform declared with the basis 169; scoped basis with paired angles 169.
 // NOT kept: the indexed mode moves the first difference into setup. The separate correction
 // enlarges the frame and body. The other forms still preload up.i and consume the forward scale.
+// Full forward memmove with staged second cross, ordinary crosses, a bound aim source or a zero
+// predicate 175 each. Direct zero predicate and named magnitude with equality or zero predicate
+// 169/169/169; zero-first equality 179. NOT kept: memmove adds a call and raises the caller's reduced
+// score. The zero-first test reaches 767 bytes but increases the score.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5814,6 +5823,11 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
 // (b->i * a->k, canonicalised to the same code) 2; the aim argument cast to a const pointer 2; the first product
 // computed into a local and copied into left 191 (840 bytes); written out with the world-up in a local (the loads
 // then differ at the dot, 108, 796 bytes); first through cross3f alone 12 (dot product registers change).
+// M465: compound row subtractions 2; positive products first 2; all subtrahends first 21; subtrahend
+// then paired row 21; rows start with left components 2; rows start with right components 4; basis dot
+// aim-first 2; basis dot offset-first 2.
+// NOT kept: the staged helper forms regress a matched caller. The basis-dot forms leave
+// the first cross j load and multiplier exchanged.
 // @retail 0xc8290
 void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity, real const *offsets,
 	bool project, bool use_aim, bool clip)
@@ -5924,6 +5938,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P552: Complementary default-direction outcomes in bool/byte/short/long; wider original actor carriers
 // short/long; overlap-safe fallback transfer and complete fallback source object.
 // Fast scores 168/168/172/171/85/84/182/58. NOT kept: no permitted confirmed gain; original body restored.
+// M465: in-place angular scales 170; in-place rate scales 54; both pairs in place 170; named angular
+// coefficient 168; both coefficients named 173; angular coefficient declared first 168; compare angular
+// products to each bound 67; in-place angular scales and bound comparisons 166; complete angular scales
+// before bound tests 66.
+// NOT kept: in-place rate scales gain four at retail length. The angular clamp registers
+// and reused coefficient still differ.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -9891,6 +9911,10 @@ struct s_unit_melee_collision
 // consistent direct unit aim through the ray rows 521; shared self-damage direction negation
 // 531; typed collision plane 531. NOT kept: the repeated loads recover 0x17c but shorten
 // the body by at least 13 bytes and raise the score. The unit and fan homes still differ.
+// Point setter, normal setter or both with the range snapshot 494/494/506; the same forms with per-
+// product range 519/521/509; normal-first or byte copies with per-product range 531/531. NOT kept:
+// both setters with per-product range recover 0x17c and 2229 bytes but score 509, with the pool load
+// and fan registers still displaced.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

@@ -408,6 +408,48 @@ static __forceinline long real_to_long(real value);
 // (its own out-of-line copy keeps them in order, so retail knew the point and the output did not overlap), the
 // up-cross block numbers the cross result xmm1/xmm2/xmm3 where ours uses xmm4/xmm3/xmm1, and the NONE path's copy.
 // All of it rests on the one-use early bound locals, so nothing is kept. Body unchanged.
+// M3 lane 3 r297 (H2M_FAST with 0x210850, 0x2104b0, 0x1fdce0, 0x1fe410 and 0x259d0, all MATCH unless noted; control 373,
+// aligned [exact, stack masked, registers masked] 324/255/112; body unchanged). Re-measured: the existing 0x210850 called
+// with `inline` on its definition, on this body 466 (1889 B), with the final sums through a named output pointer 460;
+// lane 1 r148's early-bounds lead 266, with that pointer 251 [184/134/32]; lane 6 r204's composite 347 (1855 B)
+// [127/118/16], the same code with the resolver written out or through the inline 0x210850. New on the composite:
+// (1) Retail's failed-lookup copy loads all three words before the stores; ours interleaves because the resolved point
+// counts as captured, and the path is 0x1fe410 handing it to 0x1697c0 as its point argument: with that call's point cut
+// (diagnostic NULL in 0x1fe620's or 0x1fe410's call, or a copy passed instead) the copy is retail's [120/111/10]. A callee
+// that takes the address of its own pointer parameter reproduces the capture (0x1fe410 given a `point3f **` to its
+// parameter, with the 0x1697c0 argument still cut: the copy interleaves again), and 0x1697c0 reads its point and vector
+// through such parameter addresses: BLOCKED-BY 0x1697c0 (its file is on this round's avoid list; next: measure this
+// function with those two parameter-address locals removed, and with each onward callee's point cut).
+// (2) Evaluation order: retail computes the rescaled timer as (limit / cap) * count (0x1feb7c `movaps xmm6, xmm4; divss
+// xmm6, [cap]; mulss xmm6, xmm3`); this body's `local_12 / local_19 * (real)local_17` compiles to (count / cap) * limit.
+// The quotient named, cast to real, written second, or scaled in a second statement all give retail's order: 427 on this
+// body (1863 B, aligned 323/254/110; not kept, the count rises), 340 on the composite at retail's 1861 B [132/123/20].
+// (3) On composite + quotient: the side vector through cross3f or cross3f_staged against a local up vector 340
+// [134/121/18], against a static const up vector 340 [136/123/20], the k zero product named 340 [138/123/20], the three
+// rows held in scalars and then stored 340 [130/121/18]: the side vector's homes stay XMM4/XMM3/XMM1 (retail XMM1/2/3,
+// with one extra copy of the k zero product).
+// M3 lane 3 r298 (H2M_FAST with 0x1697c0, 0x1fe410, 0x16a040, 0x16a7c0 and six other 0x1697c0 callers; control 373): r297's
+// lead measured on main's body: 0x1697c0 with both parameter-address locals removed (point and vector read directly)
+// 373 here, 0x1697c0 itself 155 (2188 B; its match is lost); with only the point's address local removed 373 here,
+// 0x1697c0 122 (2175 B). 0x1fe410 and the other callers stay matched in both. 0x1697c0 needs both locals for its own
+// match, so the capture cannot be removed there; restored.
+// M3 lane 1 r159 (H2M_FAST with 0x210850 MATCH each run; control 373): the existing 0x210850 called out of line for the
+// point (no `inline` on its definition) 445 (1807 B, it stays a call); the random-state local declared at the top for the
+// head draw and both function_259d0 draws 413 (1866 B); +0x38 named early with the other limits for its two uses 375; that
+// with the second draw through function_259d0 (retail's second draw is the x87 one) 412; the first output named as a
+// vector pointer for its store and the three sums, on this body, 376 (1854 B). Retail reads +0x10, +0x14/+0x18, +0x1c,
+// +0xc and +0x38 after the sign step and stores the seed once after the three draws. BLOCKED-BY 0x210850 as above. Body
+// unchanged.
+// M3 lane 11 r163 (H2M_FAST with 0x1fe410, 0x210850 and 0x2104b0 listed; control 373, difflib-aligned 324; body
+// unchanged). Reading of the entry: the allocator gives ESI to the random-state pointer (63), which this build keeps
+// from the head draw to the three later draws across the calls between them, and ranks the third input far below it
+// (3, or not worth a register), so the third input is reloaded from its stack slot; retail loads the third input into
+// ESI at the entry and reads the random-state global again into ECX ahead of the 0x1fe410 test and after that call.
+// Diagnostic, removed at once: an undefined function called after the 0x1fe410 statement 393 (1852 B): the third input
+// then sits in ESI from the entry as retail (the state pointer cannot live across the call); the same call inside the
+// 0x1fe410 arm 431 (1865 B, no change at the entry). Forms: the +0x1c limit named for its test and the 0x1fe410
+// argument 437 (1866 B); the sign step's state through the global, no pointer local 423 (re-measured); the +0x7a word
+// read into a local ahead of the actor lookup 426.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

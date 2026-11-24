@@ -239,6 +239,30 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // the lower address loads first); on the kept body: each stick prepared in turn (quadrant, offset, magnitude) 415 (2028
 // bytes); the second offset ahead of the first 25; each stick's snap step in its own block scope 25; both angles declared
 // at the top of the controller block and assigned at the atan2 25 (all three the same code). All restored.
+// Round 173 (m3 lane 12; fast unless marked): the two hoisted loads follow the first reference to each constant in the
+// loop body, in the full link as well, so the link-order reading above does not hold: a probe store of `raw x * scale`
+// into the output block at the loop top gives retail's load order plain and fast (482, the store is extra code), one
+// between the trig and the maximum too (552), one at the end of the body does not (496). Retail's source reaches the
+// scale before the first `1.0f /` without emitting code there; a one-use value is forwarded behind the reciprocal, so
+// the reference has to survive forwarding. On the fabs-at-each-use 2 form: both sticks' axes stored as `raw * scale`
+// ahead of the angle, then boosted and clamped 562 (1988 bytes, products ahead of the trig). On the kept body: the first
+// offset read through a `real const &` before its fabs 2 (the offset block and angle homes become retail's, as the
+// at-each-use form; a steering form, kept only with a match); on the 2 form, an unused `raw x * scale` local ahead of
+// the angle 550 (1996 bytes, no flip: a dead reference does not count). Body unchanged.
+// Round 228 (m3 lane 6, fast, all on the fabs-at-each-use 2 form): products as `raw / 32767.0f / maximum` (reciprocal
+// made by the compiler) 20; the clamp testing the upper bound first 45; products as `boost * scale * raw` 2 (same
+// code); the first stick's raw coordinates named as float locals for atan2 and the products 535; products as
+// `raw / maximum * scale` 20. 1.0 still loads first in every form.
+// Round 181 (m3 lane 16, h2m fast, all on the fabs-at-each-use 2 form): a `real` scale local at the function top (ahead of
+// the loop) 2 (folded); products as `raw * scale * reciprocal` with the named reciprocal 2; products ending `/ 32767.0f`
+// 2 (made the same multiply); the maximum named and the products as `raw / maximum / 32767.0f` 20 (the compiler's
+// reciprocal then multiplies the coordinate from memory, registers move; 1.0 still first); the maximum as a local set
+// by an `if` 7. 1.0 still loads first in every form.
+// Round 230 (m3 lane 8, h2m fast, all on the fabs-at-each-use 2 form): products as `raw * scale / (s > c ? s : c)` with the
+// maximum written in place 541 (2020 bytes); the boosted products stored into the axes and clamped in place afterwards 525
+// (2028 bytes); the scale as `(real)(1.0 / 32767.0)` 2; the maximum as an if/else local 2; the trig magnitudes written in
+// place in the maximum 2 (all three the same code). 1.0 still loads first; retail reloads only the scale (xmm7) near the
+// loop's end, 1.0 stays in xmm6, so the two entry loads are the only difference left.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

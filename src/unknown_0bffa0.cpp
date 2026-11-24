@@ -1357,6 +1357,24 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // re-measured 562 (2815 B), with y stored first 560 (2817 B); the sphere arm's bounds call given the literal 4 for the
 // point count 600 (2777 B). Retail's cone arm holds 1.0 in XMM6 from the scale store
 // through the reciprocal (ours XMM4, the divide hoisted into the centre projection). Body unchanged.
+// M3 lane 6 r229 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the cone corners'
+// four x0..y1 locals dropped (bounds stored, the points read back from the bounds) 486 (2809 B: the sphere arm's cross
+// products reorder, so the operand ranking follows the symbol numbering); the half extents written into the four corner
+// expressions 576 (2800 B); the projection helper in 0x1427f0's own spelling (x, y, z, `inverse * x`, rows k, j, i) 290
+// (same code); the face row named for the four projections 481 (2814 B); the entry's point array named for the four
+// projections and the bounds call 555 (2798 B).
+// M3 lane 8 r228 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the sphere left
+// axis crossed and normalized in a local vector, then assigned 590 (2822 B); the up axis negated into a local vector
+// 625 (2862 B); the forward cross into a local vector 585 (2857 B); the cone half extents as `0.5f * (width * scale)`
+// 600 (2777 B); the cone reciprocal computed before the centre projection 597 (2780 B). Body unchanged.
+// M3 lane 11 r161 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the cone plane test
+// as `0.0f < origin_offset` 290; the tail flags in member order (84, 85, 8c) 290; the entry as `entries + i` 290; the cone
+// depth as `origin_offset + far_distance` 290 (all the same code); the sphere depth stored after the up negate 411
+// (2831 B). Body unchanged.
+// M3 lane 15 r142 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the projection
+// helper's three row statements in other orders (the operand sorts follow the order values are first defined): up,
+// forward, left 491 (2812 B); left, forward, up 295 (2832 B); up, then the perspective scale, then forward and left 502
+// (2798 B); up, left, forward 318 (2831 B); forward, up, left 491 (2809 B). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1548,6 +1566,10 @@ point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *p
 // the one-use weapon-marker bool removed alone 156 (1007); the marker declared in the else arm 8
 // fast (the forward load moves ahead of the position copy); the parameter-address local declared
 // before the marker 2 plain (the same tie).
+// M3 lane 16 r181 (each fast MATCH unless marked, then plain): the flags read declared ahead of the definition 2; the
+// marker aggregate declared after the flags 2; the weapon-marker bool ahead of the marker-name call 2 (same code); the
+// definition local renamed to sort after `light` 2; 0xc28b0's argument read through the parameter-address local 151
+// fast, 153 plain (1013 bytes). The reduced image's CAVEAT names callee 0x16a8e0 as building differently there.
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {

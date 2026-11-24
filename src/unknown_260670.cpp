@@ -345,6 +345,40 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // the 0x2600a0 call 604 (same as the call alone). Diagnostic, restored: `inline` on 0x262a30's definition 499 (3191 B,
 // 0x13e2d0 expands too; 0x2623a0 stays 65). Retail's expanded owner lookup with 0x13e2d0 still a call fits an
 // auto-inlined 0x262a30, which its /Ob1 file prevents (a flags question). Body unchanged.
+// M3 lane 14 r148 (H2M_FAST with 0x2600a0, 0x2605d0, 0x2613d0, all MATCH; control 440): on lane 15's packed form (the
+// within-limit test named once for its two uses, the sort scratch in its own block; re-measured 565, frame 0x8a0, the flags
+// at +6/+7 in the opposite order): the flags renamed so their alphabetical order flips 565 (same code, four name pairs);
+// the two flag declarations exchanged 563 (3081 B: both flag bytes at retail's +6/+7; `result` still sorts above the
+// scalar cells, +0x14 against retail's +0x8); that with the `selected == NONE` return after the if/else 563 (3061 B); with
+// the first evaluator pass as `function_2600a0(actor_index, context, NULL)` 489 (3057 B, first +0x3b); both 503 (3037 B).
+// Diagnostic (held form, restored): the exchanged form with `inline` on 0x262a30's definition 519 (3191 B; 0x13e2d0
+// expands too, 0x2623a0 65): the actor takes retail's home and only result/selected stay swapped, so retail's slot order
+// fits the owner lookup's expansion adding references to `result`.
+// M3 lane 12 r181 (H2M_FAST with 0x2605d0/0x2613d0 MATCH; control 440): `result` declared at the chosen reference's
+// read, the two early returns returning g_470fa0 622 (3082 B); the best score declared at the top of the sorted path
+// 636; the count-0 history reset as a counted `for` over the six-byte slots 800 (3114 B); both history resets through
+// one file-local helper, forceinline 628 (3097 B), plain inline 793 (3049 B). Still BLOCKED-BY 0x262a30 (retail
+// expands the owner lookup here; its /Ob1 file allows that only with `inline` on its definition, a held form).
+// M3 lane 7 r224 (fast screen with 0x2605d0, 0x2613d0, 0x2600a0, all MATCH each run; control 440 at 3097 B, aligned 292,
+// register-and-slot-masked 132). Read from retail: every failing path ends in one shared exit (`mov eax, [result]` and
+// the epilogue), and the random path's success jumps into the sorted path's `selected` test while its failure jumps to
+// that exit, the jump-threaded shape of a failure that clears the selection ahead of one shared test. Forms: the random
+// path's failure as `selected = NONE;` with the `selected == NONE` return after the if/else 550 at retail's 3077 B
+// (aligned 283, masked 121); plus the first evaluator pass as the existing 0x2600a0 call 600 (3050 B, 244/115); plus the
+// sort scratch in a block of its own 583 (3050 B, frame 0x8a0 as retail, first difference +0x2a, 197/110); plus the
+// within-limit test named once for both uses (lane 15 r124's form) 418 (3050 B, 210/114), with the flag declarations
+// exchanged 418 (same code); without the inline expansion of 0x262a30 the length gap is the owner lookup's. Leave one
+// out of those five (clear, shared test, call, scoped scratch, named test): without the clear 503 (3037 B), without the
+// shared test 473, without the call 528 (3077 B), without the scoped scratch 456 (frame 0x8a4), without the named test
+// 583; subsets: shared test, call and named test 515; call, scratch and named test 489; call and named test 505 (3077
+// B); named test alone 582; shared test and named test 582. Not kept: the 418 needs all five, and the scoped scratch (a
+// declaration moved into a block) and the cleared selection tested later are match-only forms; the named test is a
+// `sete` byte where retail branches directly. Diagnostic (held form, restored): `inline` on 0x262a30's definition on
+// the 418 form 519 (3144 B; 0x13e2d0 expands with it, 0x2623a0 stays 65). Frame map of the 583 form (allocator view):
+// the flags pack at +0/+1 with the scalar cell above them, where retail has the loop counter's cell at +0 and the flags
+// at +6/+7; retail's cell needs more references than either flag (retail's owner-lookup expansion puts its result local
+// in that cell). Left on the 418 form: the unknown4c store's place, two x87 square orders in the unknown40 loop, the
+// scale operand sides, the perpendicular block's subtract order, and the named test's `sete`. Body unchanged.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

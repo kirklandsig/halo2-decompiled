@@ -56,9 +56,12 @@ bool function_11eed0(
 	}
 	else
 	{
-		double x = fabs(distance) * acceleration_limit;
-		x = x + x;
-		real speed = x >= speed_limit_squared ? speed_limit : (real)sqrt(x);
+		/* the speed that stops within the distance at the acceleration limit (v * v = 2 * a * d), capped at the
+		   speed limit; the product is written at both uses, with no named double local: one here makes this
+		   function's LTCG callers keep 8-byte stack parity (a padded frame and register saves at entry, as noted
+		   at function_11f0d0 below), and retail's 0x166d75 shows neither */
+		real speed = fabs(distance) * acceleration_limit * 2.0f >= speed_limit_squared ? speed_limit :
+			(real)sqrt(fabs(distance) * acceleration_limit * 2.0f);
 		if (0.f > distance)
 			speed = 0.f - speed;
 

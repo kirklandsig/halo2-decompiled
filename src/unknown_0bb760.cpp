@@ -448,7 +448,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
-// score 77 (was 77; 97 before that): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
+// score 77 (was 77): The pre-guard ordinal store, scan count and mask homes, and signed weight-scan exits still differ.
 // Earlier comparison 97 (from 123). The object and tint entry exchange EDI and ESI.
 // MiniMax A (11-20): no new form, no lower score (77): the first difference is still the index's zero store, which sinks after the outer guard's jle here and stands before it in retail; a form with the store in retail's place (the index declared before the guard, or no explicit guard) measures 97 and swaps the object's ESI/EDI role with the tint-bank pointer, and signed `<` comparisons in the first scan trigger VC's unrolling (636 and 237), so the kept 77 form has retail's registers with the store in the wrong place.
 // the index's zero store sinks after the outer guard's jle; in the first scan the count is spilled
@@ -495,8 +495,8 @@ void function_3dd10(long object_index, bool force);
 // two conversions first, then the inverse) the blend takes retail's slot, the found block matches retail's
 // code step by step and the clamp entry orders its zero and its one the way retail does, but the
 // not-found path joins the clamp entry's load instead of carrying its own copy of the one (132) and the count
-// test and the first scan's exit still differ, so the body stands; merging the second fabs into the fmod call
-// scores 86 and leaves the blend in the seed's slot.
+// test and the first scan's exit still differ, so the body stands; merging the second fabs into the fmod call scores
+// 86 and leaves the blend in the seed's slot.
 // MiniMax B (11-13): no new form, no lower score (84): aligned the two listings instruction by instruction: the first scan
 // leaves on a signed less-than bound (retail's jle and jl against this build's je and jne), and writing that scan with
 // the less-than bound unrolls it by four here (637); the blend keeps the seed's home (esp+0x38) where retail keeps it at
@@ -976,6 +976,90 @@ void function_3dd10(long object_index, bool force);
 // Typed object view at the tag, position, bank fields or variant read 77 each.
 // Typed position and variant, tag and bank, tag/bank/position, or all reads 77 each.
 // NOT kept: the object view leaves the pre-guard ordinal and the scan homes unchanged.
+// Round 463. Positive choice count via conditional, condition declaration, explicit negative floor, or
+// empty-default assignment 237/237/267/227. With signed first-scan bounds 652/652/672/645. NOT kept:
+// signed first scans unroll and the bank ordinal and choice-count homes remain different.
+// Last ordinal name 77, total and variant names 77, all three 77, separate scan ordinal names 77,
+// both sets 77. Signed completed-choice bound 61, count first 170, scoped remainder and variant
+// scratch 77. NOT kept: the 61 form restores the count and mask homes, but compares a second ordinal
+// one ahead of the scan index, and the ordinal store still follows the bank guard.
+// M3 lane 12 r175 (H2M_FAST with 0x1318d0, 0x131a00, 0x3dd10, all MATCH; control 77; R = the rolled form: enclosing test
+// `0 < choice_count`, scan `for (long j = 0; choice_count > j; ++j)`, blend through `fmod(seed, 1.0f)`, re-measured 74 at
+// 1034 B, the mask in EBP and the count spilled to +0x10, the weight in the colours home): on R, the selection loop testing a
+// copy of the mask taken just ahead of it 83 (mask still EBP); the guard on `entry->count` with `choice_count` declared
+// inside it 74 (same code); the scan sum as `weight = choice->weight + weight` 74 (same code: retail's choice-first add is
+// not an operand-order spelling); the selection guarded again by `0 < choice_count` 74 (folds); the four accumulators
+// declared ahead of the count (their stores hoisted above the guard) 315 (999 B). A 600 s annealing permuter run on this
+// body (67 tries) found nothing below 77. Body unchanged.
+// M3 lane 15 r134 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77, aligned 34; R = r280's rolled form
+// with the float remainder and the outer guard, 74; N = R without the outer guard, 95 [61]). LEAD: any one of the mask,
+// `last` or `variant` given its value ahead of the choice-count test (declared just before `long choice_count`) gives
+// the count EBP, the mask the dead colours-argument home and the weight +0x10, as retail: on R the mask 147 [18]; on N the
+// mask 139 [16], last 138 [16], variant 139 [15]; with the variant and one redundant paren pair `((real)i)` 135 [11]
+// (the weight add and the fstp/fld order become retail's; two pairs 150 at 1019 B, three 135). Left there: that zero
+// store sits before the count test's `jle` (retail: in the arm) and the not-found exit's own 1.0 row. Tried for the
+// store: the mask declared at function scope and zeroed in the arm 74 (on R, same code: the def's place decides); the
+// count tested as `0 < entry->count` with its local assigned after the accumulators 95 (N); the weight zeroed first 278
+// (1012 B); the count read ahead of the default colour copy 238; one `j` for both loops 95; the scan index zeroed ahead
+// of the count test, scan as a while, 113 [76]; paren pairs on N 95/195/95. On the mask-first form the weight update as
+// `choice->weight + weight` 147, before `last = j` 141 [17], after the mask 139. After the round's full check, on N with
+// one paren pair: a dead first `variant = 0` or `eligible = 0` ahead of the count read with the arm's own zero kept 95/95
+// (the dead def is removed before allocation; only a live range reaching the count test flips EBP). Patch of the 135
+// form: build/r134 of m3 lane 15. Body unchanged.
+// M3 lane 2 r140 (h2m fast with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77): lane 15 r134's 135 form E rebuilt
+// (no outer guard, count-first rolled scan under `0 < choice_count`, float remainders, the variant zeroed ahead of the
+// count, `((real)i)`): 135 at 1034 B with two differences left, masked or not: the variant's zero store before the
+// count test's `jle` (retail: in the arm) and retail's `movss xmm5, 1.0` ahead of the count reload at the selection
+// loop's not-found exit (ours reloads the count first, then jumps into the clamp entry's shared 1.0 load). On E: the
+// selection increment in its condition 135 and the eligibility guard as two nested ifs 135 (both the same code); the
+// selection latch count first 137 (`jg`); the mask zeroed ahead of the count too 260; the mask declared ahead of
+// `last` 134. Body unchanged.
+// M3 lane 16 r178 (H2M_FAST with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77; R = `0 < choice_count`, the scan as
+// `for (long j = 0; choice_count > j; ++j)`, `fmod(seed, 1.0f)`, re-measured 74). Retail's clamp block has three entries
+// (0xbe30c zero, 0xbe30f the 1.0 load, 0xbe317 the compare): the found and not-found exits enter at the compare with
+// XMM5 = 1.0 already set, so the not-found exit loads 1.0 on its own edge; ours enters at the load. On R: the mask typed
+// long 74; the selection loop's latch as `while (choice_count > j)` 74; the scan stepping a choice pointer (`++j, ++choice`)
+// 156; the weight test as `0.0f < weight` 74; the selection test as `target <= cumulative` 74 (same code each but the
+// pointer). Body unchanged.
+// M3 lane 13 r149 (H2M_FAST with 0x1318d0/0x131a00/0x3dd10, all MATCH; control 77). Diagnostic (a probe global and
+// chained dead-weight products, reverted at once): on the signed `j < choice_count` scan (636, unrolled), 8/24/48 live
+// float temporaries computed ahead of the scan 757/998/1326: the weight turns memory-resident (retail's add from its
+// home) but the scan stays unrolled, so register pressure is not what keeps retail's scan rolled. Forms: the outer loop
+// bound written count first (`count > i`) 77 (same code); on the rolled form with both remainders through the float
+// overload (186) 74, on the rolled form with only the blend's (74) 186 (the outer bound and the second float remainder
+// each toggle the selection loop's choice-first add: a phase, not kept); on the latter the variant left uninitialised and
+// zeroed in an else arm of the model test 234 (1042 B), the weight declared just ahead of the first scan 293 (974 B).
+// Body unchanged.
+// M3 lane 11 r162 (H2M_FAST with 0x131c20/0x1318d0/0x131a00/0x3dd10, all MATCH; control 77, difflib-aligned 34). LEAD: the
+// HSV blend is the existing function_131c20 (rgb/hsv interpolation, flags 1, t = blend); retail inlines it, and our LTCG
+// inlines it only with no outer guard and a `for` scan: on main it stays a call 399 (838 B); with no guard 398, float fmod
+// 397, the `for (j; choice_count > j;)` scan 440, no guard + for 220, + fmod 218, + `0 < choice_count` 95 (1034 B,
+// inlined), fmod + for 439, + `0 <` 397. With it inlined the natural `for (long j = 0; j < choice_count; ++j)` scan stays
+// rolled: no guard, float fmod, that scan, `choice_count > 0`: 195 at 1034 B (masked 29; count still spilled, mask in EBP);
+// with `0 < choice_count` 218 (1002 B). Lane 15 r134's 135 form with the helper, with or without its paren pair: 137
+// (aligned 13: the variant's zero store ahead of the count test's jle, and retail's 1.0 load on the selection loop's
+// not-found edge, where ours jumps back into the clamp entry's load). One to eight unused initialised locals at the top
+// of that form 137 each (no effect); on it, the selection loop as `for (long j = 0; j < choice_count; ++j)` with the break
+// 153 (aligned 40), the clamp rows through a `color3f *current = &output[i]` 152 (1019 B, aligned 8: only the selection
+// add's operand form toggles; the variant store and the 1.0 edge load stay).
+// The bank ordinal still sinks below the entry guard; count and mask homes remain different. Empty-bank single exit 197, guarded while 77, tint block reference 86, admitted tint base 311.
+// Returned HSV inputs 200, returned RGB bank color 309, shared absolute/signed hue difference 184, two signed half-turn bounds 203.
+// NOT kept: the guarded while ties. The single exit puts the ordinal store in place and swaps the saved object and tint registers.
+// M3 lane 12 r184 (h2m fast with 0x1318d0/0x131a00/0x3dd10/0x131c20, all MATCH; control 77). On lane 16's R form the choice
+// count loses EBP to the eligible mask by two priority points (2 against 4) and stays uncoloured; the first scan block
+// references three constants (NONE for `last`, 0, and 0xff for the variant byte test). R re-measured 186 (1034 B); on R
+// the eligible arm's statements reversed 186, `weight > 0.0f && eligible` 188, the selection latch `choice_count > j` 186,
+// the selection loop as a `for` 93, one `j` for both loops 74. LEAD: the variant byte read as `char` and tested against
+// NONE (the 0xff folds into NONE's constant) flips the ranking to retail's: count in EBP, the mask in the colours
+// argument's dead slot, the count test, variant lookup and first scan identical to retail (151 at 1019 B on R, 140 on
+// this body alone); + the selection add as `choice->weight + cumulative` 151 (same code); + the outer index zeroed ahead
+// of the guard 143 (head identical); fmod overloads: selection double 130, blend double 133, both 146; the outer bound
+// as `count > i` 128 (1034 B, the selection add retail's). Without the outer guard (`for (long i = 0; count > i; ++i)`)
+// 143, and with the found block's blend through the existing function_131c20 (flags 1, t = blend; expanded) 128 at
+// 1034 B: only retail's own 1.0 load on the selection loop's not-found edge is left (ours jumps to the clamp entry's
+// load), with the outer guard kept it stays a call (373). On that form the selection loop as a `for` 148, the clamp
+// through a file-local inline pin 263. No single forced allocator decision gives the edge load (a block-shape
+// difference: retail's found and not-found exits join before the `weight <= 0` path does). Body unchanged.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
