@@ -937,50 +937,101 @@ static __forceinline void solve_linear_friction(float target, float &limit,float
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,__m128 *const & angular_b_pointer, __m128 &linear_b, __m128 const *const &inverse_b_pointer,
 	solver_step_31c940 *const &step, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
 {
-	// Preserve the A-side projection inputs before the limit can replace a row lane.
- __m128 relative=_mm_sub_ps(a->linear,linear_b);
- __m128 angular_a=_mm_mul_ps(a->angular,row->a);
- __m128 projected_linear=_mm_mul_ps(relative,row->linear);
- limit=next_limit;
- // B angular operands belong to the phase after limit publication.
- __m128 angular_b=_mm_mul_ps(*angular_b_pointer,row->b);
- __m128 projected=_mm_add_ps(_mm_add_ps(angular_a,angular_b),projected_linear);
- sum_three_to_arena_31c940(projected,projection_pool.linear_friction);
+ struct { __m128 first;
+	 __m128 second;
+	 } work;
+
+__m128 temporary;
+	 __m128 contribution;
+	 __m128 axis;
+
+ // Reuse the two consumed projection values for the body weights.
+	work.first=linear_b;
+	work.second=a->linear;
+	temporary=row->a;
+
+ work.second=_mm_sub_ps(work.second,work.first);
+	work.first=a->angular;
+	work.first=_mm_mul_ps(work.first,temporary);
+
+ temporary=row->linear;
+	work.second=_mm_mul_ps(work.second,temporary);
+
+ // A projection inputs precede this publication; B angular inputs follow it.
+	limit=next_limit;
+
+ contribution=*angular_b_pointer;
+	temporary=row->b;
+	contribution=_mm_mul_ps(contribution,temporary);
+
+ work.first=_mm_add_ps(work.first,contribution);
+	work.first=_mm_add_ps(work.first,work.second);
+
+ sum_three_to_arena_31c940(work.first,projection_pool.linear_friction);
+
 	float impulse = (target * (*friction_scale_pointer)
 		- projection_pool.linear_friction * load_velocity_scale(step)) * row->a.m128_f32[3];
+
 	float magnitude = (float)fabs(impulse);
+
 	if (magnitude > limit)
 	{
 		float factor = limit / magnitude;
-		impulse *= factor; row->linear.m128_f32[3] *= factor;
+
+		impulse *= factor;
+	 row->linear.m128_f32[3] *= factor;
+
 	}
-	// Round the SIMD input once, retaining the extended impulse for accumulation.
-	__m128 inertia_a=a->inverse_inertia;
-	float &rounded = simd_scratch;
-	rounded = impulse;
-	__m128 scalar = _mm_load_ss(&rounded);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
-	__m128 scalar_b = _mm_load_ss(&rounded);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar_b, scalar_b, 0), *inverse_b_pointer);
-	// Retain B angular before either linear or angular write can redirect its home.
+
+ // Retain the extended impulse for accumulation, rounding only its SIMD copy.
+	temporary=a->inverse_inertia;
+
+ simd_scratch=impulse;
+
+ work.second=_mm_load_ss(&simd_scratch);
+
+ work.first=_mm_shuffle_ps(work.second,work.second,0);
+	work.first=_mm_mul_ps(work.first,temporary);
+
+ temporary=*inverse_b_pointer;
+
+ work.second=_mm_load_ss(&simd_scratch);
+
+ work.second=_mm_shuffle_ps(work.second,work.second,0);
+	work.second=_mm_mul_ps(work.second,temporary);
+
+ // Capture B angular before either body can replace its saved home.
 	__m128 *angular_receiver=angular_b_pointer;
-	// Capture both linear contributions before either body write.
-	__m128 linear_contribution[2] =
-	{
-		_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear),
-		_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear)
-	};
-	a->linear = _mm_add_ps(a->linear, linear_contribution[0]);
-	linear_b = _mm_sub_ps(linear_b, linear_contribution[1]);
-	// Capture both angular contributions before either body write.
-	__m128 angular_contribution[2] =
-	{
-		_mm_mul_ps(change_a, row->a),
-		_mm_mul_ps(change_b, row->b)
-	};
-	a->angular = _mm_add_ps(a->angular, angular_contribution[0]);
-	*angular_receiver = _mm_add_ps(*angular_receiver, angular_contribution[1]);
-	*result += impulse;
+
+ axis=row->linear;
+
+ temporary=_mm_mul_ps(_mm_shuffle_ps(work.first,work.first,0xff),axis);
+
+ contribution=_mm_mul_ps(_mm_shuffle_ps(work.second,work.second,0xff),axis);
+
+ axis=a->linear;
+	axis=_mm_add_ps(axis,temporary);
+	a->linear=axis;
+
+ temporary=linear_b;
+	temporary=_mm_sub_ps(temporary,contribution);
+	linear_b=temporary;
+
+ temporary=row->a;
+	work.first=_mm_mul_ps(work.first,temporary);
+	temporary=row->b;
+	work.second=_mm_mul_ps(work.second,temporary);
+
+ temporary=a->angular;
+	temporary=_mm_add_ps(temporary,work.first);
+	a->angular=temporary;
+
+ work.first=*angular_receiver;
+	work.first=_mm_add_ps(work.first,work.second);
+	*angular_receiver=work.first;
+
+ *result+=impulse;
+
 }
 
 // Select the active angular limit before the shared body-update tail. The
