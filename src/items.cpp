@@ -967,6 +967,10 @@ struct s_item_collision_bsp
 // Shared basis rotation into the plane, separate normal, separate normal through distance, early scaled
 // distance or in-place queried plane 336/312/333/336/303. NOT kept: the shared rotation forms change
 // sum grouping and shorten the body. The normal and contact-point XMM homes still differ.
+// The transformed plane coefficient homes and the pending x87 factor still differ. Late axial,
+// fallback or both factor assignments 233/233/232, with a separate raw third component
+// 233/233/232. Separate raw third component alone 190; finishing its product at angular output
+// 186. NOT kept: the latter reaches 1362 bytes but gains four, below the keeper threshold.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1327,6 +1331,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // forward scalars 151 each; separate weighted cross 267, staged cross with common weight 267,
 // scaled-axis initializer 206 and scaled coefficients 206. NOT kept: the 151 forms recover 0xb4
 // and 848 bytes but raise the score. The initial alignment and scaled-axis register order still differ.
+// The 0xc0 frame and scaled-axis spill remain. Cross contribution before projection, with direct,
+// staged, returned or staged-and-scaled cross into a separate vector 206/206/228/231; into the
+// result workspace 190/190/228/228. NOT kept: both workspace families grow the rotation, and
+// neither recovers the 0xb4 frame or the initial alignment-product order.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
