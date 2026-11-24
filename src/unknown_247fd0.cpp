@@ -1063,6 +1063,17 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // in EDI and tests it; ours compares memory through a reload); the bit-4 test as a plain `& 0x10` mask 334 (still
 // `shr al, 4; test al, 1`); the blend's x row written like y and z 334; y and z written like x 334 (same code in every
 // one). Body unchanged.
+// M3 lane 6 r237 (h2m fast with 0x247fd0/0x248cc0, both MATCH each run; control 334, aligned/masked 188/72 by a
+// difflib count): the blend as its own point3f re-measured 406 (as lane 4 r247); the 0x173ba0 call and the
+// mask OR through the existing method 0x173c10 (`function_173c10(0xf80f)` on the value cache) 334 (same code: it expands
+// to main's instructions); the 3-bit draw stored as an explicit `& 0x1fff | draw << 13` 334 (same code). The sibling
+// 0x247fd0's spellings together (in-loop particle_object_for_tag, if/else reciprocal, `local_2 != field_50` with field_50
+// stored first) with the blend as a point3f and the first draw in `last_sample`: 415 at 1664 B, frame 0xa0 [145/62]; plus
+// that sibling's named tag/effect index locals and `(short)` ordinal in the 0x173fd0 call 414 at 1660 B [140/56]; plus the
+// collision result padded to 0x5c (diagnostic wrapper) 412 at 1660 B, frame 0xb0 [133/54], the definition then in EDI as
+// retail (home +0x18 vs +0x1c). Left on that shape: retail keeps the three scaled rows and the three blend sums in
+// XMM2-4 and stores them after (the else arm's add-scaled reads the scaled rows from XMM2-4), ours stores each row at
+// once; the blend sums as `position.x += field` then one aggregate store 461 (1692 B). Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
