@@ -455,6 +455,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // code); the send test written `!local_8 && (callback || window)` 419 (1356 B); the connection pointer bound by a const
 // reference 409 (1378 B). Diagnostic, reverted at once: the owner query's result cast to a byte at its test 355 (only
 // the `test al, al` row: retail truncates the 32-bit result there). Body unchanged.
+// M3 lane 6 r239 (fast with 0x75910/0x76520/0x765c0/0x77940, all MATCH; control 356, aligned 195): the payload floor nested
+// under one sign test with local_16 beside local_7 405 (1369 B), with the zero-rate exit as `return local_2;` 404 (1355 B),
+// with both 405; lane 4 r253's three pieces re-measured 356 (1372 B), with the nested floor 350 at 1369 B (aligned 177:
+// `this` EDI, zero EBX and the index EBP as retail, frame 0x30 for 0x34; a lead, it needs the match-only flag form), with
+// local_16 moved too 368; that 350 form with every channel field read through `channels[local_0]` 417 (1381 B). Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
