@@ -938,6 +938,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // The clearance, hit and range slots still differ. Rejected-ray counts in long/short/byte 662/675/664;
 // remaining clear count 675; rejected-ray masks in dword/word/byte 682/694/674; remaining clear mask 719.
 // NOT kept: the counts and masks change the retail byte lifetime and shorten the body.
+// The clearance byte, hit slots and range still differ. A cursor on the actual ray-length array,
+// with long or dword index and equal-end or upper-bound tests: for 561 in all four forms, do-while 556 in all four.
+// NOT kept: each drops the frame from 0x108 to 0x104 and shortens the body.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -7125,6 +7125,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Independent transpose values 959, stage three 1032, stage six 1032, stage the two forward coefficients 969,
 // up pairs first 971, reciprocal-side reads first 971, forced inline 959, and forced inline with six staged 1032.
 // NOT kept: every form leaves frame 0xfc versus 0xd8 and ties or raises the score.
+// The 0xfc frame, index and header displacement still differ. Select the computed flip or ordinary basis
+// by address: conditional 1260, assigned in the two arms 1260, ordinary default 1259, late ordinary assignment 1244.
+// Independent scoped relative output with library flip copy, state copy or both 1129 each. Relative output
+// at the transpose with the library flip copy 1031. NOT kept: frame 0xf4 for the selected-address forms,
+// 0xdc for the scoped result and 0xfc for the transpose declaration. Every form shortens and raises the score.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

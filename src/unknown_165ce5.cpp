@@ -2168,6 +2168,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // The unit and mode slots still need retail order. Three-state overlay in enum/byte: nested promotion 420/421,
 // eligible selection 413/423, exclusive selection 424/407, nested conditional 424/407.
 // NOT kept: every result shortens the body and raises the score.
+// The unit and mode slots remain exchanged. Unit receiver scoped through the aiming springs or all four springs,
+// with its vector address acquired before the mode call, before the first spring, between springs or after aiming:
+// 562/190/190/172 in each scope. NOT kept: early address acquisition shortens and raises the score.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
