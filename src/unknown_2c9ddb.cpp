@@ -527,6 +527,9 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // with shared copy destination 173, failure-first with copy destination 188 or private template 178,
 // eligibility disjunction with copy destination 179, separate dispatch returns with copy destination 179,
 // common screen dispatch with private template 196. NOT kept: receiver allocation and frame layout differ.
+// Keyboard mode produced by the two successful decodes. Guarded assignments or
+// conditional results give long 167/173, short 172/179, word 172/179, enum 167/173.
+// NOT kept: the frame loses its 0x70 bias and the score rises.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

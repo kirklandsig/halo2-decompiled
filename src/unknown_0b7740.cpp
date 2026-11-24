@@ -1270,6 +1270,24 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // (830 B, other code); the node loop's counter declared ahead of the loop 240, the final test with explicit `!= NULL` and
 // `!= 0` 240 (same code each). Forcing single allocator decisions (24) never matches (best 239); leaving `object` out of the
 // registers gives retail's 0x4c frame but 259. Body unchanged.
+// M3 lane 11 r166 (h2m fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout, and 0xbd090 at its 20;
+// control 240, with registers and stack offsets masked 67). Lane 4 r225's lead rebuilt 170 (826 B, masked 43). Allocator
+// reading on it: the matrices parameter's entry value (live to the final_matrices store) is coloured ahead of object_index
+// and takes ESI because EDX carries a penalty at that point; forcing that one pick to EDX gives 111 at retail's 856 B, and
+// `definition` one priority point lower leaves it in memory as retail (stored at once). LEAD 111 (842 B, masked 26;
+// build/r166/lead-0xbd610-111.patch): the lead with final_matrices declared after the mask copy instead of ahead of it:
+// the parameter then takes EDX, object_index ESI, the +0xb3 byte BL and `definition` is stored at once, as retail, with
+// retail's 268 instructions; with `sample` declared after matrices and orientations, or between them, 110 each
+// (lead-0xbd610-110.patch). Left on it: the table in EDX at entry where retail has ECX (so retail loads the parameter
+// second and reads the object through the header), `sample`'s false through a zeroed AL where retail stores the
+// constant (retail keeps model + 0xa4 in EAX across the copy and stores it after the flag test), and the scratch registers
+// from there on one step round (the flags word for the bit-30 clear in EAX for retail's EDI). Match-only (the moved
+// declaration and the lead's bit-29/+0x34b read through header->object), so not kept. On the 111 form: the plain `&=`
+// clear 253 (869 B, frame 0x50); the loop test as `node < render_node_count && !sample` 216 at 856 B (masked 34: the
+// constant store is retail's but the loop tests the count at both ends); the loop with a break 283. On the 170 lead:
+// `definition` as a byte pointer read at +0x38 and [0] 170 (same code); a second pointer local from header->object for
+// the two tests, declared inside the bit-30 arm, 170 (same code); the first early test as its own return 300 (820 B);
+// the node count divided by a `long` size 286 (823 B). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
