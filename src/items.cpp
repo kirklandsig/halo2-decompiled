@@ -974,6 +974,10 @@ struct s_item_collision_bsp
 // Coefficient-first products across all left, up and forward rows, separately and in every combination,
 // 190 each. All three axes with coefficient-first translation products 190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
+// Native basis-axis references for left, up, forward, each pair and all three score 190.
+// The embedded basis reference also scores 190. Reading j/k/i once with the left-axis or
+// embedded-basis reference scores 190/190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1341,6 +1345,12 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
 // separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
 // NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
+// Address-free normalized coefficients or scaled scalar numerators with member stores,
+// the shared setter, or named rows and a setter score 159 each. Complete aggregate
+// publication scores 204 with either producer. Shared or paired alignment on the
+// address-free axis scores 159/172.
+// NOT kept: the 159 forms recover frame 0xb4 and 848 bytes but score higher. The
+// initial alignment-product order and the scaled-axis registers still differ.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

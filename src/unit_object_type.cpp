@@ -5895,6 +5895,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // before bound tests 66.
 // NOT kept: in-place rate scales gain four at retail length. The angular clamp registers
 // and reused coefficient still differ.
+// Angular bounds from actor/default value selection 210, actor candidates with fallback 208,
+// or explicit test outcomes 209. Separate final rate bounds selected, branched or initialized
+// from rate candidates 133 each. Both joins as selected results 213, or as candidates 200.
+// NOT kept: all grow and score higher. Clamp registers and coefficient reuse still differ.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {

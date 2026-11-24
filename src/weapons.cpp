@@ -4643,6 +4643,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Conditional decay result 1413; named cooling adjustment 1412; one cooling coefficient read 1416; retained cooled heat 1412.
 // Single clamped write 1412; named recovery time or excess heat 1412 each; nested recovery guard 1412.
 // NOT kept: ties and regressions. The 0x34 frame, entry roles and dual spill remain.
+// Retail block order for trigger states, press actions and hold actions 1555/1462/1427.
+// Trigger plus press, trigger plus hold, or both actions 1610/1579/1466. All three
+// 1619, and all three with the retail behavior order 1582.
+// NOT kept: all grow and retain frame 0x34, with the early dual byte still spilled.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

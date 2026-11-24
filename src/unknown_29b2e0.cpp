@@ -921,6 +921,11 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // Round 469: whole-value conditional at the pitch calculation 379. Immediate branch
 // choosing the pitch comparison input 365, and the branch at the angle use 368. Five
 // input and projection name orders tie 130. The projected J/depth stores remain exchanged.
+// Dot-first in-place rotation for yaw/pitch/both 222/130/222. On planar-first
+// initialization the same forms score 222/128/222. Both dot-first rotations with
+// the shared direct or staged side-axis cross score 222 each.
+// NOT kept: the pitch-only rotation gives the same code with either prefix. The
+// planar-first two-point lead fixes the store pair, below the keeper threshold.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
