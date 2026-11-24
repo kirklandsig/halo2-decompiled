@@ -1550,16 +1550,15 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 					float &maximum_squared = scalar_work.pair_b;
 					float &maximum_store = maximum_squared;
 					maximum_store = maximum * maximum;
-					// Capture each mass before its coupled product. These product locals
-					// retain the extended x87 value until addition to the diagonal term.
+					// Capture each mass before evaluating the coupled row.
 					float const &mass_a_source = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3];
 					float mass_a = mass_a_source;
-					float coupled_a = scalar_work.pair_a * operation_float(op, 8);
-					float impulse_a = mass_a * scalar_work.fallback_scalar + coupled_a;
+					float impulse_a = first_coupled_impulse_31c940(mass_a,
+						scalar_work.fallback_scalar, scalar_work.pair_a, operation_float(op, 8));
 					float const &mass_b_source = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3];
 					float mass_b = mass_b_source;
-					float coupled_b = scalar_work.fallback_scalar * operation_float(op, 8);
-					float impulse_b = mass_b * scalar_work.pair_a + coupled_b;
+					float impulse_b = first_coupled_impulse_31c940(mass_b,
+						scalar_work.pair_a, scalar_work.fallback_scalar, operation_float(op, 8));
 					// Retain the first tangential square before adding the second.
 					float norm = impulse_a * impulse_a;
 					norm += impulse_b * impulse_b;
@@ -1890,7 +1889,11 @@ result+=2;
 					float captured_target_a = (float const &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
 					scalar_work.pair_b = captured_target_a * load_friction_scale(step) - projection_pool.spin_first * load_velocity_scale(step);
 					float captured_target_b = (float const &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
-					scalar_work.fallback_scalar = captured_target_b * load_friction_scale(step) - projection_pool.spin_second * load_velocity_scale(step);
+					// Both products precede the limit publication, including aliased scales.
+					double target_product = captured_target_b * load_friction_scale(step);
+					double velocity_product = projection_pool.spin_second * load_velocity_scale(step);
+					state.solving.spin_limit = operation_float(op, 12);
+					scalar_work.fallback_scalar = target_product - velocity_product;
 					// Keep the norm, ratio and limited impulses wider until their stores.
 					// SIMD consumption below has its own explicit float conversion.
 					double impulse_a = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3] * scalar_work.pair_b + scalar_work.fallback_scalar * operation_float(op, 8);
@@ -1899,7 +1902,6 @@ result+=2;
 					// in the x87 norm accumulation.
 					double impulse_spin = scalar_work.first_error;
 					double norm = impulse_spin * impulse_spin + impulse_b * impulse_b + impulse_a * impulse_a;
-					state.solving.spin_limit = operation_float(op, 12);
 					if (norm > state.solving.spin_limit * state.solving.spin_limit)
 					{
 						double factor = state.solving.spin_limit / sqrt(norm);

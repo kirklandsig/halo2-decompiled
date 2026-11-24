@@ -1,4 +1,4 @@
-"""Retail differential coverage of step scales aliased with solver projection outputs."""
+"""Retail differential coverage of step scales aliased with solver scalar outputs."""
 import struct
 
 import pytest
@@ -8,6 +8,10 @@ CASES=[]
 for kind,slot,coefficient in [(2,0x50,'error'),(4,0x4c,'error'),(5,0x74,'error'),(6,0x64,'friction'),(7,0x78,'friction'),(8,0x40,'friction'),(9,0x80,'friction'),(10,0x44,'velocity'),(11,0x6c,'error'),(12,0x54,'error'),(13,0x5c,'error')]:
     CASES.append((kind,coefficient,slot))
     if kind not in [4,5,10]:CASES.append((kind,'velocity',slot))
+
+# The spinning-friction limit shares this home with an incoming scale. Both
+# second-row products must observe that scale before the limit is published.
+CASES.append((8,'friction',0x34))
 
 @pytest.mark.parametrize('kind,coefficient,slot',CASES)
 @pytest.mark.parametrize('precision',[0x7f,0x27f,0x37f])
