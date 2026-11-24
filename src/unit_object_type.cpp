@@ -5691,6 +5691,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // one-use component. The 767-byte forms raise the score. staged k with leading pair copy 99; staged i
 // with trailing pair copy 183; staged i/j with k copy 172; staged j/k with i copy 182; native array copy
 // k/j/i 173; aggregate aim copy 226; separate yaw trig results 169; aggregate direction publication 213.
+// Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
+// Separate queried up with branch publication 218/218, or publication after its correction 211/211.
+// NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5900,6 +5903,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // before bound tests 66.
 // NOT kept: in-place rate scales gain four at retail length. The angular clamp registers
 // and reused coefficient still differ.
+// Angular bounds from actor/default value selection 210, actor candidates with fallback 208,
+// or explicit test outcomes 209. Separate final rate bounds selected, branched or initialized
+// from rate candidates 133 each. Both joins as selected results 213, or as candidates 200.
+// NOT kept: all grow and score higher. Clamp registers and coefficient reuse still differ.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
