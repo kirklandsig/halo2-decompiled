@@ -475,7 +475,7 @@ static __forceinline __m128 apply_first_normal_positive_impulse(float const &sou
 // The first fallback borrows its retained projection axis. The second borrows
 // row storage, which is read after the rounded SIMD input has been published.
 static __forceinline void apply_first_normal_fallback(float impulse, bool retain_linear_destination, __m128 const &linear_axis,
-	solver_linear_row_31e7b0 const *row,
+	__m128 const *angular_axes,
 	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch)
 {
  __m128 w[5];
@@ -502,9 +502,9 @@ static __forceinline void apply_first_normal_fallback(float impulse, bool retain
  if(retain_linear_destination)linear_source_body->linear=w[2];
  else b.body->linear=w[2];
  solver_velocity_31c940 *angular_receiver=b.body;
- w[2]=row->a;
+ w[2]=angular_axes[0];
  w[0]=_mm_mul_ps(w[0],w[2]);
- w[2]=row->b;
+ w[2]=angular_axes[1];
  w[1]=_mm_mul_ps(w[1],w[2]);
  w[2]=a->angular;
  w[2]=_mm_add_ps(w[2],w[0]);
@@ -711,11 +711,11 @@ float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		// Unordered candidates enter the second-row update, as in retail.
 		if (candidate_b <= 0.0f) break;
 		apply_first_normal_fallback(candidate_b, true,
-		((solver_linear_row_31e7b0 *)(axis - 2))->linear, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1, scalar_work.fallback_scalar);
+		((solver_linear_row_31e7b0 *)(axis - 2))->linear, axis - 1, a, b, result + 1, scalar_work.fallback_scalar);
 		return;
 	} while (false);
 	float candidate_a = scalar_work.first_error * axis[-4].m128_f32[3];
-	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, false, retained_axis, ((solver_linear_row_31e7b0 *)first_axis), a, b, result, scalar_work.fallback_scalar);
+	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, false, retained_axis, axis - 4, a, b, result, scalar_work.fallback_scalar);
 }
 
 // The second unrolled pair keeps B field addresses and its first linear axis.
