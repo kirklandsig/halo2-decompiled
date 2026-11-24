@@ -660,6 +660,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // == true)` 87 (659 B: the thread breaks, but the byte is compared with 1); both boundary restarts assigned after their
 // switch 249 (618 B); the pass end as `if (!restart) { flag-8 store; step; continue; } break;` 1 (same code); the frame
 // typed `long` 213 (656 B); the pass end ordered elapsed, next time, end time 5.
+// M3 lane 1 r162 (h2m fast with 0x22e957/0x22eeee/0x148119/0x22e391, all MATCH; base 1): the join break also requiring
+// the frame to have moved 226 (671 B); the join break as `restart > 0` 87 (659 B), `restart >= 1` 87, `!(restart < 1)` 87,
+// `restart & 1` 87, `restart == 1` 87 (each breaks the thread, but compares the byte with 1). Diagnostic (removed): a
+// per-pass flag declared bare in the loop body, set in both boundary blocks and copied into restart at the join 147 (661 B,
+// aligned 7/5): the in-range miss then lands on the join test as retail's, but the copy keeps its own byte slot and a
+// load/test/store. Re-measured: the pass end under `if (!restart) {...} else break;` 1, the break as `!= false` 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
