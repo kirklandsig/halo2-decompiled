@@ -954,6 +954,20 @@ extern point2f *g_468778;
 // index named for its four calls 187 / 27 (retail reads the field at each call); the rate named for both predictions
 // 219 / 57; pointers to the actor's position or the prop's origin 184 / 45 (same code); the second prediction's scale
 // in its own local 184 / 45 (same code); no direction pointer (the field at each use) 275 / 73.
+// M3 lane 8 r232 (h2m fast with 0x265d30, MATCH each run; control 389 at 1563 B, aligned 124, register-masked 51; body
+// unchanged). Colouring order read on main: the slot argument (priority 157) takes ESI and the actor (134) EBP as retail,
+// then the direction pointer local_20 (73) and the view (44) both take EBX, and the prop is never coloured as a whole
+// (its weighted cost is not positive), which is the spill into arg_1's home. On the listed dot3f lead (the first facing
+// dot named through dot3f ahead of the facing pointer, re-measured 377 at 1549 B, masked 85 by this round's counter) the
+// prop does take EBX; what turns the other three registers is one decision: the facing pointer (21 references,
+// priority 176) is coloured ahead of the slot (157) and takes ESI, so the slot falls to EBP and the actor to EDI with a
+// spill (frame 0x44). The pointer's 176 is 48 from the facing-dot block (its definition and three reads, six candidates
+// referenced there), 36 each from the weight-dot and sign-dot blocks, 20 from the reversed copy and 12 + 18 + 18 from the
+// three vector copies, less 12 for the blocks it only crosses; the slot's 157 is 222 less 65 for 31 crossed blocks. The
+// slot goes first, and the pointer then takes retail's EDI, the actor EBP and the frame 0x40, once the pointer loses 20
+// or the slot gains 20: two of the facing dot's reads counted on the view instead of the pointer would do it. Forms: the facing dot through the facing pointer 410 (re-measure; the pointer 176 again, the same
+// rotation); the dot named ahead of the pointer through the view's fields 401 (1571 B, re-measure; it compiles as main,
+// view EBX and a separate lea), with the copy vector declared first 401, as a named bool 415 (1581 B).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1566,6 +1580,13 @@ static __forceinline long real_to_long(real value);
 // place, retail reads the object velocity off the AI object pointer kept at [esp+0x20] (+0x88/+0x8c/+0x90) where ours
 // keeps a velocity pointer in EBX, and forms the two position pointers for 0xfa1a0 ahead of the direction rows. Still
 // BLOCKED-BY 0x25d740's expansion at this site. Body unchanged.
+// M3 lane 15 r142 (H2M_FAST with 0x25d740, MATCH each run; control 382, aligned exact/stack/register-masked 157/109/58;
+// the score is positional, so nothing below the threaded false exit can move it): the computed entry result tested as
+// `if (local_2 == true)` 508 (1921 B, 0x25d740 expanded); the computed result then `if (!local_2) return false;` with
+// the body unnested 526 (1911 B, frame 0x54, 0x25d740 expanded), `return local_2;` there 526; diagnostics, not keepable
+// (an always-true test in front of the getter site): `else if (!field_18 && local_1)` on the computed result 489
+// (1904 B, 0x25d740 a call, object-speed root a call), with `&& local_0` too 490. Re-measured: result preset false 495,
+// rejection written first 382, computed result 508, that with magnitude3d 508 (both expanded), magnitude3d alone 468.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

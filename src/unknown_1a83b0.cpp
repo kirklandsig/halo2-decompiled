@@ -836,6 +836,12 @@ s_1a8a10 g_4453c0[] =
 // place from the actor (`i * y + (0 - j) * x`) with the forward sum from the copy 29; the left sum in two statements
 // (`i * y`, then `+= (0 - j) * x`) 17, with the negated term first 17, both sums so 17 (the split is folded: same code);
 // the forward sum in two statements (`i * x`, then `+= j * y`) 38. Body unchanged.
+// M3 lane 13 r152 (h2m fast with 0x1a8c30, MATCH unless noted; control 17): forced allocator decisions (picks, priorities,
+// cuts, reload flags, costs and the call alias sets, 77 of them) never give the second j load, so retail's reload is decided
+// before registers are chosen. Forms: the first switch without its `default: __assume(0);` 163 (560 B: a range check comes
+// back); its case 3 also the default 141 (540 B); the input point copied into a local and the first switch reading it 129
+// (548 B); the first switch's cases written 3, 2, 1, 0 79; `return` of the 0x1f57f0 result in place and `return false` at
+// the end with no result local 216 (584 B; 0x1a8c30 49).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
