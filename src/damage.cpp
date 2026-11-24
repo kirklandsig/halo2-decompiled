@@ -2786,6 +2786,10 @@ struct s_unit_event
 // Record address after notifications 627 in all three forms. Record address after the region-state
 // write, with region, direct or immutable array pointer 529/541/541. NOT kept: the first late form
 // loads the region index into EBP and keeps frame 0x38, but adds 12 bytes and raises the score.
+// Round 479: Region ordinal and permutation record still exchange EBX/EBP.
+// Named section count with sentinel 420; bounded section index 450; bound-and-name section loop 450;
+// selecting the result after the loop 448; bound-and-label seat loop 420; both loop conditions 450;
+// word section kind 425; direct nonzero kind ranges 462. Body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
