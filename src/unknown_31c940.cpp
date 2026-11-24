@@ -235,43 +235,44 @@ static __forceinline void circular_second_projection_fields(solver_linear_row_31
 
 
 static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch,__m128 (&w)[5])
+	solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b, float *result, float &simd_scratch,
+	__m128 &weight_a, __m128 &weight_b, __m128 &temporary, __m128 &linear_change_b, __m128 &linear_axis)
 {
-	// The caller retains the projected linear axis in w[4].
+	// The caller retains the projected linear axis in linear_axis.
 
 	simd_scratch=impulse;
-	w[2]=a->inverse_inertia;
+	temporary=a->inverse_inertia;
 
-	w[1]=_mm_load_ss(&simd_scratch);
-	w[0]=_mm_shuffle_ps(w[1],w[1],0);
-	w[0]=_mm_mul_ps(w[0],w[2]);
-	w[2]=b.body->inverse_inertia;
+	weight_b=_mm_load_ss(&simd_scratch);
+	weight_a=_mm_shuffle_ps(weight_b,weight_b,0);
+	weight_a=_mm_mul_ps(weight_a,temporary);
+	temporary=b.body->inverse_inertia;
 
-	w[1]=_mm_shuffle_ps(w[1],w[1],0);
-	w[1]=_mm_mul_ps(w[1],w[2]);
-	w[2]=_mm_shuffle_ps(w[0],w[0],0xff);
-	w[2]=_mm_mul_ps(w[2],w[4]);
-	w[3]=_mm_shuffle_ps(w[1],w[1],0xff);
-	w[3]=_mm_mul_ps(w[3],w[4]);
+	weight_b=_mm_shuffle_ps(weight_b,weight_b,0);
+	weight_b=_mm_mul_ps(weight_b,temporary);
+	temporary=_mm_shuffle_ps(weight_a,weight_a,0xff);
+	temporary=_mm_mul_ps(temporary,linear_axis);
+	linear_change_b=_mm_shuffle_ps(weight_b,weight_b,0xff);
+	linear_change_b=_mm_mul_ps(linear_change_b,linear_axis);
 	// Retain B through all four updates before A can overwrite its saved home.
 	solver_velocity_31c940 *const update_b=b.body;
-	w[4]=a->linear;
-	w[4]=_mm_add_ps(w[4],w[2]);
-	a->linear=w[4];
-	w[2]=update_b->linear;
-	w[2]=_mm_sub_ps(w[2],w[3]);
-	update_b->linear=w[2];
+	linear_axis=a->linear;
+	linear_axis=_mm_add_ps(linear_axis,temporary);
+	a->linear=linear_axis;
+	temporary=update_b->linear;
+	temporary=_mm_sub_ps(temporary,linear_change_b);
+	update_b->linear=temporary;
 	// Angular axes reload after both linear writes.
-	w[2]=row->a;
-	w[0]=_mm_mul_ps(w[0],w[2]);
-	w[2]=row->b;
-	w[1]=_mm_mul_ps(w[1],w[2]);
-	w[2]=a->angular;
-	w[2]=_mm_add_ps(w[2],w[0]);
-	a->angular=w[2];
-	w[0]=update_b->angular;
-	w[0]=_mm_add_ps(w[0],w[1]);
-	update_b->angular=w[0];
+	temporary=row->a;
+	weight_a=_mm_mul_ps(weight_a,temporary);
+	temporary=row->b;
+	weight_b=_mm_mul_ps(weight_b,temporary);
+	temporary=a->angular;
+	temporary=_mm_add_ps(temporary,weight_a);
+	a->angular=temporary;
+	weight_a=update_b->angular;
+	weight_a=_mm_add_ps(weight_a,weight_b);
+	update_b->angular=weight_a;
 	*result+=impulse;
 
 }
@@ -1827,10 +1828,12 @@ result+=2;
 					do
 					{
 						solver_linear_row_31e7b0 const *row = (solver_linear_row_31e7b0 const *)terms;
-						
- 						// Reuse consumed projection values while retaining the first bound axis.
-						struct { __m128 first;
-						__m128 second;
+
+						// Reuse consumed projection values while retaining the first bound axis.
+						struct
+						{
+							__m128 first;
+							__m128 second;
 						} projection;
 						__m128 temporary;
 						__m128 contribution;
@@ -1880,21 +1883,28 @@ result+=2;
 						// Match the same mass-before-step-scale order as the angular path.
 
 						// Reuse the consumed projection vectors through the bounded update.
-						__m128 bounded_work[5];
-						bounded_work[0]=*linear_b_pointer;
-						bounded_work[1]=a->linear;
-						bounded_work[2]=((solver_linear_row_31e7b0*)terms)->a;
-						bounded_work[3]=*angular_b_pointer;
-						bounded_work[4]=((solver_linear_row_31e7b0*)terms)->linear;
-						bounded_work[1]=_mm_sub_ps(bounded_work[1],bounded_work[0]);
-						bounded_work[0]=a->angular;
-						bounded_work[0]=_mm_mul_ps(bounded_work[0],bounded_work[2]);
-						bounded_work[2]=((solver_linear_row_31e7b0*)terms)->b;
-						bounded_work[3]=_mm_mul_ps(bounded_work[3],bounded_work[2]);
-						bounded_work[1]=_mm_mul_ps(bounded_work[1],bounded_work[4]);
-						bounded_work[0]=_mm_add_ps(bounded_work[0],bounded_work[3]);
-						bounded_work[0]=_mm_add_ps(bounded_work[0],bounded_work[1]);
-						sum_three_to_arena_31c940(bounded_work[0],projection_pool.bounded_linear);
+						struct
+						{
+							__m128 contribution;
+							__m128 temporary;
+						} work;
+						__m128 relative;
+						__m128 angular_b;
+						__m128 linear_axis;
+						work.contribution=*linear_b_pointer;
+						relative=a->linear;
+						work.temporary=((solver_linear_row_31e7b0*)terms)->a;
+						angular_b=*angular_b_pointer;
+						linear_axis=((solver_linear_row_31e7b0*)terms)->linear;
+						relative=_mm_sub_ps(relative,work.contribution);
+						work.contribution=a->angular;
+						work.contribution=_mm_mul_ps(work.contribution,work.temporary);
+						work.temporary=((solver_linear_row_31e7b0*)terms)->b;
+						angular_b=_mm_mul_ps(angular_b,work.temporary);
+						relative=_mm_mul_ps(relative,linear_axis);
+						work.contribution=_mm_add_ps(work.contribution,angular_b);
+						work.contribution=_mm_add_ps(work.contribution,relative);
+						sum_three_to_arena_31c940(work.contribution,projection_pool.bounded_linear);
 						mass = (target - projection_pool.bounded_linear) * mass;
 						float impulse = mass * load_error_scale(step);
 						// Keep the divide followed by multiply on both clamp paths;
@@ -1910,7 +1920,8 @@ result+=2;
 							impulse = ratio * impulse;
 						}
 						// Reload the saved A receiver at the bounded update boundary.
-						apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), state.solving.a_home, scoped_b, result, scalar_work.simd_scalar, bounded_work);
+						apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), state.solving.a_home, scoped_b, result, scalar_work.simd_scalar,
+							work.contribution,relative,work.temporary,angular_b,linear_axis);
 						terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
 						a = state.solving.a_home; ++result; op += 16;
 					} while (*op == 5);
