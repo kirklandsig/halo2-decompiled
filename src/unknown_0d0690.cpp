@@ -1788,6 +1788,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // base first 529; bounded lightmap before base 529; saved magnitude last 529; normal/lightmap/primary names in
 // frame order 529; reflected pair before normal 529. The selection byte still takes the incoming output slot,
 // leaving the 0x2c frame.
+// Round 469: selected entry reference (read-only or mutable) 530/530, scan-entry reference 530,
+// scan and selected entry references 529/529, one flag word from the scan reference 529,
+// also with the two selected entry references 530/530. Frame and selection spill persist. Restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

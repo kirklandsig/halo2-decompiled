@@ -967,6 +967,9 @@ struct s_item_collision_bsp
 // Shared basis rotation into the plane, separate normal, separate normal through distance, early scaled
 // distance or in-place queried plane 336/312/333/336/303. NOT kept: the shared rotation forms change
 // sum grouping and shorten the body. The normal and contact-point XMM homes still differ.
+// Coefficient-first products across all left, up and forward rows, separately and in every combination,
+// 190 each. All three axes with coefficient-first translation products 190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1327,6 +1330,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // forward scalars 151 each; separate weighted cross 267, staged cross with common weight 267,
 // scaled-axis initializer 206 and scaled coefficients 206. NOT kept: the 151 forms recover 0xb4
 // and 848 bytes but raise the score. The initial alignment and scaled-axis register order still differ.
+// Consume the existing scale helper's returned axis with direct or staged cross, an in-place or
+// separate scale output, and a separate or in-place doubled projection: 205 in all eight forms.
+// NOT kept: the 0xc0 frame and axis spill persist and the body grows to 878 bytes.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

@@ -1096,6 +1096,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // inside the sums 383 (aligned 194); the named cleared flags with the scalar blend 383 (same code).
 // Byte and word gate projections gave quotient parity 441/441, remainder threshold 441/441, masked quotient 334/334,
 // and shift to high bit 403/403. The effect address still folds into the flag load.
+// Direct C word conversions on draw one/two/three/four 403/392/381/357;
+// last three 416; long-to-word on the first 403. Staging the product before a word
+// conversion on the first or last three 404/416. The gate address and gate/settings
+// homes still differ. The fourth-only form preserves length and raises the count.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

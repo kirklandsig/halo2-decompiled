@@ -890,6 +890,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Complete rotation product locals, mutable/const/along-first/transverse-first 116 each. In-place
 // row accumulation 228, aggregate input after the forward copy 217, all products staged 116,
 // and row products with named angle projections 116. NOT kept: early SSE and x87 scheduling still differs.
+// Interleaved running control and speed sums with four two-product schedules: third control square
+// before the root 231 each, after the root 280 each. NOT kept: the 0x28 frame remains, the first
+// SSE difference moves earlier to +0x50 and the schedule still diverges.
 // Explicit double CRT boundary at root/reversing arc/root plus reversing arc/steering arc/
 // root plus steering arc/both arcs/all three: 109/107/109/107/109/107/109.
 // Explicit float CRT calls for the root, arcs and absolute values: 109.
@@ -3870,6 +3873,11 @@ real g_47ff30 = 2.5f;
 // groups 710 each. Query-local angular output, early force declaration, late axis-angle outputs and
 // scoped input transforms with the same mass reads 710 each. NOT kept: frame 0xfc and retail length
 // return, but the acceleration spill stays at +0x20 and both velocity homes still differ.
+// Interleave up-vector producers and directional weights with three mass observations. Up i/j then up/left
+// weights before up k 704, early forward weight 707, up/left/forward weights interleaved 669, or all
+// three weights before up k 667. Existing final scale helpers give the same scores.
+// NOT kept: 669 and 667 recover frame 0xfc and retail length, but gain only three and five points and
+// leave the acceleration and velocity slots displaced.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5160,6 +5168,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // indexed projection with value or pointer copy 224/224. The shared copy
 // shortens the body and moves the first difference to +0x11. The projection
 // product, cross operands and trig homes still differ.
+// Shared default axis negation at the axis/sine/cosine phases 128/134/128;
+// with indexed projection 126, or with the direct final cross 124. Indexed projection
+// with reordered trig names or renamed vector workspaces 115/115; with both and
+// shared negation 126. NOT kept: best gain three. Cross operands and trig homes still differ.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6260,6 +6272,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 759. NOT kept: the 751 forms reach retail length and XMM1 for the result
 // but drop the entry zero and copy. Retail's excluded gear uses that entry
 // value directly at publication. The entry definition still differs.
+// Upper-first final bounds (branch or expression) 759/759; bound-left comparisons 759.
+// Signed gear range 757; zero wheel counter 759; complemented forward/reverse floor tests 752.
+// Word kind range 753; unsigned gear range 753. NOT kept: best gain seven at retail length.
+// Retail tests each gear and kind value separately. Entry definition and zero/result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
