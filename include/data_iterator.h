@@ -19,7 +19,7 @@ static inline void data_datum_iterator_set_current(s_data_datum_iterator *iterat
 static inline bool data_datum_iterator_next_inlined(s_data_datum_iterator *iterator)
 {
 	s_record_pool *data = iterator->data;
-	long index = data_next_absolute_index_inlined(data, iterator->index + 1);
+	long index = data_find_index(data, iterator->index + 1);
 	byte *datum;
 
 	if (index != NONE)

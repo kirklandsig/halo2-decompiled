@@ -1037,6 +1037,10 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // first, then source, then `collection` 28; the occupied key copied from `&collection->players[i].key` with
 // `sizeof(t_player_key)` 28; `machines` declared at the function's top 28; `slot` and `occupied` declared at the
 // function's top 28 (all the same code: the key sum stays (inverse + cursor) + collection). Body unchanged.
+// M3 lane 15 r140 (h2m fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH; control 28): the conflict scan as a
+// `continue` chain (mask and flag, then the machine compare, then the controller/unknown test) 28; the swap test nested
+// with `slot != i` outside 322 (1091 B); the swap test held in a named bool 28; the last record's machine copied with
+// memcpy 28; the machine pointer as `machines + source->machine_index` 28 (the 28s the same code). Body unchanged.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

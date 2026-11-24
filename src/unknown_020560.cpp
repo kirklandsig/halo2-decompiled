@@ -1431,6 +1431,20 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // way 448 (2094 B); both 553 (2122 B); scan 2's distance as length_sq3f(&offset) re-measured 646 (2039 B); scan 2's
 // distance from `source->entries[i]` with the offset from the samples local 645 (2199 B, masked 191: two induction
 // pointers as retail); the offset from `source->entries[i]` with the distance from the local 644 (2193 B). Body unchanged.
+// M3 lane 3 r303 (h2m fast with 0x24550, 0x22750 and 0x22c30 in the image, all MATCH unless noted; control 418, aligned 273;
+// a run that lists only this address leaves 0x24550 out of line and reads 1676 to 1794 B, so those are not counted): the
+// shared 0x24550's sum written as one expression in four term orders (i, j, k; j, i, k; k, i, j; through length_sq3f) 461
+// each (aligned 227: scan 2 then sums (k + j) + i as retail, scan 1 too where retail has (k + i) + j; 0x24550 itself 9 and
+// matched 0x19ec40 11, so not kept: retail's scan 2 does not go through 0x24550); scan 2's distance through a plain
+// squared-length function defined in another file, so only the link step inlines it, on the offset 646 (2039 B), with the
+// entries field read per use 628 (2057 B) (the header helper's counts: no vector home either way). On the listed
+// entries-per-use form with a second difference vector (544 re-measured at 2122 B, aligned 198; its scan 1 keeps
+// `nearest` in memory with the loop limit in EDI): the skip as `nearest != i` 543 (aligned 195); `first` formed ahead of
+// the delta and the delta built from it 549 (2112 B, aligned 191); no `samples` local 544 and the opposite pair declared
+// ahead of the delta 544 (same code each); the delta read from `source->entries[nearest]` 619 (2180 B). Reading of retail's
+// scan-2 latch: the pass counter and the count are reloaded into EDI and EBX for the step and `nearest` is then reloaded
+// into EDI from its home ahead of the back jump, so `nearest` keeps EDI through both scans; on the 544 form our build
+// loads it at the loop top into EBX instead and never gives it a register in scan 1. Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
