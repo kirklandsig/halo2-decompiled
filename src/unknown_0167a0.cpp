@@ -504,6 +504,16 @@ PRIVATE inline byte const *material_parameters(long tag)
 // direct store 5 (+0x1a7) and on the reference 5 (+0x19e); the direct store with the table field bound as a `byte *const &`
 // for the chain, pass and range bases 293 (980 B); the range stored directly and read back for the calls 178 (+0x148); the
 // pass stored directly and read back for the range index 5 (+0x1a7). Restored.
+// M3 lane 14 r150 (h2m fast with 0x16f60/0x17000/0x17170/0x174d0/0x17420/0x1b0a0, all MATCH; control 5 at +0x19e, the
+// direct entry store re-measured 5 at +0x1a7). Reading of the listing: the restore block's tables reload is a real load
+// both ways (the entry store ends the stored value), and what moves is which loads rise above that store: with the
+// reference none, with the direct store both the reload and `second`, in retail only the reload (same base register,
+// another displacement), with `second` left at its use. Testing whether `second`'s life across the tail is what lets its
+// load rise (r118: it stays late once the five shader-record calls are gone): the seven tail calls from 0x174d0 to
+// 0x17420 in a new inline helper taking the state and the four indices, on the direct store 152 and on the reference 152
+// (884 B: the helper stays a call, and `second` still loads right after the entry lea on the direct store); the whole
+// tail from 0x174d0 to the end in such a helper, direct store, 205 (831 B, the same restore block); those helpers
+// forced inline 5 / 5 on the direct store (+0x1a7) and 5 on the reference (+0x19e), each its base form's code.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

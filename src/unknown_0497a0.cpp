@@ -1597,6 +1597,23 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // chained y and x pairs ahead of the z rows 425 (2588 B), with the named pixel 425; case 0 with the whole second edge
 // first (y, x, z) 455 (2588 B); the endpoint fades through a `strip` pointer formed as `vertex - input->vertex_count`
 // 617. Half width still XMM3 (retail XMM4), frame 0xa0 (retail 0xac). Body unchanged.
+// M3 lane 12 r182 (H2M_FAST with 0x42c50, 0x42b20 and 0x43740, all MATCH each run; control 285 at 2596 B; counts are
+// score (bytes) and aligned / register-masked rows, control 164 / 56; body unchanged). Retail's registers: half width
+// XMM4, first edge x/y/z in XMM6/XMM5/XMM3 (first.z spilled to a frame slot of its own in case 0), second edge in
+// XMM0/XMM1/XMM2; ours half width XMM3, first XMM4/XMM5/XMM6. Case 0's four statements (x pair, y pair, each z) in
+// all 24 orders with either chain direction (48 forms): best 277 / 162 / 51 (y pair, x pair, first z, second z), the
+// chained second-then-first direction never better; all keep ours' registers and frame. Case 1/2's z pair chained
+// 415 (2592 B), chained the other way 286, `first.z = second.z;` copy 415. A random search over 197 combinations of
+// case 0 orders, case 1/2 spellings (offsets named or inline, z pair forms, side scaled in place), case 4 spellings
+// (offsets named, side scaled in place, first edge first, half width first), the position stores as two aggregate
+// copies or second first, the pixel named or chained the other way, and `second` declared first: best aligned 142
+// (349, 2588 B); case 1/2's products inline (no offset locals) moves the edges to XMM5/XMM6/XMM4 at frame 0xa8. Case
+// 4's side scaled in place (`side.i *= half_width; ...` and then the rows) with case 1/2 inline gives retail's half
+// width XMM4 and first edge XMM6/XMM5/XMM3 with second XMM0/XMM1/XMM2 (all roles retail's) at 2588 or 2592 B; a grid
+// of 108 (case 0 order x case 1/2 form x case 4 row order) around it: best 421 / 143 / 56 (case 0 y pair, second z,
+// x pair, first z; case 4 rows first-y, first-x, then the second edge), 411 / 147 / 60 at 2592 B. The frame stays
+// 0xa0 against 0xac in every form (retail keeps first.z's spill slot and two more cells), and every role-correct form
+// is shorter, so none lowers the positional score.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

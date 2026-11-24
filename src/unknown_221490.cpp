@@ -29,17 +29,6 @@ struct s_wave_format
 	word extra_size;
 };
 
-/* a sound class volume fade, 16 bytes; target and current are real values
-   handled as raw bits */
-struct s_sound_class_fade
-{
-	dword target;
-	dword current;
-	real time;
-	byte flags;
-	byte unknownd[3];
-};
-
 /* a mix bin table: a count followed by that many pairs */
 struct s_mixbin_list
 {
@@ -314,8 +303,8 @@ void function_2218a0(void)
 	g_50211c = true;
 	for (i = 0; i < k_sound_class_count; i++)
 	{
-		g_502118[i].current = 0;
-		g_502118[i].target = 0;
+		g_502118[i].current = s_decibels(0ul);
+		g_502118[i].target = s_decibels(0ul);
 		g_502118[i].time = 0.0f;
 	}
 }
@@ -332,40 +321,33 @@ void function_2218f0(void)
 	g_502118 = NULL;
 }
 
-// score 9: the body is retail's except the SSE registers. Retail keeps the
-// pre-fade time in xmm0, current in xmm2 and divides delta in xmm0; ours keeps
-// current in xmm0 and the fraction in xmm5, so the subtraction is scheduled
-// before the division. Swapping the target/current declarations, a named
-// fraction local, an inline fraction, a separate initial-time local, the
-// commutative add and a _ReadWriteBarrier after the division all measured 9 to
-// 11. Permuter: 125 tries in 300 s (seed 999), no form below 9.
+// The step's fraction and the new time share one local, bound to a reference
+// so the compiler keeps it in its own register and re-reads the stored time.
 // @retail 0x221900
 void function_221900(
 	real delta)
 {
+	long i;
+
 	if (delta > 0.0f)
 	{
-		real volatile *class_fade_time = &g_502118->time;
-		for (long i = 0; i < k_sound_class_count; i++, class_fade_time += 4)
+		for (i = 0; i < k_sound_class_count; i++)
 		{
-			real time_left = *class_fade_time;
+			real time = g_502118[i].time;
+			real &time_left = time;
 			if (time_left > delta)
 			{
-				dword target_bits = ((dword *)class_fade_time)[-2];
-				dword current_bits = ((dword *)class_fade_time)[-1];
-				real target = *(real *)&target_bits;
-				real current = *(real *)&current_bits;
-				/* the same local holds this step's fraction */
-				time_left = delta / time_left;
-				real result = (target - current) * time_left + current;
-				((dword *)class_fade_time)[-1] = *(dword *)&result;
-				time_left = *class_fade_time - delta;
-				*class_fade_time = time_left;
+				s_decibels target = g_502118[i].target;
+				s_decibels current = g_502118[i].current;
+				time_left = delta / g_502118[i].time;
+				g_502118[i].current = (target.value - current.value) * time_left + current.value;
+				time_left = g_502118[i].time - delta;
+				g_502118[i].time = time_left;
 			}
 			else
 			{
-				((dword *)class_fade_time)[-1] = ((dword *)class_fade_time)[-2];
-				*class_fade_time = 0.0f;
+				g_502118[i].current = g_502118[i].target;
+				g_502118[i].time = 0.0f;
 			}
 		}
 	}
@@ -396,29 +378,22 @@ void __stdcall function_221980(
 			else
 				target = value_bits;
 
-			fade->target = target;
+			fade->target = s_decibels(target);
 			fade->time = time < 0.0f ? 0.0f : time;
 			if (time == 0.0f)
-				fade->current = target;
+				fade->current = s_decibels(target);
 		}
 	}
 }
 
-struct s_221a20
-{
-	byte field_0[0xc];
-	word field_c : 1;
-	word field_d : 15;
-};
-
 PRIVATE inline void set_fade_flag(
-	s_221a20 &arg_0,
+	s_sound_class_fade &arg_0,
 	bool arg_1)
 {
 	if (arg_1)
-		arg_0.field_c = true;
+		arg_0.fade_flag = true;
 	else
-		arg_0.field_c = false;
+		arg_0.fade_flag = false;
 }
 
 // @retail 0x221a20
@@ -431,10 +406,7 @@ void function_221a20(
 	for (i = 0; i < k_sound_class_count; ++i)
 	{
 		if (*g_470090[i] && strstr(g_470090[i], name))
-			{
-			s_221a20 *local_0 = (s_221a20 *)&g_502118[i];
-			set_fade_flag(*local_0, !set);
-		}
+			set_fade_flag(g_502118[i], !set);
 	}
 }
 

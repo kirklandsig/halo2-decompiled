@@ -1092,6 +1092,15 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // `entity->object_index`, store and attach through 0xbb780) re-measured 67: on it `result = true` ahead of the 0xbb780 call
 // 61 (178 B), the flag test inverted 67, `result` declared ahead of `value` 67 (same code); its listing has retail's
 // recomputed index but `f` cached in EBP and the data pointer shared in EDX, so no EBP window.
+// M3 lane 7 r222 (H2M_FAST with 0xa5a00, 0xa5b10, 0xa5b40, 0x108e10 and 0xbb780, matched throughout; control 8):
+// retail's shape with 0xbb780 given the local re-measured 77 (160 B); diagnostic, that with the header flag test moved
+// into a function of another file, so that both lookups come from bodies inlined at link time, 77 (the same code: the
+// merge does not depend on where the lookups are written); the flagged arm clearing the field and the valid block under
+// `if (entity->object_index != NONE)` with 0xbb780 on the field 67 at 176 B (the data pointer is reloaded from the kept
+// table pointer and the index recomputed from the re-read, as retail does, but the re-read and its `cmp ecx, -1` stay);
+// a flag cleared in the flagged arm and tested after it, 0xbb780 on the field or on the local, 75 / 75 at 160 B (the
+// flag test is threaded before the lookups are merged). Reading: retail's reload needs a path with a pointer store to
+// reach the object read while the lookups are merged and to be gone afterwards; no form here does both.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1630,6 +1639,13 @@ bool c_projectile_type::v8(long a, long b)
 // M3 lane 7 r219 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: the object pointer and the
 // flags both const 12; the result declared bare and assigned from the call 12; the call's mask as `flags % 0x400` 12; both
 // device-bit tests written constant-first 12 (all the mask's code; the flags keep ESI). Word-read body kept (5).
+// M3 lane 7 r222 (H2M_FAST with 0xa5e70, 0xa3a00, 0xa02e0 and 0xa0be0, MATCH each time; word read 5, mask control 12):
+// with the full-width mask, k integer immediate stores to a scratch array at the top for k = 0..33, k integer copies for
+// k = 1..32 and k real-constant stores for k = 1, 2, 4, 8 (diagnostic; counts like these move 0x254490's reload pair)
+// leave the object in EDI every time, so the pair is no numbering window; the function in a file of its own (same
+// flags) with the base v27 called and inlined at link time, mask form, 51 at 186 B (the inlined base's copy of `this`
+// takes the unused third argument's home, no `push ecx`; flags ESI, object EDI: the same code as the same-file base
+// call above). Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

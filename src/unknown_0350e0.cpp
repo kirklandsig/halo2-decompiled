@@ -534,6 +534,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // own input) 367 (1751 B), in the first pass only 333 (one point, same frame); the rows rotated up, left, forward in
 // both passes 334. Retail builds both matrices (both fsin before any rotation) and scalar-replaces most of the first
 // matrix: only forward.j, left.i, forward.k and left.k are stored to it.
+// The first-axis load order and square spills remain. First/second/both full transform workspaces 349/367/373.
+// Axis reference/native array 334/334; row-result initializer/setter 334/334; independent immutable turn results 334.
+// NOT kept: transform workspaces increase the 0x90 frame and the extent. All remaining forms tie.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2939,6 +2942,16 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // forward products still load the global first and the deltas come after the axis loads), as j, k, i 417 (aligned 153);
 // the camera position through a `point3f const *` 500 (aligned 200); the deltas as three `real` locals 519 (2270 B, a new
 // frame), that with the j-first rows 527 (2264 B).
+// Round 114: Axis reads interleaved with the deltas 421, an axis copy at the dot 542, and named atan2 sums 281.
+// One dword for both context flag tests 500, a combined mask 308, and visibility tested after selecting its value 519.
+// Named definition flag reads at the two tests 500, aggregate sampled tint assignment 532, nested tag and entry
+// admission 324, and distances through real_bounds 281. The camera-axis load schedule and the extra byte remain.
+// Camera displacement and reflected-row scheduling still differ. horizontal forward subtotal 500, both SSE
+// subtotals 500, all four subtotals 500, origin copy and shared difference 540, aggregate delta and subtotal
+// 500, scale after setter 365, separate projection and reflection setters 499, subtotal and separate setters
+// 187, subtotal and Y-first stores 375, named projected/reflected rows 500, ordered delta and subtotal 500,
+// ordered delta and Y-first stores 375. NOT kept: the subtotal and separate setters improve only together and
+// compute X before Y, while retail publishes Y first.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -6320,6 +6333,9 @@ bool __stdcall function_391f0(void *state);
 // block inside it and a break (257, drops retail's jmp at 0x36d45 but regresses). Retail passes 0x38450's state in ebx
 // (0x36e84) and pushes 0x391f0's (0x36efa); ours pushes the first and passes the second in eax. That follows the
 // unmatched callee bodies, not this function.
+// The cached current cluster and the frame 0x74 versus 0x70 remain. Short camera-cluster snapshot 269; compare cluster records 272; direct visible ordinal 275; visible-list end pointer 266; portal end pointer 307.
+// Portal distance before the current-cluster case 288; common fog-distance candidate 278; conditional minimum update 251.
+// NOT kept: the record identity and visible cursor shrink the frame to 0x6c; the common candidate shortens to 1005 bytes. None beats the opening score.
 // @retail 0x36b50
 void function_36b50()
 {

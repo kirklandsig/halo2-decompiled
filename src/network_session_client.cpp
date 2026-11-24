@@ -1039,6 +1039,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // work in its else 22; the opening's address tests as `== NULL` 22; its flag test as `== false` 22; the machine mask as
 // `(1u << member_count) - 1` 22 (all 22s the same code); re-measured the `short` player index 127 (0x6e500 69, 0x72700
 // 94). Body unchanged.
+// M3 lane 1 r162 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the NULL-preset stored pair
+// re-measured 46, session ESI, both callers lost, its copy loop still one scratch step off): on the pair, the player record
+// as `session->players + i` at both uses 46, the mask and slot tests as two nested ifs 46, the player buffer typed as the
+// setter's 0x3648-byte block (cast at the 0x6e910 call) 46 (the three the same code), the summary passed through the
+// getter at the call 146 (493 B), the copy loop walking a member pointer and an address pointer beside the countdown 50;
+// on this body the two loop tests nested 22 and the 0x3648-byte player buffer 22 (same code each). Re-measured: the
+// pair's NULL preset in an else arm 46.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1611,6 +1618,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // re-measured 195): the identities zeroed by a `= {0}` initialiser in place of the memset 14 (first difference +0x2d); the
 // copy source as `current->players + i` 9; the player loop as a `while` stepping its index at the body's end 9; the
 // destination as `&identities[0][0]` 9 (the three the same code); the count declared bare and zeroed after the clear 15.
+// M3 lane 1 r162 (h2m fast with 0x6fcc0, 0x6f940, 0x6fa60, all MATCH; control 9): identities, destination and count all
+// declared ahead of the close call 192 (704 B); identities alone declared ahead of it 9; the two NONE arrays declared beside
+// identities 9, at the function top 9; identities without the align declaration 9 (the marker still aligns the frame; the
+// four the same code); `count++` ahead of the copy on this body 21. Re-measured: the count zeroed after the clear 15, the
+// destination formed before the close call 191 (704 B), the source as `current->players + i` 9.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

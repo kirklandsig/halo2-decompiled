@@ -2525,6 +2525,14 @@ static inline dword voice_get_player_mask_inlined(void);
 // the second query written out in the muted-first order 89 (435 B: `test al, 4`, no result byte, both availability
 // bytes re-read), in the flags-first order 93 (435 B); with plain availability reads 89 (435 B); both port-flag
 // queries written out with plain reads 122 (393 B); a `short` inner index 136 (447 B).
+// M3 lane 5 r240 (H2M_FAST with 0x54890, 0x53a20, 0x53bb0, 0x53b90, 0x53b40; on the held lead: `inline` on 0x53bb0,
+// muted test first, plain availability reads in 0x53b90: 43 at 429 B, 0x54890 83, 0x53a20 84), 0x53bb0 bodies searched for
+// one that keeps its 33 bytes and is expanded only here: the flag word in a local in the block or at the top 43 (same
+// decisions); `return available ? bit : false;` 69; the bit tested by a nested `if` 73 (0x53a20 MATCH, 0x54890 71, 0x53bb0
+// 44 B); `(flags & 4) >> 2`, `flags >> 1 >> 1` and `!= 0` 43 each (same code); `== 1` 67; an `else result = false;` arm 69;
+// an early `return false` 43 (0x53bb0 differs); the flag word tested before the bit 78 (0x53a20 MATCH, 0x54890 96); a
+// zero-default flag word 51; `!(f1 || f2)` in 0x53a20 and 0x54890 43, with 0x54890's test split in two `if`s 43. Only
+// forms that change 0x53bb0's own code stop an expansion, and none stops 0x54890's. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

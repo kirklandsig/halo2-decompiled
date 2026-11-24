@@ -2221,6 +2221,11 @@ void function_27dd10(void)
 // 11, 0x288570 98); the bit-flags word as dword 5 (four siblings 3); the group end capped by an if 208; the pass counters
 // pre-incremented 2 (same code). Matched 0x285750 reloads flags first after the same quaternion_multiply asm, its arm
 // doing integer work in EAX/ECX first. All restored.
+// M3 lane 13 r151 (h2m fast with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in
+// function_288572 the bit-flags read and the cursor step as two statements 2; the outer for as `arg_5 = 0; while
+// (arg_5 < arg_7)` 2; the destination lookup and the mask test as two nested ifs 2 (the three the same code); the
+// zero-flags arm and the group arm swapped (`if (local_2 != 0)`) 377 (0x281b60 352); the cursor stepped at the end of the outer
+// iteration 414 (0x281b60 404) (every sibling lost). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2511,6 +2516,11 @@ void function_2818e0(void)
 // 11, 0x288570 98); the bit-flags word as dword 5 (four siblings 3); the group end capped by an if 241; the pass counters
 // pre-incremented 2 (same code). Matched 0x285750 reloads flags first after the same quaternion_multiply asm, its arm
 // doing integer work in EAX/ECX first. All restored.
+// M3 lane 13 r151 (h2m fast with 0x27dff0 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in
+// function_288572 the bit-flags read and the cursor step as two statements 2; the outer for as `arg_5 = 0; while
+// (arg_5 < arg_7)` 2; the destination lookup and the mask test as two nested ifs 2 (the three the same code); the
+// zero-flags arm and the group arm swapped (`if (local_2 != 0)`) 352 (0x27dff0 377); the cursor stepped at the end of the outer
+// iteration 404 (0x27dff0 414) (every sibling lost). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

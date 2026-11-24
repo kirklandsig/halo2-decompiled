@@ -1754,6 +1754,10 @@ PRIVATE inline long score_string_list_1608e0()
 // that with the height not volatile 739 (2840 B); with the title and header fades through it too 734 (2840 B); only the two
 // fades through it 679 (same code); the function with `real const &` parameters 738 (2840 B); an in-place form taking
 // the scroll element by reference 734 (2840 B). Retail's clamp has the macro's lazy shape, so it stays a macro here.
+// Typed title buffer 679; title and caption buffer 679; caption and team-name buffer 679;
+// one text buffer for all three 679; shared title and caption rectangle 679; separate optional
+// caption rectangles 679; shared row color 679; first palette color passed directly 721.
+// NOT kept: the frame and viewer register stay displaced, and direct palette access shortens the body.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

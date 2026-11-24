@@ -1006,6 +1006,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // [273, 199]. Reading: retail's result is a byte set to 1 at entry and read only at the two kept exits (the failure exit
 // returns a literal false with its own epilogue), and the centre-transform loops count a short against the list's short
 // count. Body unchanged.
+// M3 lane 5 r240 (H2M_FAST with 0x270930 and 0x2c4030, both MATCH each run; control 675): lane 13 r121's 0x2c0d60 order
+// (previous direction as the ninth parameter; definition, four declarations, three calls) re-measured 661, with 0x2c0d60
+// 925 -> 933 and 0x29a190/0x29cbb0/0x2c2060 unchanged (not kept: the callee rises). On main's body: the segment direction
+// as a `vector2f` through include/unknown_11cc90.h's normalize2d_fast 713 (first difference +0x1); the object-index pass
+// testing `ignored != NONE` before the blocking count 695; the node walk as a `for` with the parent step inside 675 (same
+// code); `flags` as a byte local (no cast at the call) 774 (2960 B); the previous direction's pointer set in the actor
+// test and passed as a named pointer 725 (2976 B). Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

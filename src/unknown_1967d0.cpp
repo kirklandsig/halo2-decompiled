@@ -913,7 +913,7 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 100 (was 100; r251 unchanged): the teams flag is read before the configuration copy and address-index
+// score 100 (was 100): the teams flag is read before the configuration copy and address-index
 // store, and the third team-score read expands where retail calls 0x1587f0.
 // Earlier score 191.
 // store, and the third team-score read expands where retail calls 0x1587f0. Earlier score 191.
@@ -1069,6 +1069,10 @@ static inline long team_score_195ed0(long team)
 // moves to EDI, the entry test unchanged); as `if (0 < count) do ... while (++rank < count)` 156 (1210 B: the entry test
 // becomes a word test of AX but the count is spilled for the body); the team test reading the team mask into a named
 // local 100 (same code); re-measured the team read at each use (no `team` local) 216. Body unchanged.
+// Early results return 100; address cursor 155; unused-address continue 100; local-address continue 100;
+// shared world receiver 100; connectivity from the channel predicate 165; selected channel 141;
+// shared connectivity store 131. NOT kept: the flag still precedes the copy, and the shared store
+// joins branches that have distinct stores in retail.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

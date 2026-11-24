@@ -999,6 +999,10 @@ static inline bool teams_enabled_19e1c0()
 // a by-value one-member aggregate parameter with 0x19e0f0's pointer type and call changed to suit (diagnostic: the member
 // is enregistered like the pointer; 390 on the kept result); `remaining` typed dword with a `long capacity` copy used
 // everywhere; a `capacity` copy reduced by the result ahead of the return. Body unchanged.
+// Ordinary player-name count published after copying 460; team-name count 484; all names 620;
+// all names with ordinary return count 691; capacity-default per-name counts 620, with ordinary
+// return count 692; single fallback count publication 564; shared ordinary name count 620.
+// NOT kept: the ordinary result recovers frame 0x204 while merging name preparation paths.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
