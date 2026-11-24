@@ -378,6 +378,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // (11, 12, 14) 76 (same code); the clamp limits read after the value local 101 (426 B); the old maximum as a word with
 // a word NONE 77 (436 B); the streak update as one conditional store 90 (436 B); the team test nested in the engine
 // test 76 (same code). The enable byte is still held in DL across the counter store (retail reloads it).
+// M3 lane 3 r305 (H2M_FAST with 0x1ea770, 0x1e9ce0 and 0x1e9df0, MATCH each run; control 76). The one caller passes
+// the engine's statistics block (0x1e9fa0, from the statistics getter), not the enable byte's object, so the reload
+// still needs that object's address to escape somewhere, as listed above. Forms: the bool set from the byte without
+// `!= 0` 76 (same code); the kind lookup after the index 80; the player pointer formed after the 0x1e9ce0 call 91 (434
+// B); the team read ahead of the engine test 107 (422 B); the row formed by short-element indexing 76 (same code).
+// Body unchanged.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

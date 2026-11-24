@@ -1015,6 +1015,19 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // argument register and never gives it one of its own; ours loads the count into its own register and copies that to
 // the argument, and loads points straight into the argument register. So the count outranks points here and ranks below
 // both points and the hull count in retail; no spelling of the count's reads changes that rank.
+// M3 lane 2 r145 (h2m fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 84; body unchanged).
+// Retail read again: one memory-resident hull counter ([esp+0x10], loaded into EBX at the loop head, `cmp bx, word
+// [count]; jge` to the compaction), the index store then the increment at the head, the count never in a register
+// after the lowest scan, the three closure tests returning EBX straight from the loop (the compaction runs only when
+// the loop test fails), the departure flag a byte in the indices argument's home, previous_angle zeroed ahead of the
+// lowest scan. The one-counter body (`while ((short)hull_count < count)`, `indices[(short)hull_count] = current;
+// hull_count++;`, bool flag set under `if (!left_start)`, three `return (short)hull_count;` exits) re-measured 248 at 747
+// B (the count stays in memory as in retail; points EBP, indices spilled, hull count ESI, where retail has ESI, EBP and
+// EBX, and the loop rotated); the three exits as `goto finished;` to the one return 236 (759 B, rotated); the index
+// store as `indices[(short)hull_count++] = current;` in a `for (; ...; )` head 248 (same code); previous_angle zeroed
+// ahead of the lowest scan 270; the body ending in `return` with `if (!left_start) continue; if (differ) continue;` 357
+// (669 B, 0x239d50 8). A forced-decision search on the 236 form (40 single decisions) finds nothing below 236: the
+// register exchange and the rotated loop are not one allocator decision away.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

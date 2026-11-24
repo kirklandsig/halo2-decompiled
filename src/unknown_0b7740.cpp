@@ -1911,6 +1911,15 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // value from the current-object lookup on and the arm re-reads only data through it, but in EBP). Re-measured: the
 // matrix lookup indexed by the field re-read 54 (1406 B: the two lookups are no longer merged); a pool local at every
 // lookup 20; an arm-local pool with one parent-object local 44.
+// M3 lane 13 r152 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Allocator reading: the no-model
+// parent index takes ECX because ECX is the first free register at its turn (priority 78, before the pool's own value, 34);
+// forcing it to ESI gives retail's register but the mask is then done in place, with no `mov eax, esi` copy. With the arm
+// calling 0xb8bd0 (re-measured 47, 1385 B) the aligned difference is only the call against retail's expanded body (the index
+// in ESI copied to EAX is then retail's), so retail's block reads as that call expanded at link time at this one site.
+// Forms with the call, none expanded: defaults in an else arm 48 (1387 B); the flag read ahead of the call 19 (1395 B,
+// re-measured); the arms swapped under `render_index == NONE` 309 (1372 B); the render arm ending in `return;` with the
+// no-model code after it 47; parent and flag as conditional initialisers on the index 48 (1387 B); the index test
+// inverted (`== NONE` arm first with the defaults) 48 (1387 B); the index field read at each use, no local, 47.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

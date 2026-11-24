@@ -2148,6 +2148,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // pointer is in ECX across the 0xb6760 call where retail holds it in ESI (three rows). Diagnostic for the last: an
 // undefined stand-in for 0xb6760 at that one call gives ESI, so retail's call there had no register summary; `inline` on
 // 0xb6760's definition is the listed lane 7 form (it changes four other callers) and a second copy of it is barred.
+// M3 lane 8 r233 (h2m fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; round 232's 17 lead rebuilt from its patch,
+// 17, the same four rows). On the lead: the channel pointer used for the play, frame and duration calls in the found
+// arm 60 (2192 B); no channel local, the +0xb8 field's address at the test and the clear 17 (same code). Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

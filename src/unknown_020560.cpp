@@ -1445,6 +1445,22 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // scan-2 latch: the pass counter and the count are reloaded into EDI and EBX for the step and `nearest` is then reloaded
 // into EDI from its home ahead of the back jump, so `nearest` keeps EDI through both scans; on the 544 form our build
 // loads it at the loop top into EBX instead and never gives it a register in scan 1. Body unchanged.
+// M3 lane 16 r184 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 273). The caller passes
+// the structure's sample block (count at +0, address at +4), so the entries field read at each use is the block's
+// element read; that form (549 re-measured, 2122 B, aligned 223, masked 122) has retail's scan-2 loop skeleton. Reading
+// of the register allocator's ranking on that form: the whole-range `nearest` candidate scores below zero once the
+// scan-1 index has its register (its five scan-1 updates then count nothing, and it is charged for every block it only
+// passes through), so it is dropped; the part of `opposite` that spans the remainder loop and the tail (29) then takes
+// EDI ahead of the pass temporaries (26) and of the four scan-2 compares of `nearest` (18, EBX). In the kept body the
+// same candidate scores 24 with its scan-1 updates counted and takes EDI. A forced ranking of `nearest` ahead of them
+// (diagnostic, not source) brings that form to 346. The offset's x store: with the offset's members stored directly the
+// 12-byte home and retail's frame order appear (opposite, nearest, count, samples, offset, delta; the squared limit in
+// the source argument's cell), but any member store that stays in memory makes the entries field be read again, with or
+// without the offset's address taken. Scan 2 on a const reference to the samples local: with member stores 433 (same
+// code as the local), with the difference helper 418 (same code), with length_sq3f(&offset) 649. Scan 2 on the entries
+// field at each use (diagnostics, helper bodies written out): member stores with the dot written out and the helper
+// distance 859 (2366 B, frame 0x30), the same with a `real[3]` local 859, with dot3f on a cast of that array 859; with
+// the length written out from the members as well 572 (2109 B) for the vector and for the array. Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

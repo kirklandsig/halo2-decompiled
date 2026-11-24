@@ -731,6 +731,35 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // Forms on main's body: the start cluster read through `bsp->clusters[cluster_index]` at each use (no cluster
 // local) 329 (1378 B); both bit sets through the shared bit_vector_set 295 (same code); the distance written
 // `travel + function_14b240(...)` 295 (same code). Still BLOCKED-BY 0x14b240's write summary. Body unchanged.
+// M3 lane 5 r242 (H2M_FAST with 0x18d730, 0x14b240, 0x222150, 0x221da0, 0x249d60, 0x18ae80 and 0x18ae50; control 295;
+// body unchanged). HELD lead re-measured on today's tree (lane 7's build/r215 patch, one hunk of the twin re-applied by
+// hand): 4 at 1363 B, 0x18d730 250 at retail's 1364 B, 0x14b240, 0x222150, 0x221da0 and 0x249d60 MATCH, 0x18ae80
+// 837 -> 913. With the nearest test reading the cluster's index after the compare (21) the allocator ranks the widened
+// portal index 134 and the cluster pointer 124: the index is coloured first and takes EBP (EBX is penalised for every
+// value of the walk) and the cluster gets what is left. A compile with only that ranking forced to 135 or to 141 MATCHES
+// (not source); forced to the very top it does not (58). The 11 can come from one more value referenced in the entry
+// block (+12), one fewer in the walk's first block (+14), or one more in each of the environment-compare and NONE-test
+// blocks (+12). The entry block's count is 12: the cluster, the two arguments it reads, NONE, the six other integer
+// arguments, and the two bit constants (31 and 1) of the seed's bit set, which count there because the seed block
+// follows it (without the seed's bit set the count is 10). Forms on the 21 lead: `long portal_index` 325 (the mask and
+// the widening become one value, which takes EDI); the bit vector cleared by two plain stores, an initialiser list, a
+// chained assignment, one memset per word or one 64-bit store 376 each (the zero is then a counted value in the entry
+// block: the cluster ranks 136 and takes EBP, the index EBX, the other cluster ESI and the portal EDI as retail, but
+// the zero stays in EDI through the seed block and the walk's preheader where retail uses immediates); the same code
+// as the lead (21, ranks unchanged): `(short)NONE` in the three NONE tests, the nearest test nested, `-1L` for the
+// seed's NONE, a const cluster pointer, the flag test as `== 0`, a table local or a two-step pointer for the cluster,
+// the walk's `i` at function scope, the seed's bit set written out, through the shared bit_vector_set, with `1u` or as
+// `/ 32` and `% 32`, and a by-pointer inline accessor for the cluster's index at the seed test, the nearest test or
+// the environment compare (its pointer argument is folded away before the ranking; at both sides of the compare 25);
+// the environment compare cluster first 22; `limit` declared ahead of the output loop 228; the sort scratch at
+// function scope 64 (frame 0x42c). A permuter run on the 21 form (120 tries) best 21. Also on the 21 form: the seed
+// test through a named `short` or `long` copy of the cluster's index, or a named bool, 21 (folded before the ranking);
+// the walk counter or the path list through a reference-bound local 25. The other way round works too: a compile with
+// only the widened index forced down to 123 or 115 MATCHES (not source); its count is 144 from the walk's first block
+// (12 values referenced there, three of them the constants 0x7fff, 1 and 0x28), 8 from the nearest store and 28 from
+// the deep stores. Diagnostics (cuts, restored at once): without the 0x249d60 call the cluster ranks 128 and takes EBP;
+// without the 0x14b240 call 118 and EBP; without the sort call 106 and EBX. The 21 form's full diff is
+// build/r242/held-0x18dc90.patch. Still BLOCKED-BY 0x14b240's write summary for anything short of a match.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
