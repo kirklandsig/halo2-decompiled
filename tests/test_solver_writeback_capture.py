@@ -1795,3 +1795,113 @@ def test_second_normal_second_fallback_captures_receiver_between_writes(solver_i
             if label=='retail':snapshots[rounding]=(snapshot,observed,unexpected)
             else:assert snapshots[rounding]==(snapshot,observed,unexpected)
         print(label,'second fallback middle receiver4RM',writer,hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('coefficient', ['error', 'velocity'])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_linear_error_reloads_step_between_rows(solver_images, precision, coefficient):
+    def as_float(bits):
+        return struct.unpack('<f', struct.pack('<I', bits))[0]
+
+    replacement_step = STEP + 0x100
+    delta = as_float(replacement_step) - as_float(STEP)
+    stack_arguments = STACK + 32768 + 4
+    retail, compiled, symbols = solver_images
+    snapshots = {}
+    for label, machine, entry, gate in (
+            ('retail', retail, 0x31c940, 0x480c60),
+            ('compiled', compiled, address(symbols, 'solve_operations_31c940'),
+             address(symbols, 'g_480c60'))):
+        for rounding in range(4):
+            data = solver_case(13, 2)
+            put(data, STEP, '7fi', 0, 1, 1 if coefficient == 'velocity' else 0, 0, 1, 0, 0, 1)
+            put(data, replacement_step, '7fi', 0, 2 if coefficient == 'error' else 1,
+                2 if coefficient == 'velocity' else 0, 0, 1, 0, 0, 1)
+            put(data, OPS + 24, '3I', 0x3040d, 0x3040d, 0x400)
+            for body in (HEAP, HEAP + 0x80):
+                for offset in (0x10, 0x20, 0x30, 0x40, 0x50):
+                    put(data, body + offset, '4f', 0, 0, 0, 0)
+            for index, target in enumerate((delta, 3 if coefficient == 'error' else 0)):
+                put(data, TERMS + index * 48, '12f',
+                    1 if index == 1 and coefficient == 'velocity' else 0, 0, 0, target,
+                    0, 0, 0, 1, 0, 0, 0, 0)
+            if coefficient == 'velocity':
+                put(data, HEAP + 0x10, '4f', 3, 0, 0, 0)
+            # First accumulation replaces the incoming step pointer. Second
+            # accumulation replaces the operations argument with +/-6 in retail
+            # or +/-3 with a stale step. Both continuations return normally.
+            for empty_stream in (0x40400000, 0x40c00000, 0xc03ff000, 0xc0bff000):
+                for page in (empty_stream, empty_stream + 4096):
+                    if not any(lo <= page <= hi for lo, hi, _ in machine.mem_regions()):
+                        machine.mem_map(page, 4096)
+                machine.mem_write(empty_stream, b'\0' * 8192)
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data,
+                               [STEP, OPS, HEAP, stack_arguments],
+                               precision=precision | (rounding << 10))
+            output = words(machine, stack_arguments, 4)
+            # FADD includes the tiny positive float encoding of the old OPS
+            # argument; directed rounding can retain its one-ulp contribution.
+            expected = (0x40c00000 + (rounding == 2) if coefficient == 'error'
+                        else 0xc0c00000 - (rounding in (2, 3)))
+            assert output == (replacement_step, expected, HEAP, stack_arguments), (
+                label, precision, rounding, coefficient, output)
+            assert snapshot[1] == 1
+            if label == 'retail':
+                snapshots[rounding] = (snapshot, output)
+            else:
+                assert snapshots[rounding] == (snapshot, output), (precision, rounding, coefficient)
+        print(label, 'linear-error step reload 4RM', coefficient, hex(precision), flush=True)
+
+
+@pytest.mark.parametrize('scale_words', [
+    (0x40000000, 0x40400000),
+    (0x7fa12345, 0x7f800001),
+    (0x80000000, 0xff800001),
+], ids=['finite', 'nan_payloads', 'signed_zero_nan'])
+@pytest.mark.parametrize('aliased', [False, True])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_iteration_scales_are_captured_before_saved_error_publication(
+        solver_images, precision, aliased, scale_words):
+    frame = STACK + 32768 - 0xd0
+    step = frame + 0x28 if aliased else STEP
+    error_word, velocity_word = scale_words
+    retail, compiled, symbols = solver_images
+    snapshots = {}
+    for label, machine, entry, gate in (
+            ('retail', retail, 0x31c940, 0x480c60),
+            ('compiled', compiled, address(symbols, 'solve_operations_31c940'),
+             address(symbols, 'g_480c60'))):
+        for rounding in range(4):
+            data = solver_case(13, 0)
+            put(data, STEP, '8I', 0, error_word, velocity_word, 0, 0x3f800000, 0, 0, 1)
+            put(data, OPS + 24, '5I', 0x20410, 0x20c0e, CALLBACK, 123, 0x400)
+            put(data, HEAP, 'B', 3)
+            machine.mem_write(frame + 0x10, b'\0' * 176)
+            if aliased:
+                # The counter zeroes the input error. Saving that zero to +30
+                # then overlaps the velocity input, which retail captured first.
+                machine.mem_write(step, struct.pack(
+                    '<8I', 0, error_word, velocity_word, 0, 0x3f800000, 0, 0, 1))
+            calls = []
+
+            def observer(uc, va, size, user):
+                terms, payload = words(uc, uc.reg_read(UC_X86_REG_ESP) + 4, 2)
+                calls.append((terms, payload, *words(uc, step + 4, 2)))
+                return_from_hook(uc)
+
+            # The real restore-scales opcode executes before the observer.
+            # The callback only observes its arguments and restored input words.
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data, [step, OPS, HEAP, IMPULSES],
+                               hooks=[(CALLBACK, observer)],
+                               precision=precision | (rounding << 10))
+            assert calls == [(TERMS, OPS + 36,
+                              0 if aliased else error_word, velocity_word)], (
+                                  label, precision, rounding, aliased, calls)
+            assert snapshot[1] == 1
+            if label == 'retail':
+                snapshots[rounding] = (snapshot, calls)
+            else:
+                assert snapshots[rounding] == (snapshot, calls), (precision, rounding, aliased)
+        print(label, 'saved-scale capture 4RM', hex(precision), aliased, scale_words, flush=True)

@@ -1013,7 +1013,7 @@ static __forceinline float select_angular_limit(double velocity, float const &ta
 // Reload B inertia after the projection and rounded impulse stores. Angular
 // axes reload after the linear writes; their receiver reloads after A angular.
 static __forceinline void solve_linear_error_cursor_31c940(float target,float mass,
- __m128 *&terms,solver_velocity_31c940 *a,__m128 *linear_a,float *const &linear_b,
+ __m128 *&terms,solver_velocity_31c940 *a,__m128 *linear_a,float *linear_b,
  __m128 *const &angular_b,__m128 const *const &inverse_b,
  solver_step_31c940 *const &step,float *&result,unsigned char *&op,
  solver_scalar_arena_31c940 &projection_pool,float &simd_scratch)
@@ -1427,9 +1427,10 @@ static __forceinline void decode_solver_header_31c940(unsigned char *&op,
 	solver_header_31c940 *header = (solver_header_31c940 *)op;
 	// Capture the row input before publishing pointer homes; the header can overlap them.
 	a = header->a;
+	solver_velocity_31c940 *next_b = header->b;
 	terms = header->terms;
-	b = header->b;
 	a_home = a;
+	b = next_b;
 	op += sizeof(*header);
 }
 
@@ -1457,8 +1458,14 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 	for (state.solving.iteration = 0; state.solving.iteration < iteration_count; ++state.solving.iteration,iteration_count=step->iterations)
 	{
 		solver_step_31c940 *initial_parameters = step;
-		state.solving.saved_error = initial_parameters->error_scale;
-		state.solving.saved_velocity = initial_parameters->velocity_scale;
+		// Capture both input words before publishing either saved value.
+		// Raw copies also preserve floating point encodings.
+		struct scale_inputs_31c940 { float error, velocity; };
+		scale_inputs_31c940 captured_scales;
+		memcpy(&captured_scales.velocity, &initial_parameters->velocity_scale, sizeof(captured_scales.velocity));
+		memcpy(&captured_scales.error, &initial_parameters->error_scale, sizeof(captured_scales.error));
+		memcpy(&state.solving.saved_error, &captured_scales.error, sizeof(captured_scales.error));
+		memcpy(&state.solving.saved_velocity, &captured_scales.velocity, sizeof(captured_scales.velocity));
 		unsigned char *op = operations;
 		__m128 *terms;
 		solver_velocity_31c940 *a;
@@ -1718,11 +1725,14 @@ result+=2;
 					__m128 const *&inverse_b_pointer = scalar_work.inverse_b;
 					inverse_b_pointer = &body_b.body->inverse_inertia;
 					__m128 *linear_a_pointer = &a->linear;
+					// Retain this row receiver, then refresh it after result publication.
+					float *linear_b_live = linear_b_pointer;
 					do
 					{
 						solve_linear_error_cursor_31c940(((solver_linear_row_31e7b0*)terms)->linear.m128_f32[3],
-						((solver_linear_row_31e7b0*)terms)->a.m128_f32[3],terms,a,linear_a_pointer,linear_b_pointer,
+						((solver_linear_row_31e7b0*)terms)->a.m128_f32[3],terms,a,linear_a_pointer,linear_b_live,
 						angular_b_pointer,inverse_b_pointer,step,result,op,projection_pool,scalar_work.simd_scalar);
+						linear_b_live = linear_b_pointer;
 					} while (*op == 13);
 
 					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
