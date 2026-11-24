@@ -972,6 +972,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // as `if (...) skip_classification = true;` 846 (the flag's byte home then drops under `aligned`, retail's +0x11/+0x12 order, and
 // the distance test moves up as in retail); both 674; a `long type` local for the four arm tests 855; the old 495 lead's eight
 // forms with the flags local 496.
+// Complete per-type skip result with direct or separate team case 931/899; positive classification
+// result 865/875. Positive entry default with direct or separate team case 843/925. Complete byte
+// skip/positive results 931/865. NOT kept: the positive default grows to 3744 bytes. The 3728-byte
+// positive per-type form changes the retail skip stores. The frame remains 0x2cb0.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

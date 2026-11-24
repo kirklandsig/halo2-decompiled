@@ -149,7 +149,7 @@ static inline real plane_distance_to_point(plane3f const *plane, point3f const *
    the inverse length is kept in double precision */
 static __forceinline void quaternion_unit_or_identity(quaternionf *q)
 {
-	real length_squared = q->w * q->w + q->k * q->k + q->j * q->j + q->i * q->i;
+	real length_squared = q->i * q->i + q->j * q->j + q->k * q->k + q->w * q->w;
 
 	if (length_squared > 0.0f)
 	{
