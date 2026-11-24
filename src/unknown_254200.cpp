@@ -888,6 +888,18 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // (same code each). Diagnostic reading: the swapped pair sits in a slow-path block after a reservation where both loads
 // have equal scheduling height (as 0x254490's group); a 20-decision what-if search found no single forced decision
 // that fixes it.
+// M3 lane 13 r155 (H2M_FAST with 0x254490 4 and 0x254200 matched; control 2). Reading: both reloads are pieces of
+// values split at the slow-path call, and the pieces come back in the order their parents were numbered. On this body
+// the depth constant's shared load is numbered ahead of the three coordinate values (product, upper, lower), so its
+// piece reloads first; with two real stores to a probe array ahead of the colour fetch (diagnostic) the constant is
+// numbered after them and the pair is retail's (one store: ours; two or three: retail's). By-reference temporaries
+// weigh nothing: a file-local copy of the stage-state helper taking stage, type and value all by const reference 2,
+// type and value 2, stage and type 2 (same code each); taking only the stage or only the value by reference 465
+// (2236 B: the dirty-flag updates merge, as with the type by value). The first block's eleven stage states with a
+// `dword stage = 0` local through the existing 0x224f0 465 (2236 B), through the device's inline setter 465, with a
+// `short stage` shared with the 0x14390 call 465 / 465 (a local stage is folded before the updates are merged), the
+// stage local with the by-reference helper 2 (same code); the eleven types read from a file-scope constant table
+// through the inline setter or through 0x224f0 465 / 465 (a constant table element is folded as early as a literal).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
