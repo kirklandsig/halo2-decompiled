@@ -1034,6 +1034,11 @@ struct s_physical_block_iterator
 // branches 246, tie first with earlier and later time 219/219, combined earlier and later time expressions
 // 247/242, packed time and signed-page ranks 356, packed ranks with symmetric age clamps 390. The packed form
 // changes the frame probe.
+// Round 467: compound Boolean policy results for timestamp, physical and weighted
+// cases in seven subsets 286/201/286/201/286/201/286. Strict timestamp result then
+// compound equal-time page result 212 (1194 B). That places both cases in the loop
+// at the common AL test. It leaves SETB/OR and the weighted-age mask differences.
+// With both age clamps 216, with both from one tick read 216.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

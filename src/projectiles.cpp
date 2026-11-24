@@ -18,6 +18,7 @@ detonation. */
 #include "sound_sources.h"
 #include "impacts.h"
 #include "bit_vector.h"
+#include "object_dispatch.h"
 #include <math.h>
 #include <string.h>
 
@@ -1918,8 +1919,10 @@ PRIVATE inline long projectile_object_root(long object_index)
 // MiniMax S (11-15): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand: BLOCKED-BY 0xfbfd0.
 // MiniMax E (11-20): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after
 // the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand: BLOCKED-BY 0xfbfd0.
-// score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
-// higher, so measure this with a big caller such as 0xfaa60 in the check).
+// score 280 (was 296): Retail's separate seat-bit tests now agree. The four-byte frame agrees.
+// The pool and projectile slot homes still differ at +0x5 where the speed update stays a call.
+// Earlier 296 (was 307): A larger reduced image including 0xfaa60 reproduced the full score.
+// The four-source reduced image allocated registers differently and scored higher.
 // Round 2 of #1061: statement-by-statement walk against retail: no behaviour difference (every
 // store, test, call and constant agrees); the differences are structural. (1) retail's callee list is
 // only 0xfbd40 and 0xfd8b0: it expands 0xfbfd0 after the 0xfbd40 call (pool and tag re-read, final speed
@@ -1949,7 +1952,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 // re-loads the pool global inside the loop (differs from +0x5). A pool local with the root helper taking
 // the pool 302; typed field stores and a byte-cast tag read 304; the permuter's best (294 reduced, 293
 // full) needs a `volatile` cast, which is not allowed.
-// score 315 (was 315): retail expands the speed update inline after the 0xfbd40 call, keeping
+// Earlier score 315 (was 315): retail expands the speed update inline after the 0xfbd40 call, keeping
 // index * 12 in EBP from entry and the definition in EDI; ours calls it, so the offset is never
 // kept and the entry differs at +0xb. Marking 0xfbfd0 `inline` expands it but scores 369.
 // Earlier (315): frame 4 agrees; pool/input and tag receiver allocation differ at +0xb.
@@ -2027,6 +2030,12 @@ PRIVATE inline long projectile_object_root(long object_index)
 // write out by hand, so the missing bytes stand; the first difference is in the prologue, where this build keeps the
 // global pointer in ebp and retail keeps it in edx: BLOCKED-BY 0xfbfd0.
 // MiniMax R (11-20): re-checked, no new form and no lower score (296): this build masks the index after loading the table base where retail masks it first and scales it with shl, and the flag is set with a load, an or and a store where retail sets it in place against [esi + 0x12c].
+// Round 467: typed owner header 296, seat bitfields 280, both 280, source platform
+// field 296, header and platform 296, seat and platform 280, all three 280, and
+// all three with the typed destination platform field 280. Kept the shared header
+// and datum views at 280 plain (1211 B). The seat tests now shift and test both
+// bits separately, with the original calls and stores. The slot and tag homes
+// still differ where retail expands the speed update.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2127,21 +2136,23 @@ bool __stdcall function_f8200(long projectile_index, byte const *data, long unus
 	if (owner_index != NONE)
 	{
 		long root = projectile_object_root(owner_index);
-		byte *header = g_4e0300->data + (root & 0xffff) * 12;
+		s_object_header_datum *header = &((s_object_header_datum *)g_4e0300->data)[root & 0xffff];
 
-		if ((1 << header[3]) & 1)
+		if ((1 << header->type) & 1)
 		{
-			byte *unit = *(byte **)(header + 8);
-			long weapon_index = *(long *)(unit + 0x3e8);
-			word unit_flags = *(word *)(unit + 0xc0);
+			s_object_common_datum *unit = header->object;
+			long weapon_index = *(long *)((byte *)unit + 0x3e8);
 
 			if (weapon_index != NONE &&
-				(((unit_flags >> 1) & 1) || ((unit_flags >> 2) & 1) || weapon_index == *(long *)(unit + 0x3e4)))
+				(TEST_FIELD_BIT(unit->flag1) || TEST_FIELD_BIT(unit->carried_by_platform) ||
+					weapon_index == *(long *)((byte *)unit + 0x3e4)))
 			{
 				*(dword *)&projectile->flags |= 0x8000;
-				word_flags_set((word *)((byte *)projectile + 0xc0), 2, (*(word *)(*(byte **)(header + 8) + 0xc0) >> 2) & 1);
-				word_flags_set((word *)((byte *)projectile + 0xc0), 1, (*(word *)(*(byte **)(header + 8) + 0xc0) >> 1) & 1);
-				*(long *)((byte *)projectile + 0xb8) = *(long *)(*(byte **)(header + 8) + 0xb8);
+				word_flags_set((word *)((byte *)projectile + 0xc0), 2,
+					TEST_FIELD_BIT(header->object->carried_by_platform));
+				word_flags_set((word *)((byte *)projectile + 0xc0), 1,
+					TEST_FIELD_BIT(header->object->flag1));
+				((s_object_common_datum *)projectile)->platform_index = header->object->platform_index;
 			}
 		}
 	}
@@ -2352,6 +2363,10 @@ real function_17c900(short function_type, real input);
 // MiniMax R (11-20): re-checked, no new form and no lower score (348): retail reads the index from [esp + 0x34] and masks it before the prologue pushes while this build loads the two table pointers first and keeps the masked index in esi where retail keeps the unit entry there.
 // M3 lane 15 r135 (the coordinator's rotation-family screen, h2m fast): the aim offset's rotation through include/axis_rotation.h's helper (the cross axis turned about the
 // target direction in place, then scaled into the point) 370 (1474 B). Restored.
+// Round 467: wander-local salt with signed phase counters masked on initialization 365/365,
+// unmasked until conversion 365/365, separate salt offsets 365/365, or masks applied in place
+// 365/365 (direct tick reads / one shared tick). The 0x30 frame stays, index remains in EAX,
+// and the output is still stacked.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
