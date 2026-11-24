@@ -35,6 +35,8 @@ void saved_game_storage_initialize(void)
     saved_game_storage_ensure_directory("n:\\sgf");
     memset(&g_55c030, 0, sizeof(g_55c030));
     // g_55c14f and g_55c14e are already zero after the memset; retail still stores them (0x2156d7, 0x2156fb).
+    // This source order of the stores (g_55c14f first) is what gives them retail's order in the object: writing
+    // them in retail's store order instead scores 28.
     g_55c14f = 0;
     g_55c14c = true;
     memset(&g_51e9f8, 0, sizeof(g_51e9f8));

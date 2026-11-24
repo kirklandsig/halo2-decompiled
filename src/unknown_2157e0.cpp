@@ -59,7 +59,7 @@ long function_2170e0(long file_index)
 		s_55c164 *cached = NULL;
 		for (long i = 0; i < g_55c160_table.count; i++)
 		{
-			long index = (long)g_55c160_table.entries[i].field0;
+			long index = (long)g_55c160_table.entries[i].file_index;
 			if (index != NONE && index == file_index)
 			{
 				cached = &g_55c160_table.entries[i];
@@ -99,7 +99,7 @@ long function_2170e0(long file_index)
 		if (result != NONE)
 		{
 			g_55c160_table.count++;
-			g_55c160_table.entries[g_55c160_table.count - 1].field0 = (void *)result;
+			g_55c160_table.entries[g_55c160_table.count - 1].file_index = (void *)result;
 		}
 	}
 	else
@@ -144,7 +144,7 @@ void function_215810(void)
 		for (i = 0; i < count; i++)
 		{
 			s_55c164 *entry = &g_55c160_table.entries[i];
-			long file_index = (long)entry->field0;
+			long file_index = (long)entry->file_index;
 			function_216800(file_index, entry->unknown04);
 		}
 		g_55c14f = 1;
@@ -188,7 +188,7 @@ bool function_216800(long file_index, void *location)
 		long count = g_55c160_table.count;
 		for (long i = 0; i < count; i++)
 		{
-			long cached_index = (long)g_55c160_table.entries[i].field0;
+			long cached_index = (long)g_55c160_table.entries[i].file_index;
 			if (cached_index != NONE && cached_index == file_index)
 			{
 				*(s_profile_location_bytes *)location = *(s_profile_location_bytes *)g_55c160_table.entries[i].unknown04;
@@ -229,7 +229,7 @@ bool function_2168b0(long file_index, s_saved_game_file_location *location)
 			long count = g_55c160_table.count;
 			for (long i = 0; i < count; i++)
 			{
-				long cached_index = (long)g_55c160_table.entries[i].field0;
+				long cached_index = (long)g_55c160_table.entries[i].file_index;
 				if (cached_index != NONE && cached_index == *index_reference)
 				{
 					*(s_profile_location_bytes *)g_55c160_table.entries[i].unknown04 = *(s_profile_location_bytes const *)location;

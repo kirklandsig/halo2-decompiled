@@ -108,7 +108,8 @@ typedef char assert_saved_game_storage_cache_copy_buffer[(offsetof(s_saved_game_
    fourth entry in the subsystem's state, 0x55c274) */
 struct s_55c164
 {
-	void *field0;
+	/* a profile file a slot was signed in with */
+	void *file_index;
 	byte unknown04[0x40];
 };
 /* the count and the entries are one structure: 0x2172a0 reads the count

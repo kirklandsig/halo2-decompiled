@@ -341,7 +341,7 @@ void __stdcall player_slot_set_profile(long index, s_player_profile_settings *se
 	if (changed && slot->profile_index != NONE)
 	{
 		g_55c160_table.count++;
-		g_55c160_table.entries[g_55c160_table.count - 1].field0 = (void *)slot->profile_index;
+		g_55c160_table.entries[g_55c160_table.count - 1].file_index = (void *)slot->profile_index;
 	}
 	function_53810(settings->voice_mask, index);
 	function_54fc0(index, settings->voice_through_tv);

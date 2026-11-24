@@ -36,16 +36,15 @@ extern void *g_51ea14;
 // Matches as a link-time object. The tables are an array of one: the compiler constructs it with its vector
 // constructor iterator, expands that call here, and then cannot expand the same iterator again for the table's
 // records, so retail's call to 0x20670 with the record constructor stays (a lone table member has the record loop
-// expanded instead). Retail reads g_55c15c again after the store through the new cache: the global lies in the block
-// 0x215690 clears by address (g_55c030, 0x55c030..0x55c284), so a store through a pointer may change it.
+// expanded instead). Retail loads g_55c15c once per statement (0x2158bc, 0x2158c8): the new cache takes the old
+// generation before the global is stepped.
 // @retail 0x215880
 void function_215880(void *reference)
 {
 	void *buffer = ((c_memory_source *)reference)->allocate(sizeof(s_location_storage));
 	s_location_storage *storage = buffer ? new (buffer) s_location_storage : NULL;
-	long &next_generation = g_55c15c;
-	storage->generation = next_generation;
+	storage->generation = g_55c15c;
 	g_51ea14 = storage;
-	next_generation = (next_generation + 1) % 512;
+	g_55c15c = (g_55c15c + 1) % 512;
 	g_55c150 = 3;
 }

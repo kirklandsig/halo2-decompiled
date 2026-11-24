@@ -15,7 +15,7 @@ void function_2172a0(long handle)
 
 	for (i = 0; i < count; i++)
 	{
-		long entry = (long)g_55c160_table.entries[i].field0;
+		long entry = (long)g_55c160_table.entries[i].file_index;
 
 		if (entry != NONE && entry == handle)
 		{
