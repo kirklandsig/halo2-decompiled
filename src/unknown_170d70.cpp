@@ -1635,6 +1635,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
 // 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
 // `c * (1 - square) + square` 337 (the same code: the product order is canonical).
+// Builder inline or automatic 761/761, automatic transform 337, both automatic 761
+// (reduced control 337). Symmetric pairs before diagonals 359, negative or positive
+// partners first 368/373, late second and third squares 375. NOT kept: the builder
+// needs forced expansion in this image, and the coefficient forms change the frame.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2384,6 +2388,10 @@ struct s_pool_view_172840
 // bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
 // stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
 // `== unknown00` with the arms swapped 22.
+// Count-first recount and native successful or rollback point difference 55/55/55.
+// Clipped base or count live across the bit copy 128/126, shared arena origin 275,
+// immutable wide cluster 55, shared short list index 150. The key and predecessor
+// allocation and long sentinel remain in the tying forms.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
