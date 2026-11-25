@@ -1076,6 +1076,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the hull count 146; the heading zeroed right after the departure flag, ahead of the lowest scan (retail's store
 // order), 213 (aligned 135, masked 56); the candidate differences formed candidate minus current and passed to atan2
 // 266 (760 B: the distance and the angle then share them, retail forms them twice).
+// The extra frame word, persistent count and hull-count home still differ.
+// Cursor-derived ordinals for the minimum/candidate/both scans 270/262/256;
+// pointer-pair duplicate compaction alone and with minimum/candidate/both
+// scans 286/269/267/265. Candidate identity compared as a pointer 254.
+// Every cursor form raises the score and six change the matched hull caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

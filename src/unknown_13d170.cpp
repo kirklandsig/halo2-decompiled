@@ -1080,6 +1080,10 @@ struct s_physical_block_iterator
 // 235, named tie result in the later arm 230, and scoped equal/unequal result 284.
 // With both age bounds in the same operand order 279/227/213/280. NOT kept:
 // all shorten the body past 1213 bytes and fail to recover the shared policy join.
+// Guarded products for candidate, incumbent or both, conditional products in the same order,
+// then both from one clock read with guarded stores or zero-first conditionals: 414/219/270/274/219/305/270/305.
+// NOT kept: both incumbent-only forms retain the 0x1054 frame but grow the body. The other
+// forms change the probe. The common AL policy test and both weighted-age masks remain open.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

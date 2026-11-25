@@ -1040,6 +1040,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // local) on the 576/597 forms 681/661 (aligned 583/611); the 12/8 factor selected before t at the first clamp on the
 // 576 form and on its each-use-limit form 673/741 (frame 0x20). Lead (not kept, the count rises): the 576 form is the
 // closest aligned shape so far. Body unchanged.
+// EBX still takes the supplied direction. Staging the first displacement endpoint
+// in the vector, in three coordinates, as a point copy or as a point initializer
+// scores 570/670/716/651 with the alignment scale before those reads and
+// 567/670/716/648 after them. NOT kept: the staged vector ties at best, and
+// the coordinate and point forms move the frame or vector schedule away from retail.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

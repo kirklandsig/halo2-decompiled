@@ -1778,6 +1778,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Resolved mode seeded from the requested mode, used to seed the iterator key, or copied from
 // the iterator at its mode, final key, or final field: 814 each. Aggregate iterator with request
 // seed, resolved seed, or seeded mode key: 812/812/814. Candidate and mode homes persist.
+// Attempt index seeded from the unresolved result before lookup, after it or
+// on a miss. Copy the unresolved id and clear its graph word at those three
+// points. Compare the carried unresolved word at the latch with default or
+// copied candidate: 973/978/1005/945/1003/918/988/927. NOT kept: all raise the score, and
+// the latch forms grow the frame to 0x30. Class/NONE and candidate homes remain.
+// Per-attempt default pointer by selection or redirection after or before lookup
+// 934/976/975; shared default pointer selection or redirection 962/971; shared
+// default by value selection, on miss or before a hit replacement 962/930/939.
+// NOT kept: most forms grow the frame to 0x30. The default-first assignment
+// restores the initial class register but grows the body. All disturb callers.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2468,6 +2478,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Shared resolved key captures for output stores and second request: mode, class, mode/class,
 // type, mode/type, class/type, all at their stores, and all before the first store: 812 each.
 // The resolved mode still takes the expired argument home.
+// Attempt index seeded from the unresolved result before lookup, after it or on a
+// miss. Copy the unresolved id and clear its graph word at those three points.
+// Compare the carried unresolved word at the latch with default or copied
+// candidate: 973/978/1005/945/1003/918/988/927. NOT kept: all raise the score. The latch
+// forms reserve 0x30, and the candidate and resolved-mode homes still differ.
+// Last attempt retained through search with a single result copy at search exit or after optional
+// outputs, reset before lookup, only on miss, or by conditional selection: 923/1036/1012/923/1036/1012/992/992.
+// The final two forms construct the result from that attempt with a do-while or pretest.
+// NOT kept: the frame grows and every form exceeds retail's length and the opening score.
+// The class/NONE registers, resolved-key homes and candidate slot remain open.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
