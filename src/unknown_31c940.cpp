@@ -1594,18 +1594,19 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 				case 3:
 				{
 					// Read the following opcode after the row writes and before advancing.
+					// Advance the stream before the row/result cursors, as in retail.
 					signed char next_pair_kind;
 					{
 						solve_contact_pair(step, op, normal_axes, terms, a, scoped_b, result, scalar_work, projection_pool);
 						next_pair_kind = *((signed char *)op + 8);
-						terms += 6; normal_axes += 6; result += 2; op += 8;
+						op += 8; terms += 6; normal_axes += 6; result += 2;
 
 					}
 					if (next_pair_kind != 3) continue;
 					{
 						solve_second_contact_pair(step, op, terms, a, scoped_b, result, scalar_work, projection_pool);
 						next_pair_kind = *((signed char *)op + 8);
-						terms += 6;  result += 2; op += 8;
+						op += 8; terms += 6; result += 2;
 
 					}
 
