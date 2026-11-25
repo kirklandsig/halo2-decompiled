@@ -1000,6 +1000,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Packed render-handle views through native shorts, bitfields, signed or unsigned low members.
 // Word/full mask scores 135/156, 156/156, 135/156 and 135/156. NOT kept: all eight
 // move the first difference to entry and raise the score. The EDX mask and split element loads remain.
+// The fallback EDX mask with the EDI directory and separate element addresses still differ.
+// Reused instance with the word fallback 117. Full mask, then continued by shader,
+// pass, material, shader/pass or all three 152 each. Word fallback continued
+// through all three 117. NOT kept: the word forms tie, and the full mask hoists
+// the directory load and raises the score.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

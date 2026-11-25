@@ -3045,6 +3045,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // direct projection `delta.i*dir.i + dir.j*delta.j + dir.k*delta.k` 383 (al=139), `delta*dir` i,j,k 458 (al=95), j+i+k 380 (al=111),
 // `dir*delta` i,j,k 263 (2286 B, 567/567 insns, al=138, mask=70; NOT kept: combination/operand-order steering that worsens aligned/masked counts
 // against both the helper form and main, emitting three reg-first projection multiplies where retail has one). Body unchanged.
+// The camera displacement registers and early attenuation default still differ.
+// Named forward products grouped or interleaved with the deltas, with early/late tint.
+// Opening Z/X/Y delta order 500/500/500/500. X/Y/Z order 500/500/498/500.
+// NOT kept: length stays 2286 and all scores rise. The generated dot still combines
+// the products in a different order from retail.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

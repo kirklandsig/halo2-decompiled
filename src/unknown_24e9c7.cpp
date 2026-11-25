@@ -776,6 +776,11 @@ struct s_24e9c7_points
 // Corner origin component copies by memcpy or memmove (X/Y/both) 253/300/337 each.
 // Saved Y/whole origin with library copies 333/286. NOT kept: the copies grow the frame
 // and body and change the matched caller. The early across-Y spill and return home still differ.
+// The across-Y spill and the returned-height home still differ.
+// Named upper/lower/all rectangle endpoints live from selection 160/178/197,
+// the same endpoint subsets captured at bitmap admission 125/125/125,
+// and chained default stores for upper/all endpoints 161/198.
+// NOT kept: bitmap-admission reads tie, and the producer forms grow the body.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
