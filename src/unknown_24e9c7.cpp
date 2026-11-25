@@ -791,6 +791,16 @@ struct s_24e9c7_points
 // the same endpoint subsets captured at bitmap admission 125/125/125,
 // and chained default stores for upper/all endpoints 161/198.
 // NOT kept: bitmap-admission reads tie, and the producer forms grow the body.
+// M3 lane 11 r169 (h2m fast with 0x22a664 and 0x24e59f, both MATCH; control 125). Retail's [ebp-8] holds the early across
+// product `size * forward_i` and later the scaled side's j, so one variable carries both (the side pair built from the
+// across products and scaled in place), with the side's i never stored ([ebp-0xc] untouched). Frame packing on main:
+// the four 4-byte homes first (first bitmap 4 refs, result 3, kind 2, bitmap index 2), then the 8-byte `back` below
+// them; retail's 8-byte cell sits between the first bitmap and the result, so it joins a 4-byte cell made before the
+// result's, which none of these forms makes. Forms: across as `size * (0.0f - forward_j)` 138 (739 B, listed); that with
+// `back` as two scalars 146; `back` as two scalars alone 133 (frame 0x44); no `back` (the side subtracted) 167 (722 B),
+// with `0.0f -` 170; the side pair built from the across products and scaled in place 139 (742 B, listed), its j built
+// first 138, `forward_i * size` 139, scaled with `*=` 139, with `back` as scalars 139; the side as two scalars scaled in
+// place 138, with `back` as scalars 146. Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
