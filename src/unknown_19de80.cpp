@@ -1027,6 +1027,15 @@ static inline bool teams_enabled_19e1c0()
 // Direct format exits, unconditional name/fallback copy with per-arm/common bounds 552/488;
 // name-only copy with per-arm/common bounds 513/513; ordinary result with the same four forms 605/561/547/548.
 // NOT kept: all shorten the body and still miss the entry token load.
+// M3 lane 8 r237 (h2m fast with 0x19e0f0, MATCH; control 390, plain result 691). Ledger on the plain result: the token
+// is one candidate (52: the entry compare plus twelve chain compares, minus twelve unreferenced chain blocks), while
+// `remaining`'s only whole candidate is the fallback's (26, three references): no use of it dominates the arms. Forms:
+// the first compare reading the token through a `word const *const *` bound to its address, plain result 691, kept
+// result 390 (same code each: the indirection folds before the candidates form); a `long` copy of `remaining` made at
+// the top and used everywhere 691 (copy-propagated); the dispatch in a forceinline helper 691 (re-measure of r184's).
+// Diagnostic, a test retail lacks: `if (remaining < 0) return 0;` first on the plain result 473 (1392 B: `remaining`
+// in EBP from entry, the token read from its slot per compare and the name arms no longer joined, as retail; the event
+// takes EDI and the token length EBX where retail has EBX / EDI, and a frame word returns). Body unchanged.
 // Lane GA r4 (fast with 0x19e0f0/0x19ea60/0x19eae0, all MATCH each run; control 390 at 1437/1443 B, 22 distinct trials):
 // capacity-seeded plain result (`long result = remaining;` consumed by the 4 name clamps) with direct event->cause_team/effect_team,
 // long team + `best_score <=` and player locals in local_team/spawn_time recovers retail's token preload (`mov eax, [esp+4]`),

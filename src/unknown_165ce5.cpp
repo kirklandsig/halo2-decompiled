@@ -2178,6 +2178,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Unit and mode spill slots remain exchanged. Named blend-weight or blend-rate
 // field pointers, references or mixed pairs 172 in all eight forms. The later
 // weight address still shares the fourth spring slot instead of the unit slot.
+// M3 lane 8 r238 (H2M_FAST on the round 232 lead, rebuilt at 17): the allocator puts the +0xb8 channel pointer in ECX
+// because nothing else holds ECX or EDX across the 0xb6760 call (a forced-ranking search placing it in ESI gives 14:
+// that choice is the three rows); the weapon's EDI piece starts at its first use, after the callback select. On the
+// lead: `long weapon_index` read once for the test and the object lookup (0x16760c's spelling) 17; the callback by
+// if/else 17; the found arm's duration and frame-position calls through `channel` 17; its frame-position read through
+// `channel` 60 (2192 B); the callback ternary inside the update call 17 (same code).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
