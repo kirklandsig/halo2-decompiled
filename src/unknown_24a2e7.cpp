@@ -526,6 +526,17 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // through `s_entry_24a64d *const &kept = entries` 84, with the plain arm through it too 84 (the reference folds). On the
 // lead: the terminator's index through `long const &found = i` 39; the arm's entry as a reference 39 (same code each);
 // the entry pointer formed ahead of the append test and used by the plain arm 72. Body unchanged.
+// M3 lane 12 r190 (h2m fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; control 67). Reading: on
+// main's body EBX is a zero constant (`cmp b [ebp + 0xc], bl`, `mov w [edi + 0x62], bx`) because i dies at the arm; with
+// the indexed terminator (84) the entry address shared by the arm and the terminator ranks 84 against i's 38, and a
+// forced-ranking search that drops it to the bottom gives 62 with the terminator folded onto `buffer` again (no other
+// single decision moves it). On lane 10 r119's two-member lead (39) the shared product `i * 0x248` ranks 81 against i's
+// 39, but i forced to the top stays at 39 and the product forced to the bottom gives 69: retail's three multiplies are
+// not a colouring outcome, the product is never shared in retail's code. Forms: `buffer` named at the found block's top
+// ahead of the append test 94; the built result read back as `entries[i].field_1e4` after the buffer terminator 67
+// (same code); the lead's nested append test with the built arm breaking and the plain name after it, on plain locals,
+// 67 (same code); the conversion limit and terminator index written from the arrays' extents 67 (same code); i declared
+// ahead of the for with `result = buffer;` before an indexed terminator 84. Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
