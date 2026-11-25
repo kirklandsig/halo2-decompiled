@@ -2140,6 +2140,17 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // `unit_index` local serving the first query only (the second reading the actor's field) 294 (1217 B, aligned 128); the
 // secondary query stored first 298 (1232 B, aligned 109); the current weapon through the existing 0x1e1f20(actor_index)
 // with the secondary through 0xcbd50 285 (1182 B, aligned 136: 0x1e1f20 stays a call).
+// M3 lane 5 r245 (h2m fast with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240, 0x1e5280, 0x1e3b60, 0xcbd50, 0x1e1f20
+// and 0x1e1fd0, all MATCH; control 251, sequence-aligned 183 rows exact and 97 with registers and stack offsets masked).
+// The count is positional and moves against the aligned distance here: the rounds' lower bound read once into a named
+// `short minimum` (retail keeps it in DX from the test through the subtraction to the final add) 263 but aligned 136 /
+// masked 70; that with the draw inside the rounds expression 263 (same code); with a `long` weapon index 323 (1185 B,
+// aligned 124 / 55); with block 2's two queries through 0xcbd50 as well 298 (1186 B, aligned 120 / 48: what is left is
+// the pool global held in EDI with its data re-read at each lookup, the seed pointer loaded ahead of the 0x259a0 call
+// and the 30 bytes of the three unmerged block-2 lookups); the `long` index with 0xcbd50 but no minimum 333; the
+// minimum with 0xcbd50 and the short index 275. Retail's scheduler moves the third lookup's loads above the first
+// weapon's store, so that store is not what ends the cached lookup; diagnostic (reverted at once): each block's unit
+// assigned through a pointer to the local 298 on the 298 form (same code, the pointer is propagated away).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

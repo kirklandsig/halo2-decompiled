@@ -1100,10 +1100,26 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // last three 416; long-to-word on the first 403. Staging the product before a word
 // conversion on the first or last three 404/416. The gate address and gate/settings
 // homes still differ. The fourth-only form preserves length and raises the count.
+// M3 lane GB r2 (12 compiled trials, fast control 334 at 1652 B, aligned 271 / masked 177, 0x247470/0x247fd0/0x248cc0 MATCH throughout; body restored):
+// Member function s_247950::function_247950 (with caller 0x247470 calling via this) 334 (same code); dropping local_10 normal pointer 334 (aligned 271), with normal stored before |= 0xa and value24 = NONE after function_137bd0 334 (aligned 268); compound += on position/velocity + no (bool) cast + local_2 != arg_0->field_50 333 (1652 B, under bar), with blend x flipped 333; sibling 0x247fd0 child loop without one-use locals (particle_object_for_tag, (short)local_13, DATUM in link, if/else reciprocal, value24 after lookup) 376 (1696 B, aligned 207, masked 127), plus 0x247fd0 cache test/order 393 (1696 B, aligned 203, masked 120), plus compound +=/no_local10/combined header 393; dropping local_19/20/21 in final call 338; age copy after cache block 380 (1665 B); inline s_248000::set_age/scale_pos methods 337 (field_10 still integer mov); scaled point3f + next_age stored after both 386 (1681 B).
 // Combined effect rejection and allocation failure in the handle, with conditional/branch/default
 // assignment or a terminal failure guard. Low-byte projection 417/417/417/417; bitfield
 // 344/344/344/344. NOT kept: the low-byte forms gain the two homes through a readback,
 // and the bitfield forms retain the folded address and raise the score.
+// M3 lane 16 r187 (h2m fast with 0x247fd0, 0x248cc0 and 0x247470, all MATCH each run; control 334 at 1652 B, aligned 246,
+// register-masked 106; body unchanged). Ranking read: the definition pointer never gets a register piece here (its
+// piece from the 0x249170 call to the child loop has three costed uses and comes out at a negative cost in the seventh
+// pass), while the shared `&local_2->field_28` address is coloured in the third pass (49) and takes EDI from the second
+// rotation call to the velocity add; retail keeps the definition in EDI over that span (the unknown0c load, the bit-4
+// load, the tag index) and forms the field's address again at each use. Forms (G the bit-4 test as
+// TEST_FIELD_BIT(local_3->flag4), L the in-loop particle_object_for_tag, R the if/else reciprocal, C the sibling's cache
+// test and store order, V the velocity default, D the link call given the DATUM sum as the sibling writes it): G 352,
+// GR 352, GV 354, GRV 354, GC 358 (1665 B), GRC 357, GCV 359, GL 390 (1696 B), GLR 391, GLC 391, GLV 393, GLRCV 390; with
+// G the definition still does not take EDI. LRV 331, LRCV 327, LRCVD 318 (1696 B each), but with V the frame is 0xb4
+// (first difference +0x2) and the aligned count rises (LRC 196, LRCV 221), so those drops are positional only and V is
+// not retail's test-first shape: not kept. Without V: D 335 (1654 B), RCD 353 (1658 B), LD 375, LRD 376, LCD 393, LRCD
+// 393 (1696 B, aligned 187, register-masked 78: the closest natural structure so far, 44 bytes long from the blend and
+// draw stores). LRCV with the `(short)` ordinal, `!local_3->unknown0c` or the sibling's record index 327 each (same code).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

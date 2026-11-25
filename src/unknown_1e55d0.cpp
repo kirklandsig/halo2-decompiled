@@ -464,6 +464,13 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // to a const reference (data loaded before the mask, as retail) 318; on it the input's shape field bound to a
 // `c_z_shape_view *const &` 326 (1188 B), the body's current shape so bound 319, both 331 (1192 B), the tail's object
 // index read through the physics parameter 318, the countdown byte bound to a `byte &` 318.
+// M3 lane 1 r167 (h2m fast with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0 and 0x1c4a80, all MATCH; control 319, aligned
+// 214/202, registers masked 131/119). Retail's case 3 pushes only the output and the state and passes the input in
+// EDI, so the input's EDI and the output's EBX follow that callee's register argument, which the stub cannot give
+// (still BLOCKED-BY 0x1ec690). Forms: the three byte views declared `*const` 319 (same code); the mode switch's
+// default as `break` 343 (1180 B, a range check returns); the tail's object index read at the top 369 (1180 B); the
+// shape match as a bool set by a second test 331 (1184 B); the input's flags word through a named pointer 319 (same
+// code). Body unchanged.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
