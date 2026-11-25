@@ -1943,7 +1943,8 @@ result+=2;
 						solver_scoped_body_fields_31c940 const &body_b = scoped_b;
 						// Capture mass before the target and retain the target in the
 						// x87 scalar path until the impulse is formed.
-						float mass = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
+						// This local also carries the mass-scaled error through the step scale.
+						double mass = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
 						double target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 						__m128 *linear_b_pointer = &body_b.body->linear;
 						__m128 *angular_b_pointer = &body_b.body->angular;
