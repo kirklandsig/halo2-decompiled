@@ -2066,6 +2066,10 @@ struct s_item_flags_view_10b850
 // component or helper subtraction, and named steps in paired stores: 891/886/891/891/839/858/857/909.
 // NOT kept: the smaller 0x148 frames fall short of 4096 bytes and raise the score.
 // The entry Boolean stores and retail frame 0x12c still differ.
+// The motion frame and entry Boolean byte stores still differ. Explicit real zero subtraction for slow speed,
+// impact threshold, lift, both flow steps, lateral magnitude, complete flow, shared ray with complete flow,
+// and shared ray with all subtractions: 855/842/813/813/878/878/891/871. NOT kept: the overlap forms shorten the frame to 0x144
+// but expand the body and raise the score.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

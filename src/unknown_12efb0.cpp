@@ -1083,6 +1083,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Current-cluster predicate shared after provider, before provider, within the palette arm, or
 // across weighted winners: short slot 733/741/739/717, signed byte 729/740/735/713.
 // First difference moves into accumulator setup. Retail repeats the cluster comparisons.
+// Existing tag block with direct members or one block pointer, direct or saved previous index:
+// short slot 607/607/607/606, signed-byte slot 700/700/700/699. NOT kept: the best count falls by one,
+// and the provider result, native palette compare and shared lookup test still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

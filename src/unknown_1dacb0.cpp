@@ -2478,6 +2478,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Compare the carried unresolved word at the latch with default or copied
 // candidate: 973/978/1005/945/1003/918/988/927. NOT kept: all raise the score. The latch
 // forms reserve 0x30, and the candidate and resolved-mode homes still differ.
+// Last attempt retained through search with a single result copy at search exit or after optional
+// outputs, reset before lookup, only on miss, or by conditional selection: 923/1036/1012/923/1036/1012/992/992.
+// The final two forms construct the result from that attempt with a do-while or pretest.
+// NOT kept: the frame grows and every form exceeds retail's length and the opening score.
+// The class/NONE registers, resolved-key homes and candidate slot remain open.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
