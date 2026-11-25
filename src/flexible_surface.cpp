@@ -994,6 +994,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // individually 152/152/152, i+j/i+k/j+k 151/152/151, all in i/j/k or j/k/i order 151/151.
 // NOT kept: all reach 880 bytes but leave the small frame, increase the score and
 // disturb shared rotation users.
+// Unsigned sample converted after direction setup, before axis, or after axis
+// 204/201/206, with the oscillation delayed too 206/171/181. Normalized draw
+// kept across setup or axis 206/202. NOT kept: all regress, integer forms
+// shrink the frame to 0x18 and alter the caller. Sample and sine still share a home.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

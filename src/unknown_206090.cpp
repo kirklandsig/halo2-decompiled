@@ -1012,6 +1012,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // k/i/j, k/j/i), after two (i/j/k, k/j/i), or with a named radicand and the root
 // after the copy or before its final store: 1446/1446/1446/1446/1446/1446/1446/1446/1403/1403. NOT kept: every form
 // regresses while retaining the frame and displaced component/velocity homes.
+// Remove magnitude snapshots for projected/residual/alternate velocity 1375/1379/1396,
+// pairwise 1421/1458/1402, all three with normalizer assignment or memcpy 1518/1518.
+// NOT kept: the frame shrinks as far as 0x5a8, but the body shortens and the score rises.
+// The retail 0x58c frame and earlier component and velocity homes remain different.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

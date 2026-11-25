@@ -773,6 +773,9 @@ struct s_24e9c7_points
 // In-place perpendicular scaling after one upper corner with reverse scalars, direct negation,
 // reverse scalars at first use, or subtraction 172/152/163/152. After both upper corners
 // 154/151/142/151. NOT kept: the return slot stays high or the frame grows.
+// Corner origin component copies by memcpy or memmove (X/Y/both) 253/300/337 each.
+// Saved Y/whole origin with library copies 333/286. NOT kept: the copies grow the frame
+// and body and change the matched caller. The early across-Y spill and return home still differ.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

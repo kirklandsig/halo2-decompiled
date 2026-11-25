@@ -1047,6 +1047,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 144/146, and with the single exit 231/231. Long span with breaks 144/161,
 // and with the single exit 230/230. NOT kept: the breaks keep frame 0x18.
 // The single exit recovers 0x14 but shortens the body and loses the matched caller.
+// Duplicate search before compaction, with paired indices, outer cursor, stopped cursors, or saved span
+// 222/221/215/251 for short ordinals and 266/279/276/278 for long. NOT kept: all increase
+// the score and change the matched caller. The widened pass bound and departure home still differ.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
