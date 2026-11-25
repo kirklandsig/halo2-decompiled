@@ -95,6 +95,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 }
 
 // score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// GB r11 lead, held as a patch (not kept: the forms are kept only with a byte match): 256 against 305: frame 0x64, `ret 0x1c`, entry through +0x163 (unity in XMM2, global count in BP, outer counter in EBX) now match retail; loop-head distance compare/order, near cosine/sine spill slots (+0x14/+0x28 vs +0x28/+0x1c) and `cos*y` operand order, second normalization store order, and emitter angle load remain.
 // MiniMax G (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the near arm's y row written as one
 // expression (arg_3->x * local_12 + arg_3->y * local_11) takes the y row in SSE as retail does, but the cosine goes into
 // the register and the facing y into the memory operand (retail the other way round), the y*cos product moves after the
@@ -841,6 +842,22 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // shortens; the same with the dot written y first 391, with the copy as two member assignments 391 (same code each);
 // lane 2 r134's p1 lead rebuilt 249 (1722 B), with the member copy 412 (1706 B); local_1 as two member assignments 305,
 // the negated radius as `0.0f - arg_6` 305 (same code each).
+// Planar scaler for the cosine products on positive/negative/distant turns
+// 356/352/360, positive-negative/positive-distant/negative-distant 370/403/399,
+// all 445, cosine and sine on all 478. NOT kept: each grows the 0x64 frame and
+// regresses. Unity, rounded cosine and candidate ordinal still differ.
+// M3 lane GB r11 (fast with 0x29a190 and 0x298c30 MATCH, then plain-confirmed with 0x29a190/0x298c30 MATCH and 0x299460 569;
+// control 305, 36 trials): lead 305 -> 256, held as a patch (not kept: a new one-caller helper, store and condition order and rereads are kept only with a byte match; the counter and sine forms alone give 460) (1738/1732 B, frame 0x64, first difference +0x57 -> +0x163, aligned 175 -> 51,
+// register-masked 479 -> 57): alias-safe `rotate_vector2d_298d90` (y staged before x/y stores, called in both near `if/else`
+// arms and the far arm, replacing staged `turned_y`), direct `g_504938` counter, retail `function_2992ba` store order
+// (field_4, field_0, field_1, field_c), `!local_4` second-side branch, `>= 0.0f` wrapped angle reading `local_19[local_20]`
+// directly, and `(real)(local_7 == 0 ? sin(-local_22) : sin(local_22))`. Not kept (fast): clean far+emit alone 302 (+vec2d 347),
+// clean far alone 317 (+vec2d 362), global count with staged `turned_y` 457 (+vec2d 440, caller 684), near `if/else` without
+// staged y 400 (1674 B, caller MATCH), sine-only `if/else` 379 (caller 684), whole-near `if/else` 451 (caller 684), `rotate_vector2d`
+// with ternary sine 432 (caller 684), inline `cos()` args 363, with `byte local_6` 373, `emit_near_298d90` helper 257 (+vec2d 333),
+// x-first rotate helper 328, (cos, sin) param order 332, emitter member stores 435 (caller 684), emitter `real const *arg_2` 253
+// (1734 B, al 36; pointer to local, match-only), kept `local_21` 290, old `-(double)local_22` 272 (1732 B), old emitter order 267,
+// in-place rotate helper 555, diagnostic double distance local 284 (224 with vec2d).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

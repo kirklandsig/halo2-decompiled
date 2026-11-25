@@ -76,6 +76,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // them to the helper; the forms that compute the trig inside the helper measured 355-357 and lost the matched caller
 // 0x137ed0 whose inputs are doubles, so the body stands.
 // score 334 (was 334): the builder's squares spill where retail keeps them in XMM1/XMM4/XMM6 and re-reads the axis.
+// GB r11 lead, held as a patch (not kept: the forms are kept only with a byte match): 224 against 334: transform4x3f rotation builder (with matrix3x3 *rotation = &matrix->rotation, axis_squares squared in place, sine_axis, and symmetric cross terms in up.j/left.k order) and in-place rotate_axis_vector match retail's 338-insn schedule across both rotation passes (aligned 642->135, 0x137ed0 MATCH); still differs: frame 0x8c vs 0x90 (one fewer pre-sine_axis spill slot), opening axis load order j/k/i vs i/j/k, and x87 i*sine product.
+// GB11 (11-25, 34 trials): decal-style matrix3x3 builder on matrix3x3 body 382; transform4x3f + in-place rotate_axis_vector 350, with axis_squares squared in place 330, vector3f_scale 350, up.j before left.k 332 (exact 1779 B, aligned 176), forward-first 337, single-expr rotate 356, out-of-place rotate 361, xy-only 350, angle-inside-builder 348, 4-trig-locals diag 350 (fr=0x90), matrix3x3 + in-place 350, matrix-vector-rotate 444; combining up.j-first + axis_squares name + squared-in-place + matrix3x3* rotation pointer gives 224 (1762 B, 338/338 insns, al=135, plain-confirmed, kept); with forward.j/k reuse 222 (al=128), yz inlined 222/324, jk order 222, vector3f_scale 319, struct-copy *axis 364, brace init 332, 4-trig diag 195 (fr=0x90, fd=+0x10, not kept: one-use trig locals), direct matrix->rotation.* 340, direct matrix3x3* with scale/pos 353.
 // MiniMax A (11-18): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7
 // with the squares in xmm1, xmm4 and xmm6, takes the cosine on the x87 stack before the cross terms and forms them as
 // (inverse * j) * i, (inverse * k) * i and (inverse * k) * j, while this build keeps the axis in xmm4, xmm5 and xmm6,
@@ -568,6 +570,19 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 341 (1765 B, 338/338 insns, frame 0x8c); with 4 named trig locals ahead of builders 350 (1814 B, frame 0x90, +0x10,
 // mask 291: reproduces retail's pass-1 double-spill rotation schedule; accum and sq-first same 350), matrix3x3 locals
 // 336 (1780 B), row loop over `&g_467104.forward` 347 (1801 B, mask 298). Body unchanged.
+// Three named diagonal complements at the squares, after the squares, after the cross
+// coefficients, or at each diagonal 334 each. With the early sine products 371/371/386/386.
+// NOT kept: the complements alone tie, and the sine-product forms move the first difference
+// to the frame and grow to 1812 or 1819 bytes. The opening square and sine homes still differ.
+// Opposite-sign coefficient triplets: shared sum/direct difference 348,
+// aggregate pairs 348, shared sine scaler 345, scaled difference 348,
+// diagonals first 356, in-place difference 349, shared sine scaler with scaled
+// or in-place difference 346/347. NOT kept: all displace the 0x90 frame.
+// Two forms reach retail length, with the axis and square registers still different.
+// Full-transform vector helper, first/second/both turn snapshots 452/536/520,
+// first/second/both direct in-place turns 432/349/379, copied in-place rows 540,
+// and fresh per-row output 469. NOT kept: all move the 0x90 frame and grow
+// the body. The first-axis register and square spills still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -3026,6 +3041,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
 // initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
 // `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
+// X-first displacement with retained Y, X/Y, Y/Z or X/Z camera basis: 500/500/421/556.
+// In-place basis scaling with setter or aggregate: 422/420. Retained basis with separate reflection
+// stores or a running projection sum: 563/422. The early camera loads and projection registers remain.
+// NOT kept: the 2285-byte forms reach 420 and 556, both above the opening comparison.
 // Decoded-position seeds through an aggregate, setter or explicit components before in-place
 // origin subtraction 280/280/280; per-component seed and subtraction 486; retained draw
 // coordinates with direct deltas, aggregate seeds, component seeds or early capture 500/498/498/500.
@@ -3045,6 +3064,29 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // direct projection `delta.i*dir.i + dir.j*delta.j + dir.k*delta.k` 383 (al=139), `delta*dir` i,j,k 458 (al=95), j+i+k 380 (al=111),
 // `dir*delta` i,j,k 263 (2286 B, 567/567 insns, al=138, mask=70; NOT kept: combination/operand-order steering that worsens aligned/masked counts
 // against both the helper form and main, emitting three reg-first projection multiplies where retail has one). Body unchanged.
+// M3 lane 5 r246 (H2M_FAST with 0x2f2d0/0x2e3f0/0x222d0; control 281). Reading of the operand ranks (a diagnostic print of
+// the back end's reassociation sort): each product's first operand (the copied or in-place one) is its higher-ranked leaf
+// and a sum adds its products in falling rank; a leaf's rank follows its first reference, the first 32 locals below every
+// global member and later locals above them. Here delta (24-30) sits below the axis (42-45), so all three forward products
+// copy the axis. Retail's sides (axis j first, delta i and delta k first) with its sum order j, i, k need the six leaves
+// ranked axis.k < delta.k < axis.i < delta.i < delta.j < axis.j, a right-to-left reading of the dot itself, which no delta
+// defined ahead of the dot gives; the camera sums (global j first, delta i and k first) and the projection (delta i first,
+// direction j and k first, sum j, i, k) show the same pattern. Diagnostics: two to six dead longs between delta.j and
+// delta.i give retail's forward sides but the sum k, i, j (499-500); dead longs at the top, 2 to 96, lift the deltas above
+// the axis (every product delta first, forward copied; 499-500); the reassociation-off pragma 522 (2325 B, sort unchanged).
+// Forms: forward through dot3f(&delta, &g_4b9dac) 281; delta through vector3d_from_points3d with dot3f(&g_4b9dac, &delta)
+// 280; delta i, j, k with the dot written i, j, k delta first 280; the camera sums written global first in the j term 281;
+// the projection written j, i, k 281 (same code each). Body unchanged.
+// The camera displacement registers and early attenuation default still differ.
+// Named forward products grouped or interleaved with the deltas, with early/late tint.
+// Opening Z/X/Y delta order 500/500/500/500. X/Y/Z order 500/500/498/500.
+// NOT kept: length stays 2286 and all scores rise. The generated dot still combines
+// the products in a different order from retail.
+// Staged axis projection into the reflection vector 506/515, named projected scalars 487/518,
+// in-place doubling of the projected displacement 365/515, and displacement scalars through
+// the setter 281/503, with the attenuation default at its original point or with the tint.
+// NOT kept: in-place doubling reaches the 2285-byte extent at a higher score. The camera
+// displacement registers and the early attenuation store still differ.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3867,6 +3909,18 @@ real magnitude3d(vector3f const *v);
 // angle test, all three tests together, eager lengths before angle, ordered lengths with independent
 // angle, and joint lengths with real absolute dot: 190/190/186/186/205/201/198/190.
 // NOT kept: all grow the body and leave the raw current magnitude in the bounded length's slot.
+// Shared projected-axis scale with cosine-scaled add or separate cosine vector plus sum, each in
+// place or with separate projected storage: 183/196/183/196. With the complete shared tangent:
+// 170/197/170/197. NOT kept: the two 170 forms tie at 1045 bytes and still store the raw root
+// at +4, leaving the real root, dot and cosine transfer slot unresolved.
+// Complete size selected in each arm, accumulated from the current length, or selected by a
+// nested or full conditional: 169/169/169/169. With a shared lower step bound: 185/185/185/185.
+// NOT kept: 169 gains one and grows to 1050 bytes. The raw root and promoted dot still spill
+// to different homes from retail.
+// Clamped arccosine helper, PIN at arccosine, lower-first and upper-first input selection:
+// 292/292/292/292. Dot bounded before both uses 287; lower and upper inverse-cosine bounds
+// alone 211/266; axis built before clamped arccosine 191. NOT kept: the new input boundary
+// changes the frame or extent and the raw magnitude still lacks its retail home.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3943,292 +3997,28 @@ extern s_record_pool *g_4e030c;
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count);
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
-// MiniMax D (11-20): no new form, no lower score (113): the total as an int measures 148 in the reduced image, the list read from g_547f98 at each use measures 132 in the reduced image and 130 in the full one, and the loop counter declared at function scope is the same code.
-// MiniMax S (11-15): no new form, no lower score (113).
 
-// MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
-// the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
-// EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590, whose body is
-// in another file. BLOCKED-BY 0x31590.
-// MiniMax H (11-13): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
-// the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
-// EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590.
-// MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
-// MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
-
-// MiniMax A (11-20): no new form, no lower score (146 on the fast check, 113 in the full build): the list held in a local measures 136 on the reduced image but 132 against 113 in the full build, so the body is unchanged; the index still rides EDI into 0x31590 where retail keeps it in EBX
-// MiniMax A (11-20): no new form, no lower score (146 on the fast check, 108 differing instructions in the full build); caching the list pointer in a local scores 136 on the fast check's reduced image but 127 in the full build, so it was dropped - the two builds disagree here.
-// MiniMax B (11-19): no new form kept, no lower score (113 on the full image, 146 on the reduced one):
-// the call to 0x31590 still takes the index in edi where retail keeps it in ebx - that callee is matched, so its
-// argument register preference is fixed - and the frame is still 0x9c against retail's 0xa0, where retail spills the
-// input list and reloads it at the loop top and keeps the total on the stack with the cursor in ebp and ours holds
-// the total in ebp. Measured in both images, because the reduced one is unfaithful here (it does not hoist the
-// three float constants into xmm5-xmm7 as the full build does): retail's `!(depth >= 0.0f)` clamp gives 147 against
-// 146 on the reduced image (a rise) and 111 against 113 on the full one (a gain of two, below the keep bar), so
-// the spelling is dropped and the body stands.
-// MiniMax S (11-17): no new form, no lower score (113): the call to 0x31590 still takes the index in edi where
-// retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and
-// reloads it at the loop top and keeps the total on the stack with the cursor in ebp, where ours holds the total
-// in ebp.
-// MiniMax E (11-16): no new form, no lower score (113): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and 0x31590's own body is matched, so its argument register preference is fixed.
-// MiniMax H (11-12): no new form, no lower score (113); the frame is still 0x9c against retail's 0xa0 - retail spills
-// the input list and reloads it at the loop top and keeps the total on the stack, the index in EBX and the cursor in
-// EBP, where ours holds the total in EBP.
-// MiniMax B (11-12): no new form, no lower score (113 on the full image, 147 on the reduced one): the frame is
-// still 0x9c against retail's 0xa0 - retail spills the input list and reloads it at the loop top, keeps the total
-// on the stack and the index in EBX with the cursor in EBP, where ours holds the total in EBP.
-// MiniMax H (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail
-// spills the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the
-// cursor in EBP, where ours holds the total in EBP; the index's register is fixed by 0x31590 in another file.
-// MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 and the list
-// still rides in ebp from the entry where retail spills it and reloads it at the loop top, and the count's compare
-// still lands in eax where retail puts it in ecx; the reduced image scores 147 here, as earlier rounds recorded.
-// MiniMax R (11-15): no new form, no lower score (146): the index still rides in EDI into the call to 0x31590, whose register convention is set in another file, and the allocator does not tie the index to the argument register here.
-// MiniMax R (11-16): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills the input list and reloads it at the loop top and keeps the total on the stack with the index in EBX and the cursor in EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590, whose body is in another file. BLOCKED-BY 0x31590.
-// MiniMax H (11-20): the input list read once into a local and the counter and total as shorts (126 in this reduced
-// image, was 147): the frame is now 0xa0 and the body is retail's 548 bytes, and the depth sum now orders its terms
-// as retail does (the z and x terms added first, the y term next). What still differs: the prologue pushes esi after
-// the view clamp and keeps the list in esi where retail spills it and reloads it at the loop top, the loop counts
-// down a stack counter where retail keeps a 16-bit counter in si, and this reduced image loads the three float
-// constants inside the loop (the full build hoists them into xmm5-xmm7).
-// score 126 (was 147 here; the full build's 113 is from before this change): frame 0xa0 and retail's length now
-// agree; retail pushes esi before the view clamp and spills the input list (reloaded at the loop top) where ours
-// keeps the list in esi, and retail's 16-bit counter in si is a stack countdown here.
-// r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
-// entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
-// declared outside the loop 147 fast (fast control 147).
-// MiniMax R (11-06): no new form, no lower score; this reduced image scores 147 where the earlier notes say 113 (frame 0x9c against 0xa0).
-// MiniMax D (11-06, run 49): no new form, no lower score (113); the input list still rides in ebp from the entry, retail spills it and reloads it at the loop top and keeps the total on the stack, the index in ebx and the cursor in ebp.
-// Earlier 113 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
-// top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
-// Earlier 113 (was 132). MiniMax D (11-06, run 49): no new form, no lower score (113); the input list still rides in ebp from the entry, retail spills it and reloads it at the loop top and keeps the total on the stack, the index in ebx and the cursor in ebp.
-// Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
-// Round 55 (plain): the three sibling 0x33400 forms 130; with const list/table reads 130; with a bool object
-// flag 127 (551 bytes; retail stores a long 1/0, so a width artifact); with list read first 130; with the shape
-// buffer at function scope 130. 0x31590's callees all preserve edi, so retail's index copy to ebx is an
-// allocation choice, not a clobbered register; the list/cursor/index permutation remains.
-// EBP for the list, displacing the output cursor and index/object registers. Depth term scheduling
-// also differs. Tried: all six
-// MiniMax R (11-01): no lower score: retail's `!(depth >= 0.0f)` clamp test with `&g_5234e8[view]` at both calls gives 135 (was 136) in the five-function image, below the keep bar; in the full build the three float constants are hoisted into xmm5-xmm7 as retail has them, but the list pointer rides in ebp there instead of a frame slot.
-// Earlier: retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
-// loaded inside it, and the depth dot product orders its terms differently. Tried: all six
-// term orders and several groupings (140), constants in locals (140). The flag as a branchy
-// && stored through a long (136).
-// Round 186 (plain checks, positional | LCS-aligned, base 132 | 71): retail keeps `list` in a frame slot
-// (loaded once, re-read at the loop top) with i in esi, the index in ebx, the object in edi and the
-// cursor in ebp; ours gives `list` ebp. `g_547f98` read at each use instead of the `list` local 113 | 77
-// (frame 0x9c, retail 0xa0, so not kept), with `!(depth >= 0.0f)` 111 | 75, with the camera fields 110
-// | 75, with `g >= 0 ? (g <= 3 ? g : 3) : 0` 113 | 83; `!(depth >= 0.0f)` alone 132 | 69 (retail's
-// `comiss depth, 0; jae`); the depth as `g_4b9e14.right.k * x + up.k * y + forward.k * z + position.z`
-// 133 | 68. The view/count slots are swapped against retail as in 0x33400 (view is register-assigned
-// at the clamp's join, then spilled: `xor eax, eax` for the zero arm and a dead reload).
-// Round 109 (plain checks, positional | LCS-aligned, base 132 | 61): the three forms that matched sibling 0x33400
-// (`&g_5234e8[view]` at both calls in place of the `state` local, the depth sum written `g_4b9e2c * y + g_4b9e20 * x
-// + g_4b9e38 * z`, `!(depth >= 0.0f)`) give retail's clamp stores, view/count slots and xmm5-xmm7 constants:
-// 130 | 54, not kept (a 2-point gain). What is left is a register permutation: ours keeps `list` in EBP (pushed at
-// entry, spilled for the entry pointer and reloaded after 0x3e9c0), index in EDI (0x31590's argument register),
-// object in ESI; retail spills `list` (reloaded into EAX at the loop top), keeps index in EBX (copied to EDI for
-// 0x31590), object in EDI, i/entry in ESI and the cursor in EBP. On those forms: object read before the definition
-// 130 | 54; `shape` declared before index 130 | 54; `view` declared before `count` 128 | 55; g_547f98 read at
-// each use (no list local, 556 bytes) 118 | 65.
-// Round 226: native shape/list/output-record reference subsets and enclosing native shape each 136 on a
-// reduced control of 136; native shape/list plain 132. Coordinated callee inline 136 reduced, 139 plain
-// (549 bytes); restored. The list/cursor register split remains; original body and contracts restored.
-// DH round 270: bounded short/word scan ordinals on original/direct-state/native-total/streaming-output
-// graphs, reduced 148/133/147/132/126/135/148/133 (control 136). The native signed-short ordinal plus total
-// reaches 548 bytes in preview but plain is 142 at 562 bytes; restored. Original frame 0xa0 and
-// list/cursor/index register split remain.
-// Earlier entry counts 139, r581 139, and 146 to 139 on a 169-source reduced image.
-// Round 360: native selected-count/view/total lexical home priorities, seven subsets,
-// then complete input-list/ordinal names, all 139/549 on a reduced control of 139/549
-// (full 132/554). Original scalar names and executable body restored; list/cursor split remains.
-// Round 307: native full-width unsigned index/object/parent carriers, all seven subsets,
-// Round 307: 136 fast each; all three with view before count 149. Reduced control 136 at 538/548;
-// Round 307: original body restored. Full baseline remains 132 at 554/548; list/output/index homes remain.
-// P268: Actual output-record identity/score/packed-flag field families, seven subsets,
-// then all with accepted-output cursor: 136 fast each on control 136 (full 132).
-// Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
-// N326: Native absolute-depth / named ratio / projected-radius producers, seven
-// graphs and direct final score publication: 153/136/136/153/153/136/153/153, fast control 136.
-// Absolute forms add frame 0xa4 versus 0xa0 and regress; original floating tree,
-// observations and complete body restored. Full baseline remains 132.
-// Round 536: Accepted-output receiver before admission, four original/loop/scan/entry shape scopes with combined then separate rejection paths: 136/136/136/136/136/136/136/136 fast.
-// Original whole body restored; list/cursor/index homes and reduced-callee caveats remain.
-// DH299: Complete depth-product declaration schedules zxy/zyx/xzy/xyz/yzx/yxz,
-// immutable complete zxy, then zxy with full position memcpy: 136 each (fast control 136).
-// Original products, position assignment and complete body restored; list/cursor homes remain.
-// P279: Bounded selected-count/view and Boolean object-predicate native domains,
-// subsets 1/2/4/3/5/6/7: 141/145/140/140/144/143/143; complete byte count/view 146.
-// Reduced control 139/549 versus full 132/554. All regress; original full-width
-// carriers and body restored; retail frame 0xa0 and list/output/index split remain.
-// Lane 12 r86 (plain checks): g_547f98 read at each use (no list local) 113 (kept), with the depth sum as
-// `g_4b9e2c * y + g_4b9e20 * x + g_4b9e38 * z` and a `!(depth >= 0.0f)` test 109 (not kept at review:
-// operand order picked by score against retail's z, x, y load order; gain 4 under the bar). On 109:
-// view declared before count 109; shape declared before index 109; object read before the definition
-// 109; the loop bound read from g_547f98 at each test 140 (551 bytes); output[count] written at each
-// store instead of the result pointer 109.
-// M360: Branch-owned view clamps 147/147/158/144 fast (control 147); with the
-// once-read source list 136/136/149/148. First clamp/list form plain 132 versus
-// baseline 113, restored; frame/list/output allocation remains. NOT kept: no full gain.
-// P311: Native external source/object-slot layouts and complete existing position setter, subsets 1/2/4/3/5/6/7:
-// P311: 146/146/156/146/156/156/156, fast control 146 versus full 113; complete graph with list snapshot 157.
-// P311: NOT kept: no calibrated gain; setter/list forms shrink away from retail. Original body restored; frame and register homes remain.
-// M368: Advancing actual output formal, with original base at both final calls,
-// four shape scopes without/with one list observation: 141/141/141/141/145/145/145/145 fast.
-// NOT kept: five-point reduced lead is below the bar; original output/list observations and body restored.
-// Native list/total spills and output/index/object allocation remain.
-// AC517: Complete index/query/capacity admission in bool/byte/short/long at computation
-// or shape-scope declarations: eight 147 on reduced control 147 (full 113). NOT kept: no exact predicate result.
-// Original body restored; native 0xa0 frame, spilled list and output/index homes remain.
-// AC521: Direct three-guard/nested/query-pair/index-first admission partitions at the original
-// post-query output lifetime: 146/146/146/146 fast; each with once-read list 139/139/139/139.
-// NOT kept: seven-point reduced lead below gate; original body and full 113 retained (fast control 146).
-// F368: Native complete projection axis/products and existing setter variants, without/with once-read list: 135/142/142/135/129/121/121/129 fast (control 147, full 113). List forms recover frame 0xa0; NOT kept: grouped or one-use producer captures lack byte equality and a reduced-only lead is not a full gain. Original body restored.
-// P315: Actual data-array output receivers, base/retail-biased and indexed/streaming record cursors, without/with the native list snapshot: 147/147/147/147/136/136/136/136.
-// P315: NOT kept: no byte match or supported gain; original full body restored.
-// P315: Fast control 147; the native-list array receiver is 132 plain at 554/548, not kept.
-// Y578: Accepted-record count post-increment, four shape-storage scopes without/with
-// a once-read list: 147/147/147/147/141/141/141/141 fast (control 146, full 113).
-// NOT kept: no equality or frame recovery; original count-publication phase and body restored.
-// Y580: Actual long/byte source cursors with ordinal/remaining/end !=/end < termination:
-// 143/143/161/161/143/143/161/161 (fast control 146, full 113). NOT kept: three-point
-// leads below gate, retained source base lacks native shape, extents 536/562 versus 548;
-// original live source reads, scan and complete body restored; frame/list/output homes remain.
-// N364: Final filter-result long/dword entry, scan and call lifetimes, without/with
-// the retained list snapshot: 147/147/147/147/136/136/136/136 fast (control 147, full 113).
-// NOT kept: no exact result-home repair; reduced-only list lead is not a full gain.
-// Original complete body restored; native list/frame and output/index ownership remain.
-// M385: Twice-used final state receiver after view/total or entry declarations, without/with
-// retained list: 153/153/153/153/140/139/140/139 (fast control 147, full 113). NOT kept: early receiver
-// multiply is absent in retail and 532/533-byte extents move away; original complete body restored.
-// M387: Radius-first position native/memcpy/memmove/setter captures, without/with list:
-// 147/147/136/162/136/136/132/150 fast (control 147, full 113). NOT kept: native/library
-// copies equal preview/list-only controls; memmove adds a call and 0xa4/0xa8 frames, setter shrinks. All restored.
-// AC549: Progressive object classification long/dword/bool/byte, without/with
-// once-read list: 143/132/143/132/142/140/142/140 fast (control 146; full 113).
-// NOT kept: isolated full-width lead only three; snapshot retains list EBP and
-// adds a validity Boolean absent natively; narrow forms miss equality. Original body restored.
-// M392: Fast control 147, full 113; Repeated-use source/tag/destination pointer name priorities, subsets 1/2/4/3/5/6/7 then center point: 147/147/147/147/147/147/147/147.
-// NOT kept: no eligible native list/frame/output ownership repair; original names and body retained. Original complete body restored.
-// J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
-// 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
-// Original executable source restored; native frame and allocation gaps remain.
-// DL274: Independent query phase before capacity admission, bool/byte/short/long, false/handle-valid entry (fast control 146; full 113): 146/146/140/139/136/136/162/159.
-// NOT kept: native list/total spills, frame and output/index homes remain; no eligible byte match or native repair.
-// Original complete executable source restored.
-// F395: Complete twice-used flag-word snapshot, dword/const-dword/long/const-long,
-// original live list 148/148/148/148; once-read list 136/136/136/136 fast (control 147, full 113).
-// NOT kept: retail loads the flag word twice; nonexact read-once forms are ineligible.
-// Original complete body restored; native list/total spills and output/index homes remain.
-// M396: Immutable original view/total/handle producers, subsets 1/2/4/3/5/6/7,
-// then complete immutable observation/result graph: eight at fast 146 (control 146, full 113).
-// NOT kept: no native list/total spill or output/index allocation repair; original body restored.
-// Round 94 (lane 9, plain checks; the fast image builds 0x31590 and 0x3e9c0 differently here, so earlier fast-only
-// counts are not comparable): `!(depth >= 0.0f)` (sibling 0x33400's clamp) 111; with the sibling's depth sum order
-// 109 (gain under the bar, not kept); a streaming output pointer (`++result` per accepted light) 113; the index test
-// and the query/capacity test as nested ifs 113; as `continue` guards 113; the 109 form with `&g_5234e8[view]` at
-// both calls 118 (556 bytes); the 109 form with a once-read `list` local 133.
-// Round 64 (lane 15): `check.py --fast` with the callee chain (0x31590 0x3e9c0 0x31520 0xc17f0 0xc3140 0x155760
-// 0xc19f0 0xc1a80 0xc1930 0xc1980 0xbaf80 0x4a7c0 0x33400 0x31c80 0xc35a0 0x404b0) plus 0x241620 (whose file holds the
-// helper 0xc17f0 inlines) reproduces the full build (113); the default fast image does not (146). On it: list read
-// once 132; with `&g_5234e8[view]` at both calls and `!(depth >= 0.0f)` 129; streaming cursor 113, with the list 133;
-// object read before the definition 113; `!(depth >= 0.0f)` 111 (also with the cursor/object forms); `&g_5234e8[view]`
-// forms 118-120; every once-read list combination 129-133. A one-file LTCG copy of this file with its callees' files
-// gives the same allocation (109 there); retail's EBX index/EDI object/EBP cursor appeared only when 0x3e9c0 was
-// built with another convention, so the remaining permutation follows callee register usage.
-// Round 73 (m3 lane 13, fast with the round 64 callee chain, control 113): retail's global holders are entry ESI
-// (shared with i), object EDI, index EBX (copied to EDI for 0x31590), cursor EBP, and after the loop `output` once
-// in ESI for both calls; ours gives object ESI first, so index takes EDI, the cursor EBX and the list or total EBP.
-// The list read once with `!(depth >= 0.0f)`, the sibling's sum order and `&g_5234e8[view]` at both calls 130
-// (frame 0xa0, list in EBP); that with output[count] at each store 130 (same code); that with the total read from
-// the global ahead of the list local 112 (552 bytes: `list + 0xc` hoisted to a slot, total in EBP; a mixed read,
-// -1, not kept); a typed 0x110-byte entry (`&((T *)data)[index & 0xffff]`, named fields) with the list 130,
-// without it 113 (same code each). Diagnostics, reverted: one extra use of object 121 (556 bytes; object is then
-// loaded before the definition as in retail, registers unchanged), four extra uses 177 (object still ESI), extra
-// early uses of `output` 166 (it takes EBX and becomes the cursor). Reference counts do not move object off ESI.
-// Round 84 (m3 lane 11; fast with round 64's callee chain, control 113): the loop as an inline helper taking the list
-// as a parameter (like sibling 0x33400) 618 (75 bytes, not inlined), as `__forceinline` 155 (557 bytes); the index
-// as a dword 113 (same code); the loop counter as `short` 116 (551 bytes); the entry pointer computed before the
-// 0x31590 call (a moved declaration, measured only) 105 (aligned 150 -> 146, the index still in EDI). Re-measured on
-// this image (listed on the default fast image): the view clamp as an if/else chain 132 (558 bytes); index declared
-// at function scope 113 (same code); the score written straight into the record 113 (same code); the list as a
-// `byte const *` local 132. The first
-// divergence is the index taking EDI (0x31590's argument register, which 0x31590 never writes) for the whole body
-// where retail keeps it in EBX and copies it to EDI for the call; that frees EBX for the cursor and EBP for the
-// list or total in ours, and retail then has nothing left for list and total, so both are spilled (frame 0xa0).
-// MiniMax R (11-10): no new form, no lower score (113 on the full image, 146 on the reduced one): the index, the cursor, the list and the total keep different homes here and in retail, and the reference counts do not move the object off ESI.
-// MiniMax C (11-09): no new form, no lower score (113).
-// Lane 14 r81 (fast with the round 64 callee chain plus 0x241620, control 113 as the full check; second number the
-// register-masked aligned count, 39 for 113): `i` declared at function scope 113 (same code); the result pointer
-// formed first in the accepted block 113 (same code); the list read once into a local declared before count 132 (as
-// the listed once-read list, 37); `short total` 156 (558 bytes, 45); diagnostic, reverted: a constant loop bound in
-// place of total 174 (518 bytes; the object is then loaded before the definition tag as in retail, but the count
-// takes EBP). In retail `total` gets no register (reloaded into EAX at the compare) and `i` shares
-// ESI with the entry; ours gives total EBP (shared with the entry) and lets `i` share ESI with the object.
-// Round 111 (m3 lane 9, fast with the round 64 callee chain plus 0x241620, control 113): `count` renamed `selected` (sibling
-// 0x33400's name) 113, byte-identical (a re-measure of round 360's name trials); the object flag stored straight into the
-// record 115 (551 bytes); the object read from the entry at each use 142 (543 bytes); same code: the result as `output +
-// count`, the view through PIN, the definition flags through a `dword const *` local, a `byte const *` definition. The first
-// difference is the prologue's early `push ebp` because `total` takes EBP for the whole body, which
-// follows from the index being coalesced into 0x31590's EDI argument (our build treats EDI as preserved across that call;
-// retail keeps the index in EBX and copies it to EDI), so EBX/EBP go to the cursor and total and retail's spilled list and
-// total never appear.
-// Round 84 (m3 lane 13, fast with round 64's callee chain plus 0x241620 and 0x4ac30, control 113; a/m = LCS-aligned /
-// register-masked unmatched lines, control a68 m31): probe, the 0x31590 call removed: 128 (a95 m37); the index then
-// takes EBX and the cursor EBP as in retail (object and entry ESI/EDI, swapped against retail), so the call's EDI argument
-// preference is what wins the index. Probe, the index read again from the list after the call: 168 (570 bytes; the load
-// is not merged across the call, and the second value takes EBX). With the once-read list (re-measured 132, a61 m25,
-// the closest masked form): the call removed 139; the index read again through it 159 (563 bytes). The shape buffer as a
-// dword array 113 and, with the list, 132 (same code each); the shape result named before the capacity test 113 (same
-// code). 0x31590's whole callee tree is matched, so this is not a clobber difference. Diagnostics: an extra use of the index
-// after the call (`(index >> 31)` added to the stored word) 149 (558 bytes, the index still in EDI), `&& index != NONE` in
-// the object test 113 (folded), so the index's own priority does not decide its register; the call's preference does.
-// M3 lane 2 r77 (fast with round 64's callee chain plus 0x241620, control 113): new: the 0x31590 call through an inline
-// wrapper taking the index by value 113, the entry through an inline getter taking it by value 113, both 113 (same code each:
-// inlined parameters are propagated, so a parameter copy does not move the index off 0x31590's EDI argument). Body unchanged.
-// Round 80 (m3 lane 15, fast with round 64's callee chain plus 0x241620 and 0x4ac30, control 113 as the full check):
-// `inline` on 0x31590's definition 146 (550 bytes; the index still rides EDI across the call, so the keyword does not
-// hide the callee's register summary; restored); the counter, list and total as fields of a local iterator record 133
-// (frame 0xa0 and retail's three adjacent slots, but the fields are still enregistered: list EBP); the admission
-// (`index != NONE && 0x31590`) in a named bool 113 (same code); `i`, a once-read list and the total declared in that
-// order ahead of the loop 132; that with the object read before the definition, `!(depth >= 0.0f)` and
-// `&g_5234e8[view]` at both calls 129. Diagnostics: two more uses of the entry pointer 164 (registers unchanged);
-// a dead assignment to 0x31590's index parameter 113 (the caller still keeps the index in EDI). Reading of retail:
-// the save order (ESI, EBX, EBP, EDI) is the order its registers were handed out: counter ESI, index EBX, cursor EBP,
-// object EDI, and the entry then displaces the counter from ESI; the object is defined before the entry (its load uses
-// the unformed address). Ours hands the index EDI, 0x31590's argument register, first, which leaves EBX to the cursor
-// and EBP to the total or list. Retail copies EBX to EDI at the call although 0x31590 never writes EDI, so its
-// allocator did not tie the index to the argument register; no source form found here unties it.
-// MiniMax E (11-15): no new form, no lower score (147): our body is 532 bytes against retail's 548; retail saves esi where this build saves ebp and keeps the native list and total in stack homes, and the call to 0x31590 still takes the index in edi here.
-// MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
-// MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
-// MiniMax C (11-16): rounds used; nothing of this file's own moved it.
-// Output cursor distance at admission, ordered or exact endpoint, and remaining capacity with final cursor distance:
-// 194/157/157/141. The same with a once-read input list: 205/153/153/145.
-// NOT kept: all disturb the matched caller. The last form recovers frame 0xa0 but grows to 567 bytes.
-// MiniMax C (11-17): no new form, no lower score (147 in this reduced image, 113 in the twenty-address one): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and keeps the native list and total on the stack.
-// MiniMax R (11-17): no new form, no lower score (147): the frame is 0x9c against retail's 0xa0 and the body is 16 bytes shorter than retail's 548.
-// MiniMax A (11-18): no new form, no lower score (113; 146 on this build's reduced image); against that reduced image's 147
-// control the list read once into a local scores 136, the list and the element array in locals 138 and the array alone in a
-// local 138, so g_547f98 stays read at each use; what still differs is the frame (0x9c against retail's 0xa0) and the
-// list/cursor/index split (retail spills the list and reloads it at the loop top, keeps the total on the stack, the index in
-// EBX and the cursor in EBP; ours holds the total in EBP).
+// The loop as matched 0x33400 writes it: a long total and counter with the index list read at `(short)i` (retail
+// keeps the counter 32-bit and indexes with movsx); the clamp as `!(depth >= 0.0f)` and `&g_5234e8[view]` at both
+// calls (0x33400 again); the object read through the pool expression beside the entry pointer, as matched 0x1321f0
+// reads a light field again beside its pointer (it gives retail's one `lea` for the entry and the object load ahead
+// of it). Each is needed (any one undone scores 2 to 118).
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
     long count = 0;
     long view = g_4b9ed4 < 0 ? 0 : g_4b9ed4 > 3 ? 3 : g_4b9ed4;
     byte *list = (byte *)g_547f98;
-    short total = *(short *)(list + 4);
-    for (short i = 0; i < total; ++i)
+    long total = *(short *)(list + 4);
+    for (long i = 0; i < total; ++i)
     {
-        long index = (*(long **)(list + 0xc))[i];
+        long index = (*(long **)(list + 0xc))[(short)i];
         byte shape[0x7c];
         if (index != NONE && function_31590(index, (s_light_shape_ab *)shape) && count < 128)
         {
             byte *entry = g_4e030c->data + (index & 0xffff) * 0x110;
             byte *definition = g_4e3b44[*(long *)(entry + 4) & 0xffff].bytes;
-            long object = *(long *)(entry + 0x4c);
+            long object = *(long *)(g_4e030c->data + (index & 0xffff) * 0x110 + 0x4c);
             long parent = function_baf80(object);
             point3f position = *(point3f *)(entry + 0x18);
             real radius = *(real *)(entry + 0x24);
@@ -4237,7 +4027,7 @@ long __stdcall function_31910(s_cached_input *output)
             result->data[2] = parent;
             result->data[3] = *(dword *)(entry + 0x100);
             real depth = g_4b9e2c * position.y + g_4b9e20 * position.x + g_4b9e38 * position.z + g_4b9e44;
-            if (depth < 0.0f) depth = 0.0f - depth;
+            if (!(depth >= 0.0f)) depth = 0.0f - depth;
             if (!(depth > 0.1f)) depth = 0.1f;
             real score = (g_4b9ed0 / depth) * radius * 2.0f;
             *(real *)&result->data[4] = score;
@@ -4249,9 +4039,8 @@ long __stdcall function_31910(s_cached_input *output)
             ++count;
         }
     }
-    s_cached_input_list *state = &g_5234e8[view];
-    function_4a7c0(state, output, count);
-    return function_4ac30(state, output, 3, 0.01f);
+    function_4a7c0(&g_5234e8[view], output, count);
+    return function_4ac30(&g_5234e8[view], output, 3, 0.01f);
 }
 
 // Matches when function_117dd0's source (flexible_surface.cpp, which takes g_4ba034's address) is in the
@@ -4664,6 +4453,21 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // admission tests together, eager creation pair, eager duplicate key tests, eager duplicate
 // eligibility, and both removal predicates: 373/408/421/429/369/409/399/417.
 // NOT kept: all regress. The paired byte forms add a frame word or more code.
+// Shared suppression getter in the original or nested gate 375/375, with
+// sampled count in either gate 375/375, selected limit 375, early request 435,
+// prefix initialized after the clamp 342, or named gate result 375.
+// NOT kept: the inlined gate leaves the prefix and state exchanged. The closest
+// extent is 1326 bytes with frame 0x2c.
+// Capacity-selected start: exclusive tail 244, default tail assignment 319, list count 245.
+// Stable capacity test before/after the bound 351/406, selected start with while 359,
+// consecutive replacement runs with a separate gate or selected start 340/358.
+// NOT kept: the best forms construct a skipped ordinal where retail branches past the scan.
+// The prefix and ordinal homes, and the creation ordinal register, still differ.
+// Creation ordinal initialized before the direct capacity skip, reused or separate 357/393;
+// nested creation predicates, named capacity decision or while traversal on those two forms
+// 357/393 each. NOT kept: the earlier ordinal changes the prologue and raises the score.
+// Separate signed-word ordinal on the inclusive direct-skip form 340. NOT kept: the
+// narrowed ordinal still differs from retail.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -5168,6 +4972,24 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // reloads, normalize+max scales and size if/else match retail), float k,i,j speed test 585 (fr 0x3c), same-pointer
 // velocity add 589 (fr 0x3c), point2f output helper 561 (fr 0x34, mask 263); real-param 259d0 + float k,i,j speed test on
 // main 520 (al 390, 0x36b50 247). Body unchanged.
+// One camera/element/advanced point with the source camera reads: components 535, setter
+// 540, point value 485, scaled add 535. With stored camera reads 512/512/523/512.
+// NOT kept: the 485 form gains one with a larger 0x64 frame. The forms that shrink the
+// frame shorten and regress. Independent velocity reads and projection homes still differ.
+// Scalar projection by point, direct row/accumulator/row pointer/sampled scale
+// 530/530/543/491; by corresponding ordinate 500/500/517/507.
+// NOT kept: scalar projection reduces the frame to 0x3c–0x48. All forms raise
+// the score, and the independent velocity reads and native frame remain unresolved.
+// Two-point projection traversal, raw/screen y: returned point 510/542,
+// point pointer 502/499, point reference 502/499, scalar outputs 502/499.
+// NOT kept: returned points enlarge the frame. Output arguments retain
+// 0x60 and shorten the body. The independent velocity reads still differ.
+// Immutable moved point, immutable projected points, immutable saved points, fixed position/velocity
+// receivers, named projected points with compound offset updates, scoped speed limiter, and one
+// particle position receiver 486 each. Signed screen difference helper 498; shared scaled-add
+// for the moved point 556. NOT kept: the signed difference increases the score and length;
+// the scaled-add shortens the body to 1964 bytes and raises the score. The frame, stored-velocity
+// reloads and projection homes remain different.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6016,6 +5838,8 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // MiniMax E (11-20): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the four spill homes (y, z, radius, negated radius) still sit at other offsets than retail's (y+4, radius+8, -radius+0xc, z+0x10); the forms recorded below land at 225/226 with a longer body.
 // MiniMax I (11-19): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the radius, the negated radius and the scaled zero still take other spill slots; the four-channel colour and the `-radius` forms recorded below still land at 225/226 with a longer body, so the body is unchanged.
 // score 231 (was 231): The frame is 0xd0 against retail’s 0xe0. The radius, negative radius, and scaled zero still occupy different homes.
+// GB r11 lead, held as a patch (not kept: the forms are kept only with a byte match): 211 against 231: four-channel color4f recovers retail's exact 0xe0 frame (collision.unknown24 at +0xac, collision at +0x88, color.alpha at +0x78, first diff +0x2->+0x38), and accumulated rx/ry/rz rows with origin-first vector3f_add match retail's 411/411 instruction count and D3D push-buffer alignment (masked diffs 99, 0x141710/0x1697c0 MATCH); still differs: radius spills at +0xc vs retail's +8, x-row sums left+forward+up where retail sums forward+up+left, and Corner 2 CSEs scale*radius.
+// GB11 (11-25, 50 trials): three-term x-row local products scalar 401, color4f 226, alpha-only color4f 223, split apply_point 218/223, in-place corners 367, real_point3d_set offset 376, local out 372; rx/ry/rz += with forward+up+left recovers all four retail spill slots (+4/+8/+0xc/+0x10) and masked diffs 89 at 1797 B (406/411 insns, positional 375 across split/single-sum/in-place/mul-assign/origin-first/explicit-offset/offset-first/add-after; real_point3d_set 395, direct origin add 387 at 1819 B, field += 718, local world 722, neg_radius 407); rx up+forward+left 355 (410/411 insns, with xzy scale 221 at 411/411); rx left+forward+up + ry/rz up+left+forward + origin-first vector3f_add + color4f hits 211 (1825 B, fd=+0x38, fr=0xe0, n=411/411, mk=99, plain-confirmed, kept; same 211 split or alpha-only; rx forward+left+up 376; 1eff40 x + ry/rz += unsplit 365 mk=82, split 211).
 // Earlier (231, was 231): Frame 0xd0 versus 0xe0. The radius, negative radius and scaled zero occupy other spill slots.
 // MiniMax H (11-06): no new form, no lower score (231).
 // The corner geometry does not match retail: retail's four corners are (-r,-r), (-r,+r), (+r,+r) and
@@ -6288,6 +6112,18 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // Separate axis selections from a shared test, per-axis tests, guarded captures, or a complete
 // point snapshot: 392/518/231/717. With four-channel color: 390/516/225/723.
 // NOT kept: 225 gains six, grows to 1826 bytes, and leaves the radius spill at +0xc.
+// Indexed in-place scaling or a separate indexed scaled result, with the scale read at each use
+// or retained: scalar alpha 628/507/628/507, four-channel color 634/516/634/516.
+// NOT kept: the separate scaled result reaches frame 0xe0 with scalar alpha, but the indexed
+// variants lengthen the corner expansion and leave the radius spill at +0xc.
+// Split output into successive edges, depth ends and middle pair, a separate first corner, or
+// a separate last corner: scalar alpha 390/244/234/386; four-channel color 387/228/218/371.
+// NOT kept: 218 recovers frame 0xe0 but grows to 1829 bytes and leaves the radius at +0xc.
+// The retail-length color form raises the score.
+// Planar middle outputs and separate endpoint depth, scalar alpha/color:
+// scalar pointers 438/418, scalar references 438/418, typed point
+// receivers 1139/1136, returned planar points 493/493.
+// NOT kept: none recovers the radius/depth homes and extent.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -7277,6 +7113,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // retail's clear call passes its flags in EAX and needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched
 // 0x14ac0's frame and realigns this function); what still differs is that call's argument setup and the cull arm order.
 // MiniMax H (11-20): no new form, no lower score (111); the clear call still needs 0x14b60's real body (BLOCKED-BY 0x14b60) and the cull arm order comes from the shared pass header.
+// Range-based pass at modes 1, 3, 2, their three pairs and all three:
+// 106/101/106/106/111/106/111. Explicit enable at the first pass 223.
+// NOT kept: no reduction at retail length. The clear flags still travel on the stack.
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {
@@ -7602,7 +7441,7 @@ void function_2c370(long mode);
 void __stdcall function_335e0(long mode);
 void function_25d50();
 void function_25dc0(bool first, bool second);
-long function_3ba90(long bit, s_record_sources const *data);
+bool function_3ba90(long bit, s_record_sources const *data);
 bool __stdcall function_3c3c0(bool render, bool clear);
 void function_2c340(bool enabled);
 void function_c3e90();
@@ -7622,6 +7461,21 @@ void function_020770();
 void __stdcall function_13870(bool finish, bool blur);
 bool function_13630();
 
+// score 233 (was 262): 0x3ba90 now returns bool (retail stores its AL straight to the byte slot at 0x2c10e, no
+// test/setne), which also gives retail's weapon-lookup registers; left: 0x14b60's first argument (retail EAX; its body
+// stays disabled in src/unknown_01cf50.cpp, enabling it loses six matched functions), pass 3's cull arms in the other
+// block order (shared header form), and the second 0x25dc0 call's first flag, which retail builds after `mov dl, 1` as a
+// branch diamond where every form here folds to setle (6 bytes short). M3 lane 5 r246 (H2M_FAST with 0x25dc0, 0x3ba90):
+// two calls under `if (g_4c19ac > 0)` / `<= 0` 335 (1724 B, the tail after the call duplicated); the argument as
+// `g_4c19ac > 0 ? false : true`, `<= 0 ? true : false`, `!(g_4c19ac > 0)`, an if/else-assigned bool, `g_4b9f88 ||
+// g_4c19ac <= 0`, `g_4c19ac <= 0 || g_4b9f88`, `!(g_4c19ac > 0 && !g_4b9f88)` 233 each (setle); a bool started true
+// and cleared under `g_4c19ac > 0` 228 (1638 B, but `mov cl, 1` ahead of the test and no jmp: not retail's shape, and a
+// flag set in a test, so not kept); a file-local inline returning false/true by early return 233, by a result local
+// 237 (diagnostics); passes 3, 5, 8, 20 (each, 3 and 5, all four) through draw_light_source_pass 233 (same code).
+// LEAD (match-only, a read of g_4b9f88 the enclosing test already decides): the first flag as `g_4c19ac > 0 ? g_4b9f88 :
+// true` 156 at 1640 B (also `<= 0 ? true : g_4b9f88`), 13 rows left: 0x14b60's EAX argument, pass 3's cull arms, the
+// flag still built with setle/test/setne where retail branches, and the weapon object's ESI load; on it the weapon
+// object named before its tag read 156 (same code). Held as a patch.
 // MiniMax A (11-20): no new form, no lower score (269): the 0x25dc0 branch diamond and the 0x14b60 argument
 // MiniMax B (11-19): no new form kept, no lower score (269): the permuter's variants again need a flag set by one
 // test and read by the next, a swapped argument pair at the second 0x25dc0 call and a constant held in a local, and
@@ -7657,7 +7511,7 @@ bool function_13630();
 // in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register (the
 // byte form, 266, is under the keep gate).
 // MiniMax I (11-20): no new form, no lower score (269): retail's branch diamond for the second 0x25dc0 call, the weapon lookup's tag read through esi, 0x3ba90's byte return reloaded from a slot and 0x14b60's first argument in eax still differ: BLOCKED-BY 0x14b60 and the pass helper's file.
-// score 269 (was 331): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based gate, two 0x15680
+// Earlier 269 (was 331): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based gate, two 0x15680
 // the 0x3ba90 result is held in a bool (retail stores a byte), so the function is retail's
 // length now (1638 bytes); left: mode 3's pass still comes from include/selected_source_pass.h (off limits) with its
 // `||` cull form, 0x14b60 still takes its first argument on the stack (BLOCKED-BY 0x14b60) and the second 0x25dc0

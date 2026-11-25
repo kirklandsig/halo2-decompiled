@@ -1012,6 +1012,36 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // k/i/j, k/j/i), after two (i/j/k, k/j/i), or with a named radicand and the root
 // after the copy or before its final store: 1446/1446/1446/1446/1446/1446/1446/1446/1403/1403. NOT kept: every form
 // regresses while retaining the frame and displaced component/velocity homes.
+// M3 lane 8 r238 (plain, 0x2056e0 MATCH each run; control 1346): `local_2` declared ahead of `local_1` 1346 (the entry
+// spill stores then come in retail's order, ESI's first, but at homes 0x98/0x3c against retail's 0x54/0x24); the two
+// 0xba1d0 outputs declared local_5 first 1346 (same code); in the first loop `local_10` ahead of `local_9` 1346 (same
+// code, element pointer still biased +0xe4 where retail has +0xe0), `local_8` ahead of `local_7` 1347; the magnitude
+// helper as `sqrt(dot3f(v, v))` 1624 (5990 B, the direct-read code).
+// Remove magnitude snapshots for projected/residual/alternate velocity 1375/1379/1396,
+// pairwise 1421/1458/1402, all three with normalizer assignment or memcpy 1518/1518.
+// NOT kept: the frame shrinks as far as 0x5a8, but the body shortens and the score rises.
+// The retail 0x58c frame and earlier component and velocity homes remain different.
+// GB6 (fast with 0x2056e0, then plain with 0x2056e0/0x2078f0/0x2079f0/0x207ab0 all MATCH; control 1346, 6243/6238 B,
+// al=1555, mk=1178; 25 trials): 1334 at 6243 B (fr=0x5d0, al=1376, mk=1143), NOT kept (coordinator review: statement
+// order, a moved declaration and one-use locals, all kept only with a byte match), from: (1) local_19.field_c
+// computed ahead of local_19.field_0 (1341 alone; retail lines 175-194 store field_c before field_0); (2) local_48 = *g_4687b0
+// moved to the top of `if (field_84 > 0.0001f)` (1343 alone, al=1444; retail loads g_4687b0 ahead of field_88/field_94);
+// (3) speed_change_limit = g_510c54->field_2_3 * local_47 ahead of getMass() with minimum_mass/maximum_mass bounds for PIN
+// (1342 alone, al=1486, mk=1162; matches 61 retail insns across the mass/impulse block, keeping g_510c54 in a register;
+// pairs 1338/1337/1339, dv-only 1346, bounds-only 1366). Also tried: wheel local_25 interpolation with lazy
+// `local_24 - local_23` inside `||` and if/else bounds 1383 (exact 6238 B, al=1521, mk=1141: matches all 49 insns of retail's
+// local_25 block; on the 1334 form 1375 at 6238 B, al=1330, mk=1106); local_20 inside `if (local_7[0x81])` 1447 (6259 B); bundle
+// with float wave + in-place vector3f_add_scaled 1461 (al=1304, mk=1098); typed query array 1346; `for (;;)` contact loop
+// 1346; direct local_56 + early local_48 1387 (6208 B); split local_54 on the 1334 form 1390 (6238 B, al=1274); split local_13
+// square on the 1334 form 1420 (al=1277, mk=1095); all together 1461 (al=1231, mk=1041); dot3f(&local_42, local_76) 1334; direct
+// return on the 1334 form 1349; diagnostic `/Op` flag 1833 (6652 B).
+// The 0x5d0 frame, escaped velocity homes and ray setup schedule still differ.
+// Typed ray 1346; with point setter 1331, shared direction scale 1318, shared hit scale 1370, both scales 1357;
+// shared ray length 1370, with point setter 1375, shared hit-normal address 1340 at 6238 bytes.
+// Direction before origin with shared length 1367, origin memcpy 1346, in-place direction scale 1444, shared length
+// with shared direction scale 1389, copied hit normal 1379. NOT kept: the point setter uses SSE for retail's integer
+// origin copy. The direction scale still publishes the origin and tests admission before the first direction store.
+// The hit-normal address gains six at retail length, below the threshold.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
