@@ -1800,6 +1800,11 @@ PRIVATE inline long score_string_list_1608e0()
 // Panel time, score and alternate-score field references singly, in pairs,
 // or all together 679 each; pointers to all three fields 679. NOT kept:
 // the field bindings leave frame 0x798, viewer EDI and the origin homes unchanged.
+// The 0x798 frame, EDI viewer and independent origin home still differ.
+// Title coordinate and caption names 679; viewport and content-height names 679;
+// native signed count snapshots 678, also for the team gap 678; common column
+// options record 679; branch-selected score/time widths 679/684; score flag
+// feeding alternate visibility 709. NOT kept: the count forms gain one point.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

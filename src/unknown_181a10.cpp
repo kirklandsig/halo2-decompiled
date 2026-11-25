@@ -1293,6 +1293,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // hit copies 305 (1245 B); one `shape` local for the second node's shape in the kind test, the data read and both
 // material calls 362 (1206 B); the found flag stored last in the result block 255 (1251 B); the key clamp as `limited =
 // key` with an if/else-if 238 (same code). Body unchanged.
+// The 0x40 frame, second-node spill and root-kind comparison still differ.
+// Query/target node names 238; distance and index names 238; shared admitted root
+// entity 238; const hit/origin copies 238/238; instance normal setter 238, with
+// const coefficients 238; direct plane normal setter 264.
+// NOT kept: the direct setter adds six bytes and raises the score.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
