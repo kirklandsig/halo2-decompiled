@@ -1046,6 +1046,14 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 716/617/718/713 with a short slot and 720/698/602/597 with a signed byte.
 // Nullable table base or default missing offset with a signed byte 709/602.
 // NOT kept: 597 sets and re-tests an availability flag; the offset forms gain only five.
+// M3 lane 8 r237 (h2m fast with 0x130f60, 0x131030 and 0x1317a0, all MATCH; control 607). Allocator reading: the
+// 0x130f60 result ranks 66 and colours first with its EAX preference; the loop-top NONE piece (stores and compares
+// after the call, the else-if test and the fallback store) ranks -10 (live unreferenced through the palette lookup's
+// blocks), so it gets ECX, which the field_f0 copy then clobbers, and the 0xd4 tag test falls back to an immediate where
+// retail compares against EAX. Forms: the publication helper's intensity read into a named local for its test and
+// product 607, its weight likewise 607, both 607 (same code each); the palette byte read at each use (test, bounds,
+// index, source index) 666 (re-measured on its own: retail's `mov cl` byte load, NONE then in EDX); the three
+// six-field outputs typed as a color plus three reals with the helper writing members 607 (same code). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
