@@ -2027,6 +2027,9 @@ long function_10f5f0(long object_index);
 // or both 599 each. Those four with shared bounds, velocity and names storage 597 each.
 // NOT kept: shared storage reaches frame 0x1984 and first +0x54, but the body grows
 // to 2296 bytes and the temporary predicate-byte stores remain absent.
+// Door handle, bounds handle and named physics record individually 567 each.
+// Handle pair, either handle with the record, all three, and reused handle 561 each.
+// NOT kept: the frame, predicate bytes and shared output home remain unresolved.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -6394,6 +6397,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Retail comparison-stream case order in four dispatch spans, three adjacent pairs,
 // and the whole switch: eight at 759. The 0x18 frame agrees; the entry definition
 // and zero/result registers still differ.
+// Separate magnitude dispatch for unrestricted, guarded and derived paths, individually
+// 853/883/1108, paired 801/857/975, all 1117, magnitudes in the default switch 801.
+// NOT kept: the dispatch splits raise the score and leave the entry SIMD registers different.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

@@ -5711,6 +5711,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // copy before 203, or in both with copy before/between/after 213/213/211.
 // Staged first-cross helper with first-live/between or both-live/after 208/211.
 // NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
+// Scaled additions from vertical/transverse contributions: own vector 276/272,
+// direction output 169/169, projected vector 276/272, forward vector 272/268.
+// NOT kept: the direct output ties and the workspaces grow the frame and body.
+// The early up.i load and x87 forward-scale lifetime remain.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

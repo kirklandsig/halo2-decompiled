@@ -4686,6 +4686,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // prefix initialized after the clamp 342, or named gate result 375.
 // NOT kept: the inlined gate leaves the prefix and state exchanged. The closest
 // extent is 1326 bytes with frame 0x2c.
+// Capacity-selected start: exclusive tail 244, default tail assignment 319, list count 245.
+// Stable capacity test before/after the bound 351/406, selected start with while 359,
+// consecutive replacement runs with a separate gate or selected start 340/358.
+// NOT kept: the best forms construct a skipped ordinal where retail branches past the scan.
+// The prefix and ordinal homes, and the creation ordinal register, still differ.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
