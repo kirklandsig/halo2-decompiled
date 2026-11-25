@@ -4665,6 +4665,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Trigger/barrel runtime-array lvalues, tag pointer fields, paired lvalues, and array bases with
 // tag field pointers: 1413/1412/1413/1413 before their loops, 1412 each inside. The loop-entry
 // runtime array forms shorten the barrel phase by four bytes. The 0x34 frame and dual spill remain.
+// Retail block order for trigger states, press actions and hold actions 1555/1462/1427.
+// Trigger plus press, trigger plus hold, or both actions 1610/1579/1466. All three
+// 1619, and all three with the retail behavior order 1582.
+// NOT kept: all grow and retain frame 0x34, with the early dual byte still spilled.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

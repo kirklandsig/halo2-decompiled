@@ -986,6 +986,10 @@ struct s_item_collision_bsp
 // or through the setter: 244/244/242/242. Vector expression or accumulator rows
 // 310/310. In-place rotation with scalar or vector coefficient capture 232/278.
 // NOT kept: the single-plane forms grow the body and still miss the XMM homes.
+// Native basis-axis references for left, up, forward, each pair and all three score 190.
+// The embedded basis reference also scores 190. Reading j/k/i once with the left-axis or
+// embedded-basis reference scores 190/190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1357,6 +1361,12 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // final products, weighted cross with second/final products, and per-row scalar accumulation
 // all score 130. Output accumulation in three passes or with the first pair combined scores
 // 239/235. NOT kept: both output accumulations grow the body and retain the spill.
+// Address-free normalized coefficients or scaled scalar numerators with member stores,
+// the shared setter, or named rows and a setter score 159 each. Complete aggregate
+// publication scores 204 with either producer. Shared or paired alignment on the
+// address-free axis scores 159/172.
+// NOT kept: the 159 forms recover frame 0xb4 and 848 bytes but score higher. The
+// initial alignment-product order and the scaled-axis registers still differ.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
