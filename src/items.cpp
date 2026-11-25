@@ -1032,6 +1032,10 @@ struct s_item_collision_bsp
 // up and forward 304, or all three axes 350. Complete basis with or without a
 // shared left coefficient 338 each. NOT kept: all copies grow the body and
 // raise the score. The original rotated-normal and contact registers still differ.
+// Marker Y, Y/Z or X/Y shared through distance and correction 190 each.
+// Y/X/Z corrected coordinate locals with fields, setter or initializer 190 each.
+// Y/X/Z scaled normal components 194; paired distance contribution 190.
+// NOT kept: all retain 1366 bytes and leave the normal and contact homes displaced.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1451,6 +1455,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // results or grouped weighted cross terms, 159 each. With a named alignment dot,
 // 173 each. NOT kept: both groups recover 0xb4 but raise the score. The named
 // alignment also shortens the function to 831 bytes. Rotation scheduling still differs.
+// Cross in output with normalized scalars 206; reciprocal before cross 207; scaled
+// j/i/k order 206; staged cross 206; depth-seeded projection 206; complete alignment
+// local 193; shared doubled scalar after projection 206; independent cross with
+// normalized scalars 206. NOT kept: all retain frame 0xc0 and grow the rotation.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
