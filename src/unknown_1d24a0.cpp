@@ -7,6 +7,7 @@
 #include <math.h>
 #include "vector_products.h"
 // @flags /O2 /arch:SSE /Gr
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
 
 struct s_object;
 s_object *function_badc0(long arg_0, dword arg_1);
@@ -106,7 +107,13 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 838 (was 838): r143, m3 lane 8 r221, m3 lane 11 r152 and r158 unchanged (r152's line just above the marker); the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
+// score 808 (was 838): M3 lane GA r8 kept `function_142eb0(&local_24.matrix.rotation, &local_60.rotation, &local_61)`
+// (behaviour fix: 0x142eb0 takes its right matrix in EDX and its left in ECX, and retail's call at 0x1d317e passes
+// local_24's rotation in EDX and the transposed body rotation in ECX; main had the two swapped; 808 either way at m3
+// review) and a `MIN` slew in the tail, which gives the 30 points (`if (local_74 > local_72) local_72 =
+// MIN(local_72 + local_70, local_74); else local_72 = MIN(local_72 - local_70, local_74);`, matching retail's entry `push
+// ebx` and entire 79-instruction tail `0x1d343a..0x1d3540`, 838 -> 808 plain, 4260/4259 B, aligned 247 -> 223, masked
+// 123 -> 112); earlier 838 notes follow. Earlier first line: r143, m3 lane 8 r221, m3 lane 11 r152 and r158 unchanged (r152's line just above the marker); the 780 removal through the shared Havok array's remove_at lost matched 0x54590 in the full check (see the end of this note). Earlier first line: score 838: m3 lane 11 r141 reached 780 with the list local moved from the loop head to the removal (the head reading the component's field itself), not kept at review (a moved declaration, kept only on a byte match; lead in the r141 note below). Kept: the three rigid-body reads through the existing havok_component_rigid_body_get (838 alone, no rise). The r141 note shows the loop head is not blocked by 0xbadc0. Earlier 838 (was 895): m3 lane 11 r139 kept the validity tests nested around the body with the removal after it, the slot index read from the element, the scale helper as three statements, the motion position copied field by field and the angular residual scaled then added (see the end of this note). Earlier 895 (was 1014): round 116 kept the residual subtract in both limit arms and the record flags read from the field. Earlier at 949 (was 949): retail keeps the argument pointer in ECX and the field it reads in EAX, ours keeps the
 // pointer in EAX and the field in ECX; the frame is 0x1f0 against retail's 0x1d4, the second activity flag sits
 // at +0xa where ours has +9, and the record pointer and the counter sit at other homes.
 // MiniMax A (11-20): no new form, no lower score (949); the first difference is still the argument's register (retail EAX, ours ECX) and the frame (retail 0x1d4 against our 0x1f0), so every later stack home differs, and the rolled scale loop stays unrolled into three multiplies; the cross-file causes stand (BLOCKED-BY 0x24590, 0xbadc0 and the contact array's destructor).
@@ -760,6 +767,29 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // (lead, not kept: it is lane 11 r141's list local moved to the removal under another spelling); r141's pointer form
 // re-measured 780; the head's list pointer declared `*const` 838 (same code); the reference form with the object
 // type in a long local for both mask tests 838 (4263 B). Body unchanged.
+// M3 lane GA r8 (fast with 0x1d2280, 0x1d2070, 0x1cf9f0, 0x54590 and 0xc2d00, all MATCH each run; control 838 at 4255 B,
+// aligned 247, masked 123). KEPT 838 -> 808 (plain-confirmed, 4260/4259 B, aligned 223, masked 112): (1) BEHAVIOUR FIX at
+// 0x1d3155: `function_142eb0(&local_24.matrix.rotation, &local_60.rotation, &local_61)` (the old call swapped the two
+// non-commutative matrix arguments; 838 alone, exact `lea ecx, [esp+0x194]; lea edx, [esp+0x14c]`), and (2) Bungie's `MIN`
+// slew in the tail (`if (local_74 > local_72) local_72 = MIN(local_72 + local_70, local_74); else local_72 = MIN(local_72
+// - local_70, local_74);`), which explains retail's `>` clamp on the subtract arm, moves `push ebx` to entry with no EBX
+// in the tail, and matches retail's entire 79-instruction tail (`0x1d343a..0x1d3540`) instruction for instruction (`je;
+// jle; mov esi, [esp+0x1c]; add eax, esi; jmp; sub eax, [esp+0x1c]`, `local_71` in EDX clamped into ECX). Other trials:
+// `if (local_74 > local_72) { ... if > } else if (local_74 < local_72) { ... if > }` 805 (4256 B, aligned 232, masked 119,
+// + `0x142eb0` fix 805, + staged `function_1d24a2` 805, + 4 separate fraction locals 803); staged `function_1d24a2` alone
+// 838; separate `scaled` vector + `local_39 + local_37.k` 838; reversed dot operand order 847; nested `function_142b80`
+// inside `function_142eb0` + split tail 811; `if (local_74 > local_72) ... else if (local_74 < local_72) ...; if (local_72
+// > local_74) local_72 = local_74;` (shared clamp) 836 (+ split fraction 834, + `field_5c` read 846, + both reads/split
+// 848); `if (local_74 != local_72)` with `if/else` clamp duplicated 810 (4256 B, masked 118); `if (local_74 != local_72)`
+// with `else if` shared clamp 834 (4259 B); `MIN` with `if/else if` (no outer `!=`) 808 (aligned 225, + split fraction
+// 806); `MIN` using `<` 808 (aligned 224); `MIN` + split fraction 806 (frame 0x1dc); split tail + angular reads + split
+// fraction 818 (4226 B, frame 0x1d4, +0x14). Lead (not kept here: adding `remove_at` directly to `s_havok_array08` in
+// `include/unknown_1cec30.h` without `ELEMENTS_2D91D0_MEMBERS` would have only one caller until `0x1d2070` in another file
+// also calls it): `s_havok_array08::remove_at` alone 780 (4264 B, aligned 175, masked 100), + `0x142eb0` fix + split tail
+// 753 (4265 B, aligned 160, masked 96), + angular reads + split fraction 742 (4235 B, frame 0x1d4, +0x14, aligned 150,
+// masked 89, first 84 rows byte-exact; `0x54590` and `0xc2d00` both MATCH in fast check). Left on 808: frame 0x1d8 vs
+// 0x1d4 (angular coefficient homes), loop head / swap-remove (`s_havok_array08::remove_at`), object-type `movzx`, and
+// limit-arm float product sides.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -931,7 +961,7 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
        function_142b80(&local_60.rotation, &local_60.rotation);
        matrix3x3 local_61;
        quaternionf local_62;
-       function_141f60(function_142eb0(&local_60.rotation, &local_24.matrix.rotation, &local_61), &local_62);
+       function_141f60(function_142eb0(&local_24.matrix.rotation, &local_60.rotation, &local_61), &local_62);
        vector3f local_63;
        real local_64;
        function_11d790(&local_62, &local_64, &local_63);
@@ -976,9 +1006,8 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
   long local_74 = (long)(local_73 * 255.0f);
   if (local_74 != local_72)
   {
-   if (local_74 > local_72) local_72 += local_70;
-   else local_72 -= local_70;
-   if (local_72 > local_74) local_72 = local_74;
+   if (local_74 > local_72) local_72 = MIN(local_72 + local_70, local_74);
+   else local_72 = MIN(local_72 - local_70, local_74);
   }
   local_71 += local_69;
  }

@@ -4760,6 +4760,18 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the 44 lead; the result is
 // never a register candidate in this build (its cost is below zero in every pass), so the kept arms need a form that gives
 // the result a use at each of the two exits, not a pick.
+// M3 lane GA r8 (fast with 0x5e3f0, 0x58d90, 0x58d20, 0x769a0, 0x62ca0 and 0x75870, all MATCH each run; control 295, body
+// unchanged). On main's 295 body: all stored map fields through `map` 311 (1240 B, aligned 137), that with kept arms returning
+// `result` directly 310 (1245 B), `memcpy` ahead of `remote`/`local` 303 (+0x22), zero-goto `valid_version` bool inside the
+// received block 315 (1264 B, aligned 221), single-return `goto done` without `acknowledge`/`proceed` flags 367 (with named
+// `owner` 360, 1264 B). On r208's 96 single-return lead (exact 96 rebuilt with `owner` inside the timeout arm, aligned 17 [13];
+// 129 with `owner` hoisted before `function_058d20`): `bool disconnect` with `if (false) { refused: ... }` 129 (same code as
+// 129 base), `do { ... } while (false)` with `break` on kept and `if (result) break;` 129 (same code), `switch (result)` after
+// disconnect 149 (1275 B), all true paths returning directly with `if (result) return result; return result;` 344 (1215 B),
+// state-8 and kept returning directly 327/337, `if (result) goto done; else return result;` after disconnect 80 (r208's 48 form
+// with hoisted `owner`); on the exact 96 lead, end-of-function result tests after `if (acknowledge)`: `if (result) return result;
+// return result;` 364 (1242 B), `if (!result) return result; return result;` 356 (1247 B), `if (result) return true; return
+// result;` 377 (1225 B), `if (result) goto ok; return result; ok: return result;` 364 (1242 B). Body unchanged at 295.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

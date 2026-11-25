@@ -1124,6 +1124,16 @@ static inline long team_score_195ed0(long team)
 // Read the source team inside mode guard, after address publication, after copy or before copy:
 // 295/297/297/150 with either memcpy or typed assignment. NOT kept: all regress.
 // The teams flag still leads the copy and the final score query still expands.
+// M3 lane GB round 5 (fast with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310 all MATCH; control 100, al=71, mask=49):
+// nested outer guards 100, with native value arm 191; nested if inside team_is_active_195ed0 100, 3-level nested if 151 (1210 B);
+// team range before function_x340af0 102; function_x340af0 before statborg 169 (1221 B); inner-flipped <= 0x7fff PIN
+// inline/mixed/native 100/191/192; if/else-if/else stores with native else 192; nested >=0/<=0x7fff with native innermost 211;
+// statborg local with native value arm 191; team_count != 0 guard inline/mixed 161 (1210 B)/173 (1197 B). Diagnostics (reverted):
+// dropping /Ob1 on this TU (native/current) 192/100 (same code), #pragma inline_depth(1) 100. Body unchanged.
+// Configuration receiver from the existing entry's active member 100, word-sized team rank
+// with/without signed count sample 160/160, one-based comparison 187. Inclusive negative/upper/
+// both score boundaries 101/100/101, both with the native query on admission 191.
+// NOT kept: the ties leave the flag read early and the other forms grow the body or raise the score.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

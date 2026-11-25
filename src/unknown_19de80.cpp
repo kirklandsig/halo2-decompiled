@@ -308,12 +308,12 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // MiniMax D (11-20, round 132): no new form, no lower score (390): the body is unchanged. With an ordinary result the
 // four name and team copy tails still merge into one block (691) and the volatile result keeps them apart but frames
 // 0x208 against retail's 0x204, so retail's ranking (the result in ESI, the token length in EDI, the event in EBX, the
 // remaining count in EBP, with the token re-read from its stack slot for every compare) and its token preload are not
 // reproduced here.
-// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // M3 lane GB r3 (fast with 0x19e0f0, 0x19ea60, 0x19eae0, 0x19df10, 0x19de80, 0x19e770, 0x19e890, all MATCH; control 390, 1437/1443 B, +0x0; 12 source trials + 2 flag diagnostics, body unchanged): flag diagnostic dropping /Ob1 gives identical code (390 volatile / 691 plain). On plain result (frame 0x204): retail-faithful body (direct event teams, switch_side_time result=remaining, best_score<=, long team, remaining<=result clamps, player ptr in local_team/spawn_time) 703 (1161 B, al 423, mask 257); s_wchar_buf class for text 710 (1152 B, mask 212); s_out_buf {dst, rem} with inline methods 587 (1274 B, frame 0x20c), with forceinline methods 672 (1189 B, al 381), constructor-only 703; s_token {ptr, len} struct 703; single shared `if (result < 0) result = remaining;` at exit 632 (1233 B: splits arm 1 `mov word [esp+0x14], si; lea esi` from arm 2 `lea esi; mov word [esp+0x14], 0` with event=EBX, result=ESI, token still EDI); rem_ptr / tok_ptr inline helpers 703 each. On volatile result: single shared negative-exit clamp 477 (1506 B); s_out_buf 484 (1376 B, frame 0x210); best_score<= + direct event teams 392 (1437 B).
 // MiniMax H (11-19, round 95): no new form, no lower score (390): retail's register ranking is the result in ESI, the token
 // length in EDI, the event in EBX and the remaining count in EBP, with the token re-read from its stack slot for every
@@ -1056,6 +1056,27 @@ static inline bool teams_enabled_19e1c0()
 // Diagnostic, a test retail lacks: `if (remaining < 0) return 0;` first on the plain result 473 (1392 B: `remaining`
 // in EBP from entry, the token read from its slot per compare and the name arms no longer joined, as retail; the event
 // takes EDI and the token length EBX where retail has EBX / EDI, and a frame word returns). Body unchanged.
+// Successful token comparison supplies the buffer clear for score-to-win,
+// cause-player plus score-to-win, all names plus score-to-win, or every clear:
+// 390/391/449/417 with the existing result and 691 each with an ordinary result.
+// NOT kept: the entry preload still differs and the ordinary forms merge copy tails.
+// The inherited result slot still makes the frame 0x208. Publish a selected formatter count after the
+// success test with ordinary result storage: score text 640, local counters 650, side-switch timer 693,
+// pairs 692/700/650, all 690. All with inherited result storage 467. NOT kept: the 0x204 forms merge name-
+// length tails and shorten to 1162–1223 bytes.
+// M3 lane GB r7 (fast with 0x19e0f0, 0x19ea60, 0x19eae0, 0x19df10, 0x19de80, 0x19e770 and 0x19e890, all MATCH; control
+// 390 at 1437/1443 B, al=320, mk=207; 14 trials; body unchanged): capacity-seeded plain result (`long result = remaining;`)
+// consumed across all 13 arms with `long written` and `return 0;` on rejects 579 (1274 B, frame 0x208, al=413, mk=147),
+// with `result = 0;` on rejects 644 (1211 B, frame 0x208); `int` parameter/result types (matching `expand_token`) 691
+// plain / 390 volatile (same code); four-caller `format_score_to_buffer` + three-caller `format_int_to_buffer` inline
+// helpers 617 plain (1243 B, frame 0x204, al=321) / `format_score_to_buffer` on volatile 466 (1379 B); two-caller
+// `event_has_team_name` helper 661 plain (1202 B, al=253) / 394 volatile (1437 B, al=298); `return remaining;` on arms
+// 5..7 + `result = remaining;` on arm 12 + `best_score <=` on volatile 429 (1420 B); `size_t length = wcslen(text);` 691
+// plain / 390 volatile (same code); `do { ... } while (false);` wrapper on plain 425 (1435 B, frame 0x204, al=449, mk=358:
+// raises loop depth and inlines 0x19eae0 and 0x1587b0 while keeping token in EDI).
+// Separate text buffers in every token arm from the first write or the outer arm, with shared
+// or role-specific names: 390 each with the qualified result and 691 each with ordinary result.
+// The ordinary result restores 0x204 but still merges the name-copy tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

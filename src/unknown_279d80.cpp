@@ -2254,6 +2254,11 @@ void function_27dd10(void)
 // merged) 153 (0x281b60 199, 0x285750 75, 0x288570 101, 0x289580 78, 0x28aaa0 82); only the shift in each arm, the output
 // step after the test, 153 (199, 75, 310, 270, 82). The loop is the same shape, but the flags then outrank the count
 // for their register and every home moves, so the tail is not reached that way. All restored.
+// M3 lane 4 r261 (fast screen with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2): in function_288572 the group end as `arg_5 + 8 < arg_7 ? arg_5 + 8 : arg_7` 53 (0x281b60 53, 0x285750
+// 53, three siblings 9); the output target as an if/else 2; the bit-flag pointer by an if/else-if chain 2;
+// function_288573's destination index as `arg_1 != 0 ? local_4 : arg_5` 2; the saved frame fraction read ahead of the
+// two saved indices 2 (all four the same code everywhere). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

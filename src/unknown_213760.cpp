@@ -2194,6 +2194,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // second table index at open returns to 114 (917 B, write exact, close loses `mov ecx, eax`, checksum in `ecx`). Keeping
 // `handle` with typed header fields: 7-form 7, 5-form 5, constructed `s_cache_initial_header` 5, early-continue 5; do/while
 // wait on 5-form 234 (882 B); inline flags builder on 5-form 5. Body unchanged at 33.
+// Query-size and write-count slots, write argument setup and validation joins still differ.
+// Completed query/transfer scalar bindings 33/33; live handle across close 40;
+// signed expected size 33; query default before open 73; count declared before
+// the resize wait 33; short-circuit/conditional checksum result 98/41.
+// NOT kept: the forms either tie or raise the score.
 // @retail 0x213970
 void function_213970(void)
 {

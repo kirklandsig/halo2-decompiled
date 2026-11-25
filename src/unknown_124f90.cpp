@@ -5054,10 +5054,18 @@ struct s_128ca0
 // Invalid controller link as inactive byte: separate active-first/inactive-first arms 208/212,
 // byte initialized from the link 131, joined selected byte 203. Complement test on effect/link/both
 // 138/129/140, with link-derived inactive byte 151. NOT kept: all raise the score.
+// M3 lane 16 r188 (H2M_FAST with 0x1293f0, MATCH throughout; control 48): the first pin's sum written bits first
+// (`s_decibels((dword)local_6) + s_decibels((real)gain)`) 181 (1079 B), both pins that way 210 (1102 B); the count's
+// extraction cast to byte 48; the count taken as `count = controller->synch_count--;` 48; the first controller block's
+// listener gain as an if/else 48 (same code each). Body unchanged.
 // The pin scratch pairs and controller sentinel still differ. Completed guard 48, absent
 // successor first 83, both 83, with pending guard 83. Return on absent/valid successor
 // 83/48, with completed and pending guards 83/48. NOT kept: the absent-first forms
 // shorten to 1053 bytes and raise the score. The native shifted pending read remains.
+// With staged gain assignments and shifted pending test, use the sampled count for the debit
+// as signed char/short/long or byte 207/123/126/79. With a retained synchronization handle,
+// signed char/byte 207/79, and with both controller handles retained 207/79.
+// NOT kept: the signed byte moves the first difference to the pitch setup, and all forms regress.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
