@@ -1100,6 +1100,15 @@ void function_245400(s_source_245400 const *source, long index,
 // 224/209/211/210, source words 224/209/221/210.
 // NOT kept: all raise the score and the two code words still lack retail's separate homes.
 // The original decode and both plane lookups are restored.
+// M3 lane 16 r189 (H2M_FAST with 0x245aa0 and 0x245400, MATCH throughout; control 163; lane 5 r213's saved lead
+// re-measured 50 at 789 B). On this body: the in-place scale with the rotation through function_2477b1 on the rotation
+// member 266 (832 B); the edge copied into a local, scaled in place under the scale test and rotated back into the edge by
+// matrix_transform_vector 230 (804 B), by function_2477b1 179 (799 B). On the lead's head (second record pointer, the
+// codes read at each use, named masked indices, shifted sides, the edge formed after the plane decode): the copy, scale and
+// function_2477b1 172 (819 B), with matrix_transform_vector 171 (816 B); this body's own in-place scale and
+// matrix_transform_vector 129 at 783 B (lead, not kept: needs the edge statement after the decode; with it at this body's
+// place 200, plus `< 0` sides 226 at 766 B, plus the k, j, i dot 190; this body with only the edge statement moved 205); a
+// vector version of the file's point-transform helper 110 (783 B; on this body 163). Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
