@@ -120,3 +120,80 @@ def test_spin_target_scale_nonfinite_products(solver_images, precision):
                                  precision | rounding << 10, context, coverage)
         assert snapshots[0] == snapshots[1], context
     assert coverage[0x31d2fe] == 384
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('rounding', range(4))
+@pytest.mark.parametrize('aliased', [False, True])
+def test_spin_limit_division_reloads_operation_record(
+        solver_images, precision, rounding, aliased):
+    """The saved comparison limit and later division operand have distinct epochs."""
+    import struct
+    from test_solver_dispatch import STACK, RESULTS, IMPULSES, execute, address, words
+
+    frame = STACK + 32768 - 0xd0
+    a, b, output = 0x02000000, 0x08001000, 0x10300000
+    operation = frame + 0xa if aliased else OPS + 24
+    header = operation - 24
+    # The caller's saved values make the overlapping header survive the real
+    # prologue: A/B remain aligned, and the operation starts with bytes 08/18.
+    # No register or instruction is changed while the solver executes.
+    saved_values = (0x18080000, 0x00000800, 0x10000200, 0x12345678)
+    retail, compiled, symbols = solver_images
+    snapshots = []
+    visits = []
+    for label, machine, entry, gate in [
+            ('retail', retail, 0x31c940, 0x480c60),
+            ('compiled', compiled, address(symbols, 'solve_operations_31c940'),
+             address(symbols, 'g_480c60'))]:
+        for start, size in [(a, 65536), (b & ~65535, 65536), (output, 131072)]:
+            if not any(lo <= start and start + size - 1 <= hi
+                       for lo, hi, permissions in machine.mem_regions()):
+                machine.mem_map(start, size)
+            machine.mem_write(start, b'\0' * size)
+        data = bytearray(65536)
+        put(data, HEAP, 'B', 3)
+        put(data, STEP, '7fi', 0, 1, 0, 1, 1, 0, 0, 1)
+        put(data, TERMS, '32f',
+            1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 1, 1, 0, 0, 0, 0)
+        # Cancels the tiny coupled cross term exactly in the nearest mode.
+        put(data, TERMS + 0x3c, 'I', 0x80008000)
+        for body in [a, b]:
+            machine.mem_write(body + 0x30, struct.pack('<4f', 1, 1, 1, 1))
+        machine.mem_write(frame - 256, b'\0' * 512)
+        header_bytes = struct.pack('<6I', 0x11801, TERMS, RESULTS, a, b, 0)
+        # Classification zero skips the residual pass, keeping this regression
+        # focused on the real three-row update, clamp and result writeback.
+        operation_bytes = struct.pack('<IIIfIfI', 0x1808, output + 0x800,
+                                      0x00004000, 1, 8, 1, 0x400)
+        if aliased:
+            machine.mem_write(header, header_bytes)
+            machine.mem_write(operation, operation_bytes)
+        else:
+            data[header - HEAP:header - HEAP + 24] = header_bytes
+            data[operation - HEAP:operation - HEAP + 28] = operation_bytes
+        machine.mem_write(gate, b'\1')
+
+        def observe_limit(current, address_, size_, user):
+            # Read-only observer at retail's real FSQRT, before its FDIVR.
+            assert words(current, header + 12, 2) == (a, b)
+            assert bytes(current.mem_read(operation, 2)) == b'\x08\x18'
+            visits.append((words(current, frame + 0x34, 1)[0],
+                           words(current, operation + 12, 1)[0]))
+
+        hooks = [(0x31d375, observe_limit)] if label == 'retail' else ()
+        snapshot = execute(machine, entry, data, [STEP, header, HEAP, IMPULSES],
+                           hooks=hooks, precision=precision | rounding << 10,
+                           callee_saved_values=saved_values)
+        assert snapshot[1] == 1
+        snapshots.append((snapshot, bytes(machine.mem_read(a, 65536)),
+                          bytes(machine.mem_read(b & ~65535, 65536)),
+                          bytes(machine.mem_read(output, 131072))))
+        if label == 'retail' and rounding == 0:
+            assert words(machine, IMPULSES, 1) == ((0,) if aliased else (0x3f800000,))
+    expected = ((0x3f808000, 0x80008000) if rounding == 1
+                else (0x3f800000, 0x80000000)) if aliased else (0x3f800000, 0x3f800000)
+    assert visits == [expected], (precision, rounding, aliased, visits)
+    assert snapshots[0] == snapshots[1], (precision, rounding, aliased)

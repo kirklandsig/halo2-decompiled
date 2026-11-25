@@ -46,7 +46,7 @@ def return_from_hook(uc, argument_bytes=0):
 
 
 def execute(uc, entry, data, args, this=None, hooks=(), precision=0x37f,
-            instruction_budget=100000, expect_return=True):
+            instruction_budget=100000, expect_return=True, callee_saved_values=None):
     if not any(lo == 0 for lo, hi, permissions in uc.mem_regions()):
         uc.mem_map(0, 4096)
     uc.mem_write(0, b'\xff' * 4)
@@ -54,7 +54,12 @@ def execute(uc, entry, data, args, this=None, hooks=(), precision=0x37f,
     sp = STACK + 32768
     uc.mem_write(sp, struct.pack('<' + 'I' * (len(args) + 1), STOP, *args))
     saved = [UC_X86_REG_EBX, UC_X86_REG_ESI, UC_X86_REG_EDI, UC_X86_REG_EBP]
-    for reg in saved + [UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_EDX]:
+    saved_values = ((0x12345678,) * len(saved) if callee_saved_values is None
+                    else tuple(callee_saved_values))
+    assert len(saved_values) == len(saved)
+    for reg, value in zip(saved, saved_values):
+        uc.reg_write(reg, value)
+    for reg in [UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_EDX]:
         uc.reg_write(reg, 0x12345678)
     if this is not None:
         uc.reg_write(UC_X86_REG_ECX, this)
@@ -76,7 +81,7 @@ def execute(uc, entry, data, args, this=None, hooks=(), precision=0x37f,
         return bytes(uc.mem_read(HEAP, len(data))), uc.reg_read(UC_X86_REG_EAX)
     assert uc.reg_read(UC_X86_REG_EIP) == STOP
     assert uc.reg_read(UC_X86_REG_ESP) == sp + 4 + (4 * len(args) if this is not None else 0)
-    assert all(uc.reg_read(reg) == 0x12345678 for reg in saved)
+    assert all(uc.reg_read(reg) == value for reg, value in zip(saved, saved_values))
     assert bytes(uc.mem_read(0, 4)) == b'\xff' * 4
     return bytes(uc.mem_read(HEAP, len(data))), uc.reg_read(UC_X86_REG_EAX)
 
