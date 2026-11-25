@@ -1816,6 +1816,31 @@ bool function_108530(long device_index, long name)
 // acceleration zero between, 123 (525 B, callers 31/13); the halves adjacent after the acceleration zero, down first,
 // 123 (525 B, callers 31/13), up first 116 (same code); both halves written out at their two uses 136 (callers
 // 26/28); the denominator from `remaining` re-measured 131 (528 B, callers 31/13).
+// M3 lane 16 r188 (H2M_FAST with 0x108600/0x108670, both MATCH; control 116). Reading: retail never gives the
+// zero-clamped ramp-down a register (`ja` over a store of the zero straight from XMM0, then the minimum compares
+// `remaining` with the stack cell); ours holds it in XMM2 from the zero clamp to that compare (the allocator ranks it
+// 14 over five blocks). Forms: the ramp-down minimum as `ramp_down_time < remaining ? ramp_down_time : remaining` 116;
+// the ramp-up minimum as `duration < ramp_up_time ? duration : ramp_up_time` 116; the ramp-down zero clamp as `0.0f <
+// ramp_down_time ? ramp_down_time : 0.0f` 116, with that minimum as well 116; the cruise numerator's products written
+// velocity first (`initial_velocity * half_ramp_up_time`, `final_velocity * half_ramp_down_time`) 116 (same code each).
+// Body unchanged.
+// Duration is still in XMM3 and ramp-down is cached at the upper bound. Float absolute
+// value at duration, distance and both 116/116/116; both comparisons in double 130;
+// direct clamped duration 117; with double distance 120; signed distance limits 132;
+// both direct limits 121. NOT kept: the first three tie and the other forms lose both
+// XMM6 caller matches.
+// Promoted products rounded to real at the half times, half-ramp travels or doubled
+// rates, the three pairs, all three, and the phase squares: 127/143/117,
+// 176/170/143, 188/115. NOT kept: the squares gain one but extend the body
+// and lose both callers. The half times preserve the callers and also increase the extent.
+// M3 lane 14 r156 (h2m fast with both callers, 0x108600/0x108670 MATCH unless noted; control 116). The allocator ranks the
+// two half times equal (the later-created one colours first) and colours the ramp-down's clamp piece (a split of the
+// parameter) into a register; a forced-ranking search found no single decision below 69. Forms: the half ramp-down named
+// first 123 (525 B; callers 31/13); the denominator adding the half ramp-up first 116 (same code); the numerator
+// subtracting the ramp-down part first 115 (one point, not kept); the cruise velocity stored in each arm with no local
+// 127 (528 B: the tail then reloads the field and hoists 2.0 as retail, but the clamp keeps its register copy), with the
+// numerator swapped too 126; the deceleration distance read back from its field 116 (same code); the position stored to
+// start and position in one chained assignment 142 (509 B; callers 26/28). Body unchanged.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

@@ -956,6 +956,10 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // 16 and 15/19); 12 above 11 6; 16 first 31; 16 after 10 21; 13 above 12 6; cases 5-8 as one label group 6; `return
 // true;` in place of `break;` in case 10, in 12 and 13, or in 14 and 18, 6 each (same code); in every case 36 (the
 // merged blocks then sit at 14's and 15's places and cases 9, 11, 16, 17 keep source order), in every case but 10 36.
+// M3 lane 6 r244 (h2m fast with 0x19ca0/0x19be0, both MATCH unless stated): cases 9-20 stored through the four named
+// members of the existing four-float vector type 2 (same code); `default: break;` in the mode switch 2 (same code);
+// `return true;` closing the size branch 2 (same code); case 4 as one colour aggregate copy 131; the size pair read
+// through a `long const *` local 47 (708 B, 0x19ca0 130).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

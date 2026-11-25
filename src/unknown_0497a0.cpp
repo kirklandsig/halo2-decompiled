@@ -722,10 +722,41 @@
 // Perspective store order for side/up/both/both with early fourth-component clear 536/536/536/535.
 // Both complete unscaled rows before the half reciprocal, divisors paired or per row, with opening
 // or retail store order 536/536/536/536. NOT kept: the one-point change leaves the 0x54 frame.
+// M3 lane 15 r146 (H2M_FAST; control 536). Frame reading: ours packs six 4-byte cells (inv, one x87-to-SSE transfer cell
+// shared by both wave values, the three shared cross products, shape0) and retail nine: its wave values have two cells
+// that overlap (the short-period one is stored first and reloaded after the other), and the first cross's j and k have
+// cells of their own (only its i sits in w's cell), so retail's first cross is three scalars, not a 12-byte local. Here
+// the first cross stays one 12-byte local in every form, also when returned by value: a file-local by-value cross
+// (`vector3f c = cross_value(v4, v2);`) 641 (2643 B, frame 0x60 from its return copy), with the add's c term written out
+// as well (diagnostic) 641, the second cross by value too 667 (2668 B), the second cross alone by value 652 (2648 B);
+// the first cross staged into w (listed 533) re-measured 533; sin x and both cosines as named doubles 534, with the staged
+// first cross into w 532; the second input scaled in place before its three reads 536, with both of those 532.
 // The rounded waves still share a slot in the 0x54 frame. Attenuate the existing
 // components in place at quarter/half/both 536/536/536. Join the mode store without
 // or with quarter/half/both attenuation 593/593/593/593. Name each attenuated product
 // at its clamp 537. NOT kept: the extent stays 2622 bytes and the frame does not change.
+// M3 lane 16 r190 (fast screen with 0x4a1e0, unchanged at 322; control 536 at 2622 B, aligned 593, masked 183; body
+// unchanged). Retail's special arm read product by product: both crosses run in the staged helper's order (k, j, i).
+// The first forms v4.i * v2.j, v4.k * v2.i and v4.j * v2.k into three cells and its k and j into two more, with only
+// its i written to w's first member; the second is each kept second product minus the stored first one, then w's
+// three stores. Forms: the first cross through cross3f_staged straight into w with the second wave reading w 533
+// (aligned 605, masked 188, frame still 0x54: this build still forms the first cross i first and gives its j and k no
+// cells); both crosses staged, the first into w, 533 (same code); both staged with the first in its own vector 537;
+// the second cross staged alone 536 (same code as the body); both staged into w with the plain sine declared ahead
+// of the first cross 533 (same code as the second form: the sine is still substituted after the mixed wave). The
+// frame's three missing cells (the cross's j and k, one more wave cell) do not appear in any of them.
+// M3 lane GA r10 (fast with 0x42c50/0x42b20/0x43720/0x43740 MATCH and 0x4a1e0 at 322; control 536 at 2622/2622 B, frame
+// 0x54; 18 source trials + 1 flag diagnostic; body unchanged). Flag diagnostic `/Op` 861 (frame 0x70, 2786 B, breaks 0x42c50).
+// All 4 crosses via cross3f_staged with first cross into `&w` 532 (2622 B, mk 289); that + perspective rows via
+// vector3f_add_scaled/vector3f_scale (named `k`) 638 (2603 B, mk 314), with `inv * 0.5f` inline and camera->f6c/f70 read at
+// use 651 (2595 B, mk **213**: stops 0.5f from hoisting above source->type==0 and keeps 0.5f in retail's xmm7 through the
+// m>1 tail), with d scaled in place 652 (2594 B, mk 222), with plain cross3f for r/s 652 (mk 222), with separate `c` 652 (mk
+// 222), writing into result->v20/v30 then scaling in place 696 (2647 B, mk 271), with sx before s cross 643 (2643 B) or
+// scaling r before s 703 (2584 B). Staged crosses + retail k,i,j perspective order 532 (2622 B); staged-into-w + d scaled in
+// place + camera shifts inline 531 (2622 B, mk 277; -5, below 8-pt bar; same with `inv * 0.5f` inline 531 or v1 typed
+// vector3f 531; plain cross3f base + inv*0.5f/cam/d-in-place 534); staged-into-w + add_scaled/scale + d in place /
+// vector3f_scale(&d) 639/639; s1 before staged cross + named doubles + d in place 597 (2625 B); diagnostic scalar ck/cj/ci
+// without union 693 (frame 0x50, 2555 B), proving c.j/c.k's 4-byte cells require separate s0/s1 homes.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

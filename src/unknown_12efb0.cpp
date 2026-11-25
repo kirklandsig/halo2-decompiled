@@ -136,6 +136,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
+// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
 // MiniMax G (11-20): score 607 (was 607): no new form, no lower score; the palette slot's declared type is the
 // only lever left at the loop head and none of the three spellings pays: a char local gives retail's byte load
 // (mov bl/cl, no sign extension at the load) but NONE then lands in ECX with the result still in EAX and the
@@ -143,7 +144,6 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // sign-extended word, 607. Retail still keeps the 0x130f60 result in EDX, the slot byte in CL, NONE in EAX, the
 // zero in XMM7 and the palette record in EBX; ours keeps the result in EAX, the slot in BX, NONE in ECX, the zero
 // in XMM5 and the record in ESI, so the sign-extended slot is materialised into the record register itself.
-// score 607 (was 607): Retail compares the palette byte before the metadata stores and keeps the returned tag in EDX.
 // m3 lane 13 r149 unchanged, its lines just above the marker.
 // Earlier (607, was 607): The 0x4820 frame, clears and metadata cursor agree. The first difference spans the
 // loop exit. Beyond it, retail keeps the tag result in EDX, compares the palette byte in CL against NONE in
@@ -1054,6 +1054,49 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // product 607, its weight likewise 607, both 607 (same code each); the palette byte read at each use (test, bounds,
 // index, source index) 666 (re-measured on its own: retail's `mov cl` byte load, NONE then in EDX); the three
 // six-field outputs typed as a color plus three reals with the helper writing members 607 (same code). Body unchanged.
+// Separate selection from contribution by resolving the tag in the no-palette arm,
+// selecting it after lookup, checking palette precedence, or setting the palette
+// pointer in each arm: 1085/1085/1087/1087 with short, 1081/1081/1083/1083 with char.
+// NOT kept: the provider and palette roles still differ and the body grows past 4140 bytes.
+// Typed scenario table indexing, shared scenario receiver, cached previous index,
+// or record-selection initializer: 607/607/607/607 with short palette, 700/700/700/700
+// with signed byte. NOT kept: the provider register and shared lookup test still differ.
+// M3 lane GB r7 (fast with 0x12e5e0, 0x12e960, 0x12eb00, 0x130f60, 0x131030 and 0x1317a0, all MATCH; control 607 at
+// 3832/3817 B, al=362, mk=232; 82 trials; body unchanged): copying 0x131030's `fog_accumulate` (ternary clamp +
+// `fog_color_add_scaled` + intensity/distance/height/weight/remaining order), putting `if (weight > 0.0f)` first in
+// `function_12efb3`, passing 4 scalar channels with ternary `(alpha == 0.0f ? 1.0f : alpha)` first in `function_12efb5`,
+// writing the three `field_1c/field_34/field_c8` publications inline, moving `arg_3->field_6c = local_2;` before the
+// reciprocal, hoisting `tag` and `local_22` before the palette tag test, and reading tag radius directly in the ternary
+// makes ALL 785 float/XMM instructions, stack slots, branches and all 6 publications match retail 100%; paired with
+// `long cluster_index = local_0[local_11].cluster_index;` (used at `local_13` and `field_f0`) and a file-local
+// `fog_palette_entry_get` lookup (setting NULL inside `else`) this hits 86 at 3817/3817 B (al=64, mk=8; saved
+// build/gb7/12efb0-lead-86.cpp), leaving ONLY a 3-way loop GP rotation (cursor ESI / local_13 EDI / cluster_index+tag+
+// local_23 EBP vs retail EBP / ESI / EDI+EDI+ESI). Same 86 with `bool has_fog` (no goto), `widen_local_only`, typed
+// cluster struct, outer loop var, inverted `if (!local_18)`, `local_13` before `local_12`, `local_12` after `0x130f60`,
+// and `ptr_idx_arr_rst`/`arr_idx_arr_st`; sub-struct `source` with helper 99 (with `entry_at_index` 689); `entry_at_index`
+// alone 689 (null store before `if` jump-threads); inline `else { local_18 = NULL; }` 701; `source` setter 653; flipped
+// `arg_0 ==` 86; `while` loop 1435; pointer-end loop 885; reset before `0x130f60` 709; all `cluster_index` 762.
+// Strictly clean non-mixing, no-new-helper forms with the new helpers/publications slash masked diffs 232->26 (al 362->85)
+// and recover `cursor=EBP, local_13=ESI, local_23=ESI`, but score 702 (short slot) / 705 (signed char inline) / 691
+// (all array indexing) / 694 (no alias with lookup helper) because `cluster_index` folds into `imul`. Lead 86 NOT kept
+// (mixes `cluster_index` local with `local_12->cluster_index` and uses a one-caller lookup helper without byte match).
+// Current-cluster predicate shared after provider, before provider, within the palette arm, or
+// across weighted winners: short slot 733/741/739/717, signed byte 729/740/735/713.
+// First difference moves into accumulator setup. Retail repeats the cluster comparisons.
+// Existing tag block with direct members or one block pointer, direct or saved previous index:
+// short slot 607/607/607/606, signed-byte slot 700/700/700/699. NOT kept: the best count falls by one,
+// and the provider result, native palette compare and shared lookup test still differ.
+// M3 lane GA r11 (fast with 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH across 42 trials;
+// control 607 at 3832/3817 B, mk=169; body unchanged): clean `arg_3->field_6c = local_2;` before reciprocal 604 (-3,
+// under keep bar); clean `fog_accumulate` (from 0x131030) / `efb3` weight-first / `efb5` 4-scalar alone 703/705/708;
+// all four combined on main's short slot (no mixing, no new helper) 688 at retail's exact 3817/3817 B (mk 169->47:
+// recovers `cursor=EBP`, `cluster_index=EDI`, `local_13=ESI`, `zero=XMM7` and all three `function_12efb2` schedules);
+// with inline publications + short/per-use slot 701/703 (mk=35). Match-only probing on GB7's lookup-helper form:
+// `static inline` else-only lookup restores `xor ebx, ebx` at 3817 B (`L00` 704, mk=20); using `cluster_index == arg_0`
+// in the palette weighted test (`L07`) drops cursor priority by 1 use and breaks the 3-way GP rotation, snapping all
+// 4 callee-saved registers to retail (`cursor=EBP`, `cluster_index=EDI`, `local_13=ESI`, `record=EBX`, `zero=XMM7`) at
+// 555 (mk=13), but spills `cluster_index` 4 B across `tag` (`frame=0x4824`, `+0x1`, 3824 B) and mixes local/field reads;
+// `static inline` full lookup + tag/fallback/palette block variations (`C00..C11`) 678..739 (mk 17..27; clean `C11` 704).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -952,6 +952,55 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // both arms 751, helper both arms 731 / ternary 721, direct local_26 both arms 593); inline bool flip helper 665; combined clean
 // structure with mode-2 early i/j + MIN(1.0f, ratio) + field_50 early + no local_28 + blend helpers 673-675 (3475-3478 B,
 // aligned 112, reg+esp-masked 43: all 53 mode-2/scale instructions match byte for byte), without mode-2 early 466-493.
+// Incoming/radial/both planar cross tests 669/703/703; planar normal in both dots 665.
+// Planar scale to a separate or in-place offset 706/714; one normal for dots and scale 720;
+// both crosses with a scaled offset 700. NOT kept: all keep the position at ESP+0x8c and
+// raise the score. The position and the path query outputs still occupy exchanged homes.
+// GA6 (21 trials on 462 base, fast calibrated 462 at 3504 B with 0x1f38c0/0x29b990 MATCH; body unchanged): closing dot3f(&local_7, &local_9)
+// 462 (aligned 147, masked 86); + dot3f(local_4, &local_1->velocity) 460 (with cross3f_staged 460, without local_28 465); clean mid
+// (dot79 + MIN(1.0f, ratio) both clamps + local_26 *= 0.5f + field_50 early) 475 (aligned 131, masked 62); + mode-2 early i/j 673
+// (3478 B, aligned 71, masked 34; without local_28 673 aligned 76); + byte local_21 with `local_21 = local_21 != 0;` matches retail's
+// `test al, al; setne al` at 0x29bf27 with frame 0x88 intact (670 alone at 3509 B; 670 on the clean-mid+mode-2 base at 3483 B, aligned
+// 71, masked 32); `byte side` in else arm on that base 674; `(bool)(!local_22 ? !local_21 : (byte)local_21)` 472; vector2d_from_points2d
+// 665 (3499 B); separate perp vector2f on clean base 545 (3501 B); side-select scalar/arm forms on clean base: symmetric cx/cy both arms
+// 699 (3512 B, frame 0x8c, local_8 moves below local_14, masked 37), negated offset 724, if-assigned local_24 + scalar cx/cy 715,
+// diagnostic asymmetric y-in-arms 719/735 (739 on clean base, aligned 80, masked 31; scalar cy 702/700 at 3499 B, frame 0x90).
+// GB6 (fast with lane 6 r242's companion list; control 462 at 3504/3499 B, +0x100, aligned 182, masked 118; 22 trials, body unchanged):
+// on the 462 base: separate scoped velocity at line 1162 682 (3499 B, +0x60); MIN(1.0f, ratio) both 461 (al 170, mk 108); early field_50
+// alone 462 (al 173, mk 109), + MIN(1.0f, ratio) both 461 (al 161, mk 99), + separate local_26 *= 0.5f 475 (al 171, mk 103; folded single-expr
+// 651); vector3f_add_scaled side point 665 (3499 B); sqrt(j^2+i^2) 462 (same code); magnitude2d(&local_26) 475; frame_velocity dots swapped 664.
+// Combined retail lead B2_01 (mode-2 early i/j + MIN(1.0f, ratio) both + early field_50 + separate local_26 *= 0.5f, held by the coordinator):
+// 673 (3478 B, fr=0x88, +0x100, 839/844 insns, al 98, mk 72; folded T04 677, al 103, mk 79); on B2_01: byte local_21 673 (same code),
+// (bool)((byte)local_21 != 0) 670 (3483 B, 841/844 insns, al 93, mk 76: recovers retail's test/setne without moving local_2; cast, match-only),
+// byte side_ok 554 (3499 B, +0x60), + per-arm center_y 682 (3488 B, pos +0x80, +0x60), + sep velocity 682, zero-new-local per-arm local_25.y
+// (direct or +=) 739 (fr=0x90), two-ternary side 644 (al 131, mk 94), 29bab3 mul order 673, cross3f_staged 673.
+// Side y accumulated in the two arms 719, conditional y product 560, named conditional y in the point
+// initializer 712, paired displacement before translation 714, planar position copy incremented y then x
+// 706, the two branch accumulations with the planar difference helper 719, conditional y with that
+// helper 713, and conditional y with the shared planar dot 558. NOT kept: all raise the score.
+// GB9 (fast with lane 6 r242's companion list, 7 peers MATCH; control 462 at 3504/3499 B, +0x100, fr=0x88; 14 trials, restored):
+// `local_24 = local_23; if (!local_22) local_24 = -local_23;` 649 (3502 B); `local_24 = -local_23; if (local_22) local_24 = local_23;` 654 (3502 B);
+// flipped `if (!local_22)` 478; `planar_scale` ternary 721 (3476 B, +0x4e), if/else 702 (3499 B, +0x4e); `local_26` member assigns 462 (same code);
+// `byte same` in 4th else arm keeping `bool local_21` 665 (3499 B, +0x60: recovers retail's exact 8-bit `test al, al; setne al` at 0x29bf27 without a cast);
+// norm `(i*i+k*k)+j*j` 747 (3499 B), `.n[0..2]` 750 (3499 B, mk 105 vs 117); drop `local_28` alone 467, + dot orders 469, + MIN(1.0f, ratio) + early field_50 468;
+// 0x29ab90's steering formula 655 (3500 B); combined retail structure + `byte same` + `dot3f(&local_7, &local_9)` 670 (3483/3499 B, 841/844 insns, mk 64 vs 117: leaves only the 16-byte side-point y-in-arms block as missing length).
+// M3 lane 1 r169 (h2m fast with lane 15 r139's companion list plus 0x1f38c0 and 0x22bbca; control 462 at 3504 B,
+// 0x1f38c0 and 0x29b990 MATCH each run). Frame reading from the back end's slot packing: the frame is over 0x80 bytes, so
+// slots sort by references per byte; the position's 12-byte slot has 7 (583) and the slot shared by the translated
+// target, the pre-turn copy and 0x1f9760's unused output has 8 (4 + 3 + 1, 666), so the shared slot sorts below it
+// (+0x70, position +0x7c; retail has the position below). One more reference of the position (retail reads its y in
+// each arm of the side select) makes the two equal, and equal densities keep creation order. Retail copies the
+// pre-turn vector whole (its k is stored) and forms only i and j of the translated target, as ours does. Forms: the
+// side point copied from the position and offset in place 694 (first difference +0x4e: the point gets an 8-byte home,
+// the position still 7), with y offset first 694; 0x1f9760's unused output declared ahead of its flag 462 (same
+// code); the side distance chosen by if/else with the point's y member then x member assigned 706 (3499 B, +0x4e,
+// the point again in memory); the if/else choice with main's point initializer 462 (same code).
+// 12-byte workspace names for the heading/defaults/request, location/query/target, matched point types
+// with distinct names, immutable request magnitude, and vector/planar request names: 462 each.
+// Immutable translated point 668; point setter 473; shared default-vector pointer 664; in-place
+// translation of the position or displacement copy 719/737; completed planar request copy 588;
+// both planar points immutable 668. NOT kept: the naming forms tie, and the other forms
+// raise the score. The position output still needs ESP+0x80 with the query output at +0x8c.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

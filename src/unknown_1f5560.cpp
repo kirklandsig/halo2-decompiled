@@ -1953,6 +1953,12 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // members 253 (1182 B); the clamp as an `if` storing `(real)1.0` 250 (1141 B); the side as `{ -direction.y, direction.x }`
 // 198 (same code). Retail loads the trace radius (+0x14) into ECX ahead of the pushes and spills it to the dead facing
 // argument home (0x1f9d91). Body unchanged.
+// M3 lane 15 r146 (H2M_FAST with 0x29a190 and 0x1f9580, both MATCH; control 198). The allocator search over single
+// forced decisions (24 tried) reaches 194 at best, so no one count is missing; what is missing is the may-write effect
+// of the two transform calls on direction and desired (the held `inline` leads above). Forms: an `inline` redeclaration
+// of both transforms in this file (diagnostic) 198 (same code: only the definition decides); the forward minimum as
+// `0.11f * radius` 198, the side test x term first 198, `center` declared ahead of the side test 198 (same code each);
+// the offset added into the centre in place and the desired vector formed by vector2d_from_points2d 196 (1177 B).
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

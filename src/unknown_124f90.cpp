@@ -4124,6 +4124,22 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // cost 0 (retail's latch); early exits do not make one, 8 each with the same code: the owner test as an early
 // `continue` inside a plain else, case 0 ending in `continue`, `continue` after the stop-7 call, `continue` after the
 // callback, the start test inverted into an early `continue`.
+// M3 lane 8 r238 (H2M_FAST, control 8): on this body the allocator ranks the index above the voice 69 to 60, so a form
+// with one more reload block keeps the registers; without the default the extra blocks cost the index 10 (59 against
+// 60). The callback test nested under the flag test 8 (same code, same five reload blocks); the callback source in a
+// local for the test and the call 12; the 0x125e60 result in a bool with the value_ac arm as its own `if (!ready &&
+// ...)` 159 (572 B); no default with `__assume(mode == 0 || mode == 1)` or `__assume(mode >= 0 && mode <= 1)` ahead
+// of the switch 78/78 (the no-default code).
+// M3 lane 3 r310 (fast screen, control 8; the no-default form re-measured 78, index 59 against voice 60). A
+// forced-ranking search: a tie at 60 (index up one or voice down one) is already a byte match, so one point is the whole
+// gap. Only blocks outside the loop give odd amounts (the index's entry block +6, the preheader's seven hoisted
+// candidates -7); case 0's first block (range, class lookup, flag test: five candidates) costs the index 10. On the
+// no-default form: the mode set in an if/else 78; `function_125e60` tested without the byte cast 79; `reason`
+// declared after an uninitialised voice index 78; the voice as `g_4e6378 + voice_index` 78; the 2193d0 result
+// against `(short)NONE` 78; the class-flag test without the bool cast 72 (registers then retail's: the test
+// becomes `test byte [eax + 0xa], 0x20`, one candidate fewer in case 0's first block); the range written out at
+// both uses with no local 31 (559 B: the range is sunk below the flag test). On main's body: the mode if/else 8,
+// the flag test without the bool cast 79, the range at both uses 37 (559 B).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -5048,10 +5064,18 @@ struct s_128ca0
 // Invalid controller link as inactive byte: separate active-first/inactive-first arms 208/212,
 // byte initialized from the link 131, joined selected byte 203. Complement test on effect/link/both
 // 138/129/140, with link-derived inactive byte 151. NOT kept: all raise the score.
+// M3 lane 16 r188 (H2M_FAST with 0x1293f0, MATCH throughout; control 48): the first pin's sum written bits first
+// (`s_decibels((dword)local_6) + s_decibels((real)gain)`) 181 (1079 B), both pins that way 210 (1102 B); the count's
+// extraction cast to byte 48; the count taken as `count = controller->synch_count--;` 48; the first controller block's
+// listener gain as an if/else 48 (same code each). Body unchanged.
 // The pin scratch pairs and controller sentinel still differ. Completed guard 48, absent
 // successor first 83, both 83, with pending guard 83. Return on absent/valid successor
 // 83/48, with completed and pending guards 83/48. NOT kept: the absent-first forms
 // shorten to 1053 bytes and raise the score. The native shifted pending read remains.
+// With staged gain assignments and shifted pending test, use the sampled count for the debit
+// as signed char/short/long or byte 207/123/126/79. With a retained synchronization handle,
+// signed char/byte 207/79, and with both controller handles retained 207/79.
+// NOT kept: the signed byte moves the first difference to the pitch setup, and all forms regress.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

@@ -2396,6 +2396,30 @@ bool function_1900a5(long index);
 // if/return; with main's order and helper form the same body scores 704, the helper form alone 654, the struct alone 646.
 // Patch held (LANES/leads/held-74aa0-gb2-617.patch). The lane's 643 -> 617 form (aligned 631 -> 349, masked 680 -> 492): loose g_50c460..g_50fd14 folded into s_search_value_globals g_509450 (exact +0x3010..+0x70c4 offsets matching memset(&g_509450, 0, 0x70f8) in callers), query_time_now() as 0x75870's if-return form, two-use last_read/last_write and record_space/property_space locals, three-use properties pointer rolling the 6-property loop with properties_used += 6, type-5 duplicate continue, named completion owner/unknown10 fields, failed = true in the incomplete arm, and goto-free state < 0 || state > 1 polls.
 // Intermediate forms on g_509450 struct: struct alone 646; +clock 657; +completion (no type==0 swap) 634; +last_write 651; +last_read/last_write 651; +dup continue 648; +properties pointer 657; +ptr+dup 661; +ptr+space 654; +lw+dup 667; +lw+ptr+dup 676; +polls/space/ptr/dup/last_read/last_write 617 (kept). Rejected earlier forms: struct+clock+comp+polls 655; +last/space 693; +ptr 666; +ready flag & poll gotos 629; +logon >3 760; loose globals with comp+polls 696; struct+last+comp+space 660.
+// The cursor stays based on properties. Typed properties, typed XUID assignment, or both 643/643/643.
+// Each with a shared input receiver 726/726/726. Existing connection predicate with typed properties
+// or with both typed copies and shared receiver 743/727. NOT kept: the typed copies tie and the
+// predicate restores the decrement but raises the score.
+// The logon comparison and properties-based cursor still differ. Cooldown result
+// with zero first, timestamp first, initialized or separate arms: read gate
+// 641/641/633/641, write gate 643/643/642/643. NOT kept: the 633 form sets and
+// then tests a flag at the read gate, and the first difference remains +0x1a.
+// The logon compare and properties-based cursor remain. Assigning the actual
+// admission result after the copies, with one condition, guest check first,
+// sentinel last, or three separate tests scores 643/736/753/792. Carrying the
+// same flag from the source validity gives 643/736/753/792 in the same order.
+// NOT kept: the combined test ties and the split forms lengthen the body.
+// M3 lane GA r5 (24 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643 at 2862 B; body unchanged). Tested clean subsets of s_search_value_globals g_509450 without the two match-only forms (keeping main's query_time_now() and fill store order): struct alone 646 (2878 B); +named completion owner/unknown10 667; +failed=true in else 647 (2862 B); +direct g_509454[group] 647; +long property_index 647; +goto-free state<0||state>1 polls 644 (2862 B); +named record_space/property_space 654 (2846 B); +last_write 644 (2862 B); +last_read/last_write 646; +all 657 (2846 B); +properties pointer in main's store order 673 (2830 B); +polls/last_write 668. Also tested retail's `if (variant) { ... } else player->state = 1;` completion structure (emits retail's exact `player->state = 1` tail after state==5): on g_509450 struct with main's `failed || received != 6` 702 (2910 B), with per-arm `failed = true` (retail's stores in state==2 and state==5) 660 (2878 B), with single `failed = true` in else 680, per-arm + named id 656 / + last_write 659 / + dup continue 691 / + all clean 673, orig fail + named id 676 / + last_write 706 / + dup+lw 757; on loose globals with main's `failed ||` 663 (2878 B), with per-arm `failed = true` 637 (2862 B, -6 pts, under keep bar and flag-in-test).
+// The logon CMP, input cursor and slot conditional move still differ.
+// Shared XUID flags before/after the property copy 643/643. Member copies,
+// shared member flags, after-copy publication, after-slot publication, on
+// admission and late flag sample 743/743/743/745/750/747. NOT kept: the
+// after-slot store follows retail, but EDX holds the flags instead of EBX
+// and the member forms grow the body.
+// M3 lane 14 r156 (h2m fast with 0x749b0, 0x75790, 0x192e60 and 0x1900a5, all MATCH; control 643): the user's identity
+// copied after the properties 645; `team` computed ahead of `valid = true` 643 (same code); the variant loop's index as
+// `long` 714; the values' identity refreshed from the local identity 726; the variant test as nested ifs 643 (same
+// code). Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

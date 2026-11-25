@@ -857,6 +857,15 @@ struct s_41490_record
 // distance at the 0x40e30 call (83; group then travels in ecx), that plus a volatile read of group (113), (void)&position (no change).
 // Permuter (25 min on r643): 8 below its own baseline, only with a float product truncated through a word and
 // 0x40e10's two flags swapped (a behaviour change); not kept.
+// With 0x40e10 kept out of line as a trial (noinline at its definition, or /Ob1 on its file: same code), reading
+// position once through its address (`point3f const *const *position_reference = &position;`, then
+// `point3f const *point = *position_reference;`) keeps it on the stack (ret 0x20, 426 bytes, 51), and with the
+// position copied as one aggregate 40; left: point and definition swap ebx/ebp, the flag byte is read once (retail
+// twice), and the volatile delta reads turn the depth products (retail folds the spilled delta as memory operands).
+// Retail spills the delta across the call where ours keeps it in xmm0-2 (the plain delta then gives 148): retail's
+// callers get no register summary for 0x40e10. `inline` on it alone still expands here (131 plain delta, 75).
+// Tried with the call expanded: the flag arguments as `? true : false` 72 or `!= 0` 72 (same code), the position
+// address read 72, the aggregate copy 75, both 75.
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
@@ -961,6 +970,7 @@ void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 void function_14bc0(short index, short element, bool use_depth);
 void function_12d50(bool scaled, real const *projection, real *output);
+dword function_1cbe0(long mode, dword index, long slot_index);
 point3f g_4c1b08[4];
 
 #pragma inline_depth(0)
@@ -979,20 +989,12 @@ PRIVATE __forceinline void submit_quad_vertices(void)
 }
 #pragma inline_depth()
 
-// score 182 (was 192): size equals retail (837) and every instruction after the first shader lookup is the same; the score is the
-// one-instruction shift of that lookup. Retail reads the tag as `mov eax,[eax+0x5c]; add eax,0x10; mov eax,[eax+4]` (slot 2 of an
-// 8-byte table; the same separate add is at 0x26c6b, 0x34d5a, 0x35097, 0x3923d, 0x5261b), ours folds it to [ecx+0x14], which also
-// puts the 0x14bc0 index in edx instead of ecx. Tried (all 182): slot struct + &slots[2], same through a __forceinline accessor
-// taking the slot pointer / the index / a void* element helper / a tag-block helper, a 16-byte slot, tags[1] through a long
-// pointer, struct copy of the slot (scalarized), memcpy of the slot, an unused first-word read. Stage addresses are written
-// through sampler_state_write (retail ORs the dirty flags once per call) and the quad through a file-scope inline_depth(0) helper
-// (the old whole-function pragma plus the in-body pair left the SetRenderState/SetTextureStageState wrappers out of line: 192).
 // @retail 0x3bf20
 long __stdcall function_3bf20(s_slot *slot, byte *data)
 {
     g_4670bc = true;
     function_16b10((s_render_reset_state *)g_485b48);
-    function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x14), 0);
+    function_1cbe0(0, 0, 2);
     function_1c710(g_51f0f0);
     function_14bc0((short)g_4858b8, 0, true);
     D3DPIXELSHADERDEF program;
@@ -1060,6 +1062,12 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // (116-189), inverse first (117), ys,zs computed right after sin and before cos (195), xs as (double) cast / plain / swapped operands (all 84).
 // Permuter (25 min on r643): 24 below its own baseline, only with a volatile xs and a float term truncated through
 // a long; not kept.
+// Retail's frame puts sine and cosine in the two lowest cells ([esp], [esp+4]) and the xs/ys spills in view_forward's
+// dead slots, the layout of plain locals (aggregates sort above the cells), and computes ys and zs in SSE from an xmm
+// copy of sine with only xs on x87 (ours sends ys and xs to x87: register pressure). The 0x1544e0 builder (matched)
+// shows the same mixed x87/SSE sine products. Tried: the angle as a real 179 (852 bytes, rounded); plain sine/cosine
+// locals 130 (retail's two cells, view_forward one cell higher); the sine products as one vector in j,k,i order 142,
+// in i,j,k order 195, and in i,j,k order with plain trig locals 170; a search over 60 allocation choices: best 83.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1106,16 +1114,52 @@ void function_3c650(byte const *state)
 
 
 
-extern byte g_485ac2;
+byte function_016a90();
 s_3c9a0_matrix g_4c1b68;
 
-// score 315 (was 315): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
+// score 229 (was 291): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
 // 1.0, 1.13, 1.5, 0.0001); no behaviour difference found. Retail spills tangent and view_tangent to float stack slots and
 // divides with divss, ours keeps them on the x87 stack (fdiv st(1)); retail also keeps the near_x/near_y/z stores to
 // g_4c1b08 and reloads them in the corner sums, ours forwards them and drops the stores (1330 vs 1387 bytes), and its
 // frame is 0x4c, ours 0x60.
 // Tried: store order z,x,y,scale (291 -> 291), volatile tangent (-6), volatile tangent+view_tangent (-6), writing only
 // g_4c1b08[3].y and keeping the other corners in locals (same code).
+// The shared tangent for the near/far rows is a real local, not a double: retail keeps it unrounded on the x87 stack
+// for both rows, which a real held in a register also gives (same code here but one fadd), and a double local made
+// the caller 0x3c3c0 pad its frame for 8-byte stack parity, which retail's 0x3c3c0 does not (315 -> 291 in the full
+// build, 0x3c3c0 150 -> 136 with it).
+// M3 lane 2 r151 (fast screen; 291 at 1330 B before; the reused pair and the `-12.0f *` form are HELD as a patch at
+// m3 review: computing the far corner after the near stores is statement order and `-12.0f * (angle * 0.04f)` is
+// operand order, both kept only with a byte match; the 0x16a90 call is kept, same code): one pair of corner_x/corner_y locals reused for the near and then the
+// far corner (retail's shared cells: the near values are re-read from g_4c1b08 in the corner sums once the far ones
+// overwrite the locals) 239 at retail's 1387 B; the hand-written aspect test replaced by the existing 0x16a90, which
+// retail expands here, 239 (same code); the near angle as `-12.0f * (angle * 0.04f)`, so the two constant products stay
+// apart as in retail (`angle * 0.04f * -12.0f` folds them into one), 229 (1388 B); without the reused pair that form
+// measures 287 (1336 B). Lead, not kept (0x3c9a0 matches in every order, so only this caller's count moves): 0x3c9a0's
+// parameters as (matrix, forward, up), the order retail's register setup implies (EAX before EBX, last to first), 237 on
+// the 239 form and 227 on the 229 form; (matrix, up, forward) and (up, matrix, forward) also 237. Left: retail rounds the
+// first tangent and the view tangent through stack cells and divides and compares in SSE (1.0 held in XMM0, the
+// distance in XMM5); ours keeps both on the x87 stack (fdiv st(1), fcompi) and keeps the near corner_x there too, where
+// retail stores it at once; frame 0x54 against 0x4c.
+// Tried, none lower: the half-angle local reused for the view tangent 291 (same code); on the 239 form, the width scale
+// as a copy then `/=`, the view tangent as tan then `*=`, the tangent as tan then `*=`, the width scale computed in place
+// of the view tangent, the tangent and corner_x as one local, the aspect and corner_y as one local, 239 each (same code);
+// corner_x/corner_y as members of a point2f local 242; the near angle as `angle * 0.04f * -12.0` 230 (1388 B), as
+// `angle * 0.04 * -12.0` 242, through a named `angle * 0.04f` step 227 (the kept form's code with the lead reorder); on
+// the 227 lead form, position stored z, x, y, then the scale 226; the camera
+// local's z rewritten and copied as a whole, scale first or last, 281 (1408 B); the view tangent through the float tan
+// overload 227, the first tangent through the double overload 227. Diagnostic (reverted): a float-consistency pragma around
+// the body 433 (1545 B: tan becomes a library call, so retail is not built that way, though the divide and compare then
+// turn SSE).
+// M3 lane 3 r309 (H2M_FAST; 0x3c9a0 MATCH and 0x3c3c0 74 throughout; control 291 at 1330 B). Retail gives the first
+// tangent, the view tangent and the near corner_x memory homes (the x87 result stored as a float, then an SSE divide and
+// SSE/integer copies); ours keeps them on the x87 stack. None of these moves it: the tangent or the view tangent as a
+// real product `(real)tan(...) * x` 291 / 291, both 291 (same code); both with no casts 291; every local declared bare
+// at the top 291; the clamp's first test as `!(width_scale > 1.0f)` 306 (1321 B: the second compare folds away, so the
+// `<=` / `>` pair is retail's). On the reused corner pair (r151's held form, re-measured 239 at 1387 B, 229 with the
+// two-multiply angle): tangent2 computed ahead of the near corner 239; the width scale in one expression 239; no casts
+// 239; the `!(... > 1.0f)` test 249; bare top declarations with the two-multiply angle 229. Reading: retail keeps one
+// home for corner_x across its near (x87) and far (SSE copy) values, ours splits the two.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1134,7 +1178,7 @@ void function_3ca90(byte const *state)
 	g_4c1b68.position.z = height - distance * offset;
 	real aspect = ((real)(short)g_48564e - (real)(short)g_48564a) / ((short)g_48564c - (short)g_485648);
 	real tangent = (real)(tan(*(real const *)(state + 0x7c) * 0.5f) * *(real const *)(state + 0x80));
-	if (!(g_4e6948 && g_4e6948->flag && g_4e6948->index != NONE && g_4e6948->state == 3) && g_485ac2)
+	if (function_016a90())
 		aspect *= 1.5f;
 	real half_angle = g_485640 * 0.5f;
 	if (!(half_angle < 0.7806857824325562f)) half_angle = 0.7806857824325562f;
@@ -1156,7 +1200,7 @@ void function_3ca90(byte const *state)
 	g_4c1b38[2][2] = g_4c1b68.up.k;
 	g_4c1b38[2][3] = g_4c1b68.position.z;
 	real near_x = (real)tan(*(real const *)(state + 0x7c) * 0.04f * -12.0f);
-	double tangent2 = tan(*(real const *)(state + 0x7c) * 0.5f) * *(real const *)(state + 0x80);
+	real tangent2 = tan(*(real const *)(state + 0x7c) * 0.5f) * *(real const *)(state + 0x80);
 	real near_y = (real)(sqrt(near_x * near_x + 1.0f) * tangent2);
 	real far_x = *(real const *)(state + 0x88);
 	real far_y = (real)(sqrt(far_x * far_x + 1.0f) * tangent2);
@@ -1209,6 +1253,14 @@ long function_40de0(long index, bool first, bool second);
 // ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
 // Also tried (@coldspear, #104 2026-11-02): index as long in all five declarations: 0x41040 315, and the matched caller
 // 0x44ac0 stops matching (137), 0x44c90 107 -> 149. Not a lead.
+// M3 lane 3 r309 (H2M_FAST with 0x44ac0, 0x44c90 and 0x402b0, MATCH throughout; control 300). Retail ORs the incoming
+// index register into the handle raw (`or ebp, edx`) and sign-extends it only for the entry lookup (`movsx esi, dx`); its
+// callers pass 32-bit loop counters in EDX. Index as `long` in the definition and all four declarations, the three
+// `(short)` casts dropped at the calls, the entry read as `g_4ba138[(short)index]` and the handle OR-ing `index` 315
+// (1076 B: retail's raw `or`, every caller still MATCH); on it a local copy of the tag table for the two lookups ahead
+// of the first call 314, `long kind` 309, the material as a ternary 302 (cmove), all three 316. On the short form: the
+// tag-table local 301 (1079 B: the table load moves to the entry as retail's, the registers stay ours), `long kind`
+// with the material ternary 305, the tag-table local with the ternary 307.
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -1305,6 +1357,16 @@ void function_41040(short index, long part_index, long group, byte weight,
 // tricks (none), statement-order permutations of result/out/key/index (305-360), key as long (341), group as switch or
 // if-chain (switch gives sub/dec instead of test/cmp; the nested != 1 form gives retail's cmp), selection as byte with one
 // movsx (closer to retail, score 340-361 only because the size changes: 1196 vs 1204 bytes).
+// M3 lane 15 r147 (fast screen, 305): retail splits the tag parameter: its early uses (the 0x15d70 call, the case 18
+// and 19 definition reads) come from ebp, the override in cases 18/19 is stored to the parameter's own slot and the
+// material lookup reads it back from there; stage is in edi only up to the switch, pass stays in its slot. Ours keeps
+// one tag web in edi to the material lookup, pass in ebp, stage in memory. Forms: the source fields for the 0x15d70
+// call read as g_4ba138[index] with the pointer formed after the call 376 (1248 B, the pointer is never formed); the
+// override in a separate `material_tag` local initialised from tag 316 (1204 B, retail's length: pass now stays in its
+// slot as retail, but tag takes edi and stage ebp, and the copy is stored to tag's slot); (void)& on tag/pass/stage
+// 305 (same code), with the separate local 316; the 0x4cbb0 call reading out->value10 as retail does 305 (same code:
+// the stored value is forwarded); the selection switch's default listed with cases 1-3 365 (1164 B). Retail's primitive
+// switch shares one block for cases 1-3 and the default (same register), and tests the 0x4cbb0 result as a byte.
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
@@ -1680,7 +1742,7 @@ bool __stdcall function_1c8a0(D3DPRIMITIVETYPE type, word const *indices, long c
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 bool __stdcall function_3bd00(real height, dword color);
 
-// score 150 (was 150): logic walked against retail, no logic or behaviour difference (calls, argument order, 0x7c==0 test,
+// score 74 (was 150): logic walked against retail, no logic or behaviour difference (calls, argument order, 0x7c==0 test,
 // 0x100000 and >>19 flags, 12de70/3c270 order, both loops match). What differs is the frame: retail has none (push ebp after
 // the first test, push ebx/esi/edi after the second, three epilogues, spills in the render/clear argument slots [esp+0x14]/
 // [esp+0x18]); ours reserves one local slot (push ecx) so everything is pushed up front, shifting the rest. Retail also
@@ -1689,6 +1751,14 @@ bool __stdcall function_3bd00(real height, dword color);
 // record_format_groups(tag) for the table walk, tag re-read from state at each use (183, no spill), tag initialised
 // before the 3c270 call (150, but moves the load before the call: not retail's order).
 // Permuter (25 min on r643): best 139, only with the tag read as a short (a behaviour change); not kept.
+// The frame was a stack-parity pad for 0x3ca90's double local (gone with its tangent as a real: 136); with the
+// prologue retail's, the 0x100000 test as (bool)((flags >> 20) & 1) gives retail's shr/test al,1 (74). Left: the clear
+// call's flags go in eax in retail (BLOCKED-BY 0x14b60, a stack-convention stub; with its real body this function gets
+// a parity pad again, 194), and that 3-byte shift moves both loop pads; the outer loop adds the spilled i * 12 as a
+// memory operand where ours loads it into ecx. Tried: the overlay bit in its own local in place of render (same code)
+// or tested at its use 220; the depth argument as 0 (same code); a copied tag for 0x1bbf0 (same code); the element
+// read as i * 12 + base or as a long array with [i * 3] (74, same code); the NONE test as an if around the inner loop,
+// the bitmap pointer typed at its definition, the second tag read at both uses (all 74, same code).
 // @retail 0x3c3c0
 bool __stdcall function_3c3c0(bool render, bool clear)
 {
@@ -1721,7 +1791,7 @@ bool __stdcall function_3c3c0(bool render, bool clear)
         long shader_index = *(long *)(shader + 0x100);
         dword flags = *(dword *)(shader + 0x118);
         render = (bool)((flags >> 19) & 1);
-        if (flags & 0x100000) function_3bea0();
+        if ((bool)((flags >> 20) & 1)) function_3bea0();
         if (render) function_3bd00(*(real *)(state + 0x84), pack_color3f((color3f const *)(state + 0x58)));
         if (clear) function_14b60(0x10, 0xffffff, 0.0f, 0);
         byte *geometry = *(byte **)(state + 0xc);
@@ -1815,6 +1885,13 @@ extern long g_485a60;
 // slot is stored as a dword), values 0..255 so no behaviour change. 0x100000 test: retail `shr edx,0x14; test dl,1` but
 // every spelling (TEST_FIELD_BIT, bool local, (x >> 20) & 1) folds to `test [mem],0x100000` here (380 in all four).
 // Also tried: definition first then part_index/value/index (402), index kept as long raw_index + short (393), value first (404).
+// M3 lane 3 r309 (H2M_FAST; control 380). Retail decodes part_index as `xor ecx, ecx; mov cl, al; ... and ecx, 0xff`
+// and reads it back as a short (`movsx eax, word ptr [esp + 0x34]`): `short part_index = (short)(packed & 0xff);` gives
+// that exact sequence but 417 (part_index stays in EDI where retail spills it); with it, the definition lookup first
+// 414, the definition and the tag store first 414, definition/part/value/index 406, definition/index/part/value 406.
+// Other spellings: `short part_index = (byte)packed;` 401 (1399 B, `movzx di, al`), `(byte)packed & 0xff` into a long
+// 401 (1400 B, `movzx ecx, al`), `(short)((byte)packed & 0xff)` 401 (1399 B). Lead: the short form plus whatever makes
+// part_index spill.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

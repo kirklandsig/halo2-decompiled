@@ -1399,6 +1399,27 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // retail's order. Forms, 2 unless given: the definition through the existing sound_definition_get 2 (same code), with
 // the playing element unnamed 2, with no index local (`long index = iterator.index;` in the body) 2; the promotion lookup
 // through the out-of-line 0x221810 116 (236 B, a call); `long index = NONE;` 2 (removed before allocation).
+// M3 lane 4 r261 (fast screen with 0x21be20, 0x21b870, 0x126df0, 0x12a810 and 0x21b0e0; control 2). The allocator's
+// split pass: the integer candidates numbered below the first index are the NONE, zero, 0xffff and 0x80 constants; the
+// pieces draw numbers in candidate order from the freed list 4, 19, 15, 14, 21, 12, 22 (19 and 15 are the float
+// duration and 1000.0f), the 0x80 constant draws none, so the first index gets 14 and the count 21. Forms, 2 unless
+// given: 0x126df0's fade-out arm with a named `long milliseconds` 2 (0x126df0 MATCH); 0x126df0 with one sound pointer
+// declared at its top for both arms 2; its fade-out gain named ahead of the lookup 64, the lookup after the gain call
+// 64 (0x126df0 45 each); one milliseconds local at 0x126df0's top for both arms 2 (0x126df0 52, 0x21be20 63); the
+// definition through sound_definition_get with its promotion_index field 2 (same code). Diagnostics: the call's
+// duration `* 1.0f` 2, `* 2.0f` 26 (294 B), `(real)(double)duration` 2. All restored.
+// M3 lane 3 r310 (fast screen with 0x126df0, 0x12a810, 0x21be20 and 0x21b870; control 2). The integer pieces draw from
+// the numbers no integer candidate holds: the dropped AND-1 constant of the curve test (4), the two float
+// loop-invariant loads (19 the 1000.0f constant, 15 the duration), then 14, 21, 12, 22. 1000.0f as a file-scope named
+// constant in 0x126df0 2 (same pieces: it folds); the iterator set-up as the for-init 2. The ring step as one
+// conditional expression (`index = next == first ? NONE : next`, either compare) gives this function MATCH and
+// 0x21b870 MATCH but 0x21be20 24 (its index and element pointer swap ESI and EDI: the allocator ranks the index 166
+// against the element's 144, 120 of it from five index references in the stepped block; a forced-ranking search
+// gives a byte match with the index at 143). On that step: a named next with no links local 71 (0x21be20 54,
+// 0x21b870 32), as an if/else 71, with the links local kept 71; `first == next` 1 (0x21b870 1, 0x21be20 24); the
+// if/else step re-measured 0 (0x21be20 24); 0x21be20's element named ahead of its state test 24, its state test as
+// an early `continue` 24; 0x126df0's fade-in end time named 24. 0x21be20 needs one more candidate referenced in its
+// post-join store block (164 each, the element then wins the tie) or 22 fewer index points. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {
@@ -3098,6 +3119,19 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // at the old-end fade 595, so the hand-written block is already that expansion's code; in this loop the link expands a
 // 0x126df0 call at the loop top or under one `if` and calls it under two, while retail's old-end fade sits under
 // three. Body unchanged.
+// M3 lane 12 r189 (reduced-image screen with the two callers and the matched callees listed, control 597 as the full
+// check; with only the callers listed the image reads 694). Forms aimed at the track definition's reference count: the
+// track's flags read once into a local at the top of the pass 688 (frame +12), the same local declared after the
+// alternate test 684 (frame +12); the fade-in duration named once at the top of the start arm for its three uses 618
+// (aligned rows 512 -> 430 at retail's frame); the start arm's two state stores as one value (`field_c_4 = 0;
+// next_state = 0;`) 597 (same code); the old-end fade's duration read at its use with no local 635 (frame -4); the end
+// sound index named ahead of the start test 597 (same code). Body unchanged.
+// Lane AO r3 (fast with the two callers and 17 callees, control 597 at 2518 B): the creation arm tested first (`if
+// (index == NONE)`, the 0x10 test in its else) 607; both energy loops as `for` loops 769 (2596 B); the floor clamp as an
+// `if` 703 (2500 B); the three state pairs as chained assignments 597 (same code); the lookup identifier set by an `if`
+// 669; the transition walk without its reference pointer (offset tested, the field read at each use) 589 at 2522 B, NOT
+// kept: retail keeps the reference's NULL test (`add eax, edx; je`) and the length moves away; the gains array declared
+// at the head of the combine block 597 (same code), with `alternate` inside the definition guard 615. Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

@@ -661,6 +661,37 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // (1100 B, aligned 59); non-null movie ternary `(10, 3)` 292 (1106 B, aligned 73). Left on the 20-aligned-diff lead (11 B
 // short): the two entry `mov [esp+0x3c], ebx` stores (+8 B) + loop pad `lea ecx, [ecx]` (+3 B), `mov edx, 3` / `mov ebp, 0xa`,
 // and one surround-volume store scheduling swap. Not kept (269 is under the keep bar; move kept only with a match).
+// M3 lane GA r7 (fast; 0x1564e0/0x156960/0x156b30/0x155e50/0x1568d0 all MATCH; control 272 at 1098 B; 26 trials). On ga1's
+// /arch:SSE lead (unknown_1564e0.cpp, `function_80e14`, `(flags & 0x100) ? 0x1400000 : 0x400000`, `if (flags & 0x100)`):
+// interleaving the surround bin/volume stores (`bins[0]=0; volumes[0]=0x8000; ...`) fixes the last surround schedule swap ->
+// 294 (1087/1098 B, exact 0x40 frame, aligned 15, masked 24; lines 19..199 exact except the 3-byte loop align pad). Returning
+// `struct { long format; dword copy_flags; }` (`long`, not `short`) from an inline helper placed after the width/height stores
+// (`b3_t01`) reproduces both `mov edx, 3; mov [copy_flags], edx` and live-register `0xa` across the texture/bitmap tail ->
+// 294 (1087 B, **aligned 14, masked 11** out of 291 insns; saved in build/ga7/156090_b3_t01_fmt_after_wh.log: all 275 body
+// insns match retail's schedule and stack homes except `esi`/`di` vs `ebp`/`si` for `0xa`/`height` and the 3-byte loop pad).
+// Also tried on the SSE lead: struct pair before/between width/height 294 (al 23/16, m 13), constructor/union pair 293 (al 15,
+// m 21), out-param pair 294 (al 15, m 24), pair or dead memset4s at entry 294 (DSE'd), `texture_size`/`texture_data` zeroed
+// locally 285 (1098 B, al 25, m 26), `large` local (`neg/sbb`) 294 (al 41) + interleaved/volumes-first/ptr/material/g_55ece8
+// variants 282..309, in-place `unknown_01e930.cpp` with `function_80e14` + interleaved surround 293 (1088 B, al 24, m 33).
+// Remaining 11 B on the 14-aligned SSE lead: the two entry `mov [esp+0x3c], ebx` stores (+8 B, overlapping `status+0x18` inside
+// `memset`, unique to 0x156090 in the retail XBE) + loop pad (+3 B) and `0xa` in `ebp`. Restored (move requires a match).
+// Lexical homes for texture byte count, pixel output, allocation result, requested size,
+// mode, movie receiver, texture-output pair and reservation pair all 272. NOT kept:
+// the 0x3c frame and early ESI save stay in place, with no change to the status or clock homes.
+// Shared startup dword mask at entry, after status, after initialization
+// check or after the loading guard 282/283/283/278. Packed byte at those
+// sites 287/287/290/289.
+// NOT kept: the masks retain the 0x3c frame and the packed byte shrinks it
+// to 0x38 against retail's 0x40.
+// The 0x3c frame, early ESI save and format call remain different.
+// Late shared width/height/both and publication reads 271/272/272/272. With
+// the bitmap format passed to the bit-depth call 273/274/273/274. NOT kept:
+// the one-point gain is below the threshold and the native call lengthens the body.
+// Initialized shared clock at start, timeout or both 278/272/278; raw start or
+// raw timeout with the other clock initialized 283/324; local start assignment 278;
+// both initialized with a clamped local or direct clamp input 278/279.
+// NOT kept: the timeout-only form ties and the starting clock forms keep the
+// 0x3c frame or shrink it to 0x30. The two early status-slot zeros remain absent.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

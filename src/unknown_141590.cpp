@@ -1348,6 +1348,39 @@ void function_143250(
 // retail keeps in XMM7 from its store to the r3_r3 product: the r2_r0 and r5_r4 products ahead of r1_r1_r8 945; s35_r2 and
 // its r4_r4 product right after r1_r1_r8 945; its r3_r3 product right after r3_r0_r5 939 and right after its r4_r4
 // product 939 (same code each); r4_r1_r5 ahead of the two s35 cube products 1376 (10779 B). Body unchanged.
+// Native rotation basis captures forward/left/up 1209/1232/1272, pairs
+// forward-left/forward-up/left-up 1450/1446/1476, all rows/full matrix 1321/1328.
+// NOT kept: typed captures do not resolve the independent scalar homes
+// at the opening extent.
+// The extra scalar word and first-band spills still differ. Moving third-band products
+// confined to a column to their first consumer gives 1600/1552/1576/1602/1574/1585/1590;
+// moving all seven product groups gives 1698. NOT kept: the second column recovers
+// frame 0x300 at 10765 bytes and first +0x3b, with a higher score.
+// Late axial and transverse mixed-product consumers, alone and together, 1540/1460/1538;
+// intermediate axial and transverse pairs 1534/1493; late root-35 squares, root-105
+// mixed consumers and both weighted pairs 1368/1511/1515. NOT kept: the last two
+// recover frame 0x300 and first +0x39, but shorten the body and raise the score.
+// Third-band weighted product declarations at band entry for the root-35
+// transverse group, root-105 axial group, both, and the three complete
+// family selections all 939. Component-first names for either family 939.
+// The 0x2fc frame and separate weighted spill homes still differ.
+// The first three basis spills and the missing scalar word still differ.
+// Component names for forward j, left j, forward i, their pairs and all three,
+// or the complete nine-component set, all 939. The original names are restored.
+// M3 lane 6 r245 (h2m fast with 0x143250 MATCH, 0x22850 209 and 0x23690 354 each run; control 939). LEAD 918 at retail's
+// 10773 B (not kept: a declaration move, match-only): `s35_r2_r3_r3` declared right after `s35_r2`, ahead of its r4_r4
+// product (held as a patch). It gives retail's handling of s35 * r2: stored once
+// at retail's +0x23c, copied to XMM7 (`movaps xmm7, xmm3`) and multiplied by r3_r3 there, but the frame stays 0x2fc, so the
+// other lone cell (the root-105 r1-square product) is still packed with other values. Other placements of the s35 * r2
+// group: `s35_r2` alone right after `s35` 1327 (10743 B); the group with both products after `s35` 1555 (10773 B); the
+// group just ahead of `r1_r1_r8` 1000 (10773 B); the group after `r3_r0_r5` 941. On the 918 lead: each root-105 square's
+// r6 product declared ahead of its r7 product, r1/r0/r3/r4 squares 1583/1582/1583/1564 (about 10722 B), all four 1632
+// (10681 B); `s35_r5_r0_r0` right after `s35_r5` or after `s35_r5_r1_r1` 930/930; `s21_r5_r7_r7` right after `s21_r5` or
+// after `s21_r5_r6_r6` 1508/1508 (10757 B). A forced-ranking search (12 of about 5000 decisions) moves nothing.
+// The root-105 component-1 square and root-35 component-2 product still
+// lack separate spill homes. Copy then multiply for either weighted pair, both, the
+// full axial or transverse family, either family plus the other pair, and
+// both full families all 939. The frame stays 0x2fc against retail's 0x300.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

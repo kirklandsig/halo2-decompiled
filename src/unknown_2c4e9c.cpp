@@ -3395,6 +3395,26 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // 10-30 ruling reverts even with a match, so the body stays as it was. With both arms reading the field (no `saved`
 // copy) the arms merge before copy propagation, 30. What a natural form needs: the id copied from an earlier read
 // on one path and read from the field again on another, the two paths joining ahead of the guard.
+// M3 lane 13 r157 (fast with 0x2c9a58, matched in each): the id assigned again from the field under `if (coop)` after
+// its initialiser (diagnostic) 37 (90 B, the coop test stays); 1, 2, 4 or 8 initialised dead locals at the top 30 each; the
+// definition pointer declared at the guard block's top and assigned in the loop 30 (same code). Allocator view: with the id
+// assigned inside a guard on the field the copy is propagated and one value covers the entry block and the loop (so the load
+// goes straight to EBX); in the NONE-default form NONE is a register value with four references and no single forced
+// register or ranking choice gives retail's head. A retail scan for a scratch load, `cmp -1` and a copy to a callee-saved
+// register finds this function only.
+// M3 lane 7 r229 (fast with 0x2c9a58, matched in each): v1 calls this only when the list is not in coop mode, so a
+// coop test here would always see false. Forms: the id reset to NONE when the list has no pool (`if (!data) map_id =
+// NONE;`) 37 (86 B, the pool test stays); the id as a loop variable, `while (map_id != NONE) { walk; map_id = NONE; }`
+// 30 (the reset folds); the guard as an early return with the walk's id copied from the saved id after the iterator's
+// set-up 30 (propagated); the NONE default set from a block-scoped saved id, then the guard on the id 30 (the repeated
+// test folds); the guard with a redundant `map_id >= 0` 33 (84 B). All the 30s the same direct EBX load.
+// M3 lane 6 r245 (h2m fast with 0x2c9a58, matched in each): the walk inside `do { if (map_id == NONE) break; ... }
+// while (false)` 30; the loop compare through a `long const *` to the id local 30 (diagnostic); a `const` definition
+// pointer named in the loop with the compare written id first 30; the guard on the field, the id read inside it and read
+// again after the iterator's set-up 30 (the second read folds); the iterator at function scope with `if (map_id ==
+// NONE) return;` and `return` at the hit 30 (all the same direct EBX load). A forced-ranking search (12 decisions) moves
+// nothing below 20, and that only by forcing a register for a temporary this build does not have: retail's head is a
+// separate load temporary copied into the id, a difference in the intermediate code, not in register choice.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

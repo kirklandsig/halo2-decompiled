@@ -3605,6 +3605,22 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // it one place early). On that form: `/ 2.0f`, `/ 2`, `+ 1`, the three commuted spellings: same code; a double 0.5 or 1.0:
 // all x87 (113 to 115); the finished value through a named local before its store, or through value-returning helpers:
 // same code or other instructions (102 to 108). Body unchanged.
+// The x87 coordinate store still precedes the SSE subtraction. Existing point setter for every pair with
+// direct expressions 95; both rotation, scale or bias parts named, in all seven subsets, 321 each. NOT
+// kept: the direct form moves the first difference back to +0x50f, and the named stages shorten the body to
+// 1914 bytes.
+// Gemini lane GB r10 (2026-11-25, 18 source trials + 1 diagnostic, fast control 54 at 2022/2022 B, al=27, mk=22, 480/480 insns; 0x144f0/0x1cc30/0x2a2f0 MATCH):
+// Diagnostic (reverted): `/G7` in `@flags` under LTCG 54 (identical code, so `/G7` does not widen `fmul->fstp` from 3 to 4 insns).
+// Source trials: 4-corner `for` over static `cx/cy` or `point2f` or inside quad helper 334 each (1927 B); 2-pass `for` loop 544 (1762 B);
+// 4-vertex `for` loop 509 (1890 B); macro `TEXTURE_CORNER_ROTATE` 54 (same code); `x*cosine + (-y)*sine` 486 (1784 B);
+// product parens stmt 1 only 54 (same code), both stmts 244 (1988 B), stmt 2 first/second product 234/210 (1996/2014 B);
+// asymmetric `scale*`, `0.5f*`, `1.0f+` on stmt 1 or stmt 2 54 each (same code); `*coordinates++` 320 (1914 B);
+// `const real one/half` 54 (same code); earlier `#pragma inline_depth(0)` 542 (1724 B). Body unchanged.
+// Rotate into the output pair, then use component loops for all scale/bias steps,
+// scale only, bias and half-scale, scale and bias, half-scale only, separate scale
+// and bias/half-scale loops, separate scale/bias and half-scale loops, or three loops:
+// 339/333/333/339/339/333/339/339. NOT kept: the loops shorten the body and raise the score.
+// The x87 store still leads the SSE subtraction in the restored form.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -4398,6 +4414,14 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // `(real)(1 << exponent) < inverse_span` 4 (same code); the offset clamp as an if/else 1072; `maximum` bare with a
 // `default: maximum = 1.0f;` case 1174 (4856 B); a named `real power = (real)(1 << exponent);` for the seven later uses
 // 885; the small-span exit ahead of the width and the clamp 10.
+// M3 lane GA r5 (38 fast trials on r155's 4 form and r205's B+4 form; control 9 at 4828/4828 B, +0x42e; body restored):
+// filter_output_shift/first_shift as macros 4 (B: 4; with offset after maximum 5), plain inline 1068 (4620 B); FILTER_PIN
+// as inline / __forceinline 735 / 735 (4788 B; B: 735); FILTER_QUANTIZED_BYTE(false) via inline helper 831 (B: 829); second
+// mode dispatch as switch(mode) 885; shared __forceinline gain helper 4 (B: 4); typed mode 1/2/3 config structs 4 (B: 5,
+// cfg1 alone moves 1.0f ahead of 0.0f at mode 1's reload group); two 0-arg blending helpers 4 (B: 4); gain via scale_a/scale_b
+// locals 80 (B: 80); two-use scaled_high local 4 (B: 4); mode-1 4-use alpha local 696 (B: 696); offset after inverse_distance
+// 11 (B: 10), after switch 44, inside if(high>low) 103, after inverse_span 103; span_scale at mode 0 4 (with scaled_high 4);
+// PS_COMBINERINPUTS on stage 1/2 4; B + mid / span / inv_65536 4 each. None flips the float-split 1.0f/span reload tie.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

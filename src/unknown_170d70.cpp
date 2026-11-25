@@ -463,6 +463,20 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // basis tail, and the adjacent addresses keep its first difference at +0x34b.
 // Named deadline with exchanged multiplication reads in k, i, j, ki, kj, ij or kij scores 94 each.
 // Staging the kij dot after both length tests scores 92. All reach +0x34b at 1396 bytes.
+// M3 lane 16 r188 (H2M_FAST with 0x16fe90, MATCH; control 64). Frame reading: the group counter and the time step's
+// compiler pointer both pack with four references, and the counter's references come first at the loop's head and at
+// its latch, so it takes the lower cell. The orthogonality dot (retail: k term, then forward.i * up.i, then up.j *
+// forward.j; ours k, j, then up.i * forward.i): the i term in parentheses 151 (1384 B), the j term in parentheses 151
+// (1384 B), the k term in parentheses 64 (same code); `up->k * forward->k + up->i * forward->i + forward->j * up->j` 64,
+// the j term written ahead of the i term 64 (same code each: the terms sort by rank). Body unchanged.
+// Shared unit-length predicate on the indexed traversal 64. Named deadline with shared forward,
+// up or both unit tests 94 each. With both tests plus ordered basis dot 70, staged left cross
+// 94, both alternate normalizations 92, or ordered dot and staged cross 70.
+// NOT kept: the indexed form ties and the independently walked forms raise the score.
+// M3 lane 14 r156 (h2m fast with 0x16fe90 and 0x170d70, MATCH; control 64): the last group's call arm first on
+// `group >= 5` 216 (1395 B); the time step as `t = times[group]` then `t -= step` 134 (1403 B); the time table in a
+// `real const *` local ahead of the loop 103 (1395 B, first +0x18); the values array and its cursor declared after the
+// coefficient cursors 67; the copy loop's index declared ahead of its loop 64 (same code). Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1239,6 +1253,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // and rises to the block top, and its key then takes EDX. 60 forced allocator decisions leave 105. On the offset lead
 // (re-measured 11): the volume address ahead of the count store 84; `camera_offset + cameras` 11; `NONE != portal_index`
 // 11. Diagnostic: a second use of the table (a probe store) 91 at 438 B, the table still a plain load.
+// M3 lane 8 r238 (H2M_FAST with 0x1730a0, MATCH each run; control 105). The allocator's view: on this body the key and
+// the camera product are one candidate (the key is pushed before the multiply, so the product reuses its register); once
+// the camera address or offset is computed first the key is its own candidate and takes ECX as the first free register,
+// which leaves the camera table a late EDX temporary (retail: key EDX, table ECX from the block top). The projection
+// result in a named bool 105; the camera table copied into a local at the loop body's top 105 (folds); the count store
+// as `(short)(volume_index + 1)` 105; the capacity test as `!(volume_index < 512)` 105; camera and rectangle pointers
+// both named after the volume address 22.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1656,6 +1677,13 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // rankings and picks give 333 at best. The file's generic builder at both calls 360 (1455 B), the generic transform at
 // the four calls 368 (1441 B), both 359 (1473 B); this builder's rows in retail's order (diagonal, complement, each
 // pair's product beside its rows) 357 (1448 B), with the sine products named right after the sine 337 (frame 0x54).
+// M3 lane 8 r238 (H2M_FAST with 0x1726d0 and 0x170fd0, MATCH each run; reduced control 337): the builder's sine and
+// cosine as `sinf`/`cosf` 339 (1450 B); the two scale angles as `atanf(tanf(half) * scale)` 380 (1429 B); the matrix
+// declared after the second angle 337 (same code); the transform's in-place copy taken from `*out` 351; the builder's
+// three sine products named after the complement products 339 (1466 B).
+// The fixed-axis unity register and two square spills still differ. Existing general builder for the fixed axis 386;
+// general forward/up/both transforms on the fixed axis 385/364/379, or general builder and both transforms 356;
+// general forward/up/both transforms on the moving axis 360/346/348. NOT kept: every form shortens the rotation and regresses.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2689,6 +2717,16 @@ struct s_camera_reference_171830
 // re-measured 9 at 1219 B (first +0xd0, only the centre's first product left). On it: the rear-vector products in
 // parentheses 267 (1223 B); `real depth = offset + *distance;` 9; the first rear product written `forward->i * depth` 9;
 // `real const depth` 9; depth declared after the rear vector 9 (all four the lead's code).
+// M3 lane 8 r238 (H2M_FAST with 0x170fd0 and 0x171d00, MATCH each run; round 154's lead rebuilt from its patch, 9): on
+// the lead the depth sum written at each product (no local) 118 (1222 B); the rear products written forward-first 9;
+// `real depth;` declared bare at the top 9; the forward components as `forward->n[0..2]` 9 (all three the lead's
+// code); the centre without the rear vector 202 (1223 B); diagnostics: the depth accumulated in the offset parameter 9
+// (same code), the rear vector through vector3f_scale with the depth sum as its argument, then negated, 159.
+// The plane exit zero and first center product still differ. On the split plane test with grouped sample products:
+// first rear compound scale 263, indexed compound scale 389, indexed rear/center/both 391/381/391, one center loop 371,
+// indexed products with the shared negate 391, first rear product negated after the others 45 at 1219 bytes.
+// On the opening plane path: all rear products then shared negate 158; three named rear products 264.
+// NOT kept: the 45 form still differs and uses the former one-use plane distance and grouped sample products.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

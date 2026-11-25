@@ -2385,6 +2385,15 @@ struct s_unit_motion
 // direct time or original first-phase inputs on the running-velocity path 69/69.
 // NOT kept: every running-velocity form inlines into the caller and loses
 // both matched transitive callers. The stack velocity load and ret 8 remain.
+// Velocity still arrives on the stack. Internal linkage alone, with separate phase durations or with phase-
+// limit selections 86/86/86. Internal linkage with a running velocity alone, separate durations or limit
+// selections 69/69/70, and original launch velocity with shared or separate durations 69/69. NOT kept: the
+// XMM4 forms use XMM2 for time, inline both motion steps into the caller and lose two downstream matches in
+// the preview.
+// Save the phase input for displacement and update velocity first. Acceleration,
+// deceleration, both, and both with conditional durations, using the parameter/running
+// velocity: 88/70, 107/67, 95/64, 95/64.
+// NOT kept: the running-velocity forms inline into 0xc7840 and lose 0x1e5af0 and 0x1faf80.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -5711,6 +5720,31 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // copy before 203, or in both with copy before/between/after 213/213/211.
 // Staged first-cross helper with first-live/between or both-live/after 208/211.
 // NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
+// Gemini lane GB r8 (2026-11-25, 20 trials on s_view_angles base, control 169 at 768/767 B, al=41, mk=12; 0xc8290/0xde190/0x1fe120 MATCH):
+// cross3f_ret chained into 0x30bf0 169; full orthonormalize_up helper 169; orthonormalize_aim helper 184; scalar left_i/j/k ijk/retail order 182/182;
+// inline first + cross3f_staged second 180; union n[] index crosses 178; temp new_up 210 (fr=0x5c); row += 169; fwd+(left+up) 169; no (real) casts on trig 169;
+// vector3f_rotate_into_axes 294; vector3f_add_scaled chain 169; (double)forward_scale at use 169 (al=40, mk=11: row k uses fld [esp+0x30]; fmulp st(2));
+// double cosine+forward_scale with real left_scale/up_scale 191 (774 B, al=38, mk=9: all 27 row insns match retail, only cosine spills to qword);
+// double cosine+fwd+left with (real)left_scale at use (real/double up, real cosine, no cosine) 193/192/201/201. Body unchanged.
+// Split aim copy, pair first or depth first: reused forward projection, paired angles,
+// both, and both with a named horizontal magnitude 97/72/69/69 and 97/74/70/70.
+// NOT kept: the split copies lengthen to 772 bytes. The first cross preload and the final
+// x87 forward-scale lifetime still differ.
+// First-cross up.i still loads early. Saved aim published before the second cross, before
+// normalization, after fallback, or with separately corrected up: 217/212/215/249 with either
+// first-cross helper. NOT kept: the aim copy grows the frame to 0x5c and separate up to 0x68.
+// Scaled additions from vertical/transverse contributions: own vector 276/272,
+// direction output 169/169, projected vector 276/272, forward vector 272/268.
+// NOT kept: the direct output ties and the workspaces grow the frame and body.
+// The early up.i load and x87 forward-scale lifetime remain.
+// M3 lane 13 r158 (h2m fast; control 169): dead initialised longs at the top, K = 1..16, 169 at every K but K = 10 (168),
+// so the cross product's and the x87 rows' operand orders are not a symbol-count state; up and forward declared the other
+// way round 169 (same code). Reading of the cross product's operand ranks: forward.i and up.i rank from the 0xb9fc0 call
+// that takes both addresses (178/179), below every other member, which the cross product meets later (up.j 182, forward.k
+// 183, forward.j 184, up.k 185); retail's up.i * forward.j with up.i first needs up.i above forward.j, so in retail up.i
+// was not ranked from that call. Also: the transform declared ahead of up and forward 169, the local vector declared
+// there 169 (same code each); up_scale computed ahead of the cosine 190 (778 B); `left` declared beside up and forward
+// (outside the aim branch) 169.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5928,6 +5962,32 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // seeded rate displacements 57, both pairs 61, in-place angular/rate scaling at their tests
 // 169/173, full-turn constant shared with angle wrapping 175.
 // The clamp registers and shared angular coefficient still differ. NOT kept: the rate pair gains one, and the other offset forms tie or regress.
+// Named bound decision 52, bound-first/unity-first scales 58/71, common scale 58,
+// named limits 58, per-direction saturation defaults 167, shared selected bound
+// with ternary/branch joins 113/113. NOT kept: the six-point lead leaves the
+// clamp registers and coefficient schedule different. The opening body gives 58.
+// Bounds record initialized together or through its members 58/58. Angular products, rate products,
+// or both stage pairs in a bounds record 58/58/58. Signed lower endpoint 196, with signed comparisons
+// 212, signed bounds record 212. NOT kept: the records preserve the wrong XMM allocation, and the
+// signed forms grow the body. The angular limit and coefficient still occupy separate registers.
+// Scoped angle limit, rate limit, both, or shared scalar offsets with independent
+// products 58 each. Scale each at its test 169/65/173/170. NOT kept: the separate
+// products tie, and test-time scaling raises the score. The clamp and limit
+// registers still differ.
+// Named direction test with separated angle products, rate products or both
+// 52/52/52, both range calls 74, wrapped angle local 73, named endpoints 73,
+// updated turn rate used by store and integration 43, shared sample cap 57.
+// NOT kept: the 43 form uses the opening rate-integration instructions and gains
+// in the unchanged inlined rotation. The clamp registers still differ.
+// M3 lane 1 r169 (h2m fast with 0x1ecf50, MATCH each run; control 58; the allocator reading needs 0x1ecf50's and 0x1e3370's files in the image):
+// retail's two clamp blocks are both "sums first, each scale at its own test" (pi/4 and the 4.244 scale share XMM3
+// because pi/4 dies before the scale loads), which is the listed both-pairs-in-place form (170, re-measured): there
+// the unit and direction pointers swap ESI/EDI and the clamps take XMM3/XMM4. A forced-ranking search on that form
+// finds one decision worth 115: the rate sum `d` ranked last 55 (forced, 3 under main). Forms: the updated angular
+// velocity named as `turn + rate` 58 and stored then integrated as `rate * v + angle` 58 (both the same code as the
+// listed velocity local); the actor test as one direct bool (`from_actor = index != NONE && query`, then `if
+// (!from_actor)` the default) 168 (812 B), with the velocity local 159; on the both-in-place form the rate block's
+// scaled limits as their own locals 170. Re-measured: a/b in place 168, c/d in place 61.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -7769,6 +7829,9 @@ public:
 // paired Boolean accumulation 526, provisional empty result 494, usable and empty counts 518,
 // loaded count 508, any usable and all empty 508. NOT kept: the provisional result reaches 1785
 // bytes but writes the final flag inside the scan, clears it afterwards and leaves the early spills.
+// The early EBP save and unit/tag spills remain. Typed magazine block reads for the pickup, matching slot
+// or held weapon and their four combinations all score 508. Using a reused pickup magazine block pointer
+// with all three typed lookups also scores 508. The frame stays 0x3c and the refill query remains expanded.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -8674,6 +8737,16 @@ real function_50650(real cosine);
 // MiniMax A (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, the two 0xc7750 calls still push the position and the velocity where retail passes them in XMM5/XMM4 with the time in XMM3, and the input and vector homes and the prediction's call scheduling still differ: BLOCKED-BY 0xc7750.
 // score 491 (was 560): frame 0x8c versus retail 0x80. Frame-space vector homes, speed initialization
 // and the 0xc7750 stack inputs differ. Earlier at 563, the vector homes and prediction/call scheduling differed.
+// GB8 (34 fast trials on 491; 0xc7300, 0xc75d0, 0x1e5af0, 0x1faf80 MATCH): `s_unit_motion motions[2]` 491,
+// `azimuth_motion`/`elevation_motion` 491, scoped `local_0588e7` 491, `unit_direction_from_angles(..., pitch, yaw)` or
+// `s_view_angles next_angles` 491 (al 452->438, mk 349->344, fixes yaw-before-pitch order), late `inverse_rate` with or
+// without `predicted_yaw`/`predicted_pitch` 498 (fr=0x88), `s_view_angles` pairs keeping 491 pred 495 (with separate
+// `new_speed` 579, + pred angles 568/560 at 2483 B), full `s_view_angles` + `motions[2]` + `normalize_inline` + else zeros
+// 666 (fr=0xa0, al 452->349, mk 349->238: recovers `yaw_motion` first, `mov bl, al; test bl, bl`, and `wraps` at `[esp+7]`),
+// `unit_angles_from_direction` helper 603, `axis = *velocity` before `sqrt` 586 (with late inv/pred angles 598/599),
+// `normalize_inline` keeping entry zeros 605/606 (in-place rotated copy 631, mk=312), `matrix_transform_vector` or preloaded
+// `unit_vector_from_frame` in place dropping `world` 589/595 (al=412, mk=321; + `pitch_yaw` 590, al=398, mk=316), scalar
+// `predicted` 571, `cross3f` 597, else zeros + scoped + `motions[2]` 658 (fr=0x88). Still BLOCKED-BY 0xc7750. Body unchanged.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
@@ -9132,6 +9205,10 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // NOT kept: the object-first forms fix the first owner block through +0x14b
 // at 1602 bytes, but four points is below the threshold and the one-use
 // samples require a match. The damage flag, later call setup and shake remain.
+// The owner indices still load in the opposite order. Typed damage, effect, or both grenade tag links
+// 62/62/62, and both with a typed input block and projectile link 62. The four corresponding object-first
+// forms score 58 and reach +0x14b. NOT kept: the tag types do not change the emitted loads, and the owner
+// order alone gains four.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9798,6 +9875,45 @@ struct s_unit_melee_collision
 // Aggregate impact record 537; aggregate with per-product range 510; BSP and damage names 447;
 // query-center declaration first with live range 534. NOT kept: both deferred tag forms and the
 // aggregate with live range recover frame 0x17c at 2229 bytes but raise the score. The fan register homes remain.
+// The fan still needs the native unit and ordinal homes with a 0x17c frame.
+// Resolved-type capture snapshot/live range 532/552, replacement from tests 521/528,
+// candidate time shared on live range 534, shared type and time 532/556,
+// and resolved-type replacement with the shared time 548.
+// NOT kept: live-range frames recover 0x17c at shorter lengths and higher scores.
+// Direct damage default after the fan 446/535, response default 520/537, both defaults
+// 500/553, and shared ray setter 447/536, each with a range snapshot or per-product loads.
+// NOT kept: the direct default gains one at the original frame. Late response assignment
+// reaches 0x17c even with a range snapshot, but lengthens the function to 2232 and raises the score.
+// Occupied-hit rejection, selected-type conditional, signed candidate type snapshot, and staged hit
+// selection with the range snapshot: 496/496/525/531. With a range read at each product: 539/539/542/491.
+// NOT kept: the live range recovers frame 0x17c but shortens the body and all selection forms regress.
+// The unit and fan ordinal homes remain displaced.
+// The frame is still 0x180 against 0x17c, and the fan carries the unit and loop ordinals in different
+// homes.
+// Direct tag in each selector arm cached 521, direct tag in each selector arm live 450, live hit output
+// fields cached 553, live hit output fields live 562, timer player handle cached 447, timer player
+// handle live 534, damage owner initializer cached 447, damage owner initializer live 534.
+// NOT kept: The range-at-use forms either shorten the body or retain the displaced frame, and no form
+// beats the opening score.
+// Short row ordinal with cached/live range 538/514, short column 520/524. One self-damage
+// origin for both consumers with cached/live range 447/534. Distinct surface and damage
+// workspace names with cached/live range 447/534. NOT kept: ordinal widths enlarge the frame,
+// and the other live forms reach 0x17c but shorten the body. The unit and fan spill homes still differ.
+// Candidate parent captured in the vehicle branch or selected by type, cached/per-product
+// range 481/537 each. Separate trace handle or publish selected type first, 447/534 each.
+// NOT kept: the parent selections raise the score. Per-product range restores 0x17c
+// but shortens the body and leaves the unit and fan homes displaced.
+// Per-product range and one aim receiver in both paths, pointer/reference 516/516.
+// Point and center names 534, basis and normal names 534, material reset before ray 533,
+// fan-wide trace storage 534, normal declared before point 534, distinct controller and
+// timer indices 534. NOT kept: both aim forms recover frame 0x17c at 2235 bytes but
+// raise the score. Other forms reach 2203 bytes and still displace the fan homes.
+// M3 lane 13 r158 (h2m fast; control 447). Reading (register trace): the aim pointer (172) is coloured before the tag
+// table's value and takes ESI (retail EDI, with the table then the weapon definition in ESI); the weapon definition
+// pointer ranks -75 and the inner counter -84 here, so the counter takes EBX and the unit spills, where retail's rows
+// read the aim's j and k through the unit and the range from the weapon definition at each product. Forms: the NONE
+// defaults declared ahead of the weapon index 502, at the top 502; with the material index object ahead of them 532 (2216 B);
+// the melee entry selected ahead of the fan 551 (2259 B); the hit type as a long 518 (2224 B).
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

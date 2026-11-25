@@ -941,10 +941,26 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // planar with spatial or fallback 356/356; spatial with fallback 128; all three 356;
 // all three through memmove 402. NOT kept: 128 only gains two; planar copy changes the
 // first normalization. The opening J/depth store order and later rotation differences remain.
+// Planar-first with bounded-add on yaw/pitch/both 240/247/299; with one current-angle
+// read 208/230/304; with a distinct bounded result for yaw/pitch 200/222.
+// NOT kept: the single-axis forms recover the store pair but all regress. The yaw zero
+// placement and later rotation schedule remain.
 // With planar first, selected target, selected current, two selected pitches, or selected current
 // in the difference: 296/237/251/251. Both angles before signs with selection or updates 312/148.
 // Assign signed target first and subtract selected or updated current 311/312.
 // NOT kept: all regress, including the 148 form with retail length and the J/depth store pair.
+// M3 lane 12 r189 (reduced-image screen with 0x29b990, 0x170d70, 0x154df0, 0x11cc90, 0x11ce20 and 0x1e5450; control 130,
+// 33 rows that differ in meaning): 1/2/3 redundant pairs around the actor lookup's masked index 130 each (same code:
+// integer parentheses add no expression node, float ones do); the actor and object lookups written out as direct array
+// references 131 (25 meaning rows; the axis i moves from level 0 to 2), with 1/2/3 pairs around the masked index 131
+// each (same code); 1/2/3 pairs around the first rotation's cosine argument 231/226/158 (the first two grow the frame by
+// 4), the same on the direct lookups 236/228/140 (at 3 pairs 17 meaning rows are left: the first rotation's dot starts
+// as retail's, its accumulation order and cross terms do not). Body unchanged.
+// For the object side axis, staging the positive terms, the subtracted terms,
+// both sets, or accumulating in the destination scores 202/202/149/220
+// with the original projection and 202/202/147/220 with planar first.
+// NOT kept: both-set staging with planar first fixes the projected J/depth
+// stores, then shortens to 1696 bytes and raises the score.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

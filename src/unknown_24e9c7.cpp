@@ -773,6 +773,30 @@ struct s_24e9c7_points
 // In-place perpendicular scaling after one upper corner with reverse scalars, direct negation,
 // reverse scalars at first use, or subtraction 172/152/163/152. After both upper corners
 // 154/151/142/151. NOT kept: the return slot stays high or the frame grows.
+// M3 lane 14 r155 (H2M_FAST; control 125; body unchanged). Reading: in this build's code-generation order the two across
+// products already come after the height and width chain, so the single-use across locals are forwarded into the side
+// computation; retail generates them where they are written (right after the size, across j stored to [ebp-8] at once).
+// Diagnostics, match-only: both across products read through `real const &` locals at the side computation 144 (746 B;
+// the products are then generated early, as retail); only across j bound 125; the side point set to the across products
+// and scaled in place through a reference 139 (742 B); the first form with across i as `size * (0.0f - forward_j)` 139,
+// plus forward_i in a local for across j and up x 141, with only across j bound 138; that 139 form with the first
+// corner's base copy right after the across terms 141, with the products written forward first 139 (same code). Left
+// on the early-product forms: the products formed in forward's register (retail copies the size and multiplies by the
+// forward value, with forward_i loaded once for two products) and the result still at [ebp-8].
+// Corner origin component copies by memcpy or memmove (X/Y/both) 253/300/337 each.
+// Saved Y/whole origin with library copies 333/286. NOT kept: the copies grow the frame
+// and body and change the matched caller. The early across-Y spill and return home still differ.
+// The across-Y spill and the returned-height home still differ.
+// Named upper/lower/all rectangle endpoints live from selection 160/178/197,
+// the same endpoint subsets captured at bitmap admission 125/125/125,
+// and chained default stores for upper/all endpoints 161/198.
+// NOT kept: bitmap-admission reads tie, and the producer forms grow the body.
+// The returned-height home and the early across-Y spill still differ.
+// Complete upper/lower/all corner expressions 157/164/229, aggregate 229.
+// Native draw quad with staged/full/aggregate corner updates 191/229/229,
+// and aggregate with native draw rectangle 243.
+// NOT kept: complete expressions shorten the frame and body; the typed
+// rectangle also changes the matched caller.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

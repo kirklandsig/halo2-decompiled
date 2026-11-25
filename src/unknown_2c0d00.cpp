@@ -54,9 +54,9 @@ struct s_obstacle_unit_flags_2c
 
 struct s_obstacle_definition_flags_2c
 {
-    byte : 3;
-    byte no_obstacle : 1;
-    byte : 4;
+    word : 3;
+    word no_obstacle : 1;
+    word : 12;
 };
 
 struct s_obstacle_motion_definition_2c
@@ -214,7 +214,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 925 (was 925): m3 lane 15 r144 unchanged (m3 review: its 859 needs `word filter_flags = sphere->flags;`, a three-use copy of a field retail tests in memory at each of the three sites, a form kept only with a byte match; without it 934, the existing-helper calls alone 933; code back to main, readings at the end of this note). r130, m3 lane 8 r220, m3 lane 11 r151, m3 lane 1 r154 and m3 lane 13 r149 unchanged (r220, r151, r154 and r149 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// score 838 (was 925): Gemini lane GB r8 (2026-11-25, 29 trials, plain-confirmed 838 at exact 3731/3731 B, +0x4a, exact retail frame 0x2cac, aligned 152, masked 109; all 15 file peers/callers MATCH, 0x29cbb0 378 and 0x2c41b0 675 unchanged): type-1 arm written as single-store `if (team == actor->unknown024 || !function_1df560(team, actor->unknown024)) skip_classification = true;` (retail 0x2c13a9 stores 1 only; alone 903), both one-use `velocity` field pointer locals dropped (together 851, flipping `physics` above `skip_classification` and recovering 0x2cac without moving `bool enabled`), `long type = (char)object[0xaa];` across the 4 type arms (retail 0x2c1020 movsx eax), `word` bitfield on `s_obstacle_definition_flags_2c` (matching `s_object_definition::flags` and retail `shr cl, 3; test cl, 1`), all 5 hand-written dot/sq sums replaced by existing `dot3f`/`length_sq3f` helpers. Ablations: without `long type` 877 (3697 B), without `word` 858 (3713 B), without 4 inner helpers 856 (3713 B), without dropping `velocity` 847 (3734 B), the vehicle index read at both uses (a reread, kept only with a byte match) gives nothing (838 either way at m3 review), so it stays a local, without entry `dot3f` 804 (3740 B, +9 B past retail so not kept), + `object_radius` before `offset` 837 (statement order, not kept), + `basis_dot_xzy` vehicle dot 855 (3713 B), `short sphere_count` 968 (3671 B), uninit `straight` + else 808 (3740 B). Match-only leads on GB6's 528: + `object_radius` before `offset` 509 (3731 B, al 130, mk 46; fixes all 24 object-distance insns), + reversed vel1 dot + `dot3f(&difference, direction)` + `(sphere_flags | obstacle_flags) | moving` 509 (3731 B, al 126, mk 42), + `basis_dot_xzy` 468 (3731 B, al 153, mk 67). Earlier (925): m3 lane 15 r144 unchanged (m3 review: its 859 needs `word filter_flags = sphere->flags;`, a three-use copy of a field retail tests in memory at each of the three sites, a form kept only with a byte match; without it 934, the existing-helper calls alone 933; code back to main, readings at the end of this note). r130, m3 lane 8 r220, m3 lane 11 r151, m3 lane 1 r154 and m3 lane 13 r149 unchanged (r220, r151, r154 and r149 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// Earlier note (merged from stacked score line): GB r10 lead 791 HELD as a patch at m3 review: `previous_direction` reaches 0x2c0d60 in ECX, so
+// its slot in the parameter list is not shown by retail's pushes and was picked by score among slots 8/10/11, a
+// parameter order kept only with a byte match; the nested radius gates alone give 832, under the 8-point bar): Gemini lane
+// GB r10 (2026-11-25, 25 fast trials + plain confirmation; 0x2c0d60 838 -> 791 at 3733/3731 B, +0x4a, 921/921 insns, fr=0x2cac, mk 41 -> 33; 0x2c41b0 675 -> 661; all 14 peers/callers MATCH, 0x29cbb0 378 unchanged): moved `previous_direction` right after `direction` across definition, 4 declarations and 3 call sites (retail 0x2c41b0 sets up ecx between unit_index and direction; fixes entry dot3f loads; alone 797, 0x2c41b0 661; pos 8/10/11 840/797/874) and wrote both radius gates as nested `if (d <= r * r)` matching siblings 0x2c1c00/0x2c1e70 (nested sphere alone 832, nested obj alone 838, both 832, with prevdir 791). Other trials restored: + `object_radius` first 838 / 791 / 790; moving `dot3f(&difference, direction)` + `(sphere_flags | obstacle_flags) | moving` 838 / 797; inline `*(long *)(object + 0x248)` 838; combo 838; match-only `else straight = true;` 405 (3731 B) / + prevdir 447 (3733 B, +0x157); full combo + early `enabled` + `else straight = true;` 524 (+0x157, mk=26) / + `object_radius` first 505 (al=94, mk=26) / + sph `vector3d_from_points3d` 466 / without prevdir 528 (3731 B, mk=24). Earlier (838, was 925): Gemini lane GB r8 (2026-11-25, 29 trials, plain-confirmed 838 at exact 3731/3731 B, +0x4a, exact retail frame 0x2cac, aligned 152, masked 109; all 15 file peers/callers MATCH, 0x29cbb0 378 and 0x2c41b0 675 unchanged): type-1 arm written as single-store `if (team == actor->unknown024 || !function_1df560(team, actor->unknown024)) skip_classification = true;` (retail 0x2c13a9 stores 1 only; alone 903), both one-use `velocity` field pointer locals dropped (together 851, flipping `physics` above `skip_classification` and recovering 0x2cac without moving `bool enabled`), `long type = (char)object[0xaa];` across the 4 type arms (retail 0x2c1020 movsx eax), `word` bitfield on `s_obstacle_definition_flags_2c` (matching `s_object_definition::flags` and retail `shr cl, 3; test cl, 1`), all 5 hand-written dot/sq sums replaced by existing `dot3f`/`length_sq3f` helpers. Ablations: without `long type` 877 (3697 B), without `word` 858 (3713 B), without 4 inner helpers 856 (3713 B), without dropping `velocity` 847 (3734 B), the vehicle index read at both uses (a reread, kept only with a byte match) gives nothing (838 either way at m3 review), so it stays a local, without entry `dot3f` 804 (3740 B, +9 B past retail so not kept), + `object_radius` before `offset` 837 (statement order, not kept), + `basis_dot_xzy` vehicle dot 855 (3713 B), `short sphere_count` 968 (3671 B), uninit `straight` + else 808 (3740 B). Match-only leads on GB6's 528: + `object_radius` before `offset` 509 (3731 B, al 130, mk 46; fixes all 24 object-distance insns), + reversed vel1 dot + `dot3f(&difference, direction)` + `(sphere_flags | obstacle_flags) | moving` 509 (3731 B, al 126, mk 42), + `basis_dot_xzy` 468 (3731 B, al 153, mk 67). Earlier (925): m3 lane 15 r144 unchanged (m3 review: its 859 needs `word filter_flags = sphere->flags;`, a three-use copy of a field retail tests in memory at each of the three sites, a form kept only with a byte match; without it 934, the existing-helper calls alone 933; code back to main, readings at the end of this note). r130, m3 lane 8 r220, m3 lane 11 r151, m3 lane 1 r154 and m3 lane 13 r149 unchanged (r220, r151, r154 and r149 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // Earlier first line at 925: r130, m3 lane 8 r220, m3 lane 11 r151, m3 lane 1 r154 and m3 lane 13 r149 unchanged (r220, r151, r154 and r149 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // r132 (m3 lane 15, lead below), r130, m3 lane 8 r220 and m3 lane 11 r151 unchanged (r220 and r151 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
 // MiniMax E (11-20): 849 (from 925, not kept at review): the straight flag's initialiser moved into the two else arms (the actor block's
@@ -986,6 +990,41 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // declaration order 903. Named bounds with no height/center/query/both 923/913/877/877.
 // Plain query height 910, center with bounds 934, query with bounds 888.
 // NOT kept: both plain gains move farther from retail length and retain the extra frame word.
+// Marker query admissions computed before object collection (entry/side/extra/entry+side/entry+extra/
+// side+extra/all) 927/934/938/949/935/945/951, prefiltered marker bits 942. NOT kept: entry,
+// side and masked forms recover 0x2cac with higher scores. Actor/zero registers remain exchanged.
+// Gemini lane GB r6 (2026-11-25, 46 trials, control 925 = plain, aligned 415, masked 262): 858 at 3724 B (retail's frame
+// 0x2cac, first diff +0x41, aligned 313, masked 191) from `bool enabled = true;` declared ahead of the classification test
+// (retail stores 1 in dl before that branch, at 0x2c120d) and both radius checks written distance-first (`!(d <= r*r)`), with
+// both one-use `velocity` pointers dropped, s_obstacle_definition_flags_2c as a word bitfield (its declared width in
+// s_object_definition) and the four inner dots/length_sq through dot3f/length_sq3f. NOT kept (coordinator review): the
+// moved declaration and the flipped compares are kept only with a byte match, and the other changes alone score 927.
+// Lane readings: `enabled` alone 917 (0x2cb0, aligned 311), + entry `dot3f` 903 (3749 B, 0x2cb0), + first `velocity`
+// dropped 857 (3731 B, 0x2cac), + both `velocity` dropped 858 (3724 B), + entry `dot3f` 868 (3713 B); direct
+// `physics->spheres[s]` 931 (3786 B, 0x2cac, +0x41), + `dot3f` 917, + clean combo 893 (3759 B, 0x2cac); `switch (type)` 899
+// (3760 B, jump table); sphere flags bitfield 924 (3731 B); hybrid direct/local sphere 944. Match-only leads: the 858 form
+// + entry `dot3f` + type-1 `if` + `else straight = true;` 389 (3731/3731 B, +0x91, aligned 219, masked 69); that + the
+// vehicle index re-read + `long type` at the four arms + inner helpers 528 (3731/3731 B, 921/921 insns, aligned 146,
+// masked 46). Left on that path: retail's no-actor `straight = true;` store (0x2c0e9a), the type-1 single-store `if`,
+// `long type` at the four arm compares, the `vehicle_index` re-read.
+// Reduced control 845 at 3731 bytes. Immutable direction dot, immutable typed actor unit,
+// typed candidate position, earlier-center difference helper, immutable query count/index,
+// shared candidate getter, and separate short ordinal 845 each. Candidate difference helper 841.
+// Straight default from heading availability 842, from actor absence 778, from heading availability
+// inside the actor arm 834, both defaults from heading availability 936. NOT kept: the candidate
+// helper gains four against the reduced control. The actor-absence form retains frame 0x2cac
+// but grows to 3736 bytes and exchanges the actor/unit registers. The other default forms grow
+// to 3752 bytes. The no-actor byte store and early dot operand loads still differ.
+// M3 lane GA r11 (fast with 0x29a190/0x29cbb0/0x2c41b0 and 11 file peers, all matched peers MATCH; control 838 at
+// 3731/3731 B, +0x4a, fr 0x2cac; 18 compiled trials): nested object/sphere `d <= r*r` gates + `dot3f(&difference,
+// direction)` + `(sphere_flags | obstacle_flags) | moving` 832 (al 196, mk 60); + vehicle x-z-y dot 832 (mk 58),
+// + `direction`-first vehicle velocity dots 832 (al 194, mk 52; NOT kept: -6 under bar), + combined height `||` 832 /
+// nested height + swapped center/radius decl + explicit `(j+k)+i` moving dot 835; + reversed entry dot 834; + `basis_dot_xzy`
+// vehicle dot 859 (3713 B); + sphere `vector3d_from_points3d` 862 (3713 B); vehicle x-z-y alone 838 (mk 98); velocity
+// dir-first alone 838 (mk 94). Match-only lead (`else straight = true;` + early `enabled` + inline `object+0x248` +
+// `object_radius` first + nested gates + x-z-y + dir-first vel + moving dot/flags) 509 (3731 B, +0x91, al 126, mk 37),
+// + one-expr vehicle dot 509 (al 125, mk 42), + `basis_dot_xzy(direction, ...)` 468 (mk 64), + height `||` / nested 509,
+// + split `combined_flags` / swapped decl / nested type-11 510 (mk 38). Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1006,9 +1045,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
         byte *unit = (byte *)ai_object_get(actor->unknown018);
         if (previous_direction)
         {
-            real dot = direction->k * previous_direction->k;
-            dot += direction->j * previous_direction->j;
-            dot += direction->i * previous_direction->i;
+            real dot = dot3f(direction, previous_direction);
             straight = dot > 0.95f;
             aligned = dot > 0.8660253882408142f;
         }
@@ -1059,7 +1096,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             continue;
         if (self_unit && self_unit[0x3dc] == 1 && object_index == *(long *)(self_unit + 0x448))
             continue;
-        if ((char)object[0xaa] == 0)
+        long type = (char)object[0xaa];
+        if (type == 0)
         {
             if (TEST_FIELD_BIT(((s_obstacle_unit_flags_2c *)(object + 0x10a))->no_obstacle))
                 continue;
@@ -1085,7 +1123,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                     if (function_30bf0(&offset) > 0.0f)
                     {
                         vector3f const *other_direction = (vector3f const *)((byte *)other + 0x5ec);
-                        real dot = offset.k * other_direction->k + offset.j * other_direction->j + offset.i * other_direction->i;
+                        real dot = dot3f(&offset, other_direction);
                         if (dot > magnitude3d(other_direction) * 0.7071067690849304f)
                             continue;
                     }
@@ -1109,22 +1147,23 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                 skip_classification = !enemy;
             }
         }
-        else if ((char)object[0xaa] == 1)
+        else if (type == 1)
         {
             if (actor && actor->unknown26c == NONE)
             {
                 short team = *(short *)(object + 0x138);
-                skip_classification = team == actor->unknown024 || !function_1df560(team, actor->unknown024);
+                if (team == actor->unknown024 || !function_1df560(team, actor->unknown024))
+                    skip_classification = true;
             }
         }
-        else if ((char)object[0xaa] == 7)
+        else if (type == 7)
         {
             byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
             word device_flags = *(word *)(definition + 0x11e);
             if (!(device_flags & 1) || ((device_flags & 2) && (*(real *)(object + 0x140) == 1.0f || !(object[0x1cc] & 1))))
                 device_spheres = true;
         }
-        else if ((char)object[0xaa] == 11)
+        else if (type == 11)
         {
             long component_index = *(long *)(object + 0xb4);
             if (component_index != NONE && havok_component_get(component_index)->unknown1c <= 1)
@@ -1135,7 +1174,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
         offset.j = *(real *)(object + 0x34) - position->y;
         offset.k = *(real *)(object + 0x38) - position->z;
         real object_radius = *(real *)(object + 0x3c) + radius;
-        real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
+        real distance_squared = length_sq3f(&offset);
         if (!(object_radius * object_radius >= distance_squared))
             continue;
         s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
@@ -1192,7 +1231,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                         vector3d_from_points3d(&marker->matrix.position, position, &offset);
                         real dot = dot3f(&marker->matrix.up, &offset);
                         if (dot >= -0.2f && dot < marker->unknown6c + 0.2f &&
-                            fabs(marker->matrix.left.k * direction->k + marker->matrix.left.j * direction->j + marker->matrix.left.i * direction->i) >= 0.9f)
+                            fabs(dot3f(&marker->matrix.left, direction)) >= 0.9f)
                         {
                             obstacle_flags |= 0x40;
                             blocking = true;
@@ -1213,7 +1252,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                         vector3d_from_points3d(&marker->matrix.position, position, &offset);
                         real dot = dot3f(&marker->matrix.up, &offset);
                         if (dot >= 0.1f && dot < marker->unknown6c - 0.1f &&
-                            fabs(marker->matrix.left.k * direction->k + marker->matrix.left.j * direction->j + direction->i * marker->matrix.left.i) >= 0.9f)
+                            fabs(dot3f(&marker->matrix.left, direction)) >= 0.9f)
                         {
                             obstacle_flags |= 0x100;
                             blocking = true;
@@ -1253,10 +1292,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                         byte *vehicle_actor = NULL;
                         if (vehicle_actor_index != NONE)
                             vehicle_actor = (byte *)actor_get(vehicle_actor_index);
-                        vector3f const *velocity = (vector3f const *)(object + 0x88);
                         if ((vehicle_actor_index != NONE && vehicle_actor[0x5d0] &&
                                 dot3f((vector3f const *)(vehicle_actor + 0x5ec), direction) > 0.0f) ||
-                            dot3f(velocity, direction) > 0.0f)
+                            dot3f((vector3f const *)(object + 0x88), direction) > 0.0f)
                         {
                             obstacle_flags |= 0x200;
                             blocking = true;
@@ -1321,8 +1359,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
                 real dot = dot3f(direction, &difference);
                 if (dot > 0.0f)
                 {
-                    vector3f const *velocity = (vector3f const *)(object + 0x88);
-                    if (dot3f(velocity, direction) > 2.0f)
+                    if (dot3f((vector3f const *)(object + 0x88), direction) > 2.0f)
                         moving = 1;
                 }
             }

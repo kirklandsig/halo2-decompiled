@@ -1052,7 +1052,11 @@ real function_30bf0(vector3f *v);
 // the convention of the callee 0xe7020 and the callers' usage are the parts left to decide.
 // MiniMax I (11-15): no new form, no lower score (232): the frame is 0x28 against retail's 0x30 and the SSE allocation differs from the first instruction, the two pointer parameters are loaded at their uses in retail but kept in registers here, and the callee's convention and the callers' usage are outside this file.
 // MiniMax S (11-15): no new form, no lower score (232): the frame is 0x28 against retail's 0x30 and the whole allocation of the SSE registers differs from the first instruction, so the distance, the root and the clamp cannot be rescheduled from this file; what is left is the callee 0xe7020's convention and the callers' usage.
-// score 232 (was 232): the convention now agrees with retail (target EAX, origin ECX, direction
+// score 216 (was 232): the time scale read once into a named value under its own null test (the pointer then read
+// plainly, no address read) moves the distance output into EDI from entry, as retail; the five callers keep their
+// match. Still differs: the forced-speed pointer holds EDX from entry (retail reads it into EAX at its test), so the
+// gravity pointer takes EBX (retail EDX); frame 0x28 vs 0x30; the horizontal root and the two_a reciprocal (below).
+// Before round 158: the convention agrees with retail (target EAX, origin ECX, direction
 // ESI, the rest on the stack, `ret 0x2c`): the forced-speed and time-scale pointers are each read
 // once through their addresses, which keeps them on the stack as retail reads them at their uses
 // and matches the callers 0xfa6a0, 0x1f8100, 0x26f150 and 0x2900b0 (each passed the time scale in
@@ -1225,6 +1229,18 @@ real function_30bf0(vector3f *v);
 // returns through one exit, both match-only forms. In it the fallback loses its extra
 // distance-pointer load and keeps the retail argument setup. Frame 0x28/0x30, delayed
 // rounded horizontal root and shared reciprocal remain.
+// M3 lane 13 r158 (h2m fast with 0xfa6a0, 0xfa580, 0x1f8100, 0x26f150, 0x2900b0 and 0xecdc0; plain agreed on the kept
+// form). Reading: the allocator ranked the forced-speed and time-scale pointers (3 each, live from entry) above the
+// distance output (2), so they took EDI/EDX and distance was split. On the 232 body: the forced-speed or the time-scale
+// address read moved to the function top 232/232 (same code); the forced arm first 287 (callers lost). Kept: the time
+// scale read once into `scale_value` inside `if (time_scale)` 216 (the ternary `time_scale ? *time_scale : 0.0f` also
+// 216), then without the time-scale address read 216 (callers kept). On 216: the forced pointer read plainly 252
+// (callers lost), both plain 252; the forced arm first through the address read 282, plainly 284 (callers lost); the
+// chosen speed defaulted ahead of the forced test 221; two_a written out at both divisions 274 (966 B, callers lost);
+// `root * -1.0f / two_a` 216 (same code). Diagnostic (a steering store, not kept): the negative-gravity clamp
+// before the test 215 (986 B).
+// The direct test `time_scale && *time_scale > 0.0f` with plain reads (no named value, no address read) 256 (callers
+// lost): the single read into the named value is what keeps the convention and frees EDI.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1264,18 +1280,20 @@ bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point
 
 		if (!forced)
 		{
-			real const *const *time_scale_reference = &time_scale;
-			real const *scale = *time_scale_reference;
-
 			chosen_speed = speed;
-			if (scale && *scale > 0.0f)
+			if (time_scale)
 			{
-				real t = PIN(*scale * optimal_time, 0.001f, optimal_time);
-				real x = -(distance_squared / (t * t) + t * t * a);
-				real needed = (real)sqrt(b - x);
+				real scale_value = *time_scale;
 
-				if (speed > needed)
-					chosen_speed = needed;
+				if (scale_value > 0.0f)
+				{
+					real t = PIN(scale_value * optimal_time, 0.001f, optimal_time);
+					real x = -(distance_squared / (t * t) + t * t * a);
+					real needed = (real)sqrt(b - x);
+
+					if (speed > needed)
+						chosen_speed = needed;
+				}
 			}
 		}
 		else
@@ -2395,6 +2413,16 @@ real function_17c900(short function_type, real input);
 // Round 469: pitch/yaw offsets at entry 377, yaw/pitch at entry 373, pitch/yaw in the drift arm 347,
 // and yaw/pitch there 359. Turn/drift/both point setters used as publication results 396/390/390,
 // both with entry offsets 421. The one-point drift form is below the keep threshold. Restored.
+// M3 lane 7 r228 (fast with 0xf8eb0, 1030 throughout). Reading: retail passes the output pointer in EBX and the index
+// on the stack (only EBP, ESI and EDI are saved; the three exits store through EBX); ours passes the index in EAX, keeps
+// the output on the stack (read once at the end) and holds the salt in ESI from the entry. The parameters declared the
+// other way round (output first, the one call changed with it) 348 (same code: the convention follows the body). Forms:
+// the salt as `short` 360 (1470 B); the lead time folded into the lead product 447 (1531 B, the pin repeats it); the
+// drift's cosine before its sine 351; the final copy through real_point3d_set 387 (1492 B); the drift amount computed
+// ahead of the clock 354 at retail's 1463 B (retail computes the clock, the angle, then the amount). Same code: the up
+// vector read through the global at each use, the clock as an if/else, the drift dot through dot3f, the drift axis
+// through cross3f(up, &to_target, &axis), the +0x30 point read through the projectile at each use, the drift's point
+// update as three `+=` statements.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2553,7 +2581,7 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // MiniMax R (11-10): no new form, no lower score (504): the home of the parent and owner block, the probe's material term and the order of the two damage stores still differ; every declaration order of the Booleans, the parent and the probe measured the same code as the body above.
 // MiniMax D (11-10): the parent index read from the projectile at each use instead of in a local (fast 519 -> 504, 2171 bytes);
 // the flag word is still loaded once, so the parent lookup still reloads the table pointer and the tail stays one dword copy out.
-// score 360 (was 422): Frame 0x184 agrees. The header offset and early flag read still use different homes.
+// score 255 (was 360): Frame 0x184 agrees. The header offset and early flag read still use different homes.
 // Round 1 of #1061: full statement walk against retail found no behaviour difference (every offset, constant, condition,
 // callee and argument order agrees). Kept: `switch (mode) { case 2: case 4: ... }` for the a84e0 test (retail's movsx/sub/sub
 // chain; also settles the damage tail, 535 -> 527), native flag bits for the +0x12c tests and stores (child stores stay two
@@ -2588,6 +2616,34 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // point workspaces 360; named attachment and material slots 360; shared parent handle at admission 360;
 // cached tag during child count 410; dword admission shift 360; nested definition gate 360; named parent
 // and position fields 360; single definition receiver 410.
+// M3 lane 7 r228 (fast, plain-confirmed at 255). Kept: the loop's centre accumulation through the existing
+// vector3f_add((vector3f *)&center, (vector3f *)&point, (vector3f *)&center) 360 -> 272 (the centre scale becomes
+// retail's load, multiply, store per component: the point's pieces take late ids and the inverse an early one); the
+// projectile's own two flag sets (bit 12 at the entry, bit 9 at the material effect) through the existing bit_vector_set,
+// as the child sets already are, 272 -> 255 (retail re-reads +0x12c before each OR; the entry is now retail's). Left: in
+// the loop retail adds x and y centre-first and z point-first (ours point-first for all three); in the tail retail keeps
+// the definition in EBX and the material index purely in memory (word loads and stores in the attached parent's cell),
+// ours gives EBX to the material value (ranking 14 against the definition's tail piece 11; forcing the material below
+// it, diagnostic, gives 202). Tried: the own flag tests through bit_vector_test (entry 406, all 400, with the child
+// tests 400; with the sets 255, same code as the sets alone); the entry set alone 266 (2203 B), the material set alone
+// 262; the centre scale through vector3f_scale (same code); the accumulation with the inputs swapped (same code), with the
+// point declared at the block top (same code), through 0xb9dd0's returned pointer 319, with the point typed vector3f
+// (same code). On 255: the probe length read at both uses 355; the probe length declared ahead of the material 241
+// (2172 B, declaration order only, the material still takes EBX); the effect flags initialised at their first use 288;
+// the inverse from the `maximum` local 433; the in-loop count test against `maximum` 469; the damage target as an
+// if/else, the effect index as one conditional, the material test with the flag first, a function-scope material
+// declaration and `long` effect flags (all the same code).
+// M3 lane 3 r310 (fast screen with 0xa84e0, 0xfcea0, 0xfcbc0, 0x1697c0, 0xd7b80, 0xd6660 and 0xd6c80; control 255). The
+// frame packer orders 4-byte cells by references per byte: retail's material/parent cell sits second and the
+// definition's cell lower, because retail keeps the material index wholly in memory (word stores to its home, the
+// NONE test against it there) and the definition in EBX through the tail. Ours ranks the material 14 in the first
+// colouring pass, so it takes EBX before the definition's tail piece (11, a later pass) and is stored only for the
+// 0xa84e0 call. LEAD (match-only form, not kept): 0xa84e0 reading its material pointer through the pointer
+// parameter's own address (`short *const *` to it, read once) marks this function's material as captured: 237 at
+// 2176 B (aligned rows 134 -> 102; material in memory, definition in EBX as retail; 0xa84e0 still MATCH). Left on it:
+// the material copies as dwords where retail moves words, and the homes of the header offset, the centre and the
+// probe vectors. Tried: the damage scale declared after the three bools 252 (declaration order only), with the lead
+// 237; 0xa84e0 copying the material by memcpy 255; the material declared bare at the top 255, with the lead 237.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -2603,7 +2659,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	long attached_parent = NONE;
 	bool airburst = true;
 
-	projectile->flags.unknown12 = true;
+	bit_vector_set((dword *)&projectile->flags, 12, true);
 	if (TEST_FIELD_BIT(definition->flag_bits.unknown3) && !(TEST_FIELD_BIT(projectile->flags.unknown6)) &&
 		*(long *)((byte *)projectile + 0x14) != NONE)
 	{
@@ -2644,9 +2700,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 						child->unknown158 = 0.0f;
 						child->unknown160 = 0.0f;
 						function_b9dd0(child_index, &point);
-						center.x += point.x;
-						center.y += point.y;
-						center.z += point.z;
+						vector3f_add((vector3f *)&center, (vector3f *)&point, (vector3f *)&center);
 					}
 					else
 					{
@@ -2779,7 +2833,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	owner.unknown8 = *(short *)((byte *)current + 0xc2);
 	if (material_index != NONE && !(TEST_FIELD_BIT(projectile->flags.unknown9)))
 	{
-		projectile->flags.unknown9 = true;
+		bit_vector_set((dword *)&projectile->flags, 9, true);
 		effect_flags = 4;
 		function_fcea0(projectile->tag_index, &position, &forward, &owner, material_index,
 			(vector3f const *)((byte *)projectile + 0x134));
@@ -2890,7 +2944,7 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // the projectile index in EBX where retail keeps it in EDI; the range check's 0xfaa30 call is emitted at all five of our uses
 // where retail inlines it at two of them and calls it twice, and the merged inline on magnitude3d expands that helper at our
 // second use.
-// score 1030 (was 1030; 946 noted earlier, was 1131): frame 0x114 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
+// score 1013 (was 1030; 946 noted earlier, was 1131): frame 0x114 versus 0x118, input/working registers, action-setter expansion and x87/SSE scheduling remain.
 // Shared guidance producers 1149; shared basis crosses 1152; point producers 1131; common forward/up 1050; plus crosses 1046;
 // role names 1131/1131; direct current field 1149; shared magnitude 1131; shared rotation crosses 1180; common left 1096;
 // common rotated output 1096; both common 1069; existing state helper 1050/1131; complete guidance/roll inputs 994,
@@ -2940,6 +2994,21 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // 1021, hit count 1033, complemented miss state with conditional store or call-first
 // AND 1030/976. NOT kept: the 976 forms add a reload and extra stores, the 967
 // form adds sweep initialization and a tail copy, and all retain the 0x114 frame.
+// M3 lane 7 r228 (fast, plain-confirmed): kept the movement as the existing vector3d_from_points3d(&position, &end_point,
+// &movement) in place of three member subtractions, 1030 -> 1013 at retail's 4682 B (both builds now call the
+// out-of-line magnitude at the average-speed site). Reading: retail expands 0xfaa30 at two of its five sites, so its
+// growth budget leaves that magnitude a call; ours (0xfaa30 not inline) has budget to spare. Forms on the kept base: the
+// aim difference through vector3d_from_points3d 1029 (4695 B); the turn axis through cross3f(current, &to_aim, &axis)
+// 1048 (4721 B), both 1065; the speed-curve step through vector3f_add_scaled 1029 (4695 B); the end point through
+// vector3f_add_scaled 1077 (4738 B; the same code as main before the movement change); the gravity as one conditional
+// factor 1012 (one point, 1033 before the movement change). Same code: the speed through magnitude3d.
+// M3 lane 13 r158 (h2m fast; control 1013): retail's prologue pushes all four registers first and keeps index * 12 in ESI
+// (spilled to +0x7c) for the two expansions of 0xfaa30 that re-fetch the projectile, with the index in EDI and the contrail
+// index in a frame slot; our five calls leave EDI free, so the index takes EBX and the contrail EDI. The expansion at two
+// of five sites is the link-time inliner's choice for a non-/Ob1 callee, so the prologue waits on 0xfaa30's build (file
+// flags), not on this body. Forms: both rotating-branch turns through include/axis_rotation.h's in-place helper 1053
+// (4633 B); the up turn about forward through it 1031 (4689 B); both 1110 (4588 B); the guidance basis crosses through
+// cross3f or cross3f_staged 1029 (4695 B); the gravity factor chosen by the flag, then one product with the global 1014.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -3174,9 +3243,7 @@ void function_f8eb0(long projectile_index, vector3f *displacement)
 			forward = projectile->forward;
 			up = projectile->up;
 
-			movement.i = end_point.x - projectile->position.x;
-			movement.j = end_point.y - projectile->position.y;
-			movement.k = end_point.z - projectile->position.z;
+			vector3d_from_points3d(&projectile->position, &end_point, &movement);
 			projectile->distance_traveled += magnitude3d(&movement);
 
 			if (!hit_player && definition->unknown13c != NONE)

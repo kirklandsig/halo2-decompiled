@@ -1100,6 +1100,34 @@ void function_245400(s_source_245400 const *source, long index,
 // 224/209/211/210, source words 224/209/221/210.
 // NOT kept: all raise the score and the two code words still lack retail's separate homes.
 // The original decode and both plane lookups are restored.
+// M3 lane 16 r189 (H2M_FAST with 0x245aa0 and 0x245400, MATCH throughout; control 163; lane 5 r213's saved lead
+// re-measured 50 at 789 B). On this body: the in-place scale with the rotation through function_2477b1 on the rotation
+// member 266 (832 B); the edge copied into a local, scaled in place under the scale test and rotated back into the edge by
+// matrix_transform_vector 230 (804 B), by function_2477b1 179 (799 B). On the lead's head (second record pointer, the
+// codes read at each use, named masked indices, shifted sides, the edge formed after the plane decode): the copy, scale and
+// function_2477b1 172 (819 B), with matrix_transform_vector 171 (816 B); this body's own in-place scale and
+// matrix_transform_vector 129 at 783 B (lead, not kept: needs the edge statement after the decode; with it at this body's
+// place 200, plus `< 0` sides 226 at 766 B, plus the k, j, i dot 190; this body with only the edge statement moved 205); a
+// vector version of the file's point-transform helper 110 (783 B; on this body 163). Body unchanged.
+// On the widened-code frame with the shared rotation, surface table entry, advanced cursor,
+// and surface reference 152 each. Indexed surface reads 155. Start ordinal before its table,
+// both ordinals around or ahead of the table, and each ordinal at its lookup 152 each.
+// NOT kept: the 152 forms retain the surface address in ECX and grow to 790 bytes.
+// Indexed surface reads grow to 789 and change the matched caller.
+// On the selected-point form, a sampled direction scale, in-place scaler
+// return, sampled scale with scaler return, and separate scaled direction
+// score 139/139/139/214. Both transforms under one guard give the same scores.
+// NOT kept: the in-place forms recover frame 0x2c and the entry through the
+// material comparison, with 787 bytes against retail's 783.
+// Packed material code on the selected-point form. Index/side/both/raw
+// from code values 219/197/197/208, through record lvalues 204/204/204/206.
+// NOT kept: all recover frame 0x2c and regress. Code values and raw record
+// reads also raise the caller to 3 in the preview.
+// M3 lane 14 r156 (h2m fast with 0x245aa0, 0x245400, 0x244de0 and 0x245270; control 163): the edge vector formed between
+// the plane pointers and the sides 209; the two long codes declared right after the material reads, ahead of the
+// material test, 164 (790 B; 0x245aa0 6); the second plane pointer and the second side declared first 162 (one point,
+// not kept); the plane-index test as `((local_2 ^ local_3) & 0x7fff) != 0` 221 (767 B; 0x245aa0 6); the matrix scale
+// read once into a local for the test and the scale 163 (same code). Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

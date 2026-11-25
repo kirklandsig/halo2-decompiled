@@ -994,6 +994,22 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // individually 152/152/152, i+j/i+k/j+k 151/152/151, all in i/j/k or j/k/i order 151/151.
 // NOT kept: all reach 880 bytes but leave the small frame, increase the score and
 // disturb shared rotation users.
+// Unsigned sample converted after direction setup, before axis, or after axis
+// 204/201/206, with the oscillation delayed too 206/171/181. Normalized draw
+// kept across setup or axis 206/202. NOT kept: all regress, integer forms
+// shrink the frame to 0x18 and alter the caller. Sample and sine still share a home.
+// On the rounded-real angle carried as double, shared integer draw 135, unsigned/signed
+// draw converted after oscillation 135/194, unsigned conversion in the angle 135. With a
+// named wave cosine product, product and rounded sine, sum and envelope, or two separate
+// cosines 161 each. NOT kept: all raise the score despite restoring the 0x20 frame.
+// M3 lane 12 r190 (h2m fast with 0x118140 and 0x117c80; control 130). Reading: the wave tail is retail's but for cell
+// offsets, so the frame difference comes from the rotation: retail loads the global's j and k early, keeps them in
+// XMM5/XMM4 through rows j and k and spills cross j and cross k (+0x18/+0x10), where the shared helper's body here
+// re-reads j from the global for row j and spills one cross term, one cell fewer. A forced-ranking search over the
+// XMM priorities moves the count by 2 at most, so the helper's shape, not a ranking, is the cause. Forms: sine and
+// cosine named just before the rotation call 152; a `vector3f *direction = &g_55ecd4` local for the rotation and the
+// limit call 130 (same code); the sine named ahead of the axis draw 154; the axis copy `const` 130 (same code); the
+// cosine named before the call 155. Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1298,6 +1314,21 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // (1360 bytes). The frame view: the three homes have two references each and take their slots in the order the
 // reloads are placed, which follows the allocator's numbering of the three product candidates (i, k, j here); forcing
 // their priorities changes nothing, and 24 forced single decisions came no closer.
+// M3 lane 13 r157 (fast; control 280; aligned counts in brackets): 0x1ccb0(59) written out at the call as 0x19f680 and
+// 0x23ea80 write it (block-local descriptor, the 1c6b0 call, the two field writes, 1c710) and 0x1cd90 as its 1c710 call, with
+// the lighting NULL first and the object index named, 191 at 1350 B [13: the tangent's last product takes the sign's
+// register as destination, the strip loop loses its pad, and the normal products' homes]; that with a named format 191 [13];
+// 1-3 dead locals before the block, 0-8 at the top, 191 each. Diagnostic (a second copy of the descriptor helper, not
+// keepable): the same selection through a forceinline (format) helper here, 6 at 1361 B [6]: only the homes of the three
+// spilled normal products differ (retail k, j, i at +0x18/+0x1c/+0x20; ours i, k, j). Allocator view of that form: the
+// homes follow the order of the three reloads after the push-buffer reservation call, which follows the numbers of the
+// split pieces (i first, then k, then j, whose number comes out of order); retail's needs k, j, i. On that form, 6 each:
+// 1-4 dead locals at six anchors in the side and strip loops; const vertex or rest pointers; a position pointer; `int` side
+// or index; `i++`; the normal call braced; the sign declared outside the loop; the cull state declared first; the material
+// index by if/else; the provider call written inline; the shader pointer folded; a `byte *` lighting pointer. The vertex
+// pointer before the rest pointer 47 [37]; `side != 2` 7; the three products named in each declaration order 11 (i, j, k),
+// 12 (i, k, j), 12 (j, i, k), 10 (j, k, i), 10 (k, i, j), 6 (k, j, i); one or two named (nine forms) 12/10/6/11/12/12/10/10/6.
+// Lead: share the descriptor helper of src/unknown_01cf50.cpp through a header so this function can call it.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

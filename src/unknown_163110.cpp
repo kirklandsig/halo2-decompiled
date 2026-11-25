@@ -14,6 +14,7 @@
 #include <math.h>
 
 #include "unknown_163110.h"
+#include "vector_products.h"
 
 struct s_22bbca { short top, left, bottom, right; };
 void function_22bbca(s_22bbca const *bounds, long tag_index, long first, long second,
@@ -546,6 +547,8 @@ PRIVATE inline real ray_plane_distance_1648d0(point3f const *origin, vector3f co
 }
 
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1);
+void plane_negate_168b40(plane3f const *plane, plane3f *out); /* forced inline in src/unknown_1689b0.cpp */
+void vector3f_negate(vector3f const *vector, vector3f *result); /* forced inline in src/unknown_0b7740.cpp */
 long function_239cb0(long count, point3f const *points, point2f *hull);
 
 // @retail 0x1648d0
@@ -616,7 +619,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// score 52 (was 115): the head, both planes and the three intersection rows are retail's; left are the classification's
+// k term order in its three unrolled copies, the clip denominator's term order (ours j, k, i, retail i, k, j), two
+// operand sides in the clip distance and the projection entry (`total` in ECX for retail's EAX).
 // M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
 // computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
 // with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
@@ -1362,13 +1367,77 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // denominator and the near distance each as one expression 247/251 (1867 B); plane 0's d as `near_distance - d` 423;
 // the pass's plane as `&planes[pass]` behind one conditional test 380 (1835 B); the projection output taken as
 // `&projected_points[total]` with no cursor 249 (1867 B). Body unchanged.
+// M3 lane 12 r189 (reduced-image screen with 0x1648d0 and 0x320b0, MATCH each time; plain confirmed; control 115). Kept, 115
+// -> 52: the clip block through the file's ray_plane_distance_1648d0 and vector_products.h's vector3f_add_scaled (the
+// hand-written denominator, distance and rows were those helpers' bodies; alone 176 at 1851 B, the head then retail's),
+// the negated forward through 0xb7740's file's vector3f_negate, and both planes negated through 0x168b40's file's
+// plane_negate_168b40 (both declared here and expanded at link time; 0x168b40 and 0x1697c0 still match), with the
+// planes typed as the shared plane type. Whole-image caution: with the negated forward through vector_products.h's
+// vector3f_negate_ab instead (same code here, 52) matched 0x185be0 loses a two-row tie (the reloads of zero and one
+// after a call swap); that happens whenever vector3f_negate_ab and vector3f_add_scaled are both expanded in this file
+// (either alone, or plane_negate_168b40 with one of them, leaves 0x185be0 matched), wherever the header is included
+// and whether plane_negate_168b40 lives in a header or in its own file. Reading that led there: operands of a product or sum are laid out by a rank. A load through a pointer at
+// offset 0 ranks by the pointer's symbol number mod 8, a load at an offset by the count of expression nodes evaluated
+// ahead of its first reading (two levels a node, mod 8), a local by its symbol number. On the two-helper clip block the
+// plane normal's i/j/k sit at levels 5/2/4 and retail needs 1/6/0: four more symbols ahead of `plane` and two more nodes
+// ahead of the classification. Diagnostic grid on it (0-7 unused locals x 0-3 redundant float pairs on the near sum):
+// 176/190/170/178, 198/204/190/192, 214/214/206/202, 189/197/50/54, 177/191/38/46, 180/188/174/174, 196/198/190/184,
+// 188/196/182/184, so 38 at four locals and two pairs. Each setup spelling measured for its levels and count: the near
+// distance as one expression (sum written twice) 4/2/4 190; vector3f_negate_ab for the negated forward 0/2/4 207 (1830 B); for
+// plane 0's normal 5/2/4 176 (same code); for plane 1's normal 5/4/6 210; plane 0's or plane 1's d through basis_dot_xzy
+// 205/202 (first +0xab/+0x12e) or dot3f 233/226; plane 0's d as `near_distance - d` or `-d + near_distance` 5/6/0 442
+// (first +0x5d); a far plane pointer for the normal copy 6/2/4 198; the near distance by an `if` 4/2/4 195; `0.0f - x`
+// for either plane's normal or d 177 (same code as `-x`); the far flag cleared by an `if` 477; the second pass without
+// `pass == 1 &&` 351 (one node fewer, 1/0/2). Combinations on the two-helper block: negated helper + far plane pointer
+// 1/2/4 177; + plane 1's normal through the helper 1/4/6 193; + plane 1 negated through a one-pointer plane helper 1/0/2
+// 46; + plane 1 (or both planes) negated through the two-pointer helper 1/6/0 38; without the far plane pointer (the
+// kept form) 0/6/0 52; with a far-point pointer or a near-point pointer read three times 1/6/0 40 each (one of two
+// parallel sites named: not kept), with both 2/6/0 174, both and the one-expression near distance 1/6/0 56 (first +0xbb).
+// Diagnostics on the 38 form (not kept): a private i, k, j copy of the distance helper 13, with dot3f for both sums 17;
+// on the 13 form `total` declared first 10; a walking `out` 10-11 (first +0x397); `out`, `culled`, a `source` element
+// pointer, `total`, `cursor` in that order with `&source[k]` 8, a walking `source` 148 (the entry block is then retail's
+// but the element pointer sits at +0 where retail's sits at +8); all 30 orders of those statements 8-11. Left for a
+// match: one more symbol ahead of `plane`, the shared distance helper's denominator summed by rank (0x1648d0 needs j,
+// k, i from the same text), the candidate's x load one level lower in the clip distance, and `total` in EAX.
+// M3 lane GA r9 (fast with 0x1648d0, 0x320b0, 0x168b40, 0xbc070 and 13 file peers, all MATCH; control 52; 70 trials):
+// projection tail without `output` copy (`total = 0` before `segment`, `point3f *out = cursor;` with `out++` at k-loop
+// bottom, `cursor += 2; culled = false; total += 2;` or `out; cul; tot; cur`): 45 (gain 7, under the 8-point bar for >30;
+// restores `total` in EAX, retail's alignment jmp, `total/segment/segment_count` store order and `n.j * p0.y`; 0x1648d0
+// MATCH; NOT kept); other statement orders 45-47, `out++` before bounds 67, indexed `projected_points[total]` 62;
+// `total` first alone 49; uninitialized `i`/`segment` at top 52/50, initialized `total=0`/`cursor` before pass 343-475;
+// `plane3f plane0, plane1` split (replacing `planes[2]`) 186-188 (first +0x22f: shifts plane rank past 1/6/0); local
+// plane-init helper 233; changing shared `ray_plane_distance_1648d0`'s `dot` from 3 `+=` statements to `dot3f` (either
+// order), `dot3f` for both sums, or any flat 3-term sum (`i+j+k`/`i+k+j`/`j+k+i`) drops 0x1652e0 to 31 (fixing all of
+// delta, intersection and `n.j * p0.y` with `i,k,j` sum order up to the plane-rank swap) while keeping 0x1648d0's `j,k,i`
+// sum order, but breaks matched 0x1648d0 (186 at 1855 B: removing the `+=` statements drops `[direction+4]`'s rank below
+// `plane->normal.j` and `distance`); `dot` with `plane_distance_to_point` 35 (0x1648d0 186); right-grouped `j + (k + i)`
+// recovers `[direction+4]` in 0x1648d0 (27, only sum order `(k+i)+j`) and scores 29 here; 2-stmt `i` then `j+k` 25
+// (0x1648d0 200); `dot3f` for `offset` only 56 (0x1648d0 16); `return`/ternary/`distance=0` in rpd 230-251; rpd param
+// reorders 31 (0x1648d0 186); 3 term locals in rpd 31 (0x1648d0 188). Body unchanged.
+// Classification with named x/y, x/z or y/z subtotals 55/68/62; x/y or x/z subtotal with a separate
+// accumulation 55/70; named component products 185; signed classification bytes 52; separate branch
+// stores 755. The three unrolled copies still need retail's product schedule; the signed-byte form ties.
+// M3 lane 15 r147 (fast screen with 0x1648d0, 0x320b0, 0x168b40 and 0xb7740, all MATCH each run; control 52; without
+// the last two files the reduced image scores 555). Lead, match-only (a renaming reference): the classification reading
+// the plane through `plane3f const *const &clip = plane;` (bound to a converted temporary) 30: the three unrolled copies
+// become retail's j, i, k, but the first copy's and the remainder loop's j term now load the point first; the same 30
+// with the reference ahead of `long i` or after it, passed to the clip helper too 30, and in all 48 term orders and
+// operand sides of the classification 30 (the text order is ignored). On that lead with lane GA r9's walking-output tail
+// (`total` first, `point3f *out = cursor;` and `out++` at the k-loop bottom) 25 (the projection entry is then retail's
+// but for `cursor += 2` scheduled early; the statements in output/culled/total/cursor order 25). Not better: the
+// reference bound to `plane` itself (`plane3f *const &`, ahead of the plane tests) 46; a plain `plane3f const *` copy
+// 199; the pass's plane typed const 52 (same code); the classification index, `total`, or one segment/segment_count
+// pair shared by both loops declared at the top 52/52/52 (same code); on the 25 form, the point read through a pointer
+// or a reference 45/45 (the unrolled copies go back to the old order), through a const reference to its address 183,
+// the clip helper's start point through a const reference 25 (same code), its direction 349, its plane 47, both 185;
+// diagnostic, the helper's dot as one i, k, j expression on the 25 form 55 (0x1648d0 186). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
 	point3f local_points[32];
 	byte outside[32];
 	byte segment_culled[16];
-	s_plane planes[2];
+	plane3f planes[2];
 	bool culled = true;
 
 	use_plane1 &= (view->flag84 || view->flag85);
@@ -1380,30 +1449,22 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 	real near_distance = 1.52588e-5f > near_sum ? 1.52588e-5f : near_sum;
 
 	vector3f const *forward = (vector3f const *)&view->point54;
-	planes[0].normal = *forward;
-	planes[0].d = view->vector_e4.i * planes[0].normal.i + view->vector_e4.k * planes[0].normal.k + view->vector_e4.j * planes[0].normal.j;
-	planes[0].normal.i = -planes[0].normal.i;
-	planes[0].normal.j = -planes[0].normal.j;
-	planes[0].normal.k = -planes[0].normal.k;
-	planes[0].d = -planes[0].d;
+	planes[0].n = *forward;
+	planes[0].d = view->vector_e4.i * planes[0].n.i + view->vector_e4.k * planes[0].n.k + view->vector_e4.j * planes[0].n.j;
+	plane_negate_168b40(&planes[0], &planes[0]);
 	planes[0].d += near_distance;
 
 	vector3f negated;
-	negated.i = -forward->i;
-	negated.j = -forward->j;
-	negated.k = -forward->k;
-	planes[1].normal = negated;
-	planes[1].d = view->vector_b4.i * planes[1].normal.i + view->vector_b4.k * planes[1].normal.k + view->vector_b4.j * planes[1].normal.j;
-	planes[1].normal.i = -planes[1].normal.i;
-	planes[1].normal.j = -planes[1].normal.j;
-	planes[1].normal.k = -planes[1].normal.k;
-	planes[1].d = -planes[1].d;
+	vector3f_negate(forward, &negated);
+	planes[1].n = negated;
+	planes[1].d = view->vector_b4.i * planes[1].n.i + view->vector_b4.k * planes[1].n.k + view->vector_b4.j * planes[1].n.j;
+	plane_negate_168b40(&planes[1], &planes[1]);
 
 	memcpy(local_points, points, point_count * sizeof(point3f));
 
 	for (long pass = 0; pass < 2; pass++)
 	{
-		s_plane *plane;
+		plane3f *plane;
 		if (pass == 0)
 		{
 			if (!use_plane0)
@@ -1420,7 +1481,7 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 		long i;
 		for (i = 0; i < point_count; i++)
 		{
-			outside[i] = plane->normal.i * local_points[i].x + plane->normal.k * local_points[i].z + plane->normal.j * local_points[i].y - plane->d > -0.0001f ? 1 : 0;
+			outside[i] = plane->n.i * local_points[i].x + plane->n.k * local_points[i].z + plane->n.j * local_points[i].y - plane->d > -0.0001f ? 1 : 0;
 		}
 
 		long segment_count = point_count / 2;
@@ -1437,24 +1498,9 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 				point3f *p1 = &local_points[segment * 2 + 1];
 				vector3f delta;
 				vector3d_from_points3d(p0, p1, &delta);
-				real denominator = delta.i * plane->normal.i;
-				denominator += delta.k * plane->normal.k;
-				denominator += plane->normal.j * delta.j;
-				real t;
-				if (denominator != 0.0f)
-				{
-					real distance = plane->normal.j * p0->y;
-					distance += p0->z * plane->normal.k;
-					distance += plane->normal.i * p0->x;
-					t = (distance - plane->d) * (-1.0f / denominator);
-				}
-				else
-					t = 0.0f;
-				vector3f_scale(&delta, t, &delta);
+				real t = ray_plane_distance_1648d0(p0, &delta, (s_plane const *)plane);
 				point3f intersection;
-				intersection.x = delta.i + p0->x;
-				intersection.y = delta.j + p0->y;
-				intersection.z = delta.k + p0->z;
+				vector3f_add_scaled((vector3f const *)p0, &delta, t, (vector3f *)&intersection);
 				if (!outside0)
 					*p0 = intersection;
 				else
