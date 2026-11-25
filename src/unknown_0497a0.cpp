@@ -722,6 +722,15 @@
 // Perspective store order for side/up/both/both with early fourth-component clear 536/536/536/535.
 // Both complete unscaled rows before the half reciprocal, divisors paired or per row, with opening
 // or retail store order 536/536/536/536. NOT kept: the one-point change leaves the 0x54 frame.
+// M3 lane 15 r146 (H2M_FAST; control 536). Frame reading: ours packs six 4-byte cells (inv, one x87-to-SSE transfer cell
+// shared by both wave values, the three shared cross products, shape0) and retail nine: its wave values have two cells
+// that overlap (the short-period one is stored first and reloaded after the other), and the first cross's j and k have
+// cells of their own (only its i sits in w's cell), so retail's first cross is three scalars, not a 12-byte local. Here
+// the first cross stays one 12-byte local in every form, also when returned by value: a file-local by-value cross
+// (`vector3f c = cross_value(v4, v2);`) 641 (2643 B, frame 0x60 from its return copy), with the add's c term written out
+// as well (diagnostic) 641, the second cross by value too 667 (2668 B), the second cross alone by value 652 (2648 B);
+// the first cross staged into w (listed 533) re-measured 533; sin x and both cosines as named doubles 534, with the staged
+// first cross into w 532; the second input scaled in place before its three reads 536, with both of those 532.
 // The rounded waves still share a slot in the 0x54 frame. Attenuate the existing
 // components in place at quarter/half/both 536/536/536. Join the mode store without
 // or with quarter/half/both attenuation 593/593/593/593. Name each attenuated product

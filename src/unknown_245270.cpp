@@ -1109,6 +1109,20 @@ void function_245400(s_source_245400 const *source, long index,
 // matrix_transform_vector 129 at 783 B (lead, not kept: needs the edge statement after the decode; with it at this body's
 // place 200, plus `< 0` sides 226 at 766 B, plus the k, j, i dot 190; this body with only the edge statement moved 205); a
 // vector version of the file's point-transform helper 110 (783 B; on this body 163). Body unchanged.
+// On the widened-code frame with the shared rotation, surface table entry, advanced cursor,
+// and surface reference 152 each. Indexed surface reads 155. Start ordinal before its table,
+// both ordinals around or ahead of the table, and each ordinal at its lookup 152 each.
+// NOT kept: the 152 forms retain the surface address in ECX and grow to 790 bytes.
+// Indexed surface reads grow to 789 and change the matched caller.
+// On the selected-point form, a sampled direction scale, in-place scaler
+// return, sampled scale with scaler return, and separate scaled direction
+// score 139/139/139/214. Both transforms under one guard give the same scores.
+// NOT kept: the in-place forms recover frame 0x2c and the entry through the
+// material comparison, with 787 bytes against retail's 783.
+// Packed material code on the selected-point form. Index/side/both/raw
+// from code values 219/197/197/208, through record lvalues 204/204/204/206.
+// NOT kept: all recover frame 0x2c and regress. Code values and raw record
+// reads also raise the caller to 3 in the preview.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -1642,6 +1642,16 @@ struct s_133f70;
 // the header array bound as `s_render_object_header *const &` to the cast object data 352 (1310 B, aligned 47: the
 // table is then loaded first into EDX as retail, but its address folds into the type byte's load); the active-view
 // entry taken by address before its index test 93 (same code, no dead entry lea). Body unchanged.
+// M3 lane GA r7 (faithful fast list; 0x4bcc0/0x4c190/0x133790/0x133ab0/0x133f70/0x3d4f0/0x3d480/0x3db00/0x3dd10/0x3d430/
+// 0x4c450/0x137650/0x137800 all MATCH; control 93 at 1309/1309 B, aligned 63, register-masked 46; 18 real trials):
+// `OBJECT_DATUM_GET` at end 93, `s_object_header_datum` + `OBJECT_DATUM_GET` at both lookups 93, `headers` local 93,
+// `g_4ed284` `+0x14` base cast 93, `output` local dropped 93, end `object` local dropped 93, `function_4c190` `count` moved
+// to last/3rd 93/93 (0x4c190 stays MATCH), `fallback_level` as `long` 93 (breaks 0x4c190: 39), `if (entries > 0)` around
+// loop 108 (1315 B), hoisted 5 array pointers 386 (1328 B), nested `reuse` if 305 (1277 B), `signed char previous` +
+// nested `reuse` + no `drawn_object` 362 (1284 B, m 36), `drawn_object` for all 3 calls 346, `drawn_object` moved after
+// `previous` for 0x3d430 + 2nd lookup 326, for 0x3d430 only 98, that with `signed char previous` + `success` first 118
+// (exact 1309/1309 B lockstep, **masked 27** vs 46, matching retail's `success` store order and byte `previous` `mov`/`movsx`
+// without `const &` or an inline helper). Body restored.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

@@ -114,7 +114,7 @@ void function_7f930(void);
 void pending_messages_reset(void);
 void function_53210(void);
 void function_8dd70(void);
-// score 245 (was 253): 909 bytes. A statement-by-statement comparison against retail 0x8d9f0 (2026-11-06) found every store,
+// score 226 (was 245): 894 bytes. A statement-by-statement comparison against retail 0x8d9f0 (2026-11-06) found every store,
 // callee, argument and branch agrees, including the register/stack argument split of 0x59ad0 and 0x58ee0, the
 // 12-byte session-list clear, the 0x38/0x5a0/0x70f8/0x268-byte clears and the tail stores. One behaviour difference
 // is left: retail clears 0x4d8f08 with a dword store (0x8dc44, with the dwords around it), ours with a byte store,
@@ -271,6 +271,33 @@ void function_8dd70(void);
 // Boolean failure for link, observer, sessions, link/observer, link/sessions,
 // observer/sessions and all 239/257/242/253/234/250/249; all with explicit link outcomes 249.
 // NOT kept: the 234 form still lacks the native frame and uses a register failure flag instead of the stacked link-success byte. The out-of-line calls and pointer reloads also remain.
+// Shared link, gateway and session-list observations 243/243/245; link and gateway
+// 239, link and list 243, gateway and list 243, all three 239. The same handler for
+// both reciprocal writes 237; with the same gateway 233; with both connection pairs
+// 231, also 231 with the session list named. The lane kept both pairs at 231 through a second
+// local copy of the gateway global (Codex lane AC round 664); at coordinator review (2026-11-25) the
+// handler's gateway and the gateway's handler are written through the existing gateway and handler
+// locals instead: 226 at 894 bytes (the link local alone 243).
+// The empty entry frame, stacked link-success byte and outlined calls still differ.
+// The four-byte entry frame and the link byte are still the first gap. Carrying
+// the entry decision through link, observer, or sessions scores 235/228/225.
+// Carrying it through link and observer, link and sessions, observer and sessions,
+// or all three scores 227/232/233/224. Link and trim scores 244.
+// NOT kept: the 224 form restores the frame and length but gains two, with the
+// entry load and expanded registration calls still different.
+// Separate, shared, link-to-observer and observer-to-list enum states
+// 235/226/249/229. With success assigned in branches 238/255/254/232.
+// NOT kept: the shared enum ties at retail length but still keeps the link
+// result in a register and the registration calls remain expanded.
+// The entry frame, link byte and registration call boundaries still differ.
+// One continuing short/bool link-to-observer outcome 234/227, failure outcome 244/236,
+// clear on observer failure 235/233, or reuse that result through the list clear 228/223.
+// NOT kept: the 223 form gains three points. The result sharing remains match-only.
+// The missing four-byte frame, byte link result and expanded registration calls remain.
+// Explicit conditional link result 232; carry link into observer 224; carry observer
+// into the list clear 229; carry both 227; first session via handler 237;
+// handler link via gateway 224; handler message table via gateway 231;
+// positive short readiness tests 226. NOT kept: the best forms gain two points.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {
@@ -300,8 +327,9 @@ void function_8d9f0(void)
 		if (link_ready)
 		{
 			s_08d9f0_gateway *gateway = (s_08d9f0_gateway *)g_510568;
-			gateway->link = (s_08d9f0_link *)g_510560;
-			gateway->link->consumer = gateway;
+			s_08d9f0_link *link = (s_08d9f0_link *)g_510560;
+			gateway->link = link;
+			link->consumer = gateway;
 			gateway->messages = g_510564;
 			gateway->handler = NULL;
 			gateway->unknown14 = false;
@@ -309,8 +337,8 @@ void function_8d9f0(void)
 			s_08d9f0_handler *handler = (s_08d9f0_handler *)g_51056c;
 			handler->link = g_510560;
 			handler->messages = g_510564;
-			handler->gateway = g_510568;
-			((s_08d9f0_gateway *)handler->gateway)->handler = g_51056c;
+			handler->gateway = (s_network_message_gateway *)gateway;
+			gateway->handler = (c_class_938e0 *)handler;
 			handler->observer = NULL;
 			handler->sessions = NULL;
 			handler->initialized = true;

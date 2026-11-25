@@ -2178,6 +2178,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Unit and mode spill slots remain exchanged. Named blend-weight or blend-rate
 // field pointers, references or mixed pairs 172 in all eight forms. The later
 // weight address still shares the fourth spring slot instead of the unit slot.
+// M3 lane 8 r238 (H2M_FAST on the round 232 lead, rebuilt at 17): the allocator puts the +0xb8 channel pointer in ECX
+// because nothing else holds ECX or EDX across the 0xb6760 call (a forced-ranking search placing it in ESI gives 14:
+// that choice is the three rows); the weapon's EDI piece starts at its first use, after the callback select. On the
+// lead: `long weapon_index` read once for the test and the object lookup (0x16760c's spelling) 17; the callback by
+// if/else 17; the found arm's duration and frame-position calls through `channel` 17; its frame-position read through
+// `channel` 60 (2192 B); the callback ternary inside the update call 17 (same code).
 // M3 lane 16 r188 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172; lane 8 r232's 17 lead rebuilt,
 // 17). Frame reading on main: retail packs the weapon-active byte and mode ahead of unit (ours packs unit first, as it
 // reaches three references first), so retail's active byte joins spring d's cell and zoom then joins unit's; that needs
@@ -2187,6 +2193,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // orientation index as `user_index * 2 + weapon` 17; the +0xb8 play through the channel pointer 17 (same code each).
 // With the +0xb8 pointer forced into ESI (diagnostic, not source) the lead reads 14; the other 14 rows are the weapon's
 // EDI reload, placed at its first use where retail places it one block earlier. Body unchanged.
+// M3 lane 1 r168 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172; lane 8 r232's lead rebuilt, 17). On
+// the lead: the orientation count read into a local ahead of the callback select 342 (2200 B). Reading on the lead: the
+// weapon's EDI piece is ranked 49 over the push block to the last weapon use, so it starts at the push block after the
+// select; nothing in the lookup block references the weapon (its index is the test's load). On main: one time-globals
+// reference declared ahead of the aiming springs and used for all six rate reads 208 (2193 B); the first-weapon test
+// without its null check 565 (2185 B: retail keeps the check); the user flags tested and set through the field (no flags
+// local) 172 (same code); the weapon loop's index declared in the for statement 172 (same code). Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

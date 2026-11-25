@@ -1140,6 +1140,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // (160 B); the valid block under `if (result)` with the result set in the header test's clear arm 72 (176 B); R through
 // 0xbb780 with that function's own body given a local copy of its index, of the table pointer, or of the object pointer
 // (its bytes unchanged) 77 / 77 / 77: the copies fold before the two lookups are merged. Body unchanged.
+// M3 lane 3 r309 (H2M_FAST with 0xbb780 and 0x108e10, MATCH throughout; control 8). A store through a pointer local
+// ends cached field reads, so placed between the two lookups: the field-read form with the read index stored back
+// through a `long *` to the field and 0xbb780 given the local 45 (179 B); the creation result stored through a `long *`
+// to the field (the flagged arm's NONE the same way) with the object read on the field 68; the field bound by `long &`
+// and used as the index everywhere 82 (157 B). Join markers: retail's shape with `do {} while (false);` ahead of the
+// object read 77 (160 B); the field-read form with 0xbb780 and that marker 67 (same code as without it). Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1732,6 +1738,12 @@ bool c_projectile_type::v8(long a, long b)
 // the index read by value and masked in place inside the NONE block 12; the entry as the address of a 12-byte row of a
 // three-long view 12; the 0x400 arm nested with references to both power fields 12; the volatile definition copy in a
 // scope block of its own 12, with the word read 5 (same code each). Word-read body kept (5).
+// M3 lane 3 r309 (H2M_FAST with 0xa5e70, MATCH each time; word read 5), all with the full-width mask: the volatile
+// definition copy declared after the a5e70 call 43 (189 B); the 0x800 arm as a `do { ... } while (false);` block with a
+// break for each failed test 47 (188 B); the 0x800 arm through a file-local forceinline (group index, state value
+// pointer) update helper returning bool, then `if (...) result |= 0x800;`, 12; no object local, OBJECT(a) at each of the
+// three field reads 82 (208 B); the entry as the address of `((dword *)data)[(index & 0xffff) * 3]` 12. Word-read body
+// kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

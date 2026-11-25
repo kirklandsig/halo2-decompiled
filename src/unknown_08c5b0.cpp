@@ -372,6 +372,21 @@ static inline long bungienet_user_voice_setting(short kind)
 // read from the message header global in place of the request 11 (101 B): the request still takes EAX and dies at the
 // kind's load, so the kind lands in AX only because EAX is free again; retail's ECX request means the kind was given
 // EAX before the request was placed, which here only the two late-merged compares of r104 reproduce.
+// M3 lane 13 r157 (fast with 0x8c5b0, MATCH each run; control 4): allocator trace of the volatile-read body: the
+// request and the kind rank equal (20 each: two references apiece in the entry block) and the request wins the tie, so
+// it takes EAX; one more kind reference that survives to allocation, or one fewer request reference, gives retail's pair
+// (forced, never source). The kind by a two-byte memcpy (no volatile) 4 with the same ranking; that with the index declared
+// first 4; both fields by memcpy 4; the controller accessor taking `long const &` 4; 1-3 dead locals leave the ranking as it
+// is. The r104 identical-arm chain (diagnostic) ranks the kind 20 over the request 16.
+// M3 lane 7 r229 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4). Allocator reading: the entry block
+// holds the request's two uses and the kind's load and compare, both 20; the request wins the tie because its first
+// reference comes first (it is created last), and one point less for the request is a byte match (a forced-ranking search).
+// Neither has a reference outside the entry block, so only a kind reference that survives in another block, or a
+// request live through a block without a use, can break the tie. Forms: the index read after the selector 23; the
+// changed flag declared ahead of the selector with the stored setting compared in place 33 (94 B); the availability
+// tested ahead of the kind in the selector 16 (first difference +0x0, the global test leads); the controller looked up
+// ahead of the selector 15 (the tie stays: 24 each); diagnostic, a plain read with `__assume(kind >= 0 && kind <= 2)`
+// in place of the volatile read 4 (same code; the range is not known to hold).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

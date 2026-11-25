@@ -4124,6 +4124,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // cost 0 (retail's latch); early exits do not make one, 8 each with the same code: the owner test as an early
 // `continue` inside a plain else, case 0 ending in `continue`, `continue` after the stop-7 call, `continue` after the
 // callback, the start test inverted into an early `continue`.
+// M3 lane 8 r238 (H2M_FAST, control 8): on this body the allocator ranks the index above the voice 69 to 60, so a form
+// with one more reload block keeps the registers; without the default the extra blocks cost the index 10 (59 against
+// 60). The callback test nested under the flag test 8 (same code, same five reload blocks); the callback source in a
+// local for the test and the call 12; the 0x125e60 result in a bool with the value_ac arm as its own `if (!ready &&
+// ...)` 159 (572 B); no default with `__assume(mode == 0 || mode == 1)` or `__assume(mode >= 0 && mode <= 1)` ahead
+// of the switch 78/78 (the no-default code).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -5056,6 +5062,10 @@ struct s_128ca0
 // successor first 83, both 83, with pending guard 83. Return on absent/valid successor
 // 83/48, with completed and pending guards 83/48. NOT kept: the absent-first forms
 // shorten to 1053 bytes and raise the score. The native shifted pending read remains.
+// With staged gain assignments and shifted pending test, use the sampled count for the debit
+// as signed char/short/long or byte 207/123/126/79. With a retained synchronization handle,
+// signed char/byte 207/79, and with both controller handles retained 207/79.
+// NOT kept: the signed byte moves the first difference to the pitch setup, and all forms regress.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
