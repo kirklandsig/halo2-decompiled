@@ -1085,6 +1085,10 @@ void function_245400(s_source_245400 const *source, long index,
 // selected point with plane table between codes 139, selected ordered facing comparison 208.
 // explicit facing exits on selected point 212, explicit exits with plane table between codes 212.
 // NOT kept: the 139 forms recover frame 0x2c and the entry through the material comparison, but grow to 787 bytes and retain the differing float and code homes. The two explicit facing-exit forms regress.
+// Shared packed-code decoder returning index/side/plane/bare plane, promoted codes
+// 224/209/211/210, source words 224/209/221/210.
+// NOT kept: all raise the score and the two code words still lack retail's separate homes.
+// The original decode and both plane lookups are restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

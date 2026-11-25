@@ -991,6 +991,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // temporary) 8; the pass lookup alone 8; the material lookup alone 8; the pass lookup given the element's +4 field in
 // place, no pass-tag local, 8; all four lookups (fallback, definition, pass, material) through it 8 (the same code each:
 // a by-reference index is forwarded and frees its register at the load as a by-value one does). Body unchanged.
+// Two-group table ordinal walk and mismatch scan, word/mask 174/172 each;
+// standard linear search 163/161; sorted search 191/193. NOT kept: all grow
+// the body and regress. Fallback EDX masking and split element addresses remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

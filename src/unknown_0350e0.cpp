@@ -3849,6 +3849,10 @@ real magnitude3d(vector3f const *v);
 // with the result through vector3f_scale 181 (same code); the cosine computed first 183; the angle as `(real)acos(dot) *
 // step` on it 181 (masked 84); the two length tests ahead of the parallel test on it 193. Forcing single allocator
 // decisions (14 of 627 tried) leaves 170. Body unchanged.
+// Named lower step in fallback, rotation or both 170/175/186; shared lower step from entry 294.
+// Step interval in fallback, rotation or both 170/175/186; shared lower step with staged rotation
+// clamp 186. NOT kept: fallback-only forms tie, and sharing the step bounds changes the frame.
+// The raw current length still uses the bounded length’s slot in the fallback-only forms.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4638,6 +4642,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // code; the last three leave the ranks at 48 / 55). An empty `do {} while (false);` (what a compiled-out statement
 // leaves) at the top of pass 3's body, after the entry pointer, at the end of the body or after the loop 317 each (same
 // code: an empty block reads nothing, so it moves neither rank).
+// Creation self-swap by ordinal 368, retry only after replacement 369, final-candidate exit 369,
+// entry-identity guard 372. Duplicate self-swap guard 327, both removal guards 437, creation
+// and fallback guards 366, creation exit plus other guards 381. NOT kept: all regress.
+// The state and prefix still exchange registers and the creation ordinal still spills.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -6250,6 +6258,11 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // stores at +0x64 / +0x70: they are the homes of the expansion's y in corners 2 and 3 (stored where y is defined, read
 // back as a memory operand in corner 3's scaled arm, where the product is formed in y's own register), and those homes
 // coincide with the two corners' own y cells. Body unchanged.
+// Share the positive extent from the second offset, copy the first negative lateral offset,
+// initialize the full first offset, or retain its negative extent: 231/403/231/398.
+// The same forms with four-channel color 225/385/225/379.
+// NOT kept: the 225 forms regain frame 0xe0, gain six and grow to 1826 bytes.
+// The other color forms reach 1819 bytes and raise the score.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
