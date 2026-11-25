@@ -279,6 +279,10 @@ void function_8dd70(void);
 // handler's gateway and the gateway's handler are written through the existing gateway and handler
 // locals instead: 226 at 894 bytes (the link local alone 243).
 // The empty entry frame, stacked link-success byte and outlined calls still differ.
+// Separate, shared, link-to-observer and observer-to-list enum states
+// 235/226/249/229. With success assigned in branches 238/255/254/232.
+// NOT kept: the shared enum ties at retail length but still keeps the link
+// result in a register and the registration calls remain expanded.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {

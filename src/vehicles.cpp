@@ -7400,6 +7400,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // MAX/MIN lift + normalize_inline 1027 (fr=0xdc, 5097/5094 B, 1179/1179 insns, al=797, mask=622, saved
 // build/gb5/f4800-lead-b206.cpp), with MAX/MIN lift + no-dup up norm 1126 (al=709, mask=626). NOT kept: 0xdc stays
 // 4 B above 0xd8 and handle/offset remain EDI/ESI; body restored.
+// Aggregate force 959, lifted vertical scalar 1004, both 1004, and lift
+// at the final force multiplication 1004. With a separate scoped relative
+// output these score 1129/1096/1096/1096.
+// NOT kept: a distinct relative output reaches 0xdc but shortens the body
+// and raises the score. The handle and header-displacement registers still differ.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
