@@ -2385,6 +2385,11 @@ struct s_unit_motion
 // direct time or original first-phase inputs on the running-velocity path 69/69.
 // NOT kept: every running-velocity form inlines into the caller and loses
 // both matched transitive callers. The stack velocity load and ret 8 remain.
+// Velocity still arrives on the stack. Internal linkage alone, with separate phase durations or with phase-
+// limit selections 86/86/86. Internal linkage with a running velocity alone, separate durations or limit
+// selections 69/69/70, and original launch velocity with shared or separate durations 69/69. NOT kept: the
+// XMM4 forms use XMM2 for time, inline both motion steps into the caller and lose two downstream matches in
+// the preview.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -9143,6 +9148,10 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // NOT kept: the object-first forms fix the first owner block through +0x14b
 // at 1602 bytes, but four points is below the threshold and the one-use
 // samples require a match. The damage flag, later call setup and shake remain.
+// The owner indices still load in the opposite order. Typed damage, effect, or both grenade tag links
+// 62/62/62, and both with a typed input block and projectile link 62. The four corresponding object-first
+// forms score 58 and reach +0x14b. NOT kept: the tag types do not change the emitted loads, and the owner
+// order alone gains four.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
