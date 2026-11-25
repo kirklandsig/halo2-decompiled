@@ -1459,6 +1459,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // j/i/k order 206; staged cross 206; depth-seeded projection 206; complete alignment
 // local 193; shared doubled scalar after projection 206; independent cross with
 // normalized scalars 206. NOT kept: all retain frame 0xc0 and grow the rotation.
+// The 0xc0 frame and the scaled axis spill still differ.
+// Scalar SSE alignment/projection/both, rotation weights alone or with
+// alignment/projection/both, and all with SSE reciprocal: 249/250/290/234/275/278/314/302.
+// NOT kept: the intrinsic forms align the frame to sixteen bytes,
+// lengthen the body and change matched calls in the reduced image.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

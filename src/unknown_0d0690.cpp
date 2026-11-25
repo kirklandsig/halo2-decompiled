@@ -1802,6 +1802,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // the luminance statement kept 529, the luminance as the argument with the falloff second 529 (identical code each: the
 // order is the scheduler's); the square right after direction1's negate with the lightmap pin ahead of the base pin 547;
 // the lightmap pin ahead of the base pin alone 560 (2193 B). Body unchanged.
+// The selected-result byte and the exchanged block/query carriers still differ.
+// Shared curve range mapping for output luminance/primary/secondary/ambient
+// 526/533/529/539, both length curves 533, both luminance curves 542,
+// all four 546, and all four with constant success/failure returns 587.
+// NOT kept: the output luminance gains three points; the others tie or regress.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -1068,6 +1068,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // and index first with distinct state continuations 293/279.
 // NOT kept: the separate arms recover 0x14 and 784 bytes but raise the score.
 // The other forms shorten the body and five change the matched caller.
+// The extra frame word, persistent count and hull-count home still differ.
+// Cursor-derived ordinals for the minimum/candidate/both scans 270/262/256;
+// pointer-pair duplicate compaction alone and with minimum/candidate/both
+// scans 286/269/267/265. Candidate identity compared as a pointer 254.
+// Every cursor form raises the score and six change the matched hull caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
