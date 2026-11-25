@@ -993,6 +993,13 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // getter at each of its eight uses 513 (1904 B, frame 0x25c: retail keeps a home for the player); the player defined after
 // the timer and tutorial flags 487 (1888 B); the getter with a state-pointer local, with a result local, as `players + index`
 // or forceinline 2 each (same code); the status lookup assigned to the same `player` local 120 (the homes move).
+// M3 lane 2 r149 (H2M_FAST with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30 and 0x15f120, all MATCH; main's body 81 in the full
+// baseline). Lane 11 r165's lead applied from lane 6 r242's patch: 2 at 1889 B (the player and player-offset reloads ahead
+// of the split-screen test in the other order). On it: the count step ahead of the text height re-measured 64 (a listed
+// form); the height as `height = text_height >= 0 ? text_height : 0;` 450 (1887 B); a named `messages` pointer for the sort
+// 2; no HUD state local (the global read at each use) 2; the fade ticks read from the player at both uses (no `ticks`
+// local) 2 (same code each); the sort through a second player lookup 455 (1890 B). The pair is a code-generation tie
+// (lane 11 r165, lane 6 r242); none of these moves the two values' numbering. Body unchanged.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

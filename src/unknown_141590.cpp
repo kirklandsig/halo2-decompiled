@@ -279,7 +279,7 @@ quaternionf *function_141f60(
 	return out;
 }
 
-__declspec(noinline) void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward, vector3f const *up);
+void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward, vector3f const *up);
 
 // @retail 0x1420f0
 void function_1420f0(
