@@ -1239,6 +1239,13 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // and rises to the block top, and its key then takes EDX. 60 forced allocator decisions leave 105. On the offset lead
 // (re-measured 11): the volume address ahead of the count store 84; `camera_offset + cameras` 11; `NONE != portal_index`
 // 11. Diagnostic: a second use of the table (a probe store) 91 at 438 B, the table still a plain load.
+// M3 lane 8 r238 (H2M_FAST with 0x1730a0, MATCH each run; control 105). The allocator's view: on this body the key and
+// the camera product are one candidate (the key is pushed before the multiply, so the product reuses its register); once
+// the camera address or offset is computed first the key is its own candidate and takes ECX as the first free register,
+// which leaves the camera table a late EDX temporary (retail: key EDX, table ECX from the block top). The projection
+// result in a named bool 105; the camera table copied into a local at the loop body's top 105 (folds); the count store
+// as `(short)(volume_index + 1)` 105; the capacity test as `!(volume_index < 512)` 105; camera and rectangle pointers
+// both named after the volume address 22.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1656,6 +1663,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // rankings and picks give 333 at best. The file's generic builder at both calls 360 (1455 B), the generic transform at
 // the four calls 368 (1441 B), both 359 (1473 B); this builder's rows in retail's order (diagonal, complement, each
 // pair's product beside its rows) 357 (1448 B), with the sine products named right after the sine 337 (frame 0x54).
+// M3 lane 8 r238 (H2M_FAST with 0x1726d0 and 0x170fd0, MATCH each run; reduced control 337): the builder's sine and
+// cosine as `sinf`/`cosf` 339 (1450 B); the two scale angles as `atanf(tanf(half) * scale)` 380 (1429 B); the matrix
+// declared after the second angle 337 (same code); the transform's in-place copy taken from `*out` 351; the builder's
+// three sine products named after the complement products 339 (1466 B).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2689,6 +2700,11 @@ struct s_camera_reference_171830
 // re-measured 9 at 1219 B (first +0xd0, only the centre's first product left). On it: the rear-vector products in
 // parentheses 267 (1223 B); `real depth = offset + *distance;` 9; the first rear product written `forward->i * depth` 9;
 // `real const depth` 9; depth declared after the rear vector 9 (all four the lead's code).
+// M3 lane 8 r238 (H2M_FAST with 0x170fd0 and 0x171d00, MATCH each run; round 154's lead rebuilt from its patch, 9): on
+// the lead the depth sum written at each product (no local) 118 (1222 B); the rear products written forward-first 9;
+// `real depth;` declared bare at the top 9; the forward components as `forward->n[0..2]` 9 (all three the lead's
+// code); the centre without the rear vector 202 (1223 B); diagnostics: the depth accumulated in the offset parameter 9
+// (same code), the rear vector through vector3f_scale with the depth sum as its argument, then negated, 159.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

@@ -1012,6 +1012,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // k/i/j, k/j/i), after two (i/j/k, k/j/i), or with a named radicand and the root
 // after the copy or before its final store: 1446/1446/1446/1446/1446/1446/1446/1446/1403/1403. NOT kept: every form
 // regresses while retaining the frame and displaced component/velocity homes.
+// M3 lane 8 r238 (plain, 0x2056e0 MATCH each run; control 1346): `local_2` declared ahead of `local_1` 1346 (the entry
+// spill stores then come in retail's order, ESI's first, but at homes 0x98/0x3c against retail's 0x54/0x24); the two
+// 0xba1d0 outputs declared local_5 first 1346 (same code); in the first loop `local_10` ahead of `local_9` 1346 (same
+// code, element pointer still biased +0xe4 where retail has +0xe0), `local_8` ahead of `local_7` 1347; the magnitude
+// helper as `sqrt(dot3f(v, v))` 1624 (5990 B, the direct-read code).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
