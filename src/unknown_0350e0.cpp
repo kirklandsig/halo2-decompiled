@@ -7496,6 +7496,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // call, and that call needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched 0x14ac0's frame and realigns
 // this function), so its argument setup stays different.
 // MiniMax H (11-20): no new form, no lower score (96); the clear call's first argument is stacked where retail passes it in eax (BLOCKED-BY 0x14b60).
+// Other source-pass helper for mode 3, 3 and 8, 3 and 20, 3 and 7, 3 with 20
+// and 7, 3 with 8, 20 and 7, 8 and 20, or 8 and 7: 179/186/177/185/178/196/168/171.
+// NOT kept: all raise the score. The first-pass clear argument setup still differs.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
