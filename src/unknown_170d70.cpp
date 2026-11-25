@@ -1677,6 +1677,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // cosine as `sinf`/`cosf` 339 (1450 B); the two scale angles as `atanf(tanf(half) * scale)` 380 (1429 B); the matrix
 // declared after the second angle 337 (same code); the transform's in-place copy taken from `*out` 351; the builder's
 // three sine products named after the complement products 339 (1466 B).
+// The fixed-axis unity register and two square spills still differ. Existing general builder for the fixed axis 386;
+// general forward/up/both transforms on the fixed axis 385/364/379, or general builder and both transforms 356;
+// general forward/up/both transforms on the moving axis 360/346/348. NOT kept: every form shortens the rotation and regresses.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2715,6 +2718,11 @@ struct s_camera_reference_171830
 // `real depth;` declared bare at the top 9; the forward components as `forward->n[0..2]` 9 (all three the lead's
 // code); the centre without the rear vector 202 (1223 B); diagnostics: the depth accumulated in the offset parameter 9
 // (same code), the rear vector through vector3f_scale with the depth sum as its argument, then negated, 159.
+// The plane exit zero and first center product still differ. On the split plane test with grouped sample products:
+// first rear compound scale 263, indexed compound scale 389, indexed rear/center/both 391/381/391, one center loop 371,
+// indexed products with the shared negate 391, first rear product negated after the others 45 at 1219 bytes.
+// On the opening plane path: all rear products then shared negate 158; three named rear products 264.
+// NOT kept: the 45 form still differs and uses the former one-use plane distance and grouped sample products.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
