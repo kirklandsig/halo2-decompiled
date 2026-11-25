@@ -1037,6 +1037,26 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // path after the 0x264b50 call), so the expansion alone leaves 132 structural rows. Still BLOCKED-BY 0x2641c0's
 // expansion here and not in 0x264210 or 0x265680 (the build's inline threshold expands all three) and by the release
 // site's 0x25c820 expansion.
+// M3 lane 2 r151 (fast screen with 0x1e34e0, 25 in every form; control 404 at 1624 B): the 0x2641c0 call written out as
+// its body (a diagnostic, reverted at once) 509 (1696 B), and 0x1e34e0 still pushes the actor index; the update flag
+// computed from the sampling test after the 0x263670 call with `sample` initialised from it 453 (1636 B); both flags
+// declared after the 0x263670 call 404 (same code); the parameter copied into a local at entry 404 (same code); both
+// flags declared at function scope and cleared at the loop top 402 (1620 B, two lower: not kept).
+// M3 lane GA r8 (fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, 0x2641c0, 0x264210, 0x264b50,
+// 0x263670 and 0x25c820, all 8 MATCH each run; control 404 at 1624 B, aligned 292, register-and-offset-masked 248; body
+// unchanged). New forms on the 404 body: plain retail case order 0/4/2/1/3 (release label still outside switch) 412
+// (1628 B, aligned 192, masked 122); case 2 distance through existing vector2d_from_points2d + dot_product2d 416 (1624 B,
+// retail's y-first + dead `add eax, 4` restored); case 0/4 progress through `real delta = function_2683f0(...);
+// *(real *)(p + 0x10) += delta;` 432 (1632 B: recovers retail's `movss xmm1, [ebp+0x10]; addss xmm1, xmm0; comiss xmm1,
+// 1.0` at both sites, unlike round 119's `field = field + call`); pre-call `real prev = *(real *)(p + 0x10);` 432 (same
+// code); sequential `if (!0x2641c0(...)) sample = false; if (sample && update && ...)` 460 (1652 B); retail case order
+// 0/4/2/1/3 + vec2d 428 (1632 B, aligned 190, masked 118), + tail's 3 returns 441 (1652 B, aligned 197, masked 112);
+// case 3 nested `if (view) { if (!view[0x88]) ... }` 404 (same code); retail case order 0/4/2/1/3 with release calls
+// under case 3's `< 0` arm (case 3 last, `goto tracking_complete` gone) 412 (1628 B, aligned 192, masked 122); full
+// retail-shaped combination (`0x26be00`/`0x26be30` walk + 0/4/2/1/3 + vec2d + `short old_state` + `0x25d740` state-change
+// + release-in-case-3) 455 (1628 B, frame 0x9c, aligned 159, masked 95), + 3 tail returns + split true flags + `delta`
+// 463 (1656 B, aligned 146, masked 86). Still BLOCKED-BY 0x2641c0's noinline declaration (src/unknown_265cb0.cpp) and
+// the release site's 0x25c820 expansion.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

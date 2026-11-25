@@ -1800,6 +1800,21 @@ PRIVATE inline long score_string_list_1608e0()
 // Panel time, score and alternate-score field references singly, in pairs,
 // or all together 679 each; pointers to all three fields 679. NOT kept:
 // the field bindings leave frame 0x798, viewer EDI and the origin homes unchanged.
+// M3 lane 1 r168 (fast with 0x161420, 0x1600f0 and 0x1603f0; control 679): the player row's masked index named once
+// for the player pointer and both score reads 684; the scroll element bound to a `real &` for the clamp and y 755
+// (2824 B); the header advance stored right after the title call 685; the team colour initialised at its declaration
+// 679; the player flags word read at each of its three uses 679. Body unchanged.
+// The 0x798 frame, EDI viewer and independent origin home still differ.
+// Title coordinate and caption names 679; viewport and content-height names 679;
+// native signed count snapshots 678, also for the team gap 678; common column
+// options record 679; branch-selected score/time widths 679/684; score flag
+// feeding alternate visibility 709. NOT kept: the count forms gain one point.
+// The separate origin word and viewer register remain different.
+// Origin memmove at completed coordinates, staged horizontal coordinate,
+// or caption setup, far edges or all edges and advance 690/720/690/672/726/721.
+// Row-cursor memmove into the title origin 689/679.
+// NOT kept: the best transfer scores 672 with frame 0x7a0.
+// the separate origin copy requires a byte match.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

@@ -150,6 +150,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // and the target count, primary source and query arrays receive different homes. The retail query keeps its
 // full-width count through the walk and reloads a sound entry before testing its tag.
 // M3 lane GB r3 (fast with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730, 0x18dc90; control 837, 3327/3327 B, +0x2, all 8 companions MATCH; 43 trials, body unchanged): on main's 837 base: consistent 2-caller loop_path_fade_time (0x18bb80 idiom) + fade data_iterator_next_inlined 940 (3274 B, al 612, mask 499; keeping fade loop 936; direct g_4e0348 both loops 885; definition ptr both loops 940), + single-ptr loop_path_start 963 (alone 867), + 0x2195f0 linear shape 924 (alone 857 at 3327 B; scaled-only 851), all three 914 (mask 374), + approach_126660 961, + word* flags 961, + direct g_4ed28c 938, + reused iterator 937, + override order & scale local 961 (3242 B, mask 324); s_levels 3-real copy 923; s_decibels override += 838; flag_bits if-form 837 (same code), bitfield assigns 855. On counted-list + const-ref lead (+0x27, frame 0x4e0, 851 at 3302 B, al 332, mask 156): consistent 2-caller loop_path_fade_time 854 (al 326, mask 142: matches both fade-time address forms); separate fade iterator 833 (3327 B); s_levels copy 888; s_decibels 851; direct g_4ed28c 851; bg predicate / word_flags_set 851; no query flags local 855; !(fabs(-range) < 0.0001f) + distance local 856 (mask 139: removes fxch); existing slot pre-inc 835 (3327 B); flag_bits if-form 831 (3327 B, al 338, mask 151); flag_bits assigns 852 (al 300, mask 132: drops mov ebp, 0x200 hoist, moves pool out of EDX to EBP, puts NONE in EBX across target loop and hoists g_4e0348 into EBX for fade scan, matching 52 consecutive target-allocation/start instructions).
+// M3 lane GB r12 (26 fast trials with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730, 0x18dc90, 0x11c1b0; control 837 at 3327/3327 B, +0x2, all 9 matched peers MATCH; body unchanged): on main's 837 base: 2-caller loop_path_fade_time (ternary/if) + fade data_iterator_next_inlined 937/940 (3278/3274 B, mk 416/419; reused iterator 940), single-ptr detail tail alone 837 (same code), + single-ptr loop_path_start 867 (3299 B), 0x2197f0 linear/log helper shape 863 (3327 B, al 681, frame 0x4d4), + fade helper/iter 924 (mk 385), `(long)source != NONE` in both scans 837 (same code), query tag/flags/scale locals + combined flags 4|2 repair 876 (3304 B), combined clean main 921 (3329 B, mk 379), tag read before sound ptr 937 (3292 B), bsp->sounds fade time in build loop 933 (3285 B), all four main tweaks 964 (3269 B). On clean count-first stacks (`{ long count; T items[N]; }` for targets[3]/choices[2]/existing[64], frame 0x4e0, no const-ref pin): base 935 (3239 B, +0x27, al 448, mk 159), flags before duplicate check 926 (al 441), hoisted bsp->sounds 975 (3221 B), tag read before sound ptr (`bsp->sounds[index].tag` then `sound = &bsp->sounds[index]`) 849 (3239 B, +0x27, al 404, mk 143: matches prologue and first 86 insns through query/dup loop, but -88 B short of retail without the 14 g_44a0b4 reloads); on it, bsp->sounds fade + fade abs-index + outside=portal=inside + !audible + single-ptr start 903 (3209 B, al 843, mk 287; approach_126660 903, mk 279; PIN_126660 903; byte flags 912; fade data_iterator_next_inlined 892, mk 181; g_4e0348 fade time 869, al 511).
 // MiniMax E (11-19): score 846 (was 846): no new form, no lower score. Read from the listing again: retail zeroes
 // ESI at the entry and keeps the primary at frame+0x18 while our body zeroes EBP and keeps the primary at frame+0x24,
 // retail's four query arrays start at frame+0xdc with the gains first and ours start at frame+0xe0 with the clusters
@@ -1023,6 +1024,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Shared gain buffer reused as a count-prefixed active list, store/increment first, for short/short
 // query and choice 876/877, short/long 936/946, full/short 899/901, full/long 937/937. NOT kept:
 // the 0x4e0 frame returns, but the count and query homes differ and all scores rise.
+// Query-only array scope, shared query ordinal, direct provider count, or both:
+// 837/840/911/911. Early choice count or enclosing choice storage in that scope:
+// 837/837. Early long choice count alone or with direct count/shared ordinal:
+// 938/948. NOT kept: the 0x4dc frame persists and long choice counts shorten the body.
 // Lane AO r3 (fast with 0x18bb80 and ten callees, control 837 at 3327 B): the targets array declared after the two
 // counts 837, the primary declared ahead of the target count 837, the choices declared ahead of the query arrays 837,
 // the query count declared ahead of the arrays 837 (same code each: declaration order moves no home); the duplicate scan
@@ -1030,12 +1035,19 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `targets[target_count].field` with the count stepped last 940 (3289 B); the muted flag as `!g_509420` 837. Reading:
 // retail walks the query with the long count read from its home, keeps the choice count in ESI with a copy at frame
 // +0x24, and spills the loop index at frame +0x4 where ours puts the short query count. Body unchanged.
+// Exact-end bounds for query, duplicate, repair, conversion, both target walks, active lookup,
+// both query walks, or all choice and target walks: 837/905/837/837/837/837/837/905.
+// The 0x4dc frame and count homes persist. Retail uses a relational duplicate bound.
 // M3 lane 13 r158 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 837 at 3327 B; frame 0x4dc against
 // retail's 0x4e0 on today's main): the fade time named once for its test and divisor 845; the sound-definition list read
 // ahead of `inside` 924 (3289 B), at the block top 921; both counts long re-measured 1018 (3214 B: an opcode-aligned
 // read puts retail's extra code in the second scan's inside/portal selections, the PIN clamps and the primary's detail
 // lookup, not only the choice addressing); the scanned sound's tag named once for its test, the duplicate scan and the
 // store 838; the range test as `fabs(range)` (no negation) 865.
+// Active list with a terminal NONE slot, final or rolling marker for index/index, index/cursor,
+// cursor/index and cursor/cursor append/search: 851/863/845/876/855/855/848/862. NOT kept: cursor append and indexed
+// lookup restore the 0x4e0 frame but shorten the body. The other forms enlarge the frame, and
+// all depart from retail's counted walk. The entry zero and count/query homes still differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

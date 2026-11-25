@@ -2254,6 +2254,11 @@ void function_27dd10(void)
 // merged) 153 (0x281b60 199, 0x285750 75, 0x288570 101, 0x289580 78, 0x28aaa0 82); only the shift in each arm, the output
 // step after the test, 153 (199, 75, 310, 270, 82). The loop is the same shape, but the flags then outrank the count
 // for their register and every home moves, so the tail is not reached that way. All restored.
+// M3 lane 4 r261 (fast screen with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2): in function_288572 the group end as `arg_5 + 8 < arg_7 ? arg_5 + 8 : arg_7` 53 (0x281b60 53, 0x285750
+// 53, three siblings 9); the output target as an if/else 2; the bit-flag pointer by an if/else-if chain 2;
+// function_288573's destination index as `arg_1 != 0 ? local_4 : arg_5` 2; the saved frame fraction read ahead of the
+// two saved indices 2 (all four the same code everywhere). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2558,6 +2563,12 @@ void function_2818e0(void)
 // M3 lane 8 r236 (H2M_FAST with 0x27dff0 and the six matched walk users; control 2): in function_288572 the output step
 // and the flags shift written in each arm of the bit test 199 (0x27dff0 153, 0x285750 75, 0x288570 101, 0x289580 78,
 // 0x28aaa0 82); only the shift in each arm 199 (153, 75, 310, 270, 82). All restored.
+// M3 lane 1 r169 (h2m fast with 0x27dff0 and the four matched walk users; control 2): a forced scheduling search
+// matches with either of the two reloads' heights moved by one (equal heights, so the code-generation order of the
+// split pieces decides, as round 163 read it). Respellings of function_288573 arms this function never runs (the
+// numbering is taken before dead arms go): blend 4's scale arm with no locals 2 (0x288570 3, 0x289580 2); its
+// `*=` form 2; blend 4's translation arm through `g_5044c0` with no local 2 (0x288570 3, 0x289580 78); blend 3's
+// scale as `*=` 2; blend 3's translation as `+=` 2 (all controls matched in the last three). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

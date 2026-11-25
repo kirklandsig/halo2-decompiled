@@ -1149,6 +1149,27 @@ real function_30bf0(vector3f *vector);
 // 101); diagnostic (not keepable, reused variable): `PIN` + one scalar for `amount`/`distance_squared` 69 (1308 B, exact
 // retail offsets for `range` +0x30, `delta` +0x4c, `motion` +0x24, `plane` +0x38, `a`/`b` +0x58/+0x5c, `facing_primary`
 // +0x18). Body unchanged.
+// GB9 (43 trials, fast with 0x263740/0x26d370/0x25c9d0/0x263d70, all MATCH, control 84 at 1310/1308 B, al=109, espm=22, mk=59;
+// body unchanged): combining `PIN(amount, 0.0f, 1.0f)` (97 alone) + split `mode == 0` (86 alone) reaches 76 (1308/1308 B, +0x27,
+// `result` at +8, `range` in xmm0 and at retail's +0x30, `motion+side` at +0x24; with b-max first 75; `NOT kept`: both parts alone
+// regress and `al=111, espm=25, mk=68`, `amount` still pairs with seat counter at +0x14). On `PIN`+split: sec-first 76, single
+// `if (facing)` 140, ternary 3:2 76, `vector3f_add_scaled` 84, no `clipped` 140, `plane.d` `dot3f` 139, `delta` helper 143,
+// `long i` 166 (on base 173), scoped `facing_secondary`/`facing_primary` 140 (with `bool facing` 95, init before `if` 193, else-first
+// 140), `range` after `delta` 81, else sec-first 96. Passing `&secondary, &primary` directly to 0x263740 (dropping `facing_secondary`/
+// `facing_primary`) cleanly pairs `amount` with `distance_squared` at retail's exact `+0x1c` (`T09` 190 at 1334 B, `B2_10` with `bool
+// facing` 187 at 1331 B, `al=92`; on base 199, on split 195; init-before 203, else-first/ternary/b-max/else-sec/range-after 190-210,
+// `real_bounds` 192-243, `real_bounds` for `facing_limits` 100/108), matching 11 of 13 stack slots and 14/16 first-cross insns, but
+// emits +23..26 B of extra `xmm1`/`xmm2` reloads of `secondary`/`primary` inside the seat loop.
+// GB12 (44 fast trials with 0x263740/0x26d370/0x25c9d0/0x263d70, all MATCH, control 84 at 1310/1308 B, al=63, mk=20;
+// body unchanged): two-use `s_object_seat const *seat = &seats[i]` alone 90 (1308 B); on `PIN`+split `mode == 0` (76 at
+// 1308 B, al=65, mk=23) adding `seat` drops score to 70 (1310 B, al=52, mk=12, fixing 7 insns in the first seat cross;
+// with b-max first 69, al=51, mk=12; `NOT kept`: parts alone regress and `amount` still pairs with seat counter at +0x14).
+// Also tried on `PIN`+split (or `B12`): ternary MAX `a > f ? a : f` 76 / rev 134 (on base 84/141), 2-caller inline tier
+// helper 278/285 (on base 271), inline/forceinline facing helper 818/198 (770/270), direct `settings->distance_limit`
+// 268 (on base 268), `distance_squared` declared at top 76, single `if` facing 140, `while` seat loop 76, `posture` if/else
+// 110, `short result` 76, `flag7` local 312, `plane` helper 84/247, `switch (mode)` 266, `amount >= 0.0f` 236; on `B12`:
+// `cross3f_staged` 70, `matrix3x3` basis ptr 117 (1308 B), hoisted `world_up` 141, `exceeded` flag 72 (on base 239),
+// `result == 0` guard/nested 97/97 (on base 90), `range` after delta 75, sec-first copy 70, `if (count > 0)` 145.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

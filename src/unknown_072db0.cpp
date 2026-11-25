@@ -2404,7 +2404,22 @@ bool function_1900a5(long index);
 // with zero first, timestamp first, initialized or separate arms: read gate
 // 641/641/633/641, write gate 643/643/642/643. NOT kept: the 633 form sets and
 // then tests a flag at the read gate, and the first difference remains +0x1a.
+// The logon compare and properties-based cursor remain. Assigning the actual
+// admission result after the copies, with one condition, guest check first,
+// sentinel last, or three separate tests scores 643/736/753/792. Carrying the
+// same flag from the source validity gives 643/736/753/792 in the same order.
+// NOT kept: the combined test ties and the split forms lengthen the body.
 // M3 lane GA r5 (24 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643 at 2862 B; body unchanged). Tested clean subsets of s_search_value_globals g_509450 without the two match-only forms (keeping main's query_time_now() and fill store order): struct alone 646 (2878 B); +named completion owner/unknown10 667; +failed=true in else 647 (2862 B); +direct g_509454[group] 647; +long property_index 647; +goto-free state<0||state>1 polls 644 (2862 B); +named record_space/property_space 654 (2846 B); +last_write 644 (2862 B); +last_read/last_write 646; +all 657 (2846 B); +properties pointer in main's store order 673 (2830 B); +polls/last_write 668. Also tested retail's `if (variant) { ... } else player->state = 1;` completion structure (emits retail's exact `player->state = 1` tail after state==5): on g_509450 struct with main's `failed || received != 6` 702 (2910 B), with per-arm `failed = true` (retail's stores in state==2 and state==5) 660 (2878 B), with single `failed = true` in else 680, per-arm + named id 656 / + last_write 659 / + dup continue 691 / + all clean 673, orig fail + named id 676 / + last_write 706 / + dup+lw 757; on loose globals with main's `failed ||` 663 (2878 B), with per-arm `failed = true` 637 (2862 B, -6 pts, under keep bar and flag-in-test).
+// The logon CMP, input cursor and slot conditional move still differ.
+// Shared XUID flags before/after the property copy 643/643. Member copies,
+// shared member flags, after-copy publication, after-slot publication, on
+// admission and late flag sample 743/743/743/745/750/747. NOT kept: the
+// after-slot store follows retail, but EDX holds the flags instead of EBX
+// and the member forms grow the body.
+// M3 lane 14 r156 (h2m fast with 0x749b0, 0x75790, 0x192e60 and 0x1900a5, all MATCH; control 643): the user's identity
+// copied after the properties 645; `team` computed ahead of `valid = true` 643 (same code); the variant loop's index as
+// `long` 714; the values' identity refreshed from the local identity 726; the variant test as nested ifs 643 (same
+// code). Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

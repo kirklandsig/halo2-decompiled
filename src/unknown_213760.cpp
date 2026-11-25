@@ -2194,6 +2194,19 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // second table index at open returns to 114 (917 B, write exact, close loses `mov ecx, eax`, checksum in `ecx`). Keeping
 // `handle` with typed header fields: 7-form 7, 5-form 5, constructed `s_cache_initial_header` 5, early-continue 5; do/while
 // wait on 5-form 234 (882 B); inline flags builder on 5-form 5. Body unchanged at 33.
+// Query-size and write-count slots, write argument setup and validation joins still differ.
+// Completed query/transfer scalar bindings 33/33; live handle across close 40;
+// signed expected size 33; query default before open 73; count declared before
+// the resize wait 33; short-circuit/conditional checksum result 98/41.
+// NOT kept: the forms either tie or raise the score.
+// M3 lane 12 r190 (h2m fast with 0x2138f0 and 0x213800; control 33). Reading: retail's not-resized path jumps straight to
+// the close block's handle test and has no `bytes_written = 0` store, so the write count has two references like the
+// query size and takes the slot after it (equal-size frame slots order by reference count, then first reach): that is
+// the swapped +0x24/+0x28 pair. Forms: the close test `(!resized || bytes_written != 0x800) && handle valid` with no
+// zero store 157 (frame 0x1140, slots shared). Rebuilt round 53's 7 form (7) and round 56's 6 form (6 at 930 B); on the
+// 6 form the scratch rotation is one step behind retail at the resize's handle load and one more between the write's
+// header lea and the close copy; tried there: the resize handle copied ahead of the remove-later call 15, the write
+// handle copied ahead of the header 6, the write flags as a named local 6, a close handle copy 118. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

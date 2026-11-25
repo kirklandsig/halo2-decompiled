@@ -469,6 +469,14 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // forward.j; ours k, j, then up.i * forward.i): the i term in parentheses 151 (1384 B), the j term in parentheses 151
 // (1384 B), the k term in parentheses 64 (same code); `up->k * forward->k + up->i * forward->i + forward->j * up->j` 64,
 // the j term written ahead of the i term 64 (same code each: the terms sort by rank). Body unchanged.
+// Shared unit-length predicate on the indexed traversal 64. Named deadline with shared forward,
+// up or both unit tests 94 each. With both tests plus ordered basis dot 70, staged left cross
+// 94, both alternate normalizations 92, or ordered dot and staged cross 70.
+// NOT kept: the indexed form ties and the independently walked forms raise the score.
+// M3 lane 14 r156 (h2m fast with 0x16fe90 and 0x170d70, MATCH; control 64): the last group's call arm first on
+// `group >= 5` 216 (1395 B); the time step as `t = times[group]` then `t -= step` 134 (1403 B); the time table in a
+// `real const *` local ahead of the loop 103 (1395 B, first +0x18); the values array and its cursor declared after the
+// coefficient cursors 67; the copy loop's index declared ahead of its loop 64 (same code). Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1673,6 +1681,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // cosine as `sinf`/`cosf` 339 (1450 B); the two scale angles as `atanf(tanf(half) * scale)` 380 (1429 B); the matrix
 // declared after the second angle 337 (same code); the transform's in-place copy taken from `*out` 351; the builder's
 // three sine products named after the complement products 339 (1466 B).
+// The fixed-axis unity register and two square spills still differ. Existing general builder for the fixed axis 386;
+// general forward/up/both transforms on the fixed axis 385/364/379, or general builder and both transforms 356;
+// general forward/up/both transforms on the moving axis 360/346/348. NOT kept: every form shortens the rotation and regresses.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2711,6 +2722,11 @@ struct s_camera_reference_171830
 // `real depth;` declared bare at the top 9; the forward components as `forward->n[0..2]` 9 (all three the lead's
 // code); the centre without the rear vector 202 (1223 B); diagnostics: the depth accumulated in the offset parameter 9
 // (same code), the rear vector through vector3f_scale with the depth sum as its argument, then negated, 159.
+// The plane exit zero and first center product still differ. On the split plane test with grouped sample products:
+// first rear compound scale 263, indexed compound scale 389, indexed rear/center/both 391/381/391, one center loop 371,
+// indexed products with the shared negate 391, first rear product negated after the others 45 at 1219 bytes.
+// On the opening plane path: all rear products then shared negate 158; three named rear products 264.
+// NOT kept: the 45 form still differs and uses the former one-use plane distance and grouped sample products.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
