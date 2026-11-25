@@ -1748,6 +1748,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Continue from the candidate or returned index, by assignment or explicit
 // branches: 1005/1016/1011/812 in both do and while forms. NOT kept: the only
 // retail-length form ties, and the class/NONE and resolved-mode homes remain.
+// Persistent candidate copied to result at the join, reset before lookup, on miss,
+// by whole-id selection, or by graph-word reset on miss: 923/1036/1012/994 with
+// candidate test, 1055/1071/1060/1031 with iterator test. NOT kept: frame grows
+// to 0x30/0x34, the score rises, and five forms disturb callers.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2422,6 +2426,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // resolved defaults: 812/811/812/812. Clear only the two cache entries with a
 // separate step assignment at those points: 919 each. NOT kept: the first
 // difference stays +0x4, the best form gains one, and the pair clear adds 12 bytes.
+// On a missing name clear the graph word and retain the already invalid index.
+// Whole id, miss-first continuation, member stores, or conditional graph word:
+// 993/993/968/991 with result test, 1020/1029/1053/1053 with iterator test.
+// NOT kept: scores rise, candidate and mode homes differ, and five forms disturb callers.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

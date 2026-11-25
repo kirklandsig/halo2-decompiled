@@ -1011,6 +1011,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Shared gain buffer reused as a count-prefixed active list, store/increment first, for short/short
 // query and choice 876/877, short/long 936/946, full/short 899/901, full/long 937/937. NOT kept:
 // the 0x4e0 frame returns, but the count and query homes differ and all scores rise.
+// Query-only array scope, shared query ordinal, direct provider count, or both:
+// 837/840/911/911. Early choice count or enclosing choice storage in that scope:
+// 837/837. Early long choice count alone or with direct count/shared ordinal:
+// 938/948. NOT kept: the 0x4dc frame persists and long choice counts shorten the body.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -1047,6 +1047,10 @@ static inline bool teams_enabled_19e1c0()
 // Diagnostic, a test retail lacks: `if (remaining < 0) return 0;` first on the plain result 473 (1392 B: `remaining`
 // in EBP from entry, the token read from its slot per compare and the name arms no longer joined, as retail; the event
 // takes EDI and the token length EBX where retail has EBX / EDI, and a frame word returns). Body unchanged.
+// Successful token comparison supplies the buffer clear for score-to-win,
+// cause-player plus score-to-win, all names plus score-to-win, or every clear:
+// 390/391/449/417 with the existing result and 691 each with an ordinary result.
+// NOT kept: the entry preload still differs and the ordinary forms merge copy tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

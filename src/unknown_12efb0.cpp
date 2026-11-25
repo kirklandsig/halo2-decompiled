@@ -1058,6 +1058,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // selecting it after lookup, checking palette precedence, or setting the palette
 // pointer in each arm: 1085/1085/1087/1087 with short, 1081/1081/1083/1083 with char.
 // NOT kept: the provider and palette roles still differ and the body grows past 4140 bytes.
+// Typed scenario table indexing, shared scenario receiver, cached previous index,
+// or record-selection initializer: 607/607/607/607 with short palette, 700/700/700/700
+// with signed byte. NOT kept: the provider register and shared lookup test still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
