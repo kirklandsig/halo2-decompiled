@@ -3661,6 +3661,11 @@ struct s_ammo_conversion_entry
 // shared source tag key and scoped magazine 234, full-magazine continue with scoped magazine 226.
 // transfer-gate continue with scoped magazine 226, source pointer assigned by the selected arms 242.
 // NOT kept: every form raises the score. The conditional source pointer changes the save prefix but shortens the body to 698 bytes.
+// Shared tag key by value or field reference 190/190. Keyed scan with hit-owned
+// cap 205, hit-owned offer 197, joined comparison 202 or delayed table read 202.
+// Positive acquisition with hit-owned cap 212; named key and ordinal with
+// hit-owned offer 197. NOT kept: the key binds as before, and the scan rewrites
+// raise the score. The 0x20 frame and destination/scan register difference remain.
 // Shared long minimum for same-definition with conversion/unloaded/loaded 205/205/191;
 // conversion with unloaded/loaded 197/204, both debits 204, all four 203;
 // shared short minimum for conversion and both debits 204.
@@ -4117,6 +4122,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // 536; positive effect-timer exit 635; single bounded next effect 631; scan history and fresh
 // publication word 593; interval result initialized from lower bound 526; active effect index before
 // timer debit 593.
+// Typed barrel history, slot/countdown, complete selection state, three scales, extra shots,
+// shot count/sequence, continuation handle and all runtime fields: 630 each in the reduced image.
+// NOT kept: all tie the reduced control, which has a 0x1c60 probe and 2542-byte extent. The full
+// 0x1c64 probe, weapon/barrel register roles and separate magazine spills remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4677,6 +4686,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Trigger plus press, trigger plus hold, or both actions 1610/1579/1466. All three
 // 1619, and all three with the retail behavior order 1582.
 // NOT kept: all grow and retain frame 0x34, with the early dual byte still spilled.
+// Typed ordinal snapshots, signed input slot or action selectors 1412 each. First ordinal read at
+// every use 1549, second 1657, both 1544; paired tag references or all native selectors 1544 each.
+// NOT kept: the first-ordinal and paired forms recover frame 0x38, EDI/ESI and BL, but grow
+// to 5812 or 5800 bytes and raise the score. The typed snapshots retain frame 0x34.
 // Trigger/barrel runtime-array lvalues, tag pointer fields, paired lvalues, and array bases with
 // tag field pointers: 1413/1412/1413/1413 before their loops, 1412 each inside. The loop-entry
 // runtime array forms shorten the barrel phase by four bytes. The 0x34 frame and dual spill remain.
