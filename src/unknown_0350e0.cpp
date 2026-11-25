@@ -572,6 +572,15 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // coefficients, or at each diagonal 334 each. With the early sine products 371/371/386/386.
 // NOT kept: the complements alone tie, and the sine-product forms move the first difference
 // to the frame and grow to 1812 or 1819 bytes. The opening square and sine homes still differ.
+// Opposite-sign coefficient triplets: shared sum/direct difference 348,
+// aggregate pairs 348, shared sine scaler 345, scaled difference 348,
+// diagonals first 356, in-place difference 349, shared sine scaler with scaled
+// or in-place difference 346/347. NOT kept: all displace the 0x90 frame.
+// Two forms reach retail length, with the axis and square registers still different.
+// Full-transform vector helper, first/second/both turn snapshots 452/536/520,
+// first/second/both direct in-place turns 432/349/379, copied in-place rows 540,
+// and fresh per-row output 469. NOT kept: all move the 0x90 frame and grow
+// the body. The first-axis register and square spills still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -3030,6 +3039,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
 // initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
 // `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
+// X-first displacement with retained Y, X/Y, Y/Z or X/Z camera basis: 500/500/421/556.
+// In-place basis scaling with setter or aggregate: 422/420. Retained basis with separate reflection
+// stores or a running projection sum: 563/422. The early camera loads and projection registers remain.
+// NOT kept: the 2285-byte forms reach 420 and 556, both above the opening comparison.
 // Decoded-position seeds through an aggregate, setter or explicit components before in-place
 // origin subtraction 280/280/280; per-component seed and subtraction 486; retained draw
 // coordinates with direct deltas, aggregate seeds, component seeds or early capture 500/498/498/500.
@@ -3894,6 +3907,18 @@ real magnitude3d(vector3f const *v);
 // angle test, all three tests together, eager lengths before angle, ordered lengths with independent
 // angle, and joint lengths with real absolute dot: 190/190/186/186/205/201/198/190.
 // NOT kept: all grow the body and leave the raw current magnitude in the bounded length's slot.
+// Shared projected-axis scale with cosine-scaled add or separate cosine vector plus sum, each in
+// place or with separate projected storage: 183/196/183/196. With the complete shared tangent:
+// 170/197/170/197. NOT kept: the two 170 forms tie at 1045 bytes and still store the raw root
+// at +4, leaving the real root, dot and cosine transfer slot unresolved.
+// Complete size selected in each arm, accumulated from the current length, or selected by a
+// nested or full conditional: 169/169/169/169. With a shared lower step bound: 185/185/185/185.
+// NOT kept: 169 gains one and grows to 1050 bytes. The raw root and promoted dot still spill
+// to different homes from retail.
+// Clamped arccosine helper, PIN at arccosine, lower-first and upper-first input selection:
+// 292/292/292/292. Dot bounded before both uses 287; lower and upper inverse-cosine bounds
+// alone 211/266; axis built before clamped arccosine 191. NOT kept: the new input boundary
+// changes the frame or extent and the raw magnitude still lacks its retail home.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4426,6 +4451,21 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // admission tests together, eager creation pair, eager duplicate key tests, eager duplicate
 // eligibility, and both removal predicates: 373/408/421/429/369/409/399/417.
 // NOT kept: all regress. The paired byte forms add a frame word or more code.
+// Shared suppression getter in the original or nested gate 375/375, with
+// sampled count in either gate 375/375, selected limit 375, early request 435,
+// prefix initialized after the clamp 342, or named gate result 375.
+// NOT kept: the inlined gate leaves the prefix and state exchanged. The closest
+// extent is 1326 bytes with frame 0x2c.
+// Capacity-selected start: exclusive tail 244, default tail assignment 319, list count 245.
+// Stable capacity test before/after the bound 351/406, selected start with while 359,
+// consecutive replacement runs with a separate gate or selected start 340/358.
+// NOT kept: the best forms construct a skipped ordinal where retail branches past the scan.
+// The prefix and ordinal homes, and the creation ordinal register, still differ.
+// Creation ordinal initialized before the direct capacity skip, reused or separate 357/393;
+// nested creation predicates, named capacity decision or while traversal on those two forms
+// 357/393 each. NOT kept: the earlier ordinal changes the prologue and raises the score.
+// Separate signed-word ordinal on the inclusive direct-skip form 340. NOT kept: the
+// narrowed ordinal still differs from retail.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4934,6 +4974,14 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 540, point value 485, scaled add 535. With stored camera reads 512/512/523/512.
 // NOT kept: the 485 form gains one with a larger 0x64 frame. The forms that shrink the
 // frame shorten and regress. Independent velocity reads and projection homes still differ.
+// Scalar projection by point, direct row/accumulator/row pointer/sampled scale
+// 530/530/543/491; by corresponding ordinate 500/500/517/507.
+// NOT kept: scalar projection reduces the frame to 0x3c–0x48. All forms raise
+// the score, and the independent velocity reads and native frame remain unresolved.
+// Two-point projection traversal, raw/screen y: returned point 510/542,
+// point pointer 502/499, point reference 502/499, scalar outputs 502/499.
+// NOT kept: returned points enlarge the frame. Output arguments retain
+// 0x60 and shorten the body. The independent velocity reads still differ.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6054,6 +6102,18 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // Separate axis selections from a shared test, per-axis tests, guarded captures, or a complete
 // point snapshot: 392/518/231/717. With four-channel color: 390/516/225/723.
 // NOT kept: 225 gains six, grows to 1826 bytes, and leaves the radius spill at +0xc.
+// Indexed in-place scaling or a separate indexed scaled result, with the scale read at each use
+// or retained: scalar alpha 628/507/628/507, four-channel color 634/516/634/516.
+// NOT kept: the separate scaled result reaches frame 0xe0 with scalar alpha, but the indexed
+// variants lengthen the corner expansion and leave the radius spill at +0xc.
+// Split output into successive edges, depth ends and middle pair, a separate first corner, or
+// a separate last corner: scalar alpha 390/244/234/386; four-channel color 387/228/218/371.
+// NOT kept: 218 recovers frame 0xe0 but grows to 1829 bytes and leaves the radius at +0xc.
+// The retail-length color form raises the score.
+// Planar middle outputs and separate endpoint depth, scalar alpha/color:
+// scalar pointers 438/418, scalar references 438/418, typed point
+// receivers 1139/1136, returned planar points 493/493.
+// NOT kept: none recovers the radius/depth homes and extent.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -7043,6 +7103,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // retail's clear call passes its flags in EAX and needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched
 // 0x14ac0's frame and realigns this function); what still differs is that call's argument setup and the cull arm order.
 // MiniMax H (11-20): no new form, no lower score (111); the clear call still needs 0x14b60's real body (BLOCKED-BY 0x14b60) and the cull arm order comes from the shared pass header.
+// Range-based pass at modes 1, 3, 2, their three pairs and all three:
+// 106/101/106/106/111/106/111. Explicit enable at the first pass 223.
+// NOT kept: no reduction at retail length. The clear flags still travel on the stack.
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {

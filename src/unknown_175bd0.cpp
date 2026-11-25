@@ -2481,6 +2481,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // system piece 52 against the type object 80); multiplied() as the colour call's argument with tinted named (the
 // 0x177040 spelling) 135; that with both colour locals 178; the spawn location index first and colour B a local
 // before the spawn floats 185.
+// The early system and color slots still disagree. Preset true or false placement
+// result, positive or inverted, with assigned or branch-set zone decisions:
+// positive 128/164 and inverted 139/164 for each preset. NOT kept: each retains
+// frame 0x40, and the branch-set results lengthen the body to 564 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4053,6 +4057,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // location walker in its init and step 108 [25] (same code); this body so written 93 [0] (same code); the per-call form
 // with a const definition pointer 108 [25] (same code), with the system re-derived from its index for the loop's call
 // 135 [25] (358 B).
+// The system still needs ESI and the definition needs a spill. Explicit initial and
+// recurring advances, in a for increment or at the while tail, with cached word/short
+// 93/93 and direct/reference mode reads 108/108 in each loop. NOT kept: the live reads
+// recover the 0x54 frame but move the effect index off the stack and break the update caller.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

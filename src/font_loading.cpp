@@ -1067,6 +1067,10 @@ static inline word font_character_pixel(long alpha, long color)
 // add/OR, narrowed at the complete pixel or at the high contribution, each 45.
 // Each with per-arm length reaches 30. NOT kept: the per-arm forms still differ,
 // and the signed conversion leaves a 508-byte body with different literal loads.
+// Extending the literal from its decoded header by shift/OR, byte places, base-256
+// addition, or a word accumulator: 103/103/103/95 with the shared length,
+// 84/84/84/90 with per-arm lengths. NOT kept: the word form reaches 504 bytes
+// with the shared length but still fuses the literal byte loads, and the packed count join differs.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

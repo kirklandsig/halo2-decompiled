@@ -1002,6 +1002,23 @@ struct s_item_collision_bsp
 // 199/199, scaled source distance before translation in a local 203/203 or the output field
 // 199/199, with direct or setter contact stores. NOT kept: all raise the score at the same
 // extent. Normal coefficient and contact-point homes still differ.
+// Translation terms after their rows, after the first two rows, after all rows, or with X
+// early and Z before Y: 199/199/199/199 in both plane-row and scalar-row storage.
+// NOT kept: the length and frame stay at 1366 and 0xa0. The queried coefficient order still differs.
+// The rotated normal coefficients and pending x87 factor still use different homes.
+// Seed-step in fallback speed 190, seed-step in spin factor 190, seed-step in fallback speed, seed-step
+// in spin factor 190, site-tagged seed-step in fallback speed 190, site-tagged seed-step in spin factor
+// 190, site-tagged seed-step in fallback speed, site-tagged seed-step in spin factor 190, seed-step in
+// fallback speed, site-tagged seed-step in spin factor 190, site-tagged seed-step in fallback speed,
+// seed-step in spin factor 190, planar normal dot with the basis row first 198, planar normal dot with
+// coefficients first 198.
+// NOT kept: The integer draw providers tie the baseline. Both planar products grow the body and raise
+// the score.
+// Existing planar scale in the axial, fallback or both branches 190/190/190; axial aggregate
+// and in-place scale 288. Joined scale with separate/direct axis 294/270, joined separate
+// planar output 294, branch-local separate planar output 266. NOT kept: the branch helpers
+// tie, and the joined or separate-output forms shrink the frame and raise the score.
+// The rotated normal registers and pending x87 spin factor still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1394,6 +1411,23 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // setter: 117 in all eight forms, 857 bytes with frame 0xb4.
 // NOT kept: each writes the intermediate axis k to the final output slot. Retail keeps
 // that component in a register and writes the slot only after the rotation.
+// Transform up as scaled-axis storage 212 for either cross. As fallback-cross storage 195
+// for either cross. Both lifetimes in transform up 232 for either rotation cross. Transform
+// left or forward for fallback 195/195. NOT kept: the 0xb4 forms expand the body and score
+// higher. Fallback-only forms retain 0xc0.
+// The normalized axis still requires a separate home in the opening body.
+// Scaled axis scalars from planar cross products 215, planar cross products produced before the root
+// 215, scaled vector initializer from planar cross products 218, shared scale on a planar cross
+// initializer 208, planar cross products through the axis setter and shared scale 208, scaled planar
+// cross products through the output workspace 184, scaled axis scalars from planar products with a
+// separate alignment dot 210, shared scale on a planar cross initializer with a separate alignment dot
+// 203.
+// NOT kept: The planar cross producers lengthen the body and increase the score. The output workspace
+// recovers the 0xb4 frame with a higher score.
+// Root as all three cross weights with ordinary/staged axis 170/170, or with the output
+// workspace and setter 170/170. Separate ordinary/staged rotation cross scaled first or at
+// use 257/218 for each helper. NOT kept: both output workspace forms attain 0xb4 and 848
+// bytes but increase the score. The scaled-axis registers and alignment order still differ.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1953,6 +1987,10 @@ struct s_item_flags_view_10b850
 // and the write as bit members: 824 each. Both reads, second read and write,
 // or both reads and the write with the signed short field: 824 each.
 // The entry flag bytes and 0x154 frame still differ.
+// The entry Boolean stores and ray/flow home still differ. Zero magnitude on a missing
+// flow query, selected by a conditional, a guarded default, or either branch order:
+// 824 each with separate vectors, 881 each with shared ray and flow storage. NOT kept:
+// the shared form shrinks the frame to 0x148 but shortens the body and raises the score.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

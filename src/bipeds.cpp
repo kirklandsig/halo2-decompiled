@@ -1899,6 +1899,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept (coordinator review 2026-11-25): the 132 form assigns a second local in both arms, adds each bias in its
 // own statement and then copies it into material: a steering copy and a split store, kept only with a byte match
 // (also reverted from Codex F round 498).
+// The joined material store scores 132 in the reduced image, with the walking-settings preload 120.
+// Typed pill-array reference and conditional result 176/155, copied pill descriptor 561/547, and
+// sphere-first joined result 137/125 (opening walking block / walking-settings preload).
+// NOT kept: the preload reads a one-use pointer ahead of the walking-speed call.
+// Codex F498: the joined material store (a second local assigned in both arms, then copied into material) gives 132 in the
+// plain check, the two adjusted addresses joining at retail's material store: a steering copy, kept only with a byte match;
+// reverted at review, code as before (158).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

@@ -1901,6 +1901,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // in the player, group, both participant, or party phases scores 872/902/891/926 with word cells and
 // 905/925/917/954 with dword cells. Player, group and combined participant dword forms reach the 0xb4 frame
 // but shorten the body. Player and combined forms change the matched caller.
+// Initialize the first party's span or both endpoints 893/893, extend only
+// an existing span 871, first-party count on either side of its update 933/895,
+// conditional span 911, initialize from the last-party sentinel 890/910.
+// NOT kept: all tie or regress and leave the opening call and frame different.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

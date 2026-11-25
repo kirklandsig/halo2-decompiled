@@ -1824,6 +1824,15 @@ bool function_108530(long device_index, long name)
 // ramp_down_time ? ramp_down_time : 0.0f` 116, with that minimum as well 116; the cruise numerator's products written
 // velocity first (`initial_velocity * half_ramp_up_time`, `final_velocity * half_ramp_down_time`) 116 (same code each).
 // Body unchanged.
+// Duration is still in XMM3 and ramp-down is cached at the upper bound. Float absolute
+// value at duration, distance and both 116/116/116; both comparisons in double 130;
+// direct clamped duration 117; with double distance 120; signed distance limits 132;
+// both direct limits 121. NOT kept: the first three tie and the other forms lose both
+// XMM6 caller matches.
+// Promoted products rounded to real at the half times, half-ramp travels or doubled
+// rates, the three pairs, all three, and the phase squares: 127/143/117,
+// 176/170/143, 188/115. NOT kept: the squares gain one but extend the body
+// and lose both callers. The half times preserve the callers and also increase the extent.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

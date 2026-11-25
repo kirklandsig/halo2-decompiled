@@ -2939,6 +2939,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // state 491, readiness plus object state 462, all three 500, all three plus shared case 13/default 597. NOT
 // kept: the 401 form adds a separate 16-bit success return where retail sends readiness to the shared SETE
 // and leaves the bounds target late.
+// The default still jumps to the late completion block. Update only for nonzero countdown, case 0/cases
+// 7–8/both 453/532/509; conjoin each countdown result with the inherited completion, case 0/cases
+// 7–8/both 510/511/613; guard the conditional timer and write only on pending 512, with case 0 the
+// same 485. NOT kept: all increase the score and none brings the success exit to the timer cases.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

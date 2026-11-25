@@ -1020,6 +1020,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // existing indices individually 944/976/936, pairs 933/930/995, all 921, and all with a dword query count
 // 930. NOT kept: the forms with an existing-index member append lose gain-buffer reuse and enlarge the
 // frame to 0x5e0–0x5e8.
+// Shared gain buffer reused as a count-prefixed active list, store/increment first, for short/short
+// query and choice 876/877, short/long 936/946, full/short 899/901, full/long 937/937. NOT kept:
+// the 0x4e0 frame returns, but the count and query homes differ and all scores rise.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
