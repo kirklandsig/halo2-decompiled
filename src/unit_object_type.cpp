@@ -5697,6 +5697,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
 // Separate queried up with branch publication 218/218, or publication after its correction 211/211.
 // NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
+// Read aim in the first cross with copy before/between 210/208, in the second with
+// copy before 203, or in both with copy before/between/after 213/213/211.
+// Staged first-cross helper with first-live/between or both-live/after 208/211.
+// NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

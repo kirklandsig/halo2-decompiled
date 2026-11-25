@@ -961,6 +961,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // collision result assigned to hit byte 637, distance guarded by hit byte 673.
 // slot minimum before the hit byte 661, reused ray-vector workspace 518.
 // NOT kept: The selected-distance form gains four points and is one byte shorter. The query-result byte changes entry allocation and raises the score. The other forms tie or regress.
+// Selected normalized forward/left/up 518/521/516, forward+left/forward+up/left+up
+// 659/520/660, all 652, shared normalization workspace 662.
+// NOT kept: upper-axis selection gains two points. All axes reach 2886 bytes at 652.
+// The entry clearance byte stays at ESP+0x13. The in-place basis producers are restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

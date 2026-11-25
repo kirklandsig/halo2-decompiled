@@ -3661,6 +3661,10 @@ struct s_ammo_conversion_entry
 // shared source tag key and scoped magazine 234, full-magazine continue with scoped magazine 226.
 // transfer-gate continue with scoped magazine 226, source pointer assigned by the selected arms 242.
 // NOT kept: every form raises the score. The conditional source pointer changes the save prefix but shortens the body to 698 bytes.
+// Shared long minimum for same-definition with conversion/unloaded/loaded 205/205/191;
+// conversion with unloaded/loaded 197/204, both debits 204, all four 203;
+// shared short minimum for conversion and both debits 204.
+// NOT kept: all retain the 0x20 frame and 731 bytes, but the saved-register discrepancy persists.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {

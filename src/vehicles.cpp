@@ -7235,6 +7235,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // early transpose with separate relative matrix 1139, early transpose with reused rotation output 1085.
 // scoped basis with named rounded delay 1218, early transpose with named scaled delay 1139.
 // NOT kept: The current-basis forms reach frame 0xdc, leaving a four-byte gap to retail. All shorten the body and raise the score. Early transpose with reused output is the closest of these forms at 1085 and 5046 bytes.
+// Transpose returned by value after swaps of the value input or a copied reference
+// 1139/1139, or produced by axis from a pointer/reference 1205/1205. With a separate
+// relative product 1125/1125/1174/1174. NOT kept: each leaves frame 0xfc and grows past 5094 bytes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
