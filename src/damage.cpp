@@ -1892,6 +1892,24 @@ long function_1e4a10(long index);
 // as `threshold < shield_damage` 8, the multiplier test as nested ifs 8, the stun seconds as `stun_time * rate` 8 (all
 // four the same code); the tail through `DAMAGE_OBJECT(object_index)` at both uses with no `object` refresh 10 (the
 // reload orders stay); re-measured: the multiplier declared right after the category bool 206 (901 bytes).
+// M3 lane 7 r228 (fast). Reading: the reload order after each call follows split-piece numbers: pieces are made in
+// ascending candidate number and draw their numbers from a last-in-first-out pool of seven freed temporaries, then fresh
+// ones, so a later-numbered value gets the lower piece number while the pool lasts. On the six-name set (round 172) body
+// damage is numbered after the constants, which leaves 1.0f a pooled number (retail's function_d5bc0 order), but the
+// scaled shield damage web is still numbered ahead of the zero constant, so the zero reloads first after function_d6a70
+// and function_176780. Forms: the scaled damage written `multiplier * shield_damage` at the accumulator store and the
+// stun test (no reassignment) 28 (the product takes the inverse's slot), on the six-name set 25, with the absorbed damage
+// named 28, with the end lookup fresh too 28; the stun ticks through real_to_long 7 (re-measured), with the product form
+// 27, on the six-name set 4, with both 25; the scaled damage as its own named local 28, with the clamped vitality and the
+// fresh end lookup 28.
+// M3 lane 4 r261 (fast screen, 8). The float split: on main the values are numbered 15-22 (inverse 17, maximum 18,
+// shield 19, scaled shield 20, body 21) ahead of the constants (zero 24, 1.0f 25, 0.0001f 26); the pieces take freed
+// numbers handed out 37, 35, 34, 31, 30, 29, 28, then new ones from 44, so after function_d5bc0 zero 28 < maximum 35 <
+// inverse 37 < 1.0f 45, and after function_d6a70 and function_176780 zero 28 < scaled shield 31. Round 172's six names
+// number body damage after the constants (zero 33/32, 1.0f 31: retail's function_d5bc0 order) but keep the scaled
+// shield (piece 34) ahead of zero; retail needs the scaled shield numbered after the zero constant. Forms: the
+// six-name set re-measured 4; on it `shield_damage *= multiplier` 4, the absorbed product's operands swapped 4, both
+// 4; on main `shield_damage *= multiplier` 8 (same code), the clamped vitality named alone 8. All restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

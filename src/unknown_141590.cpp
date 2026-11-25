@@ -1348,6 +1348,25 @@ void function_143250(
 // retail keeps in XMM7 from its store to the r3_r3 product: the r2_r0 and r5_r4 products ahead of r1_r1_r8 945; s35_r2 and
 // its r4_r4 product right after r1_r1_r8 945; its r3_r3 product right after r3_r0_r5 939 and right after its r4_r4
 // product 939 (same code each); r4_r1_r5 ahead of the two s35 cube products 1376 (10779 B). Body unchanged.
+// Native rotation basis captures forward/left/up 1209/1232/1272, pairs
+// forward-left/forward-up/left-up 1450/1446/1476, all rows/full matrix 1321/1328.
+// NOT kept: typed captures do not resolve the independent scalar homes
+// at the opening extent.
+// The extra scalar word and first-band spills still differ. Moving third-band products
+// confined to a column to their first consumer gives 1600/1552/1576/1602/1574/1585/1590;
+// moving all seven product groups gives 1698. NOT kept: the second column recovers
+// frame 0x300 at 10765 bytes and first +0x3b, with a higher score.
+// Late axial and transverse mixed-product consumers, alone and together, 1540/1460/1538;
+// intermediate axial and transverse pairs 1534/1493; late root-35 squares, root-105
+// mixed consumers and both weighted pairs 1368/1511/1515. NOT kept: the last two
+// recover frame 0x300 and first +0x39, but shorten the body and raise the score.
+// Third-band weighted product declarations at band entry for the root-35
+// transverse group, root-105 axial group, both, and the three complete
+// family selections all 939. Component-first names for either family 939.
+// The 0x2fc frame and separate weighted spill homes still differ.
+// The first three basis spills and the missing scalar word still differ.
+// Component names for forward j, left j, forward i, their pairs and all three,
+// or the complete nine-component set, all 939. The original names are restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
