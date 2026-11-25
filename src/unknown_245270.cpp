@@ -1077,6 +1077,14 @@ void function_245400(s_source_245400 const *source, long index,
 // One copied normal with direct/staged cross, first or second 248/241 each.
 // In-place staged cross initialized on admission 236/233 or at decoding 221/218.
 // NOT kept: all increase the score and grow past 783 bytes. The frame and separate side homes remain.
+// The frame remains 0x24 against 0x2c, with separate material and side homes missing.
+// material prefix with late endpoint 204, material prefix with late start 205.
+// material prefix with endpoint indices 207, material prefix with selected emitter point 139.
+// selected point with late endpoint 204, selected point with secondary material reference 139.
+// selected point with staged cross 139, vertex records with staged cross 205.
+// selected point with plane table between codes 139, selected ordered facing comparison 208.
+// explicit facing exits on selected point 212, explicit exits with plane table between codes 212.
+// NOT kept: the 139 forms recover frame 0x2c and the entry through the material comparison, but grow to 787 bytes and retain the differing float and code homes. The two explicit facing-exit forms regress.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

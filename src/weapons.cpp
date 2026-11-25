@@ -3655,6 +3655,12 @@ struct s_ammo_conversion_entry
 // Destination, source and tag-array lvalues, single and paired loop-entry bindings 190 each;
 // all three bound together at loop entry or per iteration 190 each. Saved destination and
 // conversion-key registers remain different.
+// The 0x20 frame agrees. The destination weapon and conversion key still use different saved registers.
+// separate source-magazine selections 234, separate selections with positive acquisition 226.
+// separate selections with one exit 227, conditional source pointer with positive acquisition 216.
+// shared source tag key and scoped magazine 234, full-magazine continue with scoped magazine 226.
+// transfer-gate continue with scoped magazine 226, source pointer assigned by the selected arms 242.
+// NOT kept: every form raises the score. The conditional source pointer changes the save prefix but shortens the body to 698 bytes.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4100,6 +4106,13 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // burst or both 593/639/639. Separate admitted cost 547, or 545 with path-produced admission.
 // NOT kept: both forms have retail length but carry the required rounds in EDI before the magazine check.
 // Retail keeps one stack home through debit. The 547 form keeps frame 0x1c64 and the 545 form grows it to 0x1c68.
+// The 0x1c64 frame and weapon/barrel register assignments still differ. NOT kept: cached history drops
+// the publication reload, the local duration keeps a joined timer store and register test, and both
+// shorten the body. The positive timer exit restores the frame but regresses. history word for the free-
+// effect scan 593; promoted history for the free-effect scan 593; exhausted history as a shared value
+// 536; positive effect-timer exit 635; single bounded next effect 631; scan history and fresh
+// publication word 593; interval result initialized from lower bound 526; active effect index before
+// timer debit 593.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4653,6 +4666,9 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Conditional decay result 1413; named cooling adjustment 1412; one cooling coefficient read 1416; retained cooled heat 1412.
 // Single clamped write 1412; named recovery time or excess heat 1412 each; nested recovery guard 1412.
 // NOT kept: ties and regressions. The 0x34 frame, entry roles and dual spill remain.
+// Trigger/barrel runtime-array lvalues, tag pointer fields, paired lvalues, and array bases with
+// tag field pointers: 1413/1412/1413/1413 before their loops, 1412 each inside. The loop-entry
+// runtime array forms shorten the barrel phase by four bytes. The 0x34 frame and dual spill remain.
 // Retail block order for trigger states, press actions and hold actions 1555/1462/1427.
 // Trigger plus press, trigger plus hold, or both actions 1610/1579/1466. All three
 // 1619, and all three with the retail behavior order 1582.
@@ -5355,6 +5371,13 @@ struct s_weapon_projectile_creation
 // Direction/axis, direction/cross, axis/cross or all three 1121/1154/1154/1121.
 // Both inputs and in-place projection 1154. NOT kept: ties or shorter bodies with higher scores.
 // The separate clipping output and 0x1ea4 frame remain in the opening body.
+// The 0x1ea4 frame and holder-walk register assignments still differ. NOT kept: native player fields
+// tie, final actor and player reads expand the frame, and the other holder forms shorten the body and
+// raise the score. first parent retained across the walk 1154; aim permission from both final tests
+// 1153; aim permission seeded by the original parent 1152; native player fields in the holder walk 1121;
+// actor observation from the resolved holder 1147; player observation from the resolved holder 1123; aim
+// address from the resolved holder 1169; three values from the resolved holder 1152; shared typed holder
+// pool during traversal 1143.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

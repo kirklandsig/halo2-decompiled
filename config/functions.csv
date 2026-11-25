@@ -11069,7 +11069,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002c1d90,211,game,speed,a16 pad,,,002c0c40,src/unknown_2c0d00.cpp,matched
 002c1e70,316,game,speed,a16 pad,,,,src/unknown_2c0d00.cpp,matched
 002c1fb0,169,game,speed,a16 pad,,,002c1e70,src/unknown_2c0d00.cpp,matched
-002c2060,1746,game,speed,a16 pad ebp,,,002104b0 0026c4e0 0026ccb0 002c2740 002c2910 002c2a70 002c3030,src/unknown_2c0d00.cpp,todo
+002c2060,1746,game,speed,a16 pad ebp,,,002104b0 0026c4e0 0026ccb0 002c2740 002c2910 002c2a70 002c3030,src/unknown_2c0d00.cpp,matched
 002c2740,462,game,speed,a16 pad,,,,src/unknown_2c0d00.cpp,matched
 002c2910,351,game,speed,a16 pad,,,,src/unknown_2c0d00.cpp,matched
 002c2a70,1465,game,speed,a16 pad,,,0002b400 00322bd8,src/unknown_2c0d00.cpp,matched
