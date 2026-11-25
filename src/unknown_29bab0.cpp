@@ -978,6 +978,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // initializer 712, paired displacement before translation 714, planar position copy incremented y then x
 // 706, the two branch accumulations with the planar difference helper 719, conditional y with that
 // helper 713, and conditional y with the shared planar dot 558. NOT kept: all raise the score.
+// GB9 (fast with lane 6 r242's companion list, 7 peers MATCH; control 462 at 3504/3499 B, +0x100, fr=0x88; 14 trials, restored):
+// `local_24 = local_23; if (!local_22) local_24 = -local_23;` 649 (3502 B); `local_24 = -local_23; if (local_22) local_24 = local_23;` 654 (3502 B);
+// flipped `if (!local_22)` 478; `planar_scale` ternary 721 (3476 B, +0x4e), if/else 702 (3499 B, +0x4e); `local_26` member assigns 462 (same code);
+// `byte same` in 4th else arm keeping `bool local_21` 665 (3499 B, +0x60: recovers retail's exact 8-bit `test al, al; setne al` at 0x29bf27 without a cast);
+// norm `(i*i+k*k)+j*j` 747 (3499 B), `.n[0..2]` 750 (3499 B, mk 105 vs 117); drop `local_28` alone 467, + dot orders 469, + MIN(1.0f, ratio) + early field_50 468;
+// 0x29ab90's steering formula 655 (3500 B); combined retail structure + `byte same` + `dot3f(&local_7, &local_9)` 670 (3483/3499 B, 841/844 insns, mk 64 vs 117: leaves only the 16-byte side-point y-in-arms block as missing length).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
