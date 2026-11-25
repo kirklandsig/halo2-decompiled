@@ -1399,6 +1399,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // but the element pointer sits at +0 where retail's sits at +8); all 30 orders of those statements 8-11. Left for a
 // match: one more symbol ahead of `plane`, the shared distance helper's denominator summed by rank (0x1648d0 needs j,
 // k, i from the same text), the candidate's x load one level lower in the clip distance, and `total` in EAX.
+// Classification with named x/y, x/z or y/z subtotals 55/68/62; x/y or x/z subtotal with a separate
+// accumulation 55/70; named component products 185; signed classification bytes 52; separate branch
+// stores 755. The three unrolled copies still need retail's product schedule; the signed-byte form ties.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
