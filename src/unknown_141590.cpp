@@ -1367,6 +1367,16 @@ void function_143250(
 // The first three basis spills and the missing scalar word still differ.
 // Component names for forward j, left j, forward i, their pairs and all three,
 // or the complete nine-component set, all 939. The original names are restored.
+// M3 lane 6 r245 (h2m fast with 0x143250 MATCH, 0x22850 209 and 0x23690 354 each run; control 939). LEAD 918 at retail's
+// 10773 B (not kept: a declaration move, match-only): `s35_r2_r3_r3` declared right after `s35_r2`, ahead of its r4_r4
+// product (held as a patch). It gives retail's handling of s35 * r2: stored once
+// at retail's +0x23c, copied to XMM7 (`movaps xmm7, xmm3`) and multiplied by r3_r3 there, but the frame stays 0x2fc, so the
+// other lone cell (the root-105 r1-square product) is still packed with other values. Other placements of the s35 * r2
+// group: `s35_r2` alone right after `s35` 1327 (10743 B); the group with both products after `s35` 1555 (10773 B); the
+// group just ahead of `r1_r1_r8` 1000 (10773 B); the group after `r3_r0_r5` 941. On the 918 lead: each root-105 square's
+// r6 product declared ahead of its r7 product, r1/r0/r3/r4 squares 1583/1582/1583/1564 (about 10722 B), all four 1632
+// (10681 B); `s35_r5_r0_r0` right after `s35_r5` or after `s35_r5_r1_r1` 930/930; `s21_r5_r7_r7` right after `s21_r5` or
+// after `s21_r5_r6_r6` 1508/1508 (10757 B). A forced-ranking search (12 of about 5000 decisions) moves nothing.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
