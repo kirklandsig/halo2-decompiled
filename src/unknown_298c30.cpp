@@ -858,6 +858,18 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // x-first rotate helper 328, (cos, sin) param order 332, emitter member stores 435 (caller 684), emitter `real const *arg_2` 253
 // (1734 B, al 36; pointer to local, match-only), kept `local_21` 290, old `-(double)local_22` 272 (1732 B), old emitter order 267,
 // in-place rotate helper 555, diagnostic double distance local 284 (224 with vec2d).
+// M3 lane 16 r190 (fast screen with 0x29a190 and 0x298c30, both MATCH each run; control 305, aligned 260; body unchanged).
+// The near arm's y row only. Retail keeps each quarter turn's cosine and sine in float cells read by both an SSE
+// product and an x87 load, forms y times cosine in SSE and loads x before it branches for the sine's argument, and
+// keeps that product in XMM1 across the branch; main's staged `turned_y = y * cosine` is an x87 product on the cosine
+// still on the stack. Forms: the staged y as one sum after the sine, `x * sine + y * cosine`, 365 (1745 B, aligned
+// 253: both cells and both SSE products as retail, but the y product comes after the sine and is formed cosine
+// first), written `y * cosine + x * sine` 365 (same code), with the sine assigned inside the sum 365 (same code: the
+// sine's branch is still evaluated ahead of the whole sum); the sine written inside the staged sum and again in
+// the x row 389 (1756 B, aligned 273); the staged product kept and the later sum written `x * sine + turned_y`
+// 305 (same code as the body); no staging, the x row then the y row as plain sums after the sine 382 (1692 B,
+// aligned 242). So the SSE y product follows from the y row being one sum; what moves it ahead of the sine's
+// branch is not found here (an identical product in both arms of a side test, hoisted, would give it).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

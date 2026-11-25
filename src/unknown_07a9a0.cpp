@@ -1908,6 +1908,21 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // conditional span 911, initialize from the last-party sentinel 890/910.
 // NOT kept: all tie or regress and leave the opening call and frame different.
 // M3 lane GA r6 (19 source trials + 1 diagnostic, fast with 0x73530/0x63220/0x192e60/0x193300/0x1932c0/0x1931a0/0x193250/0x631f0/0x1934f0, control 871 at 2780 B, 0x73530 MATCH; body unchanged): single-exit + 0x63220 + long/word histogram 906/957 (0x73530 8); with else-if type-5 or positive if 844/844 (2852 B, frame 0xb4, 0x73530 8); + all 7 matched 0x1933a0..0x1934d0 accessors + if-balance + excess early return 977 (aligned 540, 0x73530 8), + memset/scoped/cmove 969 (aligned 538, 0x73530 8), + result-first spread + switch minimum + excess clear (`else if` type-5) 833 (2896 B, aligned 458, masked 412, frame 0xb4, tail-duplicated false epilogues, 0x73530 8); diagnostic inline_depth(1) 957 (0x73530 8); single-exit on main's hand-written loop 988 (0x73530 8, proving single-exit alone loses session-in-EAX while top 0x192e60 expands). Early-return forms keeping 0x73530 MATCH: if-balance alone 905; result-first spread + switch minimum + if-balance 897; all 7 matched accessors + if-balance + excess clear/return 893/891 (masked 427/453), + scoped long histogram memset 932/940 (masked 402/426, frame 0xb0); opening return-false + type-5 `if (result)` with hand-written loop 893, with 0x63220 + real accessors 1040 (2580 B, masked 337, 0x63220 stays a call), with 0x63220 on main accessors 1002; early-return + 0x63220 + real accessors 1053; main base + scoped long histogram memset 936.
+// M3 lane 16 r190 (fast screen with 0x73530, 0x63220 and 0x192e60, all MATCH unless said; control 871 at 2780 B, aligned
+// 1020; body unchanged). Diagnostic, a one-object link of this file with the callees' objects at other inline thresholds
+// (the build's is 81): on main's body the opening lookup is a call from 37 to 46 and expands from 50 (and below 35,
+// where its nested validity test is left a call), the bottom 0x193250 expands from 63-65, the capacity switch 0x193300
+// from 83-84, 0x1932c0 from 121-160 and 0x631f0 from 161-240, so no single threshold gives retail's set on this body
+// (retail calls the lookup and 0x193250 and expands 0x193300 and 0x631f0). The same link without the build's size
+// ballast keeps the loop's 0x63220 a call at 81 on the result-clearing exit forms, where the ballasted link expands
+// it as the full build does: the choices follow the program's size as well as each site's cost, which fits retail
+// cutting sites by priority under a growth budget rather than at a flat threshold. Forms: the accessor called in the
+// lookup's argument with the index read again after it 861 (2800 B, aligned 1030: a second read placed after the
+// call, not kept); the opening test as a three-way chain clearing the result (the null tests, the capacity pair, the
+// type-5 scan in the last arm) with one exit test 951 (2924 B, aligned 794, 0x73530 8), with each capacity bound its
+// own arm 951 (same code); the two capacity bounds named after the null tests' early return 883 (2784 B); the opening
+// and the excess exits both as `{ result = false; return result; }` 895 (2752 B). Still BLOCKED on the link's inline
+// choice for the opening 0x192e60 call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
