@@ -3605,6 +3605,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // it one place early). On that form: `/ 2.0f`, `/ 2`, `+ 1`, the three commuted spellings: same code; a double 0.5 or 1.0:
 // all x87 (113 to 115); the finished value through a named local before its store, or through value-returning helpers:
 // same code or other instructions (102 to 108). Body unchanged.
+// The x87 coordinate store still precedes the SSE subtraction. Existing point setter for every pair with
+// direct expressions 95; both rotation, scale or bias parts named, in all seven subsets, 321 each. NOT
+// kept: the direct form moves the first difference back to +0x50f, and the named stages shorten the body to
+// 1914 bytes.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

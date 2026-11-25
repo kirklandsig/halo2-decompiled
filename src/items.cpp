@@ -998,6 +998,36 @@ struct s_item_collision_bsp
 // 190 in all eight forms. Last angular store with the direct or named product after the paired i/j
 // outputs 186/186 at 1362 bytes. NOT kept: four-point gain below the threshold. The transformed-plane
 // registers and pending x87 scale still differ.
+// Named translation and scale products 203/203, named translation with a field accumulator
+// 199/199, scaled source distance before translation in a local 203/203 or the output field
+// 199/199, with direct or setter contact stores. NOT kept: all raise the score at the same
+// extent. Normal coefficient and contact-point homes still differ.
+// Translation terms after their rows, after the first two rows, after all rows, or with X
+// early and Z before Y: 199/199/199/199 in both plane-row and scalar-row storage.
+// NOT kept: the length and frame stay at 1366 and 0xa0. The queried coefficient order still differs.
+// The rotated normal coefficients and pending x87 factor still use different homes.
+// Seed-step in fallback speed 190, seed-step in spin factor 190, seed-step in fallback speed, seed-step
+// in spin factor 190, site-tagged seed-step in fallback speed 190, site-tagged seed-step in spin factor
+// 190, site-tagged seed-step in fallback speed, site-tagged seed-step in spin factor 190, seed-step in
+// fallback speed, site-tagged seed-step in spin factor 190, site-tagged seed-step in fallback speed,
+// seed-step in spin factor 190, planar normal dot with the basis row first 198, planar normal dot with
+// coefficients first 198.
+// NOT kept: The integer draw providers tie the baseline. Both planar products grow the body and raise
+// the score.
+// Existing planar scale in the axial, fallback or both branches 190/190/190; axial aggregate
+// and in-place scale 288. Joined scale with separate/direct axis 294/270, joined separate
+// planar output 294, branch-local separate planar output 266. NOT kept: the branch helpers
+// tie, and the joined or separate-output forms shrink the frame and raise the score.
+// The rotated normal registers and pending x87 spin factor still differ.
+// M3 lane GB round 5 (40 trials, fast with 0x10c850/0x10cec0/0x10d4e0/0x10d5f0 all MATCH; control 190, 1366 B, al=109, mask=63):
+// MAJOR LEAD: shared real spin_scale finishing all 3 spin.{i,j,k} in BOTH branches (or vector3f_scale in both) with
+// `real r = (real)(*seed >> 16) * (1.0f / 65535.0f); spin_scale = (r * speed) * 1.5707964f;` (`B2_07`/`B2_08`) reaches 1364/1361 B,
+// 326/325 insns, al=58 (vs 109), mask=35 (vs 63), recovering EVERY retail stack home, all 3 un-folded fmuls, retail's exact x87
+// tail-merge at 0x10d431, and matching 98/98 opening + 157/160 closing insns (235 raw solely from +1 insn shift in lines 99-169).
+// Also tried on main and B2_07: single-expr fwd+left+up / left+up+fwd / up+left+fwd plane 197-200; 2-stmt plane + no-paren dist +
+// marker-first pos 242 (mask=32); x+y+z-d dist 193; surface_plane*=offset 249-250; branch-local spin factor 240 (al=66);
+// double spin factor 244 (fr=0xa4); outer k + no-fold r 196; sp=plane copy 307 (fr=0xa4); normal+plane_d 244 (mask=33);
+// inline dist/offset 235/244; single plane in-place 245. Body unchanged.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1386,6 +1416,33 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // member stores 293, separate axis and setter 293, output axis and setter 298,
 // output axis and complete result 323 for either cross. NOT kept: scale adds calls
 // and grows the frame. The scaled axis still lacks retail's register allocation.
+// Output axis with direct or staged cross and shared fallback side, up, both, or final
+// setter: 117 in all eight forms, 857 bytes with frame 0xb4.
+// NOT kept: each writes the intermediate axis k to the final output slot. Retail keeps
+// that component in a register and writes the slot only after the rotation.
+// Transform up as scaled-axis storage 212 for either cross. As fallback-cross storage 195
+// for either cross. Both lifetimes in transform up 232 for either rotation cross. Transform
+// left or forward for fallback 195/195. NOT kept: the 0xb4 forms expand the body and score
+// higher. Fallback-only forms retain 0xc0.
+// The normalized axis still requires a separate home in the opening body.
+// Scaled axis scalars from planar cross products 215, planar cross products produced before the root
+// 215, scaled vector initializer from planar cross products 218, shared scale on a planar cross
+// initializer 208, planar cross products through the axis setter and shared scale 208, scaled planar
+// cross products through the output workspace 184, scaled axis scalars from planar products with a
+// separate alignment dot 210, shared scale on a planar cross initializer with a separate alignment dot
+// 203.
+// NOT kept: The planar cross producers lengthen the body and increase the score. The output workspace
+// recovers the 0xb4 frame with a higher score.
+// Root as all three cross weights with ordinary/staged axis 170/170, or with the output
+// workspace and setter 170/170. Separate ordinary/staged rotation cross scaled first or at
+// use 257/218 for each helper. NOT kept: both output workspace forms attain 0xb4 and 848
+// bytes but increase the score. The scaled-axis registers and alignment order still differ.
+// M3 lane GB round 5 (32 trials, fast with 0x10c850/0x10cec0/0x10d4e0/0x10d5f0 all MATCH; control 130, fr=0xc0, 859 B, al=94, mask=37):
+// single-write address-free axis (or address-free quaternionf, dot3f, separate raw->scaled scalars, 2.0f*left, cross-last, scale-last, or inline 1/root)
+// recovers exact fr=0xb4, 848/848 B, +0x2b and 0 diffs on all 32 prologue/default and 65 else/epilogue insns, but scores 159 raw (80 vs 82 if-branch insns
+// shifts else/epilogue by 2 lines); naming `real align = ...` before `square = (align + 1.0f) * 2.0f` recovers retail's exact j*j+i*i+k*k dot order at
+// fr=0xb4 (831 B, 173; with j,i,k scaled scalars 848 B, 170); in-place facing-first cross + j,i,k scale 129 (fr=0xc0, -1 below bar); in-place raw->scale /
+// cross-before-sqrt / two-struct raw+axis 130 (fr=0xc0); sequential `align +=` 168-172 (fr=0xb8/0xc0); cross into up 200 (fr=0xbc). Body unchanged.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1945,6 +2002,10 @@ struct s_item_flags_view_10b850
 // and the write as bit members: 824 each. Both reads, second read and write,
 // or both reads and the write with the signed short field: 824 each.
 // The entry flag bytes and 0x154 frame still differ.
+// The entry Boolean stores and ray/flow home still differ. Zero magnitude on a missing
+// flow query, selected by a conditional, a guarded default, or either branch order:
+// 824 each with separate vectors, 881 each with shared ray and flow storage. NOT kept:
+// the shared form shrinks the frame to 0x148 but shortens the body and raises the score.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

@@ -1892,6 +1892,16 @@ long function_1e4a10(long index);
 // as `threshold < shield_damage` 8, the multiplier test as nested ifs 8, the stun seconds as `stun_time * rate` 8 (all
 // four the same code); the tail through `DAMAGE_OBJECT(object_index)` at both uses with no `object` refresh 10 (the
 // reload orders stay); re-measured: the multiplier declared right after the category bool 206 (901 bytes).
+// M3 lane 7 r228 (fast). Reading: the reload order after each call follows split-piece numbers: pieces are made in
+// ascending candidate number and draw their numbers from a last-in-first-out pool of seven freed temporaries, then fresh
+// ones, so a later-numbered value gets the lower piece number while the pool lasts. On the six-name set (round 172) body
+// damage is numbered after the constants, which leaves 1.0f a pooled number (retail's function_d5bc0 order), but the
+// scaled shield damage web is still numbered ahead of the zero constant, so the zero reloads first after function_d6a70
+// and function_176780. Forms: the scaled damage written `multiplier * shield_damage` at the accumulator store and the
+// stun test (no reassignment) 28 (the product takes the inverse's slot), on the six-name set 25, with the absorbed damage
+// named 28, with the end lookup fresh too 28; the stun ticks through real_to_long 7 (re-measured), with the product form
+// 27, on the six-name set 4, with both 25; the scaled damage as its own named local 28, with the clamped vitality and the
+// fresh end lookup 28.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

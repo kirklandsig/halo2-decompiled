@@ -1000,6 +1000,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 2; no HUD state local (the global read at each use) 2; the fade ticks read from the player at both uses (no `ticks`
 // local) 2 (same code each); the sort through a second player lookup 455 (1890 B). The pair is a code-generation tie
 // (lane 11 r165, lane 6 r242); none of these moves the two values' numbering. Body unchanged.
+// The view and left coordinate homes still differ. Naming the status start, duration or end scores
+// 80/81/80. Start plus duration, start plus end, duration plus end and all three score 80/80/81/80.
+// Bounding the shared duration in place scores 108 at 1885 bytes. The view's initial spill and the 0x264
+// frame stay fixed.
 // M3 lane GA r6 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30, 0x15f120, all MATCH; control 80 at 1889/1889 B; 79
 // compiled fast trials + 1 plain check). Existing `s_widget_point position` (include/screen_widgets.h) reproduces the 2-diff
 // lead at 1889/1889 B (+0x3bd, `mov edi, [ebp-0x64]; mov ecx, [ebp-0x40]` vs retail `mov ecx; mov edi`) in both `--fast` and

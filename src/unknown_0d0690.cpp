@@ -2210,6 +2210,12 @@ real function_30bf0(vector3f *vector);
 // 463/382; local direction and axis value 474/503; local direction with live axis and direct trig 486; record
 // output with shared negation and live axis 484. Live-axis forms recover frame 0x40 and shorten past retail, while
 // the exact-length form leaves frame 0x44.
+// M3 lane 14 r155 (H2M_FAST with 0xd37f0 and 0x3db00; control 378, 0x3db00 MATCH and 0xd37f0 529 unless given; body
+// unchanged). The frame's extra 12 bytes are the rotation helper's axis copy (retail reads the axis through the pointer
+// and rotates direction2 in place). The squared length spelled `(k*k + i*i) + j*j` 372 (x87 then squares i, k, j as
+// retail; 6, under the bar), as `i*i + j*j + k*k` 483 (1894 B); `mobile` started false and set by an `if` 362 (retail
+// stores the zero in the entry block; match-only, the direct test is main's), with the k, i, j spelling 356; the shared
+// rotation helper reading the axis through `vector3f const &` 515 (1837 B, 0xd37f0 610, 0x3db00 lost).
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

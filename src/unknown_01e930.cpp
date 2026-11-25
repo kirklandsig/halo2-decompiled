@@ -675,6 +675,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // variants 282..309, in-place `unknown_01e930.cpp` with `function_80e14` + interleaved surround 293 (1088 B, al 24, m 33).
 // Remaining 11 B on the 14-aligned SSE lead: the two entry `mov [esp+0x3c], ebx` stores (+8 B, overlapping `status+0x18` inside
 // `memset`, unique to 0x156090 in the retail XBE) + loop pad (+3 B) and `0xa` in `ebp`. Restored (move requires a match).
+// Lexical homes for texture byte count, pixel output, allocation result, requested size,
+// mode, movie receiver, texture-output pair and reservation pair all 272. NOT kept:
+// the 0x3c frame and early ESI save stay in place, with no change to the status or clock homes.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

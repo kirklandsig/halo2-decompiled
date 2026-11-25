@@ -284,6 +284,10 @@ bool function_1946f0(s_bitstream *stream)
 // explicit read-modify-write 40 (each: the mask folds into `[edx + edi]` memory operands, the clear's LEA is retail's
 // `[edx + edi + 1]`); the body flattened with two early returns (`if (!discard) return;`, then the mode/position miss storing
 // the position and returning) 2 (same code), that with the masked byte through a `byte &` element on the field 9.
+// M3 lane 13 r157 (fast with 0x1957d0/0x195820, both MATCH; base 2): 12, 16, 24 or 40 initialised dead locals at the
+// top on the LTCG build 2 each, 16 or 32 just before the index 2/2 (no symbol-count threshold); the discard test merged
+// into the mode test with `if (discard)` again for the position store 2; the mode test held in a named bool 2 (same
+// code); the position test as a named discarded-bit count (`discarded > 0`, stored to unknown2c) 56 (142 B).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
