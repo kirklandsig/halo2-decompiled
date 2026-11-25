@@ -1633,6 +1633,24 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 // which also moves the store order ahead of both calls here (the allocator ranks its impact parameter 104 against 80
 // for its four lookup temporaries; ranked below them it scores 34); `!continuing` read into DL ahead of the push;
 // one address formed a step early before the orientation call.
+// M3 lane GA round 8 (plain-checked across all 34 impacts.cpp functions + 0x206090; 586 -> 495 at 2987/2994 B, +0x95,
+// aligned 406 -> 36; all 27 matched impacts.cpp peers MATCH): replaced the hand-written s_effect_new_data /
+// s_impact_effect_location / function_2294a1 duplicates with include/effects.h's s_effect_parameters / s_effect_marker
+// and a verbatim copy of the existing matched effect_parameters_initialize_inline (src/unknown_175bd0.cpp;
+// src/projectiles.cpp keeps its own) plus by-value c_type_47f957(impact->material_a/b) copies (dropping the local_3 union and
+// local-bound size reference); 495 (-91 points, no statement order picked by score), but HELD as a patch: on main the whole-image check then loses the
+// matched 0x185be0 (src/unknown_185be0.cpp), as 0x228770's helper forms did (m3 review). Also tried: cross-TU calls to
+// matched 0x176a50 (1263-1335, 2422-2487 B, stays out of line); vehicles.cpp init order 501; scale ahead of the four
+// continuous NONE outputs alone 495 (al 28); single-field tick-counter / type-slot classes on s_impact 495 (493 with
+// impact->type field reads); 2-byte pending sub-struct with plain field stores 495, with constructor 627 (3016 B).
+// Leads (not kept: one-caller method / field pointer / declaration order without a byte match): 2-byte pending sub-struct
+// method `pending.reset(type)` with `previous_type` local 68 at 2994/2994 B (al 32, no pointer local); 2-byte
+// s_impact_state (active_state + pending_state) `.set()` 109, with scale before NONE outputs 69 (67 with field type);
+// 2-use pointer/reference or memset(&unknown20, 0, 1) with `previous_type` 68 at 2994 B (al 32), plus scale before NONE
+// outputs 28 (al 24), plus r307 fill order and name-before-forward 20 at 2994 B (+0x199, al 16: only 0x2284c0 EAX/ECX,
+// 2 jump targets, `!continuing` dl/al, and 2 lea order before 0x227af0). Still BLOCKED-BY 0x2284c0 (contributor code).
+// m3 review: the shared helper moved to include/effects.h is not inlined here (1187), nor is that copy as plain
+// inline (1197); with impacts.cpp at HEAD the same tree keeps 0x185be0 (0 lost).
 // @retail 0x2294a0
 void function_2294a0(
 	long impact_index,

@@ -2963,6 +2963,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // global 512 (2428 B); + case 21 `arg_2->flags3` 404 (same code); adding case 4 direct/kji/dot3f (583), case 18 held refs
 // (619, matches case 18 + case 20 init), or case 2 aggregate copy (629) all exchange actor/state (+0x9). NOT kept (404/391
 // depend on match-only case 5/7/8 swaps).
+// GB9 (fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429 at 2416/2396 B, aligned 330, masked 127; 16 compiled trials, body unchanged):
+// `bool local_3` on main 429 (same code), on the 2380 B retail-shaped lead 632 (masked 70, actor EDI/state EBX), on the 404 actor-EBX form 404 (2416 B, aligned 299, masked 84);
+// case 6 bitfield split on main 429, lead 632, 404 form 404 (still folds into `0x69`); case 6 direct global writes on lead 632 (masked 122);
+// `arg_2` unioned directly without `local_2` cast on lead 632, plus direct `return 1`/`0` (no goto) 548 (2380 B, masked 67);
+// tail goto + `bool local_3` on lead 632, on 404 form 404; tail nested flag ifs on lead 632; case 12 flipped `case 2` test on lead 630 (masked 85);
+// case 4 inline `k/j/i` dot on lead 519 (2384 B, masked 62); `s_cs_order const *command` in request cases on lead 519 (2384 B, masked 62);
+// case 20 loop inline `dy/dx/dz` squared distance on lead 632 (masked 66). State still outranks actor (+0x9) on the 2380/2384 B lead; 404 depends on match-only swaps, so body stays at 429.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

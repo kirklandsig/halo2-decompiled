@@ -537,6 +537,19 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // failing test, each later test guarded by it) 435 (1572 B: the stores of the cleared flag merge into one where retail
 // has one per failing test, and the live-state helper is still called, so retail's chain is not that form); the two
 // session-state exits as early returns 448 (1578 B). Still BLOCKED-BY 0x5b080's expansion at this site.
+// M3 lane GA r7 (fast with 0x5b080/0x5b040/0x58d20/0x71e00/0x72140/0x706f0/0x71ff0, all MATCH; control 376 at 1589/1589 B,
+// aligned 304, register-masked 98; 17 real trials). Zero-goto structured rewrite (`bool ok` for the 4 early guards placing
+// mode==3 at 0x71913, nested chain, `if (!transition) { not_ready } else { success }`, `if (!transition) { timeout }`):
+// success-first 441 (al 261, m 86), not-ready-first 462 (al 253, m 85), + inline `state > 2 && state <= 8` + 6-field kind-4
+// clear (no redundant `kind = 0` store) 455 (al 174, m 75), + early `local_14` zeroing ahead of player_count 451 (1620 B,
+// **aligned 171, masked 74**: reproduces retail's 0x71913 mode-3 block, mid-function not-ready block, balance-failure
+// fall-through into timeout, and identity loop + 0x71ff0 sandwiched between timeout if/else; `arg_0`/`owner` swap EBX/EBP).
+// Swapping to `if (ok) { ... } else { mode==3 }` + `goto local_31` + inverted `local_21` test restores entry `EBP`/`EBX` at
+// 428 (1577 B, +0x32, al 249, m 84); `if (!ok)` + `goto local_31` + inverted `local_21` 432 (al 248); diagnostics with folded
+// `local_2 ? local_2->get_data_4a00() : NULL` on those two 437/460 (1564/1542 B, al 251/230). On 376 base: 6-field kind-4
+// clear 409 (m 85), `memset(&local_14.value04, ...)` 407, `bool local_25` dropped 376, `switch (local_1->type)` with default
+// 376, narrowed `local_15`/`local_16` 376, shared `expected_count` 376, inline live + 6-field kind-4 + no `local_25` 426
+// (m 83), inverted `local_21` 376, early `ok` only 420. Body restored; still BLOCKED-BY 0x5b080 call-site calibration.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

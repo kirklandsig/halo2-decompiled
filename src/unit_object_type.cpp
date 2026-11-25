@@ -2390,6 +2390,10 @@ struct s_unit_motion
 // selections 69/69/70, and original launch velocity with shared or separate durations 69/69. NOT kept: the
 // XMM4 forms use XMM2 for time, inline both motion steps into the caller and lose two downstream matches in
 // the preview.
+// Save the phase input for displacement and update velocity first. Acceleration,
+// deceleration, both, and both with conditional durations, using the parameter/running
+// velocity: 88/70, 107/67, 95/64, 95/64.
+// NOT kept: the running-velocity forms inline into 0xc7840 and lose 0x1e5af0 and 0x1faf80.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -5716,6 +5720,12 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // copy before 203, or in both with copy before/between/after 213/213/211.
 // Staged first-cross helper with first-live/between or both-live/after 208/211.
 // NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
+// Gemini lane GB r8 (2026-11-25, 20 trials on s_view_angles base, control 169 at 768/767 B, al=41, mk=12; 0xc8290/0xde190/0x1fe120 MATCH):
+// cross3f_ret chained into 0x30bf0 169; full orthonormalize_up helper 169; orthonormalize_aim helper 184; scalar left_i/j/k ijk/retail order 182/182;
+// inline first + cross3f_staged second 180; union n[] index crosses 178; temp new_up 210 (fr=0x5c); row += 169; fwd+(left+up) 169; no (real) casts on trig 169;
+// vector3f_rotate_into_axes 294; vector3f_add_scaled chain 169; (double)forward_scale at use 169 (al=40, mk=11: row k uses fld [esp+0x30]; fmulp st(2));
+// double cosine+forward_scale with real left_scale/up_scale 191 (774 B, al=38, mk=9: all 27 row insns match retail, only cosine spills to qword);
+// double cosine+fwd+left with (real)left_scale at use (real/double up, real cosine, no cosine) 193/192/201/201. Body unchanged.
 // Split aim copy, pair first or depth first: reused forward projection, paired angles,
 // both, and both with a named horizontal magnitude 97/72/69/69 and 97/74/70/70.
 // NOT kept: the split copies lengthen to 772 bytes. The first cross preload and the final
@@ -8710,6 +8720,16 @@ real function_50650(real cosine);
 // MiniMax A (11-20): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, the two 0xc7750 calls still push the position and the velocity where retail passes them in XMM5/XMM4 with the time in XMM3, and the input and vector homes and the prediction's call scheduling still differ: BLOCKED-BY 0xc7750.
 // score 491 (was 560): frame 0x8c versus retail 0x80. Frame-space vector homes, speed initialization
 // and the 0xc7750 stack inputs differ. Earlier at 563, the vector homes and prediction/call scheduling differed.
+// GB8 (34 fast trials on 491; 0xc7300, 0xc75d0, 0x1e5af0, 0x1faf80 MATCH): `s_unit_motion motions[2]` 491,
+// `azimuth_motion`/`elevation_motion` 491, scoped `local_0588e7` 491, `unit_direction_from_angles(..., pitch, yaw)` or
+// `s_view_angles next_angles` 491 (al 452->438, mk 349->344, fixes yaw-before-pitch order), late `inverse_rate` with or
+// without `predicted_yaw`/`predicted_pitch` 498 (fr=0x88), `s_view_angles` pairs keeping 491 pred 495 (with separate
+// `new_speed` 579, + pred angles 568/560 at 2483 B), full `s_view_angles` + `motions[2]` + `normalize_inline` + else zeros
+// 666 (fr=0xa0, al 452->349, mk 349->238: recovers `yaw_motion` first, `mov bl, al; test bl, bl`, and `wraps` at `[esp+7]`),
+// `unit_angles_from_direction` helper 603, `axis = *velocity` before `sqrt` 586 (with late inv/pred angles 598/599),
+// `normalize_inline` keeping entry zeros 605/606 (in-place rotated copy 631, mk=312), `matrix_transform_vector` or preloaded
+// `unit_vector_from_frame` in place dropping `world` 589/595 (al=412, mk=321; + `pitch_yaw` 590, al=398, mk=316), scalar
+// `predicted` 571, `cross3f` 597, else zeros + scoped + `motions[2]` 658 (fr=0x88). Still BLOCKED-BY 0xc7750. Body unchanged.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
