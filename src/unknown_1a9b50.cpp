@@ -991,6 +991,18 @@ extern point2f *g_468778;
 // Native prop datum/node lookup 389/389, one prop-index read 395/395, null in the absent arm 370/370,
 // conditional distance limit 395/395. NOT kept: retail zeros EBX before the presence test. The absent-arm
 // forms move the zero and leave the spill. The typed receivers alone tie.
+// M3 lane 13 r156 (H2M_FAST with 0x265d30, MATCH each run; control 280, aligned 101 / register-masked 44). Allocator
+// reading: the prop pointer is split into pieces and never coloured as a whole (live through the field_12 logic with
+// few referencing blocks), so it spills to arg_1's home where retail holds it in EBX from the NULL to the 0.8 test; the
+// facing pointer (priority 152) takes EDI over the dot and arms, so the view falls to EBX with a separate `lea` where
+// retail forms the facing pointer in place (`add edi, 0x2c` between the dot's j and i reads). Forms: the unit index
+// as a local inside the field_12 arm only, the facing arm reading the field at its call 394 (1567 B, but aligned 61 /
+// masked 29: both 0x110ab0 calls then retail's, EBP for the field_12 one; the 18 extra bytes are the prop's spill
+// stores and reloads); on that, the -0.4 dot through the facing pointer 403 (frame 0x44), its i term alone through the
+// pointer 401 (1572 B, masked 24; on main 385); the prop's NULL assigned in the absent arm 375 (1567 B, aligned 61; on
+// main 266 at 1561 B, aligned 101 / masked 44 as main: positional only, and an initialiser moved into a branch, so
+// match-only); the facing pointer formed right after the view with the dot through it 407 (frame 0x44; on main 406).
+// Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
