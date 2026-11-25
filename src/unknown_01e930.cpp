@@ -661,6 +661,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // (1100 B, aligned 59); non-null movie ternary `(10, 3)` 292 (1106 B, aligned 73). Left on the 20-aligned-diff lead (11 B
 // short): the two entry `mov [esp+0x3c], ebx` stores (+8 B) + loop pad `lea ecx, [ecx]` (+3 B), `mov edx, 3` / `mov ebp, 0xa`,
 // and one surround-volume store scheduling swap. Not kept (269 is under the keep bar; move kept only with a match).
+// Lexical homes for texture byte count, pixel output, allocation result, requested size,
+// mode, movie receiver, texture-output pair and reservation pair all 272. NOT kept:
+// the 0x3c frame and early ESI save stay in place, with no change to the status or clock homes.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

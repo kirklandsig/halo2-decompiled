@@ -5935,6 +5935,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // seeded rate displacements 57, both pairs 61, in-place angular/rate scaling at their tests
 // 169/173, full-turn constant shared with angle wrapping 175.
 // The clamp registers and shared angular coefficient still differ. NOT kept: the rate pair gains one, and the other offset forms tie or regress.
+// Named bound decision 52, bound-first/unity-first scales 58/71, common scale 58,
+// named limits 58, per-direction saturation defaults 167, shared selected bound
+// with ternary/branch joins 113/113. NOT kept: the six-point lead leaves the
+// clamp registers and coefficient schedule different. The opening body gives 58.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {

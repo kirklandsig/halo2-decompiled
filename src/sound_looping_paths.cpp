@@ -1012,6 +1012,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // 845/912, cursor search 858/926, or counted append and cursor search
 // 817/926 (short/full-width query). NOT kept: indexed forms reach 0x4e0 but
 // regress. The 817 form loses gain-buffer reuse (frame 0x5dc) and shortens.
+// Separate started/matched/both handles 839/860/851; continue on failed start/missing
+// handle 837/837; separate match/start arms 861, with failed-start continue 838;
+// separate started handle with continue 821. NOT kept: the 821 form removes retail's
+// post-allocation handle test and leaves the 0x4dc frame. Its parts alone tie or regress.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
