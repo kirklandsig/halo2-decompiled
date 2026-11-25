@@ -89,3 +89,34 @@ def test_bounded_impulse_captured_inputs_rounding(solver_images, precision, kind
         snapshots = compare_case(solver_images, data,
                                  precision | rounding << 10, context)
         assert snapshots[0] == snapshots[1], context
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_spin_target_scale_nonfinite_products(solver_images, precision):
+    payloads = [
+        (0x7fc12345, 0xffc12345), (0xffc12345, 0x7fc12345),
+        (0x7f812345, 0xffc12345), (0xff812345, 0x7fc12345),
+        (0x7fc00001, 0x7fc54321), (0x7fc54321, 0x7fc00001),
+        (0x7f800000, 0), (0xff800000, 0x80000000),
+        (0, 0x80000000), (0x80000000, 0),
+        (1, 0x3f800001), (0x80000001, 0x3f7fffff),
+        (0x7f7fffff, 0x40000000), (0xff7fffff, 0x40000000),
+        (0x3f000001, 0x3f7fffff), (0xbf000001, 0x3f800001),
+    ]
+    # Observe the real first tangential product; the hook only counts visits.
+    coverage = {0x31d2fe: 0}
+    for rounding, shared, target, payload in itertools.product(
+            range(4), [False, True], [TERMS + 12, TERMS + 60, TERMS + 124],
+            payloads):
+        data = solver_case(8, 2)
+        put(data, STEP, '7fi', 0, .6, .8, .3, 60, 0, 0, 1)
+        put(data, OPS + 16, 'I', HEAP if shared else HEAP + 0x80)
+        put(data, OPS + 48, 'I', 0x400)
+        put(data, target, 'I', payload[0])
+        put(data, STEP + 12, 'I', payload[1])
+        context = ('spin target-scale products', precision, rounding,
+                   shared, target, payload)
+        snapshots = compare_case(solver_images, data,
+                                 precision | rounding << 10, context, coverage)
+        assert snapshots[0] == snapshots[1], context
+    assert coverage[0x31d2fe] == 384

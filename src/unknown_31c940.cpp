@@ -675,6 +675,44 @@ static __forceinline unsigned long apply_spin_second_fields(double impulse,
 // Their separate uses keep retail's cursor bias over the same row storage.
 
 
+// Store the first error before reading the second target. Both normal pairs
+// borrow that float home while retaining the second error through the coupled
+// products and subsequent fallback tests.
+static __forceinline float compute_normal_errors_31c940(bool second_pair,
+ float target_a, solver_step_31c940 *parameters, __m128 *terms, __m128 *axis,
+ unsigned char *op, solver_scalar_work_31c940 &scalar_work,
+ solver_scalar_arena_31c940 &projection_pool)
+{
+ float &error_a = second_pair ? scalar_work.pair_b : scalar_work.first_error;
+ float &impulse_b = second_pair ? scalar_work.fallback_scalar : scalar_work.pair_b;
+ float const &projection_a = second_pair ? projection_pool.normal_second_projection_a : projection_pool.normal_first_projection_a;
+ float const &projection_b = second_pair ? projection_pool.normal_second_projection_b : projection_pool.normal_first_projection_b;
+ error_a = target_a * parameters->error_scale - projection_a * parameters->velocity_scale;
+ float error_b = (second_pair ? terms[3].m128_f32[3] : axis[-2].m128_f32[3]) * parameters->error_scale
+  - projection_b * parameters->velocity_scale;
+ float const &mass_a_source = second_pair ? terms[2].m128_f32[3] : axis[-3].m128_f32[3];
+ if (second_pair)
+ {
+  float mass_a = mass_a_source;
+  scalar_work.pair_a = first_coupled_impulse_31c940(mass_a, (float const &)error_a, error_b, operation_float(op, 4));
+ }
+ else
+ {
+  scalar_work.pair_a = first_coupled_impulse_31c940(mass_a_source, (float const &)error_a, error_b, operation_float(op, 4));
+ }
+ if (second_pair)
+ {
+  float mass_b = terms[5].m128_f32[3];
+  impulse_b = second_coupled_impulse_31c940(mass_b, error_b, (float const &)error_a, operation_float(op, 4));
+ }
+ else
+ {
+  float mass_b = axis[0].m128_f32[3];
+  impulse_b = mass_b * error_b + error_a * operation_float(op, 4);
+ }
+ return error_b;
+}
+
 static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, unsigned char *op,
 	__m128 *axis, __m128 *first_axis, solver_velocity_31c940 *a,
 	solver_scoped_body_fields_31c940 const &b, float *result, solver_scalar_work_31c940 &scalar_work, solver_scalar_arena_31c940 &projection_pool)
@@ -686,17 +724,8 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	// that stored value while the second error retains its x87 intermediate.
 
 	project_second_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 2)), a, b, projection_pool.normal_first_projection_b);
-	scalar_work.first_error = target_a * parameters->error_scale
-		- projection_pool.normal_first_projection_a * parameters->velocity_scale;
-float error_b = axis[-2].m128_f32[3] * parameters->error_scale
-		- projection_pool.normal_first_projection_b * parameters->velocity_scale;
-	float const &mass_a_source = axis[-3].m128_f32[3];
-	scalar_work.pair_a = first_coupled_impulse_31c940(mass_a_source,
-		(float const &)scalar_work.first_error, error_b, operation_float(op, 4));
-	// Capture the second mass before its coupled product.
-	float const &mass_b_source = axis[0].m128_f32[3];
-	float mass_b = mass_b_source;
-	scalar_work.pair_b = mass_b * error_b + scalar_work.first_error * operation_float(op, 4);
+	float error_b = compute_normal_errors_31c940(false, target_a, parameters, first_axis, axis,
+		op, scalar_work, projection_pool);
 	// Nonpositive and unordered first impulses use the single-row path.
 	if (!(scalar_work.pair_a > 0.0f))
 	{
@@ -893,23 +922,9 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	a, body_b.body->linear, *angular_b_pointer, terms[3], projection_pool.normal_second_projection_b);
 	solver_step_31c940 *parameters = step;
 	// Retail spills the first error and both coupled impulses to 32-bit storage.
-	scalar_work.pair_b = target_a * parameters->error_scale
-	- projection_pool.normal_second_projection_a * parameters->velocity_scale;
-	float error_b = terms[3].m128_f32[3] * parameters->error_scale
-	- projection_pool.normal_second_projection_b * parameters->velocity_scale;
-	float const &mass_a_source = terms[2].m128_f32[3];
-	float mass_a = mass_a_source;
-	scalar_work.pair_a = first_coupled_impulse_31c940(mass_a, (float const &)scalar_work.pair_b,
-	error_b, operation_float(op, 4));
-	// Capture the second mass before its coupled product.
-	float const &mass_b_source = terms[5].m128_f32[3];
-	float mass_b = mass_b_source;
-	scalar_work.fallback_scalar = second_coupled_impulse_31c940(mass_b, error_b,
-	(float const &)scalar_work.pair_b, operation_float(op, 4));
-	// Keep the first-row fallback in both source paths. The compiler merges
-	// that tail while retaining retail's unordered second-row branch direction.
-	// Nonpositive and unordered first impulses take the single-row path.
-	bool positive_a=load_stored_impulse(scalar_work.pair_a)>0.0f;
+	float error_b = compute_normal_errors_31c940(true, target_a, parameters, terms, terms + 5,
+		op, scalar_work, projection_pool);
+bool positive_a=load_stored_impulse(scalar_work.pair_a)>0.0f;
 	if(!positive_a){
 		float candidate_b=error_b*terms[4].m128_f32[3];
 		if(!(candidate_b<=0.0f)){
