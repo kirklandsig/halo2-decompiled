@@ -4072,6 +4072,17 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // is live but unread), so the member takes EBP. Cursor form plus one `payload = packet + 3` pointer for the submit
 // and add-packet calls 164 (folded); the member read through a `long const &` 164 on the cursor form, 139 on this
 // body (same code each); size debited at the loop top right after its check 169 on the cursor form, 159 here.
+// Channel EBP and the walking packet still disagree. Combined delivery predicate with a separate masked route
+// 154/164, named recipient bit with a separate route 171/179, removed local intersection 154/164, and named bit
+// with in-place route filtering 178/179 (indexed/walking). NOT kept: the masks raise the score and the
+// walking forms shorten the function.
+// Channel still lacks EBP, and member and route homes differ. Refresh the bound at the loop tail,
+// long/byte, seeded by the live header 139/139 or validated clamp 156/156. With a walking packet
+// 164/164 and 163/163. NOT kept: indexed forms tie or regress, and the walking forms shorten the body.
+// Channel EBP and the member spill still differ. Budget in the loop test or as a body break,
+// with malformed packets returning immediately or sharing the ordinal-based exit:
+// 167 in all eight indexed and walking forms. NOT kept: each folds to the same indexed
+// walk and shortens the body to 477 bytes.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

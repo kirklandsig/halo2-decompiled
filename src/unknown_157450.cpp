@@ -1037,6 +1037,17 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // both uses. Diagnostic (a second read of the field after the loop as the OR's mask operand, restored): present then
 // stays in memory through the loop with the pool in EDI and the globals in EBP as retail (130 at 374 B, the entry
 // read folds away), which is the cause confirmed. Body unchanged.
+// M3 lane 7 r229 (fast with 0xb58c0/0x196780, both MATCH; control 23). Allocator reading: after the loop the saved
+// mask's pieces have two references (the compare's zero extension and the OR's source) and no net gain, so they are
+// never given a register; retail's piece holds ECX because its OR takes the mask as the destination. Here the OR sorts
+// the present side first in every spelling: with a plain present its narrowed 16-bit copy is the newest symbol, with
+// the volatile one its load outranks the mask's widening (12 store spellings and all 24 orders of the four entry
+// declarations checked, none mask-first). Forms: the uncast OR into the dword local with the declarations ordered old
+// playing, playing, mask, present 24; plain present with the update as a word local copied from the mask, `|=`, then
+// stored 63, as `(word)present_teams | old_team_mask` 63, through a `word &` bound to the saved mask 63 (384 B each).
+// Diagnostic, restored at once (volatile reads, not keepable): the saved mask read through a volatile view at the
+// compare and the OR with a plain present 115: the OR then takes the mask as its destination, present stays in memory
+// through the loop and its update there is retail's load/or/store in EBX, so the OR's operand order is the cause.
 // @retail 0x158140
 void function_158140(void)
 {

@@ -1892,6 +1892,20 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // end's sort reproduces ours and needs position created ahead of facing plus a different 4-byte creation order.
 // Still needed for a match besides: case 1's rate quotient formed ahead of the 0x6000085 compare, and 0xe59e0's
 // register argument order (contributor code, see r178), so neither lead can be kept yet.
+// Direct base and bias 158, joined integer address 132, joined byte address 132,
+// shared base and offset predicate 565. With the walking preload, 137/120/120/548.
+// NOT kept: the preload requires a one-use settings pointer across the speed call.
+// The joined integer address reproduces the two branch-local biases and one material store.
+// NOT kept (coordinator review 2026-11-25): the 132 form assigns a second local in both arms, adds each bias in its
+// own statement and then copies it into material: a steering copy and a split store, kept only with a byte match
+// (also reverted from Codex F round 498).
+// The joined material store scores 132 in the reduced image, with the walking-settings preload 120.
+// Typed pill-array reference and conditional result 176/155, copied pill descriptor 561/547, and
+// sphere-first joined result 137/125 (opening walking block / walking-settings preload).
+// NOT kept: the preload reads a one-use pointer ahead of the walking-speed call.
+// Codex F498: the joined material store (a second local assigned in both arms, then copied into material) gives 132 in the
+// plain check, the two adjusted addresses joining at retail's material store: a steering copy, kept only with a byte match;
+// reverted at review, code as before (158).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4716,6 +4730,27 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // then the threshold under `!(flags & 8)` and `special` as a direct bool 612 (2703 B, aligned 446 / masked 211); the
 // flight rate written in the call with that limit form 549 (2722 B). The reduced image, linked with or without the
 // extra functions, builds this body with a 0x7c frame (602), so its allocator ranking is not this build's. Body unchanged.
+// The changed byte stays at +0x12 in the reduced control, and the special state still needs +0x12
+// beside retail's changed byte at +0x11. Explicit mode-3 result, true default, mode-6 default,
+// and joint bypass result 587/642/633/653. With bool special 653/635/645/620 (reduced control 601).
+// NOT kept: the 587 form adds length and still shifts the result byte; all bool forms grow the frame.
+// Not kept (coordinator review 2026-11-25, Gemini lane GA round 5): 554 at retail's 2712 bytes from three forms kept
+// only with a byte match together: a and b declared ahead of the count test, the stationary limit stored as 0.99f
+// and then overwritten when bit 3 is clear, and the count test as an unsigned division by the transform's size in
+// place of the >> 5 (it reads differently for a negative count). Leads: the node-transform block and frame agree.
+// M3 lane GB r11 (plain checks with 0xdd360 and 0xe1c40, both MATCH throughout; control 569 at 2722/2712 B, fast preview
+// unfaithful at 601/2731 B; 19 plain trials on the post-r236 base): `switch (*(long *)(state + 0x70))` with `bool locked = false`
+// (`case 0x6000084: break; case 0x7000039: locked = true; default: ...`) reproduces retail's exact animation dispatch (`cmp 0x6000084;
+// mov byte, 0; je; cmp 0x7000039; jne; mov byte, 1`) at 567 (2726 B, mk 255; bytes swapped +0x12/+0x11; renaming changed->updated,
+// special->locked 567 same code); that + clamp-arm `cross3f` 563 (exact 2712/2712 B, al 411, mk 235 vs control 442/269, -6 under bar);
+// that + `field_bit_test` on all 4 bit tests 566 (2720 B, al 412, mk 239); all three + inline `rate`/`limit` 564 (2713 B); +
+// `unit_get_current_weapon` 595 (mk 235); switch + `unit_get_current_weapon` + inline `rate`/`limit` 574 (mk 236). Individual forms on 569:
+// `unit_get_current_weapon` after `0xe5d50` 576 (2721 B, mk 257); all 4 wall `cross3f` 585 (2699 B); clamp-arm `cross3f` 571 (2712 B,
+// al 425, mk 255); `unit_get_current_weapon` + all 4 `cross3f` 590 (2712 B, mk 255); `biped_rotate` staged `rotated` + direct `unknown168`
+// pitch 675 (fr 0x7c); `biped_rotate` via `vector3f_scale`/`vector3f_add` + direct pitch 584; inline `rate`/`limit` 568 (2716 B);
+// `function_x84d9e8` wall turn 579 (2725 B); `cross3f`+`dot3f` triple products 627 (2740 B); `field_bit_test` all 4 568 (2716 B, al 422,
+// mk 255); `field_bit_test` bit 0 + `unit_get_current_weapon` + inline `rate`/`limit` 576 (mk 252); direct `bool special` +
+// `unit_get_current_weapon` 602 (2718 B, first diff +0x52, changed +0x11 / special +0x12 match retail, mk 246). Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6542,6 +6577,23 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // at their assignments 79; the fallback up reset through a cast of the field 79; the final test as `!function_30bf0(...)`
 // 79; the axis declared bare and copied just ahead of the angle 79 (same code each). The rotation helper's file was on
 // the Avoid list again, so the held separate input/result lead stays unmeasured. Body unchanged.
+// Grouped cosine/sine initializer, assignments at the producers, or entry declaration 87 each.
+// Sine/cosine initializer 122, assignments at the producers or entry declaration 83 each.
+// Grouped cosine/sine or sine/cosine with the forward field throughout 116/112.
+// NOT kept: both assignment forms reach 887 bytes and delay the complement spill, but move
+// the cosine home and the first dot load at +0xc6. Every form raises the score.
+// The first rotation still spills the cosine complement early, and the final cross reloads forward j.
+// Rotated forward snapshot published before normalization, after it, after up rotation, or after
+// both crosses: 246/250/252/243 with either side-cross helper. NOT kept: all lengthen the body and
+// keeping the snapshot through both rotations grows the frame to 0x30.
+// Named spin with forward field throughout 79 at 877 bytes and first +0x218. Immutable trig
+// with direct forward 154; scoped up/side 79; named final length with direct forward 89;
+// both staged crosses with direct forward 154; default vector setter with direct forward 153;
+// named spin and fixed forward/up pointers 230; full-record default moves with direct forward 165.
+// On the named-spin forward-field form, staged side 79, ordinary final cross 82, initialize
+// the rotated up at its producer 79, one up-field pointer 97, and header rotation on up 89.
+// NOT kept: the longer matching prefix still scores 79 and shortens past retail to 877 bytes.
+// The second rotation product schedule and final cross memory operands remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

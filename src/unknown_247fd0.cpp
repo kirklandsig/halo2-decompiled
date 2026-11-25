@@ -1120,6 +1120,39 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // not retail's test-first shape: not kept. Without V: D 335 (1654 B), RCD 353 (1658 B), LD 375, LRD 376, LCD 393, LRCD
 // 393 (1696 B, aligned 187, register-masked 78: the closest natural structure so far, 44 bytes long from the blend and
 // draw stores). LRCV with the `(short)` ordinal, `!local_3->unknown0c` or the sibling's record index 327 each (same code).
+// Typed cursor advance at the gate, velocity, particle and child lookups 443/367/442/354.
+// Gate/velocity, gate/particle, velocity/particle and all three 459/446/460/462.
+// Direct cursor updates at the gate, velocity, particle and both effect reads 334/348/334/350.
+// NOT kept: the library advance adds calls and bytes. Direct updates retain 1652 bytes,
+// but the gate still folds the address and uses AL, with its spill at +0x1f.
+// The effect load still folds the base addition. Mask then shift (byte/word) 334/334;
+// low-nibble threshold 403/403; rejection-path flag store 426/426; admission-first
+// flag stores 440/440. NOT kept: the best forms tie and the split stores grow.
+// Nullable velocity receiver by ternary/branch 353/353. Nullable gate by ternary/branch
+// 421/421, each with the two nullable velocity forms 424/424. NOT kept: the nullable
+// gate gives the separate address add and DL but adds a null branch, grows to 1665
+// bytes and leaves the gate byte at +0x1f.
+// Combined short-circuit gate/allocation test and conditional allocation result:
+// byte 334/334, word mask 334/334, word shift 334/334, bitfield 344/344.
+// NOT kept: the effect load and gate spill remain in AL and ESP+0x1f.
+// Single failure exit with a typed byte shift, word mask, named bit or named
+// low byte: 334/334/344/334. Enclosing admission with the same first three
+// projections: 334/334/344. Both admission-result arms before allocation 425.
+// NOT kept: the address remains folded. The result arms add 13 bytes.
+// M3 lane 1 r168 (fast with 0x247fd0 and 0x248cc0, both MATCH each run; control 334): the final call's tag index read
+// from a fresh getter call without re-assigning the definition pointer 334 (same code); one tag index local read before
+// the child loop for both lookups and the spawn call 375 (1658 B); the age copy moved up beside the field_08 clear 390
+// (still an integer move); the second rotation call through a file-local inline helper taking the record 334 (same
+// code: the +0x28 address stays shared in EDI); the collision normal bound as a `vector3f const &` 334 (same code). A
+// forced-ranking search over 40 single decisions found nothing under 334. Body unchanged.
+// Gemini lane GB r10 (2026-11-25, 16 source trials + 1 diagnostic, fast control 334, al=164, mk=69; 0x247fd0/0x248cc0/0x247470 MATCH):
+// direct `local_2->field_1c.{x,y,z} += local_2->field_28.{i,j,k} * local_11;` in the else arm recovers retail's exact 19-insn
+// staged scale/age sequence and keeps all three scaled components in xmm registers into the else arm (343 at 1652 B, mk 69->59);
+// with staged scale/age locals 343/343, component normal copy 352 (1665 B), compound velocity adds 343, no normal pointer 343,
+// reversed else add + `local_2 != field_50` 342 (mk 58), plain 2-def gate 346, `point3f *pos` 332 (1652 B, under bar), short child index 343,
+// plain blend + shared `last_sample` 425 (1633 B); combined with sibling 0x247fd0 forms (`particle_object_for_tag`, cache order, if/else
+// reciprocal, short ordinal, DATUM in link) 386 (1696 B, al 122, mk 41), + plain `point3f blend` 342 (1664 B, al 86, mk 34, 428/430 insns),
+// + shared `last_sample` 416 (al 102, mk 48), + unpacked workspace 411 (fr=0xa0). Diagnostic (reverted): `#pragma optimize("a", on)` 334 (same code). Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
