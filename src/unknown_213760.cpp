@@ -2179,6 +2179,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 164/121/167/90/165/121/169; all with a named size difference 169.
 // NOT kept: retail compares the full operands directly. The two count slots and
 // write setup still differ.
+// M3 lane AO r1 (fast; control 33). Round 53's goto with the set-in-test header read rebuilt 8 with the stored checksum
+// bound by reference ahead of the `if (valid)`, 5 with it inside (lane 9 r132's form; only the write's flags zero in EAX
+// ahead of the handle load left). On that 5 form, all match-only: `done` declared once at function scope 5, first in the
+// loop body 5; `remove_later` declared ahead of the slot table 5; the flags built from `false` 5 (same code each); the
+// slot table brace-initialised in place of the memset 248 (917 B); the type loop's test as one `valid_types[type] &&
+// CompareFileTime(...) == 0` 60 (934 B, a branchy bool). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

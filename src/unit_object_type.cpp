@@ -5689,6 +5689,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
 // Separate queried up with branch publication 218/218, or publication after its correction 211/211.
 // NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
+// The 0x50 frame remains. The first cross still loads up.i before the forward copy and the last row
+// consumes the forward scale. NOT kept: staged k with leading pair copy grows to 773 bytes and stages a
+// one-use component. The 767-byte forms raise the score. staged k with leading pair copy 99; staged i
+// with trailing pair copy 183; staged i/j with k copy 172; staged j/k with i copy 182; native array copy
+// k/j/i 173; aggregate aim copy 226; separate yaw trig results 169; aggregate direction publication 213.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9745,6 +9750,11 @@ struct s_unit_melee_collision
 // 492/533, scalar row products 493, aggregate row vector 489 and a whole-ray assignment 489.
 // NOT kept: the 0x17c forms shorten to 2205 bytes. Row products held across the inner
 // loop grow the frame to 0x184 and the body to at least 2240 bytes.
+// The range snapshot still gives a 0x180 frame and the unit still spills through the fan. With per-
+// product range, the following forms recover 0x17c but shorten the function and raise the score.
+// interval melee selector 535; single collision type read 527; direct fallback before self damage 520;
+// single final parent handle 531; single final parent and seat 531; half-open signed fan 531; named
+// trace and surface slots 531; separate clamp stores 531.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

@@ -978,6 +978,10 @@ struct s_item_collision_bsp
 // The embedded basis reference also scores 190. Reading j/k/i once with the left-axis or
 // embedded-basis reference scores 190/190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
+// Separate surface normal and distance with field or aggregate position, each with accumulated
+// distance or a translation subtotal, 199 each. Copy the full untransformed normal into the
+// separate vector, 288 for either distance form. Separate scalar coordinates, 199 for either.
+// NOT kept: the coefficient homes still differ, and the whole-normal copy grows the body.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1351,6 +1355,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // address-free axis scores 159/172.
 // NOT kept: the 159 forms recover frame 0xb4 and 848 bytes but score higher. The
 // initial alignment-product order and the scaled-axis registers still differ.
+// The 0xc0 frame and scaled axis i spill persist. Parallel weighted cross, second products,
+// final products, weighted cross with second/final products, and per-row scalar accumulation
+// all score 130. Output accumulation in three passes or with the first pair combined scores
+// 239/235. NOT kept: both output accumulations grow the body and retain the spill.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1896,6 +1904,9 @@ struct s_item_flags_view_10b850
 // Ray as lateral cross output with direct or staged cross and coordinate or shared point difference
 // 901/902/909/914. With single-precision absolute value 879/880/885/892. NOT kept: all reduce the frame
 // to 0x13c but shorten the body and raise the score. The entry Boolean stores still differ.
+// Floor/slow test producers, true default on floor/slow/both, false default on both,
+// explicit/complementary arms on both, true floor with complementary slow, or opposite defaults:
+// 824/871/855/855/824/824/824/855/855. NOT kept: the equivalent test forms tie or regress, with the same 0x154 frame.
 // Impact/bounce offsets as component stores, point setter, or shared scaled add:
 // components/setter 821, components/scaled add 824; setter with components/setter/scaled add
 // 904/911/904; scaled add with components/setter/scaled add 824/821/824.
@@ -2551,6 +2562,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // Paired event-point coordinate passes, ascending/descending, with separate buffers with returned
 // point 140/140 or filled point 171/171, common buffer with returned point 171/171 or filled
 // point 158/158. The return byte, release mask and point homes still differ.
+// Select or branch on one contact predicate, with success in the guarded update or with
+// the complete predicate published: 238/205 for each with captured spin, 261/228 for
+// each with direct damping success. NOT kept: publication with captured spin reaches
+// 892 bytes with different entry registers, and direct damping shrinks the frame.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
