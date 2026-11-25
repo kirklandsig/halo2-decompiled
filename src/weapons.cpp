@@ -3661,6 +3661,15 @@ struct s_ammo_conversion_entry
 // shared source tag key and scoped magazine 234, full-magazine continue with scoped magazine 226.
 // transfer-gate continue with scoped magazine 226, source pointer assigned by the selected arms 242.
 // NOT kept: every form raises the score. The conditional source pointer changes the save prefix but shortens the body to 698 bytes.
+// Shared tag key by value or field reference 190/190. Keyed scan with hit-owned
+// cap 205, hit-owned offer 197, joined comparison 202 or delayed table read 202.
+// Positive acquisition with hit-owned cap 212; named key and ordinal with
+// hit-owned offer 197. NOT kept: the key binds as before, and the scan rewrites
+// raise the score. The 0x20 frame and destination/scan register difference remain.
+// Shared long minimum for same-definition with conversion/unloaded/loaded 205/205/191;
+// conversion with unloaded/loaded 197/204, both debits 204, all four 203;
+// shared short minimum for conversion and both debits 204.
+// NOT kept: all retain the 0x20 frame and 731 bytes, but the saved-register discrepancy persists.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4102,6 +4111,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Holder, magazine, effect tags, selected entries, owner and barrel role-name trials 630 each (reduced control 630).
 // Shared effect-history word setter 627, pending weapon byte setters 630, both 627. NOT kept: a three-point
 // preview change. The full probe still differs by four bytes and the weapon index and barrel occupy different registers.
+// Fallback-produced balance, admission or initial balance 621/623/640. Conditional fallback cost,
+// burst or both 593/639/639. Separate admitted cost 547, or 545 with path-produced admission.
+// NOT kept: both forms have retail length but carry the required rounds in EDI before the magazine check.
+// Retail keeps one stack home through debit. The 547 form keeps frame 0x1c64 and the 545 form grows it to 0x1c68.
 // The 0x1c64 frame and weapon/barrel register assignments still differ. NOT kept: cached history drops
 // the publication reload, the local duration keeps a joined timer store and register test, and both
 // shorten the body. The positive timer exit restores the frame but regresses. history word for the free-
@@ -4109,6 +4122,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // 536; positive effect-timer exit 635; single bounded next effect 631; scan history and fresh
 // publication word 593; interval result initialized from lower bound 526; active effect index before
 // timer debit 593.
+// Typed barrel history, slot/countdown, complete selection state, three scales, extra shots,
+// shot count/sequence, continuation handle and all runtime fields: 630 each in the reduced image.
+// NOT kept: all tie the reduced control, which has a 0x1c60 probe and 2542-byte extent. The full
+// 0x1c64 probe, weapon/barrel register roles and separate magazine spills remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4669,6 +4686,16 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Trigger plus press, trigger plus hold, or both actions 1610/1579/1466. All three
 // 1619, and all three with the retail behavior order 1582.
 // NOT kept: all grow and retain frame 0x34, with the early dual byte still spilled.
+// Typed ordinal snapshots, signed input slot or action selectors 1412 each. First ordinal read at
+// every use 1549, second 1657, both 1544; paired tag references or all native selectors 1544 each.
+// NOT kept: the first-ordinal and paired forms recover frame 0x38, EDI/ESI and BL, but grow
+// to 5812 or 5800 bytes and raise the score. The typed snapshots retain frame 0x34.
+// Trigger/barrel runtime-array lvalues, tag pointer fields, paired lvalues, and array bases with
+// tag field pointers: 1413/1412/1413/1413 before their loops, 1412 each inside. The loop-entry
+// runtime array forms shorten the barrel phase by four bytes. The 0x34 frame and dual spill remain.
+// Named raw and clamped ramp rise/fall/both 1437/1441/1483. Blend rise/fall/both
+// 1411/1412/1412. Both rising updates 1448. All four 1484. NOT kept: the two
+// ramp updates recover frame 0x38 but grow to 5748 bytes and still spill the dual result.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5357,6 +5384,10 @@ struct s_weapon_projectile_creation
 // Shared spread weight, named blended endpoints or separate endpoint products 1121 each.
 // Captured default endpoints 1134; early spread position 1140; cone products 1154; shot-wide default weight 1158; selected shot scale 1154.
 // NOT kept: the local blend ties; the shot-wide form grows the frame. The 0x1ea4 probe remains.
+// Whole rotation result with direction, axis or cross component locals 1154/1154/1121.
+// Direction/axis, direction/cross, axis/cross or all three 1121/1154/1154/1121.
+// Both inputs and in-place projection 1154. NOT kept: ties or shorter bodies with higher scores.
+// The separate clipping output and 0x1ea4 frame remain in the opening body.
 // The 0x1ea4 frame and holder-walk register assignments still differ. NOT kept: native player fields
 // tie, final actor and player reads expand the frame, and the other holder forms shorten the body and
 // raise the score. first parent retained across the walk 1154; aim permission from both final tests
@@ -5364,6 +5395,10 @@ struct s_weapon_projectile_creation
 // actor observation from the resolved holder 1147; player observation from the resolved holder 1123; aim
 // address from the resolved holder 1169; three values from the resolved holder 1152; shared typed holder
 // pool during traversal 1143.
+// Staged cosine contributions, additive subtotals and sine-weighted cross terms before rotation publication:
+// complete vectors 1177/1154/1154, direct component stores 1245/1216/1239. Result-vector updates in two
+// or three phases 1250/1257. NOT kept: all raise the score and move away from retail length. The
+// 0x1ea4 frame and separate clipping output remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

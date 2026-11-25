@@ -974,14 +974,30 @@ struct s_item_collision_bsp
 // Coefficient-first products across all left, up and forward rows, separately and in every combination,
 // 190 each. All three axes with coefficient-first translation products 190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
-// Separate surface normal and distance with field or aggregate position, each with accumulated
-// distance or a translation subtotal, 199 each. Copy the full untransformed normal into the
-// separate vector, 288 for either distance form. Separate scalar coordinates, 199 for either.
-// NOT kept: the coefficient homes still differ, and the whole-normal copy grows the body.
 // Native basis-axis references for left, up, forward, each pair and all three score 190.
 // The embedded basis reference also scores 190. Reading j/k/i once with the left-axis or
 // embedded-basis reference scores 190/190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
+// Separate surface normal and distance with field or aggregate position, each with accumulated
+// distance or a translation subtotal, 199 each. Copy the full untransformed normal into the
+// separate vector, 288 for either distance form. Separate scalar coordinates, 199 for either.
+// NOT kept: the coefficient homes still differ, and the whole-normal copy grows the body.
+// Named up-plus-left, forward, left, or left and forward normal terms in each row
+// or across all rows before publication: 193/193, 191/191, 191/191, 195/195.
+// NOT kept: each raises the score at unchanged length. The coefficient registers
+// and contact-point home still differ.
+// Shared queried plane with scalar expression or accumulator rows, stored directly
+// or through the setter: 244/244/242/242. Vector expression or accumulator rows
+// 310/310. In-place rotation with scalar or vector coefficient capture 232/278.
+// NOT kept: the single-plane forms grow the body and still miss the XMM homes.
+// Native basis-axis references for left, up, forward, each pair and all three score 190.
+// The embedded basis reference also scores 190. Reading j/k/i once with the left-axis or
+// embedded-basis reference scores 190/190.
+// NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
+// Pending spin k product scheduled between linear or paired output stores, including compound multiply:
+// 190 in all eight forms. Last angular store with the direct or named product after the paired i/j
+// outputs 186/186 at 1362 bytes. NOT kept: four-point gain below the threshold. The transformed-plane
+// registers and pending x87 scale still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1359,6 +1375,17 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // address-free axis scores 159/172.
 // NOT kept: the 159 forms recover frame 0xb4 and 848 bytes but score higher. The
 // initial alignment-product order and the scaled-axis registers still differ.
+// The 0xc0 frame and scaled axis i spill persist. Parallel weighted cross, second products,
+// final products, weighted cross with second/final products, and per-row scalar accumulation
+// all score 130. Output accumulation in three passes or with the first pair combined scores
+// 239/235. NOT kept: both output accumulations grow the body and retain the spill.
+// Address-free axis with marker up, facing or marker forward snapshots 159/213/159. Up/facing,
+// up/forward, facing/forward and all three 213/159/213/213. Up snapshot and in-place projection 159.
+// NOT kept: 159 reaches frame 0xb4 and 848 bytes, with different alignment products and greater score.
+// Standard element-wise scale with direct or staged cross: separate axis and
+// member stores 293, separate axis and setter 293, output axis and setter 298,
+// output axis and complete result 323 for either cross. NOT kept: scale adds calls
+// and grows the frame. The scaled axis still lacks retail's register allocation.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1911,6 +1938,9 @@ struct s_item_flags_view_10b850
 // components/setter 821, components/scaled add 824; setter with components/setter/scaled add
 // 904/911/904; scaled add with components/setter/scaled add 824/821/824.
 // NOT kept: the bounce setter alone gains three and the impact setter shortens the body.
+// Function scope for the incoming linear sample, working linear velocity and angular
+// velocity, seven subsets and all with the carrier delta: eight at 824.
+// The 0x154 frame, entry Boolean stores and ray/flow home still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

@@ -1094,6 +1094,12 @@ bool function_e4050(long object_index);
 // `current` with the root NONE, no unit local, and every use reads the field, as matched 0x14deb0 does. A new
 // one-caller helper written to steer the code is reverted even with a match. Without the helper the same order
 // scores 109; a dword cast or a read through the iterator's datum does not keep the two reads apart either.
+// m3 lane 6 r243, on the lead (still 1): the lookup's index is a copy of the walk variable in the compiler's own code
+// (the lookup's read of the field merges with the walk variable's read in the block they share; only the walk
+// variable's read becomes a copy of the tested load), so no register decision can move it. Forms: the walk variable
+// read and tested at the loop head 106 (its entry test folds); the walk variable read ahead of the player test, the
+// test still on the field, 103 (the test merges with the copy); `unit_object` declared ahead of the walk variable and
+// assigned after it 1 (same code).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
