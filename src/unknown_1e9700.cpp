@@ -392,6 +392,16 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // the enable test 99 (430 B), the team maximum so 96 (430 B), both 101 (428 B), both with the increment through the
 // statistics address and the row formed after it 105 (430 B, first +0x16), the player one with that increment 103.
 // Body unchanged (76).
+// GA3 (fast with 0x1e9fa0, 0x1ea770, 0x1e9ce0, 0x1e9df0, MATCH each run; control 76): team_maximum as nested
+// `if (g_510ca0) { if (team != NONE) ... }` (dropping redundant `?: NONE`) 100 (427 B); with limits loaded ahead of
+// `index != NONE` 107 (420 B); baseline with nested clamp guard + long limits 102 (425 B); baseline without `consecutive`
+// local + long limits 78 (431 B); increment-before-row + old_maximum-after-increment + long limits forms (keeping or
+// dropping team `?: NONE`, direct `player->team`, `bool teams`, limits before `index != NONE`, ternary clamp, no
+// `consecutive` local, both nested, `enabled` after increment, `row` after `old_maximum`, `consecutive` reused in team)
+// 100..114 (420..435 B; the increment-first forms free EDX and emit retail's `xor eax, eax; mov ax` and `inc word
+// [edx+eax+0x16]; lea`, but swap EBP/EDI at +0x16). Reading: 0x195a40 (which passes 0x510cb0's address to 0x321aae in
+// retail) is still `todo`, explaining why lane 8 r207's 0x510ca0..0x511000 object did not escape in this LTCG image.
+// Body unchanged (76).
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

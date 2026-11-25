@@ -524,15 +524,18 @@ short function_122570(s_font_header const *header, dword first_character, dword 
 
 /* a pixel of a character: 3 bits of alpha (widened to 4) over a 12 bit
    color */
-static inline long font_character_pixel(long alpha, long color)
+static inline word font_character_pixel(long alpha, long color)
 {
-	return (((alpha << 1) | ((byte)alpha & 1)) << 12) | color;
+	return (word)((((alpha << 1) | (alpha & 1)) << 12) | color);
 }
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// score 41 (was 59): 508 B (retail 504); first difference at +0x24. With length = 1 written in each arm of the type test (a
+// statement written per arm, kept only with a byte match) it reads 12 at 504 B, where only the 4-instruction literal
+// assembly at 0x122744 differs (movzx eax/edx; shl; add vs retail movzx ax, [edi+2]; xor ecx, ecx; mov ch, [edi+1]; or eax, ecx).
 // MiniMax G (11-20): no new form, no lower score (59): the alpha parity is still masked in sixteen bits where retail masks it in a thirty-two bit register; the colour literal is still built with a shift and an add where retail keeps its two bytes apart; the run of two is still folded into the count as an immediate where retail adds the register.
-// score 59 (was 85): The 0xc frame agrees. Dword opacity parity, literal two-byte assembly and the packed run
+// Earlier 59 (was 85): The 0xc frame agrees. Dword opacity parity, literal two-byte assembly and the packed run
 // register still differ.
 // Earlier score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
 // retail zeroes a thirty-two bit register first (xor ecx, ecx; mov cl, al; and ecx, 1), the literal word
@@ -1052,6 +1055,7 @@ static inline long font_character_pixel(long alpha, long color)
 // Parity from the even part (shift pair or mask), removed by subtraction or XOR.
 // Long opacity 192/240/192/240, byte opacity 192/183/192/183.
 // NOT kept: all raise the score. Subtraction also changes the pixel-copy caller.
+// Lane GA r3: word-returning font_character_pixel without (byte) cast + word pixel at ordinary fill + run scoped to type==2 (count += 2 in type!=2, goto-free switch with if (run > 0 && output), case 1 run before pixel) + length = 1 per arm -> 12 at retail's 504 B (machine 3 review: length = 1 back after the type test, as before, gives 41 at 508 B; the per-arm form is not kept) (matches all 4 pixel sites, EBX/EBP fill registers, switch, jump table and exits byte-for-byte; only the 4-instruction literal at 0x122744 differs). Tried on score-12 base: switch(type) 13; word color 51; run=0 init 176; run!=0 41; word switch pixel 41; split count+=2 155; direct/masked/word byte-swap macros 76-125; bitfield/union/MAKEWORD/shift-or/inline-helper/nibble-split literal forms 90-97 (all fuse to 8-byte mov ah/al, even with count++ between 76, or under /G6 /G7 /Ox /Ob1 90); word-bitfield read p->lo|(p->hi<<8) 89 (emits movzx ax, [edi+2]; mov ah, [edi+1]); color-first then &=0xfff 37; no value local 180; (word)source[2] | (word)(source[1]*256) 30; (dword)source[2] | ((dword)source[1]*256) 12; ((word)source[2] & 0xfff) | ((dword)source[1] << 8) 81 (breaks fusion -> movzx ax, [edi+2] + xor/mov dh, [edi+1] + and 0xfff); diagnostic (word)source[2] ^ ((dword)source[1] << 8) 4 at 504/504 B (breaks OR fusion -> movzx dx, [edi+2]; xor eax, eax; mov ah, [edi+1]; xor eax, edx; not kept since retail uses or).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
@@ -1069,67 +1073,66 @@ long function_122610(long size, void const *pixels, void *destination)
 
 		if ((long)type > 1)
 		{
-			long run = 2;
-
 			if (type != 2)
 			{
 				if (output)
 				{
-					*output++ = (word)font_character_pixel((code >> 3) & 7, color);
-					*output++ = (word)font_character_pixel(*source & 7, color);
+					*output++ = font_character_pixel((code >> 3) & 7, color);
+					*output++ = font_character_pixel(*source & 7, color);
 				}
-				count += run;
+				count += 2;
 			}
 			else
 			{
+				long run;
 				long pixel;
 
 				if (output)
-					*output++ = (word)font_character_pixel((code >> 3) & 7, color);
+					*output++ = font_character_pixel((code >> 3) & 7, color);
 				count++;
 				switch (*source & 7)
 				{
 				case 0:
 					run = 0;
-					goto counted;
+					break;
 				case 4:
 					run = 5;
 					pixel = color;
-					goto fill;
+					break;
 				case 1:
-					pixel = color | 0xf000;
 					run = 4;
-					goto fill;
+					pixel = color | 0xf000;
+					break;
 				case 6:
 					run = 3;
 					pixel = color;
-					goto fill;
+					break;
 				case 2:
 					run = 3;
 					pixel = color | 0xf000;
-					goto fill;
+					break;
 				case 3:
+					run = 2;
 					pixel = color | 0xf000;
-					goto fill;
+					break;
 				case 5:
 					run = 4;
 					pixel = color;
-					goto fill;
+					break;
 				case 7:
+					run = 2;
 					pixel = color;
-				fill:
-					if (output)
-					{
-						for (long i = 0; i < run; i++)
-							output[i] = (word)pixel;
-						output += run;
-					}
-				counted:
-					count += run;
 					break;
 				default:
 					__assume(0);
 				}
+				if (run > 0 && output)
+				{
+					for (long i = 0; i < run; i++)
+						output[i] = (word)pixel;
+					output += run;
+				}
+				count += run;
 			}
 			length = 1;
 		}
@@ -1152,7 +1155,7 @@ long function_122610(long size, void const *pixels, void *destination)
 				if (output)
 				{
 					byte alpha = type == 0 ? 0 : 7;
-					long pixel = font_character_pixel(alpha, color);
+					word pixel = font_character_pixel(alpha, color);
 
 					for (long i = 0; i < run; i++)
 						output[i] = (word)pixel;
