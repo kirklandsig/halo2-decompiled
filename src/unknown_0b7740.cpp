@@ -1957,6 +1957,20 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // the no-model code after it, 394 (1373 B: both sites still expand, so that nesting does not separate the two sites).
 // An empty `do {} while (false);` between the no-model arm's two lookups 20, after the parent test ahead of the 0xbdc40
 // call 20 (same code each: the two lookups are still merged and the index still dies at its mask).
+// M3 lane 2 r149 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Allocator reading of the diagnostic
+// with a later use of the index (re-measured 35 at 1401 B: the block is retail's row for row up to the added compare):
+// there the masked value is its own value, copied from the index and then masked (ranked first in the arm, EAX), the
+// parent object is placed next (ECX), and the index, still live past the object's load, is placed after both and has
+// only ESI left; the pool is placed last and finds ECX free up to the object's load. In the base the index is masked
+// in place and then copied, so it dies ahead of the object's load and takes ECX. So retail's index is read after the
+// parent object is loaded; a forced ESI alone leaves the in-place mask (re-measured: aligned 9). Forms, none lower: the
+// flag's lookup indexed by `(dword)parent_index & 0xffff` 20, by `parent_index & 0xffffu` 20, by `(long)(parent_index &
+// 0xffff)` 20 (same code each: the two lookups are still merged ahead of the mask), by `(word)(parent_index & 0xffff)`
+// 377 (1398 B); the flag under a nested `if (parent_index != NONE)` 44, as `parent_index != NONE && bit` 44, as
+// `parent_index != NONE ? bit : false` 44 (1390 B each: the repeated test is folded early and each lookup then has its
+// own block, so the data comes from EDI); the call's parent argument as `parent_index != NONE ? parent : 0` 52 (1405 B:
+// the second test is emitted), its mirrored argument as `parent_index != NONE ? parent_mirrored : false` 411 (1415 B).
+// Two lookups in one block re-read the data field (retail and the base); one lookup per block shares EDI's.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

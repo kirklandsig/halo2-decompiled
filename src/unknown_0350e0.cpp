@@ -555,6 +555,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // initialised longs at the top 334/334/334/342/342/342/342; the axis loads stay j, k, i (absolute addresses, so no
 // pointer-numbering effect), only their registers move. Retail re-reads the axis for the cross terms because its in-place
 // sine products overwrite i and k. Body unchanged.
+// The 0x90 frame agrees; the first axis reads and square spills still differ.
+// Squared and sine-scaled axis, paired or separate passes, shared input, and square pass with scaler 351/345/348/345.
+// Completed diagonal and sine axis in the same four forms 345/339/350/339.
+// NOT kept: all raise the score. The separate exact-length forms still change the opening frame.
 // M3 lane GB r4 (fast with 0x137ed0, MATCH unless noted; control 334, 20 trials): calling out-of-line 0x142640 1290
 // (826 B); inlined 0x142640 with `if (scale != 1.0f)` and `*axis` struct copy for squares 438/434/446 (1864-1877 B;
 // double angle in helper broke 0x137ed0 -> 42; scale test did not fold); inlined 0x143070 (`temp = *v`, 3-stmt accum)
@@ -3022,6 +3026,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
 // initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
 // `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
+// Decoded-position seeds through an aggregate, setter or explicit components before in-place
+// origin subtraction 280/280/280; per-component seed and subtraction 486; retained draw
+// coordinates with direct deltas, aggregate seeds, component seeds or early capture 500/498/498/500.
+// The early camera-axis schedule and branch displacement remain. NOT kept: the three 280 forms gain one, and the other forms regress.
+// In-place X subtraction or all three subtractions before tint initialization 486/500.
+// The original camera-axis schedule and missing-tag branch displacement remain.
 // M3 lane GB r4 (30 fast trials with 0x2f2d0/0x2e3f0/0x222d0; control 281, al=142, mask=65): clamp_2e9e0 as `return PIN(value, 0.0f, 1.0f);`
 // 514 (2270 B), with vector3f_add_scaled draw point 514, with 0x20d80(context, true) 513; clamp_2e9e0 mutating value in place 509 (2285 B);
 // reflected via vector3f_scale + vector3d_from_points3d + vector3f_scale (no loop) on main 500, with early attenuation + helper delta/forward
@@ -3853,6 +3863,10 @@ real magnitude3d(vector3f const *v);
 // Step interval in fallback, rotation or both 170/175/186; shared lower step with staged rotation
 // clamp 186. NOT kept: fallback-only forms tie, and sharing the step bounds changes the frame.
 // The raw current length still uses the bounded length’s slot in the fallback-only forms.
+// Joint length tests, joint angle/current-length test, independent target-length test, independent
+// angle test, all three tests together, eager lengths before angle, ordered lengths with independent
+// angle, and joint lengths with real absolute dot: 190/190/186/186/205/201/198/190.
+// NOT kept: all grow the body and leave the raw current magnitude in the bounded length's slot.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4646,6 +4660,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // entry-identity guard 372. Duplicate self-swap guard 327, both removal guards 437, creation
 // and fallback guards 366, creation exit plus other guards 381. NOT kept: all regress.
 // The state and prefix still exchange registers and the creation ordinal still spills.
+// Eager paired bytes, eager bound with first byte, independent bound with paired bytes, all three
+// admission tests together, eager creation pair, eager duplicate key tests, eager duplicate
+// eligibility, and both removal predicates: 373/408/421/429/369/409/399/417.
+// NOT kept: all regress. The paired byte forms add a frame word or more code.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -5131,6 +5149,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // dwords and one 12-byte home shared by the previous camera position and each element's old position; ours adds four
 // 8-byte projection results (the by-value returns stay in memory) and gives `old` its own slot (it interferes with the
 // first projection result, which shares the previous position's slot). Body unchanged.
+// The 0x60 frame, independent stored-velocity reads and projection output homes remain.
+// One reused projected point with returned results, direct/delta updates and plain/signed first Y 510/510/539/532.
+// The same four forms with the existing projection helper writing its output 549/549/549/549.
+// NOT kept: returned forms grow. Output forms shrink the frame but finish 64 bytes short and raise the score.
 // M3 lane GB r4 (fast with 0x36b50, 0x24590 and 0x259d0; control 486, al 422, mask 267; 20 trials): calling
 // function_259d0(&g_4e7408->seed, NULL, 0, -1.0f, 1.0f) in motion_random_step with (double, double) 486 (same code),
 // with (real, real) 502 (2019 B, al 400, step-first same 502: reproduces all 92 instructions of retail's random-step
@@ -6263,6 +6285,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // The same forms with four-channel color 225/385/225/379.
 // NOT kept: the 225 forms regain frame 0xe0, gain six and grow to 1826 bytes.
 // The other color forms reach 1819 bytes and raise the score.
+// Separate axis selections from a shared test, per-axis tests, guarded captures, or a complete
+// point snapshot: 392/518/231/717. With four-channel color: 390/516/225/723.
+// NOT kept: 225 gains six, grows to 1826 bytes, and leaves the radius spill at +0xc.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -7533,6 +7558,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // call, and that call needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched 0x14ac0's frame and realigns
 // this function), so its argument setup stays different.
 // MiniMax H (11-20): no new form, no lower score (96); the clear call's first argument is stacked where retail passes it in eax (BLOCKED-BY 0x14b60).
+// Other source-pass helper for mode 3, 3 and 8, 3 and 20, 3 and 7, 3 with 20
+// and 7, 3 with 8, 20 and 7, 8 and 20, or 8 and 7: 179/186/177/185/178/196/168/171.
+// NOT kept: all raise the score. The first-pass clear argument setup still differs.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

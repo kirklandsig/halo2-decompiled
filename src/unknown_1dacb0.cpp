@@ -2402,6 +2402,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Read-only record, fixed pointer, both, each of the four lookup bindings in its test,
 // and an untyped lookup result until the record read: 812 each. NOT kept: the pointer
 // forms collapse to the same allocation at retail length.
+// Resolved mode, class and type initialized beside their own requested keys, seven
+// subsets, then all three after cursor initialization: 812 each. The class and NONE
+// registers still exchange, and the resolved-mode and candidate homes still differ.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

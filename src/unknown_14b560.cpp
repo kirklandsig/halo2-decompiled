@@ -778,316 +778,16 @@ struct s_tag_instance_view
 	byte unknown0c[4];
 };
 
+/* the object of a player's unit; its read of the unit index stays a load of its own in 0x14df40, apart from the
+   walk's read of the same field */
+static inline s_unit_vehicle_view *player_unit_object(s_player *player)
+{
+	return (s_unit_vehicle_view *)object_get_unchecked(player->unit_index);
+}
+
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
-// MiniMax H (11-20): no new form, no lower score (43): the datum iterator's data pointer takes EBX where retail takes EDI; its register use comes from include/data_iterator.h and src/unknown_0bad50.cpp.
-// MiniMax S (11-20): no new form, no lower score (43): the unit and its parent stay in EAX and ECX where retail keeps the unit in EBX and the parent in EAX, and the walk's step object is copied twice where retail reloads it; the pinned 0xbaf80 in another file decides the register choice.
-// score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
-// walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
-// place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
-// MiniMax C (11-19): no new form, no lower score (43): every difference is the one carrier swap (the datum pointer in
-// EBX for EDI, the unit index in EDI for EBX); the root walk's shape is what decides it and that walk is the out-of-line
-// 0xbaf80 in another file, which this lane may not edit.
-// MiniMax H (11-18): no new form, no lower score (43): the player datum is still computed in EBX where retail has
-// EDI and the unit index in EDI where retail has EBX; writing retail's walk (the root NONE, the entry test before
-// the loop, the step object recomputed in the loop) makes the compiler peel the first iteration (109), and the same
-// walk with the step object taken from the root index instead also gives 109, so the walk stays as it is; the datum
-// iterator's register use comes from include/data_iterator.h, which this lane may not edit.
-// MiniMax R run 92 (11-17): no new form, no lower score (43): the permuter cannot search this body over the reduced
-// image (it reads 44 there against 43 in the full one), and the carriers still come from the out-of-line 0xbaf80 walk
-// in src/unknown_0bad50.cpp and from the iterator's registers in include/data_iterator.h, both outside this lane's
-// queue.
-// MiniMax C (11-16): no new form, no lower score (43): the datum pointer still takes ebx where retail takes edi and
-// the player datum takes edi where retail takes ebx; the colouring comes from the shared iterator step in
-// include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
-// MiniMax E (11-16): no new form, no lower score (43): the datum iterator's data pointer still takes ebx where retail takes edi, and that register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
-// MiniMax I (11-16): no new form, no lower score (43): the difference still opens inside the root walk, whose
-// body is the out-of-line 0xbaf40 in src/unknown_0bad50.cpp - the datum iterator's data pointer takes EBX here
-// where retail takes EDI - and that file and include/data_iterator.h are outside this lane's queue.
-// MiniMax C (11-15): the parent walk as a NONE-rooted do-while and as a current-rooted while: 109 each
-// (was 43), no lower score; the walk's shape only moves the allocator's choice (the datum pointer lands in
-// EBX, then in EBP), while retail keeps it in EDI and the unit index in EBX.
-// MiniMax H (11-14): no new form, no lower score (43): this round compared retail's listing with ours
-// region by region; the entry test and the 0x10 frame agree, and the difference opens inside the root
-// walk, whose body is the out-of-line 0xbaf80 in src/unknown_0bad50.cpp; the body is unchanged.
-// Earlier at 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
-// and the unit index takes EDI where retail takes EBX, and retail reads the unit object out of the
-// record into EBX once the record's address is dead; the root walk itself is the out-of-line 0xbaf80
-// whose body is in another file.
-// MiniMax E (11-11): no new form, no lower score (43): the unit-start NONE-root walk (the root preset
-// to NONE and the walk started from the unit) gives 109, and the datum and the unit still take ebx
-// and edi where retail takes edi and ebx.
-// MiniMax C (11-11): no new form, no lower score (43): the datum address is still computed in ebx
-// where retail computes it in edi, and the root walk is still the out-of-line 0xbaf80 in the other
-// file, which is what decides the carriers.
-// MiniMax C (11-11): no new form, no lower score (43): retail's walk (the root preset to NONE, the walk
-// started at the unit and each step's object in a named local, so that it loads into eax) reaches 109 - it
-// keeps the entry test and the eax step, but the carriers rotate (the datum in ebp, the unit in edi, the
-// unit object in ebx, the root in esi) and the roles and the frame both go; the same walk with the unit
-// object looked up after it gives 101 with retail's table and root registers but the datum, the unit and
-// the unit object still rotated among ebx, ebp and edi; the kept parent-first walk stays the best at 43.
-// Earlier: frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
-// MiniMax D (11-09): no new form, no lower score (43); reading the unit index before the player pointer gives 43 (was 44) but leaves the carriers as they were - retail holds the datum address in EDI and the unit index in EBX, we hold them the other way round - so it is not kept.
-// MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
-// starts the walk at the unit, so the unit carrier takes EBX and the datum address EDI, the other
-// way round from ours, and the walk itself is still the out-of-line 0xbaf80.
-// MiniMax H (11-07): no new form, no lower score (43); the datum address is still computed in EBX
-// where retail computes it in EDI and the two are used the other way round, and the root walk is
-// still the out-of-line 0xbaf80, whose source sits in src/unknown_0bad50.cpp.
-// MiniMax E (11-06): no new form, no lower score; retail inlines the 0xbaf80 root walk with its entry
-// test, while our build keeps that walk out of line because another file pins it, so the player and
-// unit carriers stay the other way round.
-// MiniMax H (11-04, run 33): no new form, no lower score; the walk is still the out-of-line
-// 0xbaf80 pinned by another file, so the entry test and the root stay in the callee.
-// MiniMax H (11-04): no new form, no lower score; the player/unit carriers and the root-walk entry stay.
-// Earlier: the datum address is still computed in EBX where retail computes it in EDI, and the
-// walk is still 0xbaf80 called out of line because another lane's file pins it noinline: BLOCKED-BY 0xbaf80.
-// Earlier: the 44 differing lines are 34 real ones (the rest are the
-// unmatched callees and the relocated globals): the datum address is computed in
-// EBX where retail computes it in EDI, and the two are used the other way round.
-// The walk reads the first parent before the loop and keeps the root in a local,
-// retail's inlined 0xbaf80 keeps the entry test and the root in its register:
-// BLOCKED-BY 0xbaf80 (another file), so the swap is not ours to fix.
-// Earlier: the record pointer is kept in EBX here and in EDI in
-// retail, and the two are used the other way round after the index is masked;
-// the walk differs (retail's starts from the unit with the root preset to NONE and keeps its entry test,
-// the shape of 0xbaf80 inlined; ours is pinned out of line there: BLOCKED-BY 0xbaf80).
-// Round 199: consistent per-use unit, iterator-player and both observations 55/55/55; each with
-// retained ancestry pointer 113/113/113 (414 bytes); unsigned parent with unit/both observations
-// 55/55. Original body restored; datum/unit roles and root-walk entry remain.
-// Round 22 (lane 10): retail walks from the unit itself (root NONE, 0xbaf80's shape) and keeps the
-// walk's entry test, with the walk's object pointer in EAX. That walk shape 106 (our compiler
-// threads the entry test away); from a re-read unit field 171 and with a dword unit 171 (the test
-// returns but the unit takes EAX and the iterator index leaves the frame); with the unit object
-// fetched after the walk 100; the in-body inline_depth pair removed 185 (0xbaf40/0xbadc0 inline,
-// 508 bytes). Screened (one-file LTCG): the walk as an inline or cross-module function, under a
-// nested `if` for the unit test, or with a named object pointer: no entry test, or EAX unit.
-// Round 24 (lane 10): the walk through the existing 0xbaf80 126 (400 bytes; it stays a call here, retail
-// inlines it); the rest of the loop body nested under `if (unit != NONE)` 55; player/unit declared at
-// function scope 55; the walk as a for loop from the parent 55; the unit object fetched after the walk 171.
-// Round 294: Selected-handle/return-result common output, signed/unsigned handle, entry/late
-// storage and positive/failure completion, all eight 86 (404 bytes). Exact-only
-// output copies and complete body restored; player/unit roles and walk entry remain.
-// Lane 17 round 2 (kept, 55 -> 43): the e4050 and flag-bit exits as one `||` test (the exits' registers are then
-// retail's). Not kept: retail's walk from the unit with a NONE root 106 (player in EDI as in retail, but no entry
-// test), with the merged exits 109; a forced-inline copy of the walk (diagnostic) 106; nested 0x34c test 56; named
-// root object 56; the parent walk as a for loop 44; root declared before the unit object 46; the walk with its
-// load in the loop test 171; one class-dispatch test for both exits 49; else-if after the root exit 44.
-// Round 47: unit read before the player local 44; the root walk as a do/while from the unit 109;
-// the iterator step through the existing data_datum_iterator_next_inlined 44; exits storing the
-// unit local 182; the parent declared before the root 44. Retail inlines 0xbaf80 here (it calls
-// it elsewhere); ours keeps it out of line, pinned in another lane's file: BLOCKED-BY 0xbaf80.
-// Round 254: Private iterator publishes datum pointers (byte/player), entry-null defaults and
-// stored/local result combinations 44/44/149/149/44/44/149/149 (fast control 44; full baseline
-// 43). Original iterator, traversal and body restored; player/unit carriers and root-walk entry
-// remain.
-// Round 59 (m3 lane 10, fast): BLOCKED-BY 0xbaf80 (its pin sits in src/unknown_0bad50.cpp, off limits this
-// round). The call as it stands 124 (400 bytes); the pin removed as a diagnostic 109 (431): it inlines, but the
-// entry test folds away there too, so the pin is not the whole cause; with field reads for the test and the walk
-// 109, walk only 171 (405), test only 109. The walk from the unit with a NONE root: long 109, named object 109,
-// dword unit 171 (405, the test returns but the unit takes EAX and the iterator index leaves the frame), named
-// object 171, short test as well 172. Parent copied ahead of the unit object: while 108, for 108, guarded do-while
-// 108, dword 171; copied right after the unit read 106; parent and unit as two field reads 171 (405).
-// Round 92 (fast control 44; plain baseline 43): shared header table 44; existing typed object getter 44; typed
-// header getter 44; unit-first with the table 44; exact unit-start/NONE-root walk on that form 109; unit-object
-// declaration before the guard 44; const player/unit-object pointers 44; forced private object getter inline 44
-// (0x14deb0 stays matched). Original body/helper restored; player/unit carriers and root-walk entry remain.
-// Round 46 (m3 lane 2, fast; control 44, plain 43): the walk as a for loop from the unit with the root preset
-// to the unit 109; the unit object fetched from a re-read unit field 44; no player local (datum read at each use)
-// 44; `root_index == unit` for the parent test 82; NONE-root walk with the e4050 argument re-read 109.
-// Round 53: test on the field, unit local after it, walk from the field with a NONE root 109; `dword current = unit`
-// with a NONE root 171 (405 bytes: entry test returns, root EDX and table ESI as retail, but unit EAX and iterator index
-// EBX, so the frame goes); that with a dword root 171; `long current = player->unit_index`, unit local for the rest 171;
-// current ahead of the lookup in a for loop 108; dword current under `if` with do/while 171; lookup, walk and 0xe4050 all
-// from the field with the unit only tested 109 (431, no entry test); one of lookup/0xe4050 from the field 171/171; that
-// all-field form with a named parent 109; named parent with dword current 171/171/171. What is left in the 405 family:
-// the unit must leave EAX (0xe4050's argument) for EBX, which pushes the iterator index back to the frame.
-// Round 49 (m3 lane 2, fast 44 = plain 43): the private copy of the datum-iterator step replaced by the existing
-// data_datum_iterator_next_inlined (data_iterator.h) 44 (same code, kept); the NONE test on the field with the unit
-// local read after it 44 (same code); the parent test inverted with the vehicle arm first 114 (408 bytes); the vehicle
-// test as nested ifs 44 (same code); the no-parent exits through one found value 106 (409). Retail's datum/unit
-// EDI/EBX colouring follows its inlined 0xbaf80 walk (BLOCKED-BY 0xbaf80, still pinned in src/unknown_0bad50.cpp).
-// Round 105: on the unsigned unit-start/NONE-root walk, current before root / existing typed getter in the walk /
-// root before the unit object / const unit object / const player / const unit / typed getter for all three lookups
-// 171 each (405); a retained root object 182 (390). Original body and declarations restored.
-// Round 78 (m3 lane 1, fast; control 44, plain 43): 0xe4050 passed root_index 172 (404 bytes); 0xe4050 passed
-// player->unit_index 44 (same code); the aa byte read once into a named local 44; no iterator.datum_index set-up 44;
-// the bit18 exit storing the unit local 59. Re-measured: unit-start NONE-root walk with each step's object named 109,
-// root/current declared before the unit-object lookup 108, parent walk with the unit object after it 171 (405).
-// Diagnostic: in the dword-walk family (405 bytes, 171) the entry test returns, but its walk reuses ECX for the step
-// object, so the unit keeps EAX; retail's walk step takes EAX, which is why its unit sits in EBX. BLOCKED-BY 0xbaf80.
-// Round 70 (m3 lane 13, fast): the aa == 1 arm first 61; the seat parent in a named local before 0xbadc0 44; the walk
-// re-reading each step's parent in the loop test 171 (405 bytes); the iterator with a brace initialiser 44; the parent
-// walk with a named step object 44. Diagnostic: 0xe4050 without its asm rounding leaves this at 44 (roles unchanged).
-// Round 65 (m3 lane 15, fast; control 44, plain 43): in retail the unit and the parent value read after the walk both
-// want EAX (0xe4050's and 0xbaf40's argument); retail gives it to the parent, so the unit sits in EBX and the iterator
-// index stays in the frame, where the unsigned walk gives it to the unit. On the unsigned NONE-root walk (171, 405
-// bytes): the 0xe4050 exit storing the unit local, a use after the call 200 (377); 0xe4050 passed the field 171; the
-// walk variable declared first and the unit object looked up through it 82 (433; the frame returns, the unit still
-// EAX); the unit declared at function scope 171. On the kept body: the unit declared at function scope 44 (same code).
-// MiniMax R (11-10): no new form, no lower score (43): the walk's unit and parent still take the opposite
-// registers from retail, and the iterator step in the other file decides that colouring.
-// Round 71 (m3 lane 15, fast; control 44, plain 43): the NONE test on the field with the unit local read after it and
-// the NONE-root walk from that local 109 (431 bytes, entry test threaded away again); the `dword current = unit` walk
-// (405 family, 171) on matched 0x14deb0's record-pool iterator 171; the current body on that iterator 57; the root
-// declared at function scope 44 (same code); the walk reading the next parent into a local before `root_index =
-// parent` 44 (same code). Re-measured on the 405 family (listed forms on a listed base): the unknownaa byte named once
-// 171/171 (field-start and dword walks), the body nested under `if (unit != NONE)` 171. Matched 0x1e12b0/0x1e13f0 keep the same NONE-root entry test (`or ecx, -1;
-// cmp eax, -1; je`) because their walk starts from a copy of a value whose tested variable is reassigned before the
-// walk. In the 405 family the unit keeps EAX (0xe4050's argument) and the walk's step object reuses ECX; retail's step
-// object takes EAX, so its unit goes to EBX and the iterator index to the frame.
-// M3 lane 8 r161 (fast with 0xbadc0, 0xbaf40, 0xe4050, 0x14deb0, 0xbaf80 and caller 0x226190, all MATCH; control 43,
-// register-masked aligned 8): BLOCKED-BY 0xbaf80 still (its pin is in src/unknown_0bad50.cpp). The permuter's first run
-// here (anneal, 600 s, 50 tries; --fast needed --allow-mismatch, the reduced image scoring 44): best 40, only with a
-// volatile short store of the iterator index and two constant temporaries in the byte tests, not keepable; the volatile
-// store alone 45 (diagnostic, reverted at once). No unit local (the field read at the test, lookup, root start and 0xe4050)
-// 43; the iterator set-up with the datum index first 43; the parent walk as a do-while guarded by the unit object's parent
-// field 43 (aligned 28); `long const unit` 43; the unit object pointer declared at function scope 43 (same code). Body
-// unchanged.
-// Round 101 (m3 lane 1, fast; control 44, plain 43): in the dword-walk family (`dword current` from the unit, NONE
-// root, 171 at 405 bytes) the unit and the parent read after the walk both want EAX (0xe4050's and 0xbaf40's
-// argument); ours gives it to the unit (the parent then sits in ECX and is moved to EAX before 0xbaf40), which frees
-// EBX for the iterator index, so the frame goes; retail gives EAX to the parent. On that family: 0xe4050 passed the
-// unit field 171 (same code: the load is CSEd across the walk); a named parent local declared at function top, before
-// the unit, or first in the loop body 171/171/171 (same code each); the unit and the walk both `dword` 109 (431 bytes,
-// entry test threaded away again: only a signed/unsigned mismatch keeps it). Body unchanged.
-// MiniMax S (11-15): no new form, no lower score (43): retail's root walk keeps the unit's vehicle record in ebp and
-// the datum pointer in edi and tests the entry before the loop, ours keeps the datum pointer in ebx and the unit index
-// in edi and has no entry test; writing retail's shape makes the compiler peel the first iteration (109) and the same
-// walk with the record loaded after it gives 102, so both were restored. The remaining rotation comes from the datum
-// iterator's helper (include/data_iterator.h and src/unknown_0bad50.cpp), which this lane may not edit.
-// Earlier at 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
-// include/data_iterator.h and src/unknown_0bad50.cpp.
-// MiniMax E (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
-// Earlier at 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
-// EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
-// may not edit.
-// MiniMax I (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where
-// retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp,
-// which this lane may not edit.
-// b12C (11-17) walk against retail, fast build on r846: every statement checked against the listing - iterator
-// 0x14df50-0x14dfb1, unit 0x14dfb3, root walk 0x14dfc4-0x14e00c, unit-object tests 0x14e012-0x14e061, vehicle arm
-// 0x14e07c-0x14e0c5, exits 0x14e03c/0x14e067/0x14e0c5/0x14e0da. Fields, offsets, jcc senses (jbe at 0x14e061/0x14e0bf
-// is the unsigned byte > 0), callee arguments (eax at 0x14e024, 2 pushed before 0xbaf40) and the player->unit_index
-// re-read at each exit agree: no behaviour difference found. Retail's walk is the inlined 0xbaf80 from the unit (root
-// NONE at 0x14dfd5, entry test 0x14dfd8, step object in EAX at 0x14dfeb) and the parent is re-read at 0x14e012; ours
-// reads it once, same result. Fast score 44 (full 43). New: NONE-root walk with a long unit as do-while / for / next-
-// temp 109; with `dword current` 171 (405 bytes: entry test back and datum in EDI as retail, but the unit takes EAX
-// and the iterator index EBX, because the step object reuses ECX where retail's takes EAX). Grid of three walk shapes x
-// long/dword unit x inline/named parent x unit object before/after the walk: long unit 171/162/113, dword unit
-// 109/102/107/98; none under 43. Best match-only recipe: none reached a match.
-// M3 lane 1 r118 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43,
-// aligned 27 including two padding lines, register-masked 8): re-measured the NONE-root walk from a long unit 109
-// (431 B, aligned 40: no entry test; player EBP, unit EDI, unit object EBX, table EDX) and from a dword unit or with
-// a dword walk variable 171/171 (405 B, aligned 43: the entry test is back with the table in ESI, the unit object in
-// EBP and the player in EDI as retail, but the unit stays in EAX, the step object reuses ECX and the iterator index
-// takes EBX, so the frame goes). New: the continue test compared as unsigned on a long unit (`(dword)unit ==
-// (dword)NONE`) with the long NONE-root walk 171 (405 B, the same code as the dword unit), the same test read from
-// the field ahead of the unit local 171 (same code), the dword unit with 0xe4050 passed the field 171 (same code);
-// the unsigned continue test on the kept parent-first walk 43 (same code). Any signed/unsigned mismatch between the
-// continue test and the walk keeps the entry test and gives that one 405-byte allocation. Body unchanged.
-// M3 lane 9 r142 (fast; 0xbaf80's file is off limits this round): in the 405-byte family the unit keeps EAX because
-// no call falls in its range and the walk's step object takes ECX; retail's step object takes EAX, which pushes the
-// unit to EBX. New: object_get_unchecked returning through a named result local, on the kept body 44 (same code),
-// on the `dword current` walk 171, on the long NONE-root walk 109; the `dword current` walk in its own `{}` block
-// 171; re-measured the `dword current` walk 171 (405 B). Diagnostic: 1 to 7 dead initialised locals on the kept
-// body 44 each (the EBX/EDI swap of the player datum and the unit is not a symbol-count tie).
-// M3 lane 1 r128 (fast with 0xbadc0/0xbaf40/0xe4050/0x14deb0/0xbaf80/0x226190, all matched throughout; control 43): in the
-// 405-byte family (the `dword current` walk from the unit with a NONE root, re-measured 171) retail's walk keeps three
-// scratch values (current ECX, root EDX, step object EAX), so the unit, live across it to the 0xe4050 call, is pushed to
-// EBX; ours reuses ECX for the step object, so the unit stays in EAX. New on that family: the step object named before
-// or after the root store 171/171; the unit bound by const reference to the player field 171; the unit object bound by
-// const reference 171; 0xe4050 passed the root (equal to the unit on that path) 181 (391 B). BLOCKED-BY 0xbaf80 stands.
-// M3 lane 5 r211 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): BLOCKED-BY 0xbaf80
-// stands (pinned out of line in src/unknown_0bad50.cpp, an avoid file this round). On the kept body: the unit read through a
-// `long const &` after its NONE test (lookup, walk start, 0xe4050) 43, the player datum through a `s_player *const &` for
-// the unit read and the three exits 43 (both the same code). On the `dword current` NONE-root walk (re-measured 171 at
-// 405 B: the walk's step object reuses ECX because the unit holds EAX for 0xe4050): 0xe4050 passed `root_index` (equal to
-// the unit on that path, so the unit dies at the walk) 181 (391 B); a redundant `if (unit != NONE)` around the walk 171
-// (same code); the unit object's parent named after the walk for the test, the 0xbaf40 argument and the exit store 174
-// (402 B).
-// M3 lane 1 r133 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43): a grid
-// of 48 forms of the NONE-root walk from the unit (the order of the walk variable, the root and the unit-object lookup x
-// long unit with a dword walk variable or the reverse x the unit object looked up through the unit or the walk variable x
-// the unit object's parent at each use or named after the walk x the step object named or not): the walk variable and
-// the root both ahead of the unit-object lookup 81 each (433 B, 32 forms: the frame is back and the entry test stays, but
-// the unit keeps EAX, the root takes ESI and the step object EDX), the lookup ahead of either 171 each (405 B, 16 forms).
-// Reading of the 405-byte family: retail gives EAX to the unit object's parent (0xbaf40's argument, read after the walk)
-// and to the 0xaa byte, so its unit goes to EBX and the walk's step object is free to take EAX; ours gives EAX to the
-// unit first and puts the parent and the byte in ECX. BLOCKED-BY 0xbaf80 stands (its pin is in an avoid file this round).
-// M3 lane 2 r117 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43). On
-// the `dword current` NONE-root walk (re-measured 171 at 405 B): the step object named and read through a const
-// reference ahead of the root store 82 (435 B: the frame and the entry test are back, but the step object takes EDI,
-// the unit keeps EAX and the unit object EBX), after the root store 171 (same code as the walk); the same two with a
-// long walk variable 87 (442 B) and 108 (431 B). Diagnostics (reverted at once): a call to an unresolved function in
-// the loop on the dword walk, at the loop top or in the vehicle arm, 145/147 (431 B with the call: the frame returns,
-// the unit keeps EAX and the iterator index EBX), on the kept body 97 (436 B). `inline` on 0xbaf40 and 0xbaf80's
-// definitions (diagnostic, full check) leaves this function unchanged and loses eight matched callers (0x4baf0,
-// 0x3d7f0, 0xc0c80, 0xc3ad0, 0x133790, 0x159690, 0x1ac610, 0x1ced00); `inline` on 0xe4050's loses 0xdd8e0 and 0xe3700
-// and leaves it unchanged: the link-time summaries of those callees are already retail's, so BLOCKED-BY 0xbaf80
-// concerns only its expansion here.
-// m3 lane 4 r235 (fast, control 43; aligned by difflib 25, 6 with registers masked): BLOCKED-BY 0xbaf80 still (its pin
-// is in src/unknown_0bad50.cpp, off limits this round too). The root walk in retail's shape with the walk index carried
-// in a one-member aggregate 109 (same code as the scalar walk, re-measured 109: the aggregate is folded and the first
-// step is still peeled); that shape as a `for` loop from the unit 109 (same code); the root started at the unit with
-// the walk from the unit 109 (same code); the walk started from the player record's field re-measured 171 (405 B).
-// m3 lane 6 r221 (H2M fast, control 44 alone, plain 43): BLOCKED-BY 0xbaf80 still (pinned in an avoid file this round).
-// A redundant NONE initialiser for the root 43 (with the callees in the image); the root's object named for the bit-18
-// test 44; the player datum as a const pointer 44; the walk's parent in its own block 44; the parent declared ahead of
-// the root 44 (all the same code).
-// M3 lane 4 r244 (h2m fast, control 44 there, 43 full; body unchanged): BLOCKED-BY 0xbaf80 still (pinned out of line in an
-// avoid file). Use-count forms for the EDI/EBX swap, each the same code (44): 0xe4050 passed the player's field; the unit
-// object looked up from the field; the walk's root started from the field; the continue test on the field with the unit
-// read after it. A single exit (`result = true; break;` at the four exits) 144 (450 B).
-// M3 lane 16 r176 (H2M_FAST with 0xbaf80 and 0x226190, both MATCH; control 43): the parent walk as a for loop 43; the
-// walk stepping through the parent rather than the root 43; no player local (the datum read through the iterator at
-// the unit read and the three exits) 43; the walk under a redundant `if (parent != NONE)` 43 (all the same code); the
-// vehicle arm first (`!= NONE`) 114 (408 B). Still BLOCKED-BY 0xbaf80.
-// M3 lane 8 r228 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): the
-// iterator set-up as `iterator.datum_index = iterator.index = NONE;` 43; the kind byte named once for its two tests 43;
-// `player` declared at function scope 43; the vehicle arm's 0xbaf40 result named before 0xbadc0 43; the root object
-// named as a const pointer for the bit-18 test 43 (all the same code). Still BLOCKED-BY 0xbaf80.
-// M3 lane 11 r161 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43): on the
-// `dword current` NONE-root walk (re-measured 171, 405 B): the walk variable bound through a `dword &` 171, the root
-// through a `long &` 171, the unit as `long const &` to the player's field 171, no player local (the datum read
-// through the iterator at the unit read and the exits) 171 (all the same code); the bit-18 exit storing the unit
-// local 189 (387 B). Still BLOCKED-BY 0xbaf80.
-// M3 lane 15 r142 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80, all MATCH; control 43). Allocator reading of
-// the kept body: the unit (priority 64) colours ahead of the unit object (50) and the player datum (32), so it takes EDI
-// and the datum is left EBX; all three are one value each after CSE, so field-read spellings cannot move them. On the
-// `dword current` NONE-root walk (re-measured 171, 405 B) the unit (90) takes EAX because the walk's step object sits in
-// ECX; with the unit alone put in EBX (a forced diagnostic, not source) only 6 rows are left: retail copies the unit into
-// the walk variable before the unit-object lookup and tests that copy, ours tests the unit and copies after. So retail's
-// unit is coloured after the datum and the unit object with EAX held by the step object. New forms: on that walk the
-// walk variable, the lookup, then the NONE root 171; the walk variable and the root ahead of the lookup 82 (433 B); the
-// step object named from the root 171; the unit declared bare and assigned before its test 171.
-// M3 lane 6 r242 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43, aligned 25; body
-// unchanged). LEAD at 1, not kept: build/r242/lead-0x14df40-1.patch, 431 B, first difference +0x87, in the reduced image and
-// in the full image (the permuter's baseline builds). The form: no `unit` local, every use reading `player->unit_index` as
-// matched 0x14deb0 beside it does (the player test, the lookup, the 0xe4050 argument, the three exits), and the walk as
-// `long current = player->unit_index;`, the `unit_object` lookup, `long root_index = NONE;`, `while (current != NONE)
-// { root_index = current; current = parent of root_index; }`. Not kept because the gain needs the walk variable declared
-// ahead of the lookup: lookup, walk variable, root 171; lookup, root, walk variable 171; root, walk variable, lookup 114
-// (433 B); root, lookup, walk variable 171; walk variable, root, lookup 114. Why it works: the tested value then has three
-// references (its load, its test, the 0xe4050 argument) and ranks below the datum and the unit object, so it is left EBX
-// and the iterator index stays in the frame; the walk variable's own read of the field stays a load ahead of the lookup,
-// which keeps the walk's entry test on the copy even as a plain `long`.
-// Left at 1: retail copies the lookup's index from the tested value's register (`mov edx, ebx`), this build from the walk
-// variable (`mov edx, ecx`); the two reads of the field in that block are merged with each other here. On the lead: the
-// lookup's argument cast to `dword` 1, the walk variable's initialiser cast through `dword` 1 (same code each); a `dword`
-// walk variable 171; the lookup or the walk variable through a `long const &` bound to the field 171 each; the lookup
-// through the iterator's datum 171; the lookup on the walk variable 99; the lookup on a `unit` local kept for the test and
-// the 0xe4050 argument 171 (both reads then become copies of the tested value and it takes EAX), with the 0xe4050 argument
-// from the field 171, with the player test on the field 171; the walk variable copied from that `unit` local 108 (the entry
-// test folds), `dword` 171; `dword unit` for the test with the field reads 1 (same code). The permuter on the lead (81
-// tries, 900 s): nothing below 1. No forced allocator decision moves the row (60 tried); it is not a register choice.
-// Steps before the lead, on the NONE-root walk with a `dword` walk variable copied from `unit`: root, walk variable, lookup
-// or walk variable, root, lookup 81 (433 B: retail's structure, registers apart), the other three orders 171 (405 B);
-// `dword unit` with a `long` walk variable the same; the walk variable read from the field with the lookup on `unit` 171.
-// Diagnostic, restored at once: with 0xbaf80's pin lifted in the screen only, the real function called after the lookup
-// 171, ahead of it 113 (439 B), on the `unit` local 109: the open-coded walk is closer than the expanded call. Still
-// BLOCKED-BY 0xbaf80 for any form that calls it.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1099,20 +799,19 @@ bool __stdcall function_14df40(long *unit_index)
 	while (data_datum_iterator_next_inlined(&iterator))
 	{
 		s_player *player = (s_player *)iterator.datum;
-		long unit = player->unit_index;
 
-		if (unit == NONE)
+		if (player->unit_index == NONE)
 		{
 			continue;
 		}
 
-		s_unit_vehicle_view *unit_object = (s_unit_vehicle_view *)object_get_unchecked(unit);
-		long root_index = unit;
-		long parent = unit_object->parent_index;
-		while (parent != NONE)
+		s_unit_vehicle_view *unit_object = player_unit_object(player);
+		long current = player->unit_index;
+		long root_index = NONE;
+		while (current != NONE)
 		{
-			root_index = parent;
-			parent = ((s_unit_vehicle_view *)object_get_unchecked(root_index))->parent_index;
+			root_index = current;
+			current = ((s_unit_vehicle_view *)object_get_unchecked(root_index))->parent_index;
 		}
 
 		if (TEST_FIELD_BIT(((s_unit_vehicle_view *)object_get_unchecked(root_index))->flags.bit18))
@@ -1125,7 +824,7 @@ bool __stdcall function_14df40(long *unit_index)
 		{
 			if (unit_object->unknownaa == 0)
 			{
-				if (function_e4050(unit) || (unit_object->unknown348 & 1))
+				if (function_e4050(player->unit_index) || (unit_object->unknown348 & 1))
 				{
 					*unit_index = player->unit_index;
 					return true;
@@ -2708,6 +2407,23 @@ static __forceinline long player_round_ticks(real value)
 // & 0x80) { if (f() || g()) ... }`) 703; all three 703; the 0x80 site as `bool dropped = f(); if (!dropped) dropped = g(); if
 // (dropped) ...` 703 (all the same code, 34 calls: the first 0x151b80 call and 0xccd20 still expand). Still BLOCKED-BY
 // 0xe68c0's file flags, 0x151b80 and 0xccd20.
+// M3 lane 11 r167 (fast screens with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0 and 0x14e970; control 703 at 2742 B, 34 calls;
+// difflib-aligned exact/register-masked counts 708/268 at the control). The equal length is a coincidence: a frame past
+// 0x7f turns the stack offsets into 4-byte displacements (the 0x16 request in its own block re-measured 806 at 2844 B,
+// the same 34 calls, frame 0x6c), so retail's 2740 B are its 0x74 frame without the two expansions. 0xccd20 is still
+// expanded in round 218's 775 form (33 calls there only because its body's own call replaces it). Diagnostic, restored
+// at once: the last site as `function_e68c0(0x16, unit_index)` with that function's file built without /Ob1 806 at
+// 2844 B: it then expands at the last site only (its own request home) and stays a call at the three seat and ready
+// sites, as in retail, while 0x151b80 and 0xccd20 still expand (so their expansion is not an inline budget that retail's
+// own expansions use up). Trials: the 0x60 block entered on `(buttons & 0x20) || (buttons & 0x40)` 711 at 2748 B
+// (retail's `mov edi, edx; and edi, 0x20; jne; test dl, 0x40` exactly; aligned 695/255); that with `dword melee =
+// buttons & 0x20` for the entry and the else arm 711 (719/253); player_current_weapon's result preset to NONE and set
+// under `slot != NONE` 708 at 2726 B (the same code as the header getter form); the attack target preset NONE with the
+// lunge count as `(short)(lunge + 1)` 700 (a gain of 3); both with the two-test entry 707 at 2746 B (masked 247). Leads
+// (they need the repeated 0x80 test, kept only with a match): each request in its own block and the decay read at each
+// use 710 at 2702 B, frame 0x74, 33 calls (masked 242); with the two-test entry and the target and lunge forms as well
+// 691 at 2742 B, frame 0x6c (masked 214). A plain `inline` wrapper for the 0x151aa0/0x151b80 pair taking the flag 703
+// (the same code). Still BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

@@ -833,6 +833,14 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // (1709 B); a file-local inline taking the side and the angle with the calls in both rows 440 (1728 B); main's split y
 // row with the sine assigned by an if/else 418 (1738 B), by the ternary 464 (1693 B). In each the unity constant goes
 // back to XMM1: p1's duplicated arms are what lower its rank (four more blocks where it is live and unread).
+// M3 lane 2 r149 (H2M_FAST with 0x29a190 and 0x298c30, MATCH each run; control 305, aligned 175, masked 93). Allocator
+// reading of the first difference: unity (six references, priority 38) is placed ahead of the first normalisation's
+// scaled x (24) and takes XMM1; a forced XMM2 for unity alone gives 293 with the first difference at +0x147. Forms: the
+// direction copy as `point2f local_2 = { arg_8->x, arg_8->y };` 391 (1722 B, aligned 170, masked 100): the entry block
+// is then retail's row for row (unity XMM2, the scaled x XMM1), but the facing dot loads y first and the near arm
+// shortens; the same with the dot written y first 391, with the copy as two member assignments 391 (same code each);
+// lane 2 r134's p1 lead rebuilt 249 (1722 B), with the member copy 412 (1706 B); local_1 as two member assignments 305,
+// the negated radius as `0.0f - arg_6` 305 (same code each).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

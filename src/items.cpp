@@ -1956,6 +1956,10 @@ struct s_item_flags_view_10b850
 // Function scope for the incoming linear sample, working linear velocity and angular
 // velocity, seven subsets and all with the carrier delta: eight at 824.
 // The 0x154 frame, entry Boolean stores and ray/flow home still differ.
+// First object bit, second object bit, both, second read and write, or both reads
+// and the write as bit members: 824 each. Both reads, second read and write,
+// or both reads and the write with the signed short field: 824 each.
+// The entry flag bytes and 0x154 frame still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

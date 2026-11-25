@@ -921,6 +921,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // as one subtracted scalar 245/107/152, steering scalar at its angle 239; initialized steering/
 // reversing/both points 107/107/107, both projections using the components at their use 238.
 // NOT kept: the initialized points tie and omitting the steering copy changes the frame.
+// The ordered magnitude decision at the sample, after the velocity copy, after the root
+// or after normalization 296/297/290/279. Conditional reversing arm, magnitude first,
+// conditional magnitude arm or both tests evaluated 112/116/127/124.
+// NOT kept: all raise the score. The unity register and entry interleave still differ.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -5267,6 +5271,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 126/124/128/128; with the indexed projection setter 128/126/130/130.
 // NOT kept: the two opening-projection pairs recover the prefix through +0x107
 // but score higher and shorten the body. Cross and trig homes still differ.
+// One flip-mode read with separate angle and rotation dispatch. Switch angle with signed,
+// default, signed range or default range rotation 141/133/138/147. If/else angle with
+// the same rotation tests 130/126/133/132. NOT kept: even the 806-byte forms raise the
+// score, and the first projection operand and trig homes still differ.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
