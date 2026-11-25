@@ -1088,6 +1088,12 @@ bool function_e4050(long object_index);
 // Diagnostic, restored at once: with 0xbaf80's pin lifted in the screen only, the real function called after the lookup
 // 171, ahead of it 113 (439 B), on the `unit` local 109: the open-coded walk is closer than the expanded call. Still
 // BLOCKED-BY 0xbaf80 for any form that calls it.
+// m3 lane 6 r243, on the lead (still 1): the lookup's index is a copy of the walk variable in the compiler's own code
+// (the lookup's read of the field merges with the walk variable's read in the block they share; only the walk
+// variable's read becomes a copy of the tested load), so no register decision can move it. Forms: the walk variable
+// read and tested at the loop head 106 (its entry test folds); the walk variable read ahead of the player test, the
+// test still on the field, 103 (the test merges with the copy); `unit_object` declared ahead of the walk variable and
+// assigned after it 1 (same code).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
