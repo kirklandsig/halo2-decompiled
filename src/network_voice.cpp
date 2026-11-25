@@ -4067,6 +4067,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // walking packet 181; combined member and kind validation 172; combined member and kind validation with
 // walking packet 164; separate relay and direct validation phase 153; separate relay and direct
 // validation phase with walking packet 170.
+// M3 lane 6 r244 (h2m fast, 0x564c0 MATCH each time): on the packet-cursor form (164) the allocator's first pass
+// ranks the member local 20 above the channel parameter 14 (the channel loses about 54 in the entry blocks where it
+// is live but unread), so the member takes EBP. Cursor form plus one `payload = packet + 3` pointer for the submit
+// and add-packet calls 164 (folded); the member read through a `long const &` 164 on the cursor form, 139 on this
+// body (same code each); size debited at the loop top right after its check 169 on the cursor form, 159 here.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
