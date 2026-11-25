@@ -3965,6 +3965,19 @@ real g_47ff30 = 2.5f;
 // retail's fcos/transform/fsin/left interleaving), with memset 674 (mask=526), + vscale 709 (fr=0xfc, mask=520), on the 660 form 674
 // (3245 B, fr=0xfc, 757/756 insns, al=701, mask=535; + planar2f copies 710, al=687); torque in-place in rotation_axis 672 (same code);
 // staged force products 672 (same code); normalize_inline(&up) 721 (3223 B, al=668); reused base_maximum_speed 730/724. Body unchanged.
+// M3 lane GB round 7 (26 trials, fast with 0xeec90/0xef4f0/0x2053c0/0x2056e0 all MATCH; control 672, 3244 B, fr=0x100, al=720, mk=477):
+// statement-macro friction (VEHICLE_FRICTION_APPLY/APPLY3 with dir/mag/abs inside the macro, recovering rates=EDX, state=EBX and retail's
+// 3 friction blocks without real const &) alone 671 (3244 B, al=690, mk=358), with post-mul at end 671 (mk=357), with friction*=unknown6c
+// 703 (mk=386), + vector3f_scale on vehicle->unknown25c + torque_scale in-place 699 (3244 B, fr=0xfc, +0x66, al=689, mk=329; + friction*=
+// unknown6c 698, mk=359; all mass reads from field 696, 3224 B, mk=352), + drop bounded locals 713 (3210 B), + inv_max after forward 712,
+// + planar point2f copies 694 (fr=0x104, mk=321), + real_point3d_set 709 (mk=314; + planar 697, mk=304; + transform between cos/sin 697,
+// mk=300; on HEAD alone 682, mk=471), + up/force at top 713/697, + transform between cos/sin on 0xfc 697 (mk=306) / on 0x100 667 (mk=332),
+// + interleaved fractions 675 (fr=0xfc, mk=324; + tr_between 671, mk=300; + staged cross3f 670, mk=308; + planar 711, fr=0x104; + if-abs
+// 689, 3222 B; + friction*=unknown6c 654, 3244 B, fr=0xfc, +0x66, mk=354 — NOT kept: relies on match-only interleaved fractions/moved decls);
+// inline vehicle_friction_scaled + friction*=unknown6c 672 (0x100) / 710 (0xfc with vscale). Frame map finding: retail packs angular_velocity
+// + 3 masses + force at 0x14..0x1f, up + rotation at 0x20..0x2f, linear_velocity + rotation_axis + torque at 0x40..0x4b, left + planar_velocity
+// at 0x54..0x5f and planar_facing at 0x68..0x6f (exact 0xfc); ours keeps masses outside angular_velocity and merges rotation with linear_velocity.
+// Body unchanged.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

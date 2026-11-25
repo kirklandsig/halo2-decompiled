@@ -1745,6 +1745,19 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator stored graph, step, entries, then keys 732 (first difference +0x2d1, the first request's fifth-kind zero);
 // on the 742 form the candidate dropped (the id reset each pass, then set from the named entry) 1028 (2856 B); on the
 // 732 form the id assigned by a ternary on the named entry 1032 (2859 B). Body unchanged.
+// M3 lane GB r7 (fast with 0x1dbc80, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x1dd560, 0x2963f0,
+// 0x1cb230 and 0x1cc3f0, all 10 peers MATCH unless noted; control 812, al=578; 24 trials on both twins; body unchanged):
+// `long const *mode_reference = &mode;` (0x1dc8c0's form) 812, with 0x1dc8c0's iterator store order 812 (al=571), with
+// two-caller inline `graph_named_entry_find` 812 (al=571); flag-free `while (entry)`/`for` with `break` and early
+// no-result return 1056 (2871 B, al=134), single exit 1049 (2873 B), early weapon_class+no-result returns 998 (2839 B),
+// `while ((entry = iterate(...)) != NULL)` with `graph_named_entry_find` and single exit 1049 (2873 B). On GB4's 750
+// lead (al=83): `mode_reference`, `graph_named_entry_find`, and `bool searching = true` all 750 (same code). On lane 12
+// r185's grouped 732 lead (+0x2d1, al=84): `mode_reference`, `animation_id.index != NONE`, `bool searching = true`,
+// `long found = NONE`, `s_graph_tag *self = this`, `graph_named_entry_find`, and `out.id.index != NONE` as `urgent` all
+// 732 (+0x2d1, al=84: the iterator's three zero stores still bridge into both requests' inheritance counters); `out.m/c/t`
+// after iterator setup 749 (+0x29, al=95); combining 732 with `if (out.id.index == NONE) return out.id;` 750 (al=83);
+// flag-free break/do-while/`while (out.id.index == NONE && entry)` on 732 1075/1034/1097; `if (graph->inheritance_count
+// > 0)` in `graph_resources_request` 1012 (loses 0x1dc8c0 and 0x1ddd00).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2415,6 +2428,15 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Resolved mode, class and type initialized beside their own requested keys, seven
 // subsets, then all three after cursor initialization: 812 each. The class and NONE
 // registers still exchange, and the resolved-mode and candidate homes still differ.
+// M3 lane GB r7 (fast with 0x1db170 and 10 matched peers, all MATCH unless noted; control 812, al=578; 24 twin trials;
+// body unchanged): `mode_reference = &mode` 812, + 0x1dc8c0 iterator order 812 (al=571), + two-caller `graph_named_entry_find`
+// 812 (al=571); flag-free `while`/`for` with `break` + early no-result return 1056, single exit 1049, early weapon_class+
+// no-result returns 998, `while ((entry = iterate(...)) != NULL)` with `graph_named_entry_find` 1049. On GB4's 750 lead
+// (al=83): `mode_reference`, `graph_named_entry_find`, `bool searching = true` all 750. On grouped 732 lead (+0x2d1,
+// al=84): `mode_reference`, `animation_id.index != NONE`, `bool searching = true`, `long found = NONE`, `self = this`,
+// `graph_named_entry_find`, `urgent = (out.id.index != NONE)` all 732; `out.m/c/t` after iterator 749; + early no-result
+// return 750; flag-free break/do-while/`while (out.id.index == NONE && entry)` 1075/1034/1097; guarded inheritance loop
+// in `graph_resources_request` 1012 (loses 0x1dc8c0/0x1ddd00).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
