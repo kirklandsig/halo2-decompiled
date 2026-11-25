@@ -59,7 +59,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 462 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // (A second header line, "489 (was 489)", with the same text, merged here in m3 lane 14 r145.)
 // Earlier header line, a stack merged here in m3 lane 2 r139: 489 (was 489; m3 lane 15 r132, m3 lane 8 r220 and m3 lane 11 r151 unchanged, their lines just above the marker): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // Earlier first line (stacked, merged here in m3 lane 15 r132), 489 (was 489): The 0x88 frame agrees. Position uses +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
@@ -941,6 +941,17 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // with different operands 718 (351/175/55; the rows are merged after the join again), the side point as two scalars y first
 // 688 at 3499 B (263/182/64), the copy through vector3f_assign 665 at 3499 B (249/185/71; squares still k, j, i). A scan of
 // every game function for a float select whose arms both end in the same product-and-add row finds only this one.
+// GA4 (fast with lane 6 r242's companion list, kept confirmed plain with caller 0x1f38c0 MATCH; control 489): kept the blend tail
+// through existing vector3f_scale + vector3f_scale + vector3f_add (`vector3f previous; vector3f_scale(&local_6, 1.0f -
+// local_2->field_64, &local_6); vector3f_scale((vector3f const *)(local_0 + 0x678), local_2->field_64, &previous);
+// vector3f_add(&previous, &local_6, &local_6);`) 489 -> 462 (-27, 3504/3499 B: matches all 49 blend-and-clamp instructions
+// byte for byte, including retail's 5-byte `subss xmm0, [esi + 0x64]` and `xmm7`/`xmm6`/`xmm3`/`xmm1`/`xmm2`). Also tried (28
+// trials): blend as scale + add_scaled 485 (prev first 491, tmp 486, copy diag 626), two scales prev-first + add 483, scale +
+// scalar adds 572, vector3f_add + blend helpers 663 (3499 B); frame_velocity without local_28 pointer 487 (with swapped dots +
+// cross3f_staged 491); side select if/else with `real neg = -local_23` (y/x 751, x/y 751, scalar y/x 738, x/y 738, point2f_set
+// both arms 751, helper both arms 731 / ternary 721, direct local_26 both arms 593); inline bool flip helper 665; combined clean
+// structure with mode-2 early i/j + MIN(1.0f, ratio) + field_50 early + no local_28 + blend helpers 673-675 (3475-3478 B,
+// aligned 112, reg+esp-masked 43: all 53 mode-2/scale instructions match byte for byte), without mode-2 early 466-493.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -1138,10 +1149,10 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 				local_6.j += local_7.j;
 				local_6.k += local_7.k;
 				function_1f3e40(arg_1, &local_5, &local_6);
-				real blend = local_2->field_64;
-				local_6.i = *(real *)(local_0 + 0x678) * blend + local_6.i * (1.0f - blend);
-				local_6.j = *(real *)(local_0 + 0x67c) * blend + local_6.j * (1.0f - blend);
-				local_6.k = *(real *)(local_0 + 0x680) * blend + local_6.k * (1.0f - blend);
+				vector3f previous;
+				vector3f_scale(&local_6, 1.0f - local_2->field_64, &local_6);
+				vector3f_scale((vector3f const *)(local_0 + 0x678), local_2->field_64, &previous);
+				vector3f_add(&previous, &local_6, &local_6);
 				local_6.i = function_29bab2(local_6.i, -1.0f, 1.0f);
 				local_6.j = function_29bab2(local_6.j, -1.0f, 1.0f);
 				local_6.k = function_29bab2(local_6.k, -1.0f, 1.0f);
