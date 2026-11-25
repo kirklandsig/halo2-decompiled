@@ -1506,6 +1506,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // raise the score. first exact count 924; second exact count 1236; both exact counts 1609; three-way
 // sample branch 606; four-way sample branch 606; shared initial distance limit 418; winner-first
 // comparisons 418; shared candidate position 593.
+// M3 lane 2 r149 (h2m fast with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 197, registers and frame
+// masked 134). Retail reads: the source parameter's stack cell is reused for the opposite distance after the samples
+// pointer is loaded, `first` (the nearest sample's address) is formed ahead of scan 2 and held in EBP for the fraction
+// call, the count has a home re-read at each unrolled step, and offset.i is stored to its home each pass and never read.
+// Forms: the opposite distance declared ahead of the samples local and the delta 419 (masked 133); the delta declared at
+// the top of the sample branch 418 (same code); the samples local declared ahead of scan 1 and used there too 623 (2071 B);
+// scan 2's offset built through the existing vector3f_assign 418, the delta through it 418 (same code each). A forced-
+// decision search (14 links) gives at best 409 (one pick), the frame staying 16 bytes short.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

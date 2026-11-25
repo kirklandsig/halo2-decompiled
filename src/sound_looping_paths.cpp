@@ -1000,6 +1000,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // snapshot 838; shared flags and pre-walk attenuation 838; converted count published once 953; target
 // end pointer 949; primary from both cluster outcomes 932; completed target append and primary result
 // 930.
+// M3 lane 2 r149 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730,
+// 0x18dc90; control 837, aligned 646, registers and frame masked 259). Existing-helper composites on main's body (the
+// helper header included): the target loop's two pins through approach_126660 with the used bit through bit_vector_set
+// 909 (masked 256); plus the audible and muted updates through word_flags_set 914 (masked 257); plus the fade's two pins
+// through approach_126660 914; the fade's pins with both flag setters 867 (3301 B); the used bit with the audible setter
+// alone 926 (3304 B); that with the fade's pins 925 (3305 B); the audible setter alone 863 (3304 B, masked 253). The
+// setters give retail's two byte operations but shorten the body (retail's word read for the audible flag stays).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
