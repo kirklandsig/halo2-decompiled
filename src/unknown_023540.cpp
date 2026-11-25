@@ -3616,6 +3616,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // product parens stmt 1 only 54 (same code), both stmts 244 (1988 B), stmt 2 first/second product 234/210 (1996/2014 B);
 // asymmetric `scale*`, `0.5f*`, `1.0f+` on stmt 1 or stmt 2 54 each (same code); `*coordinates++` 320 (1914 B);
 // `const real one/half` 54 (same code); earlier `#pragma inline_depth(0)` 542 (1724 B). Body unchanged.
+// Rotate into the output pair, then use component loops for all scale/bias steps,
+// scale only, bias and half-scale, scale and bias, half-scale only, separate scale
+// and bias/half-scale loops, separate scale/bias and half-scale loops, or three loops:
+// 339/333/333/339/339/333/339/339. NOT kept: the loops shorten the body and raise the score.
+// The x87 store still leads the SSE subtraction in the restored form.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

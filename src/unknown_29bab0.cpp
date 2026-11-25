@@ -974,6 +974,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // (bool)((byte)local_21 != 0) 670 (3483 B, 841/844 insns, al 93, mk 76: recovers retail's test/setne without moving local_2; cast, match-only),
 // byte side_ok 554 (3499 B, +0x60), + per-arm center_y 682 (3488 B, pos +0x80, +0x60), + sep velocity 682, zero-new-local per-arm local_25.y
 // (direct or +=) 739 (fr=0x90), two-ternary side 644 (al 131, mk 94), 29bab3 mul order 673, cross3f_staged 673.
+// Side y accumulated in the two arms 719, conditional y product 560, named conditional y in the point
+// initializer 712, paired displacement before translation 714, planar position copy incremented y then x
+// 706, the two branch accumulations with the planar difference helper 719, conditional y with that
+// helper 713, and conditional y with the shared planar dot 558. NOT kept: all raise the score.
 // GB9 (fast with lane 6 r242's companion list, 7 peers MATCH; control 462 at 3504/3499 B, +0x100, fr=0x88; 14 trials, restored):
 // `local_24 = local_23; if (!local_22) local_24 = -local_23;` 649 (3502 B); `local_24 = -local_23; if (local_22) local_24 = local_23;` 654 (3502 B);
 // flipped `if (!local_22)` 478; `planar_scale` ternary 721 (3476 B, +0x4e), if/else 702 (3499 B, +0x4e); `local_26` member assigns 462 (same code);

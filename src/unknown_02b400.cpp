@@ -761,6 +761,11 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
    address escapes. It takes no arguments, so the marker changes no call.
    The body doesn't match yet, but with the marker its prologue is
    retail's; its caller 0x25a10 doesn't match yet either. */
+// score 597 (was 597): the aligned 0xb8 frame agrees. The exit displacement leads to a body 99 bytes
+// short, and the first cosine uses double immediates where retail uses floats. Float angle literal 593;
+// float angle literal with promoted camera component 597; named double cosine 596; named double
+// turn increment 597; named distance span 596; plain phase pointer 597; direct phase field 597; double
+// bitmap phase terms 596. NOT kept: the float angle literal fixes the three operand widths for four points.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -942,6 +947,11 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
     return result;
 }
 
+// score 832 (was 832): the 0xd0 frame agrees. Retail uses XMM2 for zero and receives the state
+// in EBX, while the build uses XMM3 and loads the state into EBP. Named fade progress 832; fade
+// from separate progress branches 833; geometry-success scope 850; promoted player divisor 857;
+// radius through the extent view 832; horizontal radius local 860 at retail length; partition-relative
+// index 832; volume count initialized after the lock 860. The state parameter remains on the stack.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1201,76 +1211,84 @@ void function_1cf80();
 bool function_143c0(long, short, short, real);
 
 
+// score 344 (was 365): initializing the draw result before the geometry check restores the early
+// true byte and puts the failure exit after the draw exit. The state still arrives in EAX,
+// and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
+// W-buffer state 365; separate primitive branches 421, with a fresh mode read 422; named partition
+// end 365; shader mode helper 364; shader slot helper 378.
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
     byte *state = (byte *)state_address;
     bool lines = *(short *)(state + 0x6c) == 2;
-    if (!function_12de70((s_geometry_block_info *)(state + 0x40), 3)) return true;
-    s_38450_records *records = *(s_38450_records **)(state + 0x68);
-    g_4670bc = 1;
-    function_16b10((s_render_reset_state *)g_485b48);
-    function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0xb4), 0);
-    function_12fa0((byte *)&g_485618, g_48568c, false, g_4858b8);
-    bool result = function_39780(lines);
-    if (!lines)
+    bool result = true;
+    if (function_12de70((s_geometry_block_info *)(state + 0x40), 3))
     {
-        D3DDevice_SetRenderState(D3DRS_POINTSPRITEENABLE, TRUE);
-        D3DDevice_SetRenderState(D3DRS_POINTSCALEENABLE, TRUE);
-        D3DDevice_SetRenderState(D3DRS_POINTSCALE_A, 0);
-        D3DDevice_SetRenderState(D3DRS_POINTSCALE_B, 0);
-        real scale = 1.0f;
-        D3DDevice_SetRenderState(D3DRS_POINTSCALE_C, *(dword *)&scale);
-    }
-    dword first_alpha = (dword)(long)(*(real *)(state + 0x70) * 256.0f) << 24;
-    dword second_alpha = (dword)(long)(*(real *)(state + 0x74) * 256.0f) << 24;
-    D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-    D3DDevice_SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-    D3DDevice_SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-    D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-    D3DDevice_SetRenderState(D3DRS_ALPHAREF, 0);
-    D3DDevice_SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-    D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-    D3DDevice_SetRenderState(D3DRS_ZENABLE, 2);
-    D3DDevice_SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-    if (!lines) function_143c0(*(long *)(state + 4), 0, 3, 0.0f);
-    function_1cf80();
-    if (lines) D3DDevice_SetRenderState(D3DRS_LINEWIDTH, *(dword *)(state + 0x7c));
-    D3DDevice_Begin(lines ? D3DPT_LINELIST : D3DPT_POINTLIST);
-    long players = *(short *)((byte *)g_4e8c20 + 8);
-    long divisor = players < 1 ? 1 : players > 4 ? 4 : players;
-    long count = records->count / divisor;
-    long first = g_485600 * count;
-    for (long i = first; i < first + count; ++i)
-    {
-        s_38450_vertex *volatile vertex = records->vertices + i;
-        s_38450_particle *particle = records->particles + i;
-        if (!(particle->age > 0.0f)) continue;
+        s_38450_records *records = *(s_38450_records **)(state + 0x68);
+        g_4670bc = 1;
+        function_16b10((s_render_reset_state *)g_485b48);
+        function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0xb4), 0);
+        function_12fa0((byte *)&g_485618, g_48568c, false, g_4858b8);
+        result = function_39780(lines);
         if (!lines)
         {
-            D3DDevice_SetVertexDataColor(1, vertex->color);
-            D3DDevice_SetVertexData4f(0, vertex->position.x, vertex->position.y,
-                vertex->position.z, vertex->size * 16777215.0f);
+            D3DDevice_SetRenderState(D3DRS_POINTSPRITEENABLE, TRUE);
+            D3DDevice_SetRenderState(D3DRS_POINTSCALEENABLE, TRUE);
+            D3DDevice_SetRenderState(D3DRS_POINTSCALE_A, 0);
+            D3DDevice_SetRenderState(D3DRS_POINTSCALE_B, 0);
+            real scale = 1.0f;
+            D3DDevice_SetRenderState(D3DRS_POINTSCALE_C, *(dword *)&scale);
         }
-        else
+        dword first_alpha = (dword)(long)(*(real *)(state + 0x70) * 256.0f) << 24;
+        dword second_alpha = (dword)(long)(*(real *)(state + 0x74) * 256.0f) << 24;
+        D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+        D3DDevice_SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+        D3DDevice_SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+        D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+        D3DDevice_SetRenderState(D3DRS_ALPHAREF, 0);
+        D3DDevice_SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+        D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+        D3DDevice_SetRenderState(D3DRS_ZENABLE, 2);
+        D3DDevice_SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+        if (!lines) function_143c0(*(long *)(state + 4), 0, 3, 0.0f);
+        function_1cf80();
+        if (lines) D3DDevice_SetRenderState(D3DRS_LINEWIDTH, *(dword *)(state + 0x7c));
+        D3DDevice_Begin(lines ? D3DPT_LINELIST : D3DPT_POINTLIST);
+        long players = *(short *)((byte *)g_4e8c20 + 8);
+        long divisor = players < 1 ? 1 : players > 4 ? 4 : players;
+        long count = records->count / divisor;
+        long first = g_485600 * count;
+        for (long i = first; i < first + count; ++i)
         {
-            real scale = g_509418;
-            point3f previous;
-            previous.x = vertex->position.x - particle->velocity.i * scale * *(real *)(state + 0x78);
-            previous.y = vertex->position.y - particle->velocity.j * scale * *(real *)(state + 0x78);
-            previous.z = vertex->position.z - particle->velocity.k * scale * *(real *)(state + 0x78);
-            D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | first_alpha);
-            D3DDevice_SetVertexData4f(0, previous.x, previous.y, previous.z, 1.0f);
-            D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | second_alpha);
-            D3DDevice_SetVertexData4f(0, vertex->position.x, vertex->position.y, vertex->position.z, 1.0f);
+            s_38450_vertex *volatile vertex = records->vertices + i;
+            s_38450_particle *particle = records->particles + i;
+            if (!(particle->age > 0.0f)) continue;
+            if (!lines)
+            {
+                D3DDevice_SetVertexDataColor(1, vertex->color);
+                D3DDevice_SetVertexData4f(0, vertex->position.x, vertex->position.y,
+                    vertex->position.z, vertex->size * 16777215.0f);
+            }
+            else
+            {
+                real scale = g_509418;
+                point3f previous;
+                previous.x = vertex->position.x - particle->velocity.i * scale * *(real *)(state + 0x78);
+                previous.y = vertex->position.y - particle->velocity.j * scale * *(real *)(state + 0x78);
+                previous.z = vertex->position.z - particle->velocity.k * scale * *(real *)(state + 0x78);
+                D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | first_alpha);
+                D3DDevice_SetVertexData4f(0, previous.x, previous.y, previous.z, 1.0f);
+                D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | second_alpha);
+                D3DDevice_SetVertexData4f(0, vertex->position.x, vertex->position.y, vertex->position.z, 1.0f);
+            }
         }
+        D3DDevice_End();
+        D3DDevice_SetRenderState(D3DRS_POINTSPRITEENABLE, FALSE);
+        D3DDevice_SetRenderState(D3DRS_POINTSCALEENABLE, FALSE);
+        D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+        g_4670bc = 1;
+        function_16b10((s_render_reset_state *)g_485b48);
     }
-    D3DDevice_End();
-    D3DDevice_SetRenderState(D3DRS_POINTSPRITEENABLE, FALSE);
-    D3DDevice_SetRenderState(D3DRS_POINTSCALEENABLE, FALSE);
-    D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-    D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-    g_4670bc = 1;
-    function_16b10((s_render_reset_state *)g_485b48);
     return result;
 }

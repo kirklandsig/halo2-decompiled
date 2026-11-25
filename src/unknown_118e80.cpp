@@ -1328,6 +1328,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // (re-measure); the helper with the member store kept and the member's dword read through a `long const *` cast as the
 // force 29 (1035 B); that cast read without the helper 38; the flag member typed `long` and passed as the force 96
 // (1038 B). Still BLOCKED-BY 0x1ec690 (not yet written) and 0x1eb6f0 for the copy's hoisted loads.
+// M3 lane 2 r151 (fast screen; control 14): a one-use `vector3f` copy of the move output's velocity as the +0x88 store's
+// source (the call still takes the member's address) 35 (all three source loads now run ahead of the object pointer
+// and the force is widened into ECX); that copy without the member store 93 (first +0x73); that copy with the member
+// store after it 36; the copy declared after the re-fetched object pointer 35; the force local typed `byte` 14 (same
+// code). Reading: a forced-ranking search keeps two semantic rows in every forced decision (the force's byte spill and
+// its dword push), so register choice alone cannot reach retail while 0x1c4b00's formal is `long`. Still BLOCKED-BY
+// 0x1c4b00.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
