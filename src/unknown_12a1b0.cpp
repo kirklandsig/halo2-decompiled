@@ -3098,6 +3098,13 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // at the old-end fade 595, so the hand-written block is already that expansion's code; in this loop the link expands a
 // 0x126df0 call at the loop top or under one `if` and calls it under two, while retail's old-end fade sits under
 // three. Body unchanged.
+// M3 lane 12 r189 (reduced-image screen with the two callers and the matched callees listed, control 597 as the full
+// check; with only the callers listed the image reads 694). Forms aimed at the track definition's reference count: the
+// track's flags read once into a local at the top of the pass 688 (frame +12), the same local declared after the
+// alternate test 684 (frame +12); the fade-in duration named once at the top of the start arm for its three uses 618
+// (aligned rows 512 -> 430 at retail's frame); the start arm's two state stores as one value (`field_c_4 = 0;
+// next_state = 0;`) 597 (same code); the old-end fade's duration read at its use with no local 635 (frame -4); the end
+// sound index named ahead of the start test 597 (same code). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
