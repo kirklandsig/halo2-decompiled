@@ -978,6 +978,14 @@ struct s_item_collision_bsp
 // distance or a translation subtotal, 199 each. Copy the full untransformed normal into the
 // separate vector, 288 for either distance form. Separate scalar coordinates, 199 for either.
 // NOT kept: the coefficient homes still differ, and the whole-normal copy grows the body.
+// Named up-plus-left, forward, left, or left and forward normal terms in each row
+// or across all rows before publication: 193/193, 191/191, 191/191, 195/195.
+// NOT kept: each raises the score at unchanged length. The coefficient registers
+// and contact-point home still differ.
+// Shared queried plane with scalar expression or accumulator rows, stored directly
+// or through the setter: 244/244/242/242. Vector expression or accumulator rows
+// 310/310. In-place rotation with scalar or vector coefficient capture 232/278.
+// NOT kept: the single-plane forms grow the body and still miss the XMM homes.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

@@ -2380,6 +2380,11 @@ struct s_unit_motion
 // NOT kept: the accumulator takes XMM4 and returns with ret 4. It inlines
 // into 0xc7840 and loses 0x1e5af0 and 0x1faf80 in the preview. The current
 // velocity arrives on the stack and the two output paths remain split.
+// Single output block with exhausted-time exits 86, with a running velocity 69.
+// With a final completion assignment 108/69, phase-local durations 86/69,
+// direct time or original first-phase inputs on the running-velocity path 69/69.
+// NOT kept: every running-velocity form inlines into the caller and loses
+// both matched transitive callers. The stack velocity load and ret 8 remain.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -8804,6 +8809,11 @@ real function_50650(real cosine);
 // Paired outputs 591, idle-arm defaults 544, late reciprocal with
 // original/separate speed outputs 498/505. NOT kept: all forms tie or
 // regress. The frame and speed slots still differ.
+// Framed directions through shared basis dots, setter, or both 491/491/491.
+// Return by value 628, with shared dots 627. Pass by value 669, with setter
+// 669, and pass/return by value 703. NOT kept: the shared operations tie.
+// Returned values raise the score, and by-value inputs also lose the two
+// matched transitive callers. The frame and step arguments still differ.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -9094,6 +9104,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Object-header or object accessor for the grenade owner alone or with the
 // initial lookup, each with or without a named grenade handle, 62 in all
 // eight forms. The owner load order and call setup still differ.
+// Sampled player/object, player/object/team, player alone or object alone
+// before publishing the owner, player first or object first: 62/58 in each pair.
+// NOT kept: the object-first forms fix the first owner block through +0x14b
+// at 1602 bytes, but four points is below the threshold and the one-use
+// samples require a match. The damage flag, later call setup and shake remain.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {

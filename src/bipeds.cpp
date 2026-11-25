@@ -7564,6 +7564,11 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Definition, state and animation ID spill homes still cycle. Typed unit access for state, control flags,
 // and the late timing read scores 586 for all seven combinations. A named view for both entry reads
 // also scores 586. The original body and include list are restored.
+// A shared forward sample for both copies, by value 638 or through the
+// setter at the biped/output/both 660/663/667. Three scalar components for
+// both stores 636 with each of the four publication forms. Reduced control
+// 586. NOT kept: all regress, and the definition/state/animation homes and
+// inlined position completion still differ.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
