@@ -1027,6 +1027,26 @@ static inline bool teams_enabled_19e1c0()
 // Direct format exits, unconditional name/fallback copy with per-arm/common bounds 552/488;
 // name-only copy with per-arm/common bounds 513/513; ordinary result with the same four forms 605/561/547/548.
 // NOT kept: all shorten the body and still miss the entry token load.
+// Lane GA r4 (fast with 0x19e0f0/0x19ea60/0x19eae0, all MATCH each run; control 390 at 1437/1443 B, 22 distinct trials):
+// capacity-seeded plain result (`long result = remaining;` consumed by the 4 name clamps) with direct event->cause_team/effect_team,
+// long team + `best_score <=` and player locals in local_team/spawn_time recovers retail's token preload (`mov eax, [esp+4]`),
+// exact 0x204 frame, unmerged team tails, retail's `inc edi; cmp edi, 8; jl` scan and 1440/1443 B at +0xb (426; without player
+// locals 439 at 1454 B; with `return 0;` on rejected paths 432 at 1453 B; ternary clamps 439; format arms also consuming result
+// 439/432; shared negative-exit clamp 521), while neither direct teams alone (604) nor long team alone (671) nor the base seeded
+// form (661) flips it; `result` then dies after arm 4 so `token` re-enters EDI for arms 5..12. Also tried: plain result with
+// mutated entry `limit` local 589/589, shared negative-exit clamp on retail arms 632 (on volatile base 477), per-arm buffer struct
+// with constructor/copy_to/length plain 709/709 / volatile 625, inline `%s`/`%d` format helpers plain 588 / capacity-seeded 429,
+// split `return remaining;` on arms 5..7 plain 602, volatile base with `best_score <=` + player locals in local_team/spawn_time
+// 387 (-3, under the bar and one-use pointers), plain retail arms control 709. Original body restored.
+// M3 lane 8 r237 (h2m fast with 0x19e0f0, MATCH; control 390, plain result 691). Ledger on the plain result: the token
+// is one candidate (52: the entry compare plus twelve chain compares, minus twelve unreferenced chain blocks), while
+// `remaining`'s only whole candidate is the fallback's (26, three references): no use of it dominates the arms. Forms:
+// the first compare reading the token through a `word const *const *` bound to its address, plain result 691, kept
+// result 390 (same code each: the indirection folds before the candidates form); a `long` copy of `remaining` made at
+// the top and used everywhere 691 (copy-propagated); the dispatch in a forceinline helper 691 (re-measure of r184's).
+// Diagnostic, a test retail lacks: `if (remaining < 0) return 0;` first on the plain result 473 (1392 B: `remaining`
+// in EBP from entry, the token read from its slot per compare and the name arms no longer joined, as retail; the event
+// takes EDI and the token length EBX where retail has EBX / EDI, and a frame word returns). Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
