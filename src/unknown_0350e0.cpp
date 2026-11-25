@@ -555,6 +555,19 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // initialised longs at the top 334/334/334/342/342/342/342; the axis loads stay j, k, i (absolute addresses, so no
 // pointer-numbering effect), only their registers move. Retail re-reads the axis for the cross terms because its in-place
 // sine products overwrite i and k. Body unchanged.
+// The 0x90 frame agrees; the first axis reads and square spills still differ.
+// Squared and sine-scaled axis, paired or separate passes, shared input, and square pass with scaler 351/345/348/345.
+// Completed diagonal and sine axis in the same four forms 345/339/350/339.
+// NOT kept: all raise the score. The separate exact-length forms still change the opening frame.
+// M3 lane GB r4 (fast with 0x137ed0, MATCH unless noted; control 334, 20 trials): calling out-of-line 0x142640 1290
+// (826 B); inlined 0x142640 with `if (scale != 1.0f)` and `*axis` struct copy for squares 438/434/446 (1864-1877 B;
+// double angle in helper broke 0x137ed0 -> 42; scale test did not fold); inlined 0x143070 (`temp = *v`, 3-stmt accum)
+// 390/379/462 (1737/1741/1652 B); vector3f_scale for sine_axis 436; `axis->n[0..2]` 446; `(a.i*a.j)*t` + accum 446;
+// `compute_sincos` out-pointer helper 438/390 (0x137ed0 -> 42). Without the scale test and with float component square
+// copies on transform4x3f + in-place row rotations: sin/cos args 344 (1801 B, frame 0x8c, accum same 344), xy-only copy
+// 341 (1765 B, 338/338 insns, frame 0x8c); with 4 named trig locals ahead of builders 350 (1814 B, frame 0x90, +0x10,
+// mask 291: reproduces retail's pass-1 double-spill rotation schedule; accum and sq-first same 350), matrix3x3 locals
+// 336 (1780 B), row loop over `&g_467104.forward` 347 (1801 B, mask 298). Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -3019,6 +3032,19 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // The early camera-axis schedule and branch displacement remain. NOT kept: the three 280 forms gain one, and the other forms regress.
 // In-place X subtraction or all three subtractions before tint initialization 486/500.
 // The original camera-axis schedule and missing-tag branch displacement remain.
+// M3 lane GB r4 (30 fast trials with 0x2f2d0/0x2e3f0/0x222d0; control 281, al=142, mask=65): clamp_2e9e0 as `return PIN(value, 0.0f, 1.0f);`
+// 514 (2270 B), with vector3f_add_scaled draw point 514, with 0x20d80(context, true) 513; clamp_2e9e0 mutating value in place 509 (2285 B);
+// reflected via vector3f_scale + vector3d_from_points3d + vector3f_scale (no loop) on main 500, with early attenuation + helper delta/forward
+// 383 (2286 B); full loop-free helper form (vector3d_from_points3d delta, dot3f x4, 3-helper reflected in place or via projected,
+// vector3f_add_scaled draw point, early attenuation; saved in build/gb4/2e9e0-noloop-helpers.cpp) 435 at 2289 B (568/567 insns, al=64, mask=26;
+// 136 of first 137 insns byte-identical, only projection's `direction.i * delta.i` adds 1 movss/+4 B shifting the remaining 422 insns);
+// on it: scaled_difference3f 444 (al=70, mask=28), vector3f_scale + vector3f_assign 452, clamp_2e9e0 PIN 469 (2302 B, al=68), plus 0x20d80 call
+// 475 (al=68, no loop-unroll loss without scaled_difference3f), late attenuation 501, inplace clamp 452 (2295 B), delta declared earlier /
+// all locals at top / inline dot3f / projection before inverse / reversed dot3f args / no projected local 435 each (same code), plus 0x20d80 call
+// 445 (al=65, mask=29), retail opacity arm order 435 (al=63, mask=25), axis_scale before angle 435 (al=62, mask=26), statement delta i,j,k 517,
+// direct projection `delta.i*dir.i + dir.j*delta.j + dir.k*delta.k` 383 (al=139), `delta*dir` i,j,k 458 (al=95), j+i+k 380 (al=111),
+// `dir*delta` i,j,k 263 (2286 B, 567/567 insns, al=138, mask=70; NOT kept: combination/operand-order steering that worsens aligned/masked counts
+// against both the helper form and main, emitting three reg-first projection multiplies where retail has one). Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3837,6 +3863,10 @@ real magnitude3d(vector3f const *v);
 // Step interval in fallback, rotation or both 170/175/186; shared lower step with staged rotation
 // clamp 186. NOT kept: fallback-only forms tie, and sharing the step bounds changes the frame.
 // The raw current length still uses the bounded length’s slot in the fallback-only forms.
+// Joint length tests, joint angle/current-length test, independent target-length test, independent
+// angle test, all three tests together, eager lengths before angle, ordered lengths with independent
+// angle, and joint lengths with real absolute dot: 190/190/186/186/205/201/198/190.
+// NOT kept: all grow the body and leave the raw current magnitude in the bounded length's slot.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4630,6 +4660,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // entry-identity guard 372. Duplicate self-swap guard 327, both removal guards 437, creation
 // and fallback guards 366, creation exit plus other guards 381. NOT kept: all regress.
 // The state and prefix still exchange registers and the creation ordinal still spills.
+// Eager paired bytes, eager bound with first byte, independent bound with paired bytes, all three
+// admission tests together, eager creation pair, eager duplicate key tests, eager duplicate
+// eligibility, and both removal predicates: 373/408/421/429/369/409/399/417.
+// NOT kept: all regress. The paired byte forms add a frame word or more code.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -5115,6 +5149,25 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // dwords and one 12-byte home shared by the previous camera position and each element's old position; ours adds four
 // 8-byte projection results (the by-value returns stay in memory) and gives `old` its own slot (it interferes with the
 // first projection result, which shares the previous position's slot). Body unchanged.
+// The 0x60 frame, independent stored-velocity reads and projection output homes remain.
+// One reused projected point with returned results, direct/delta updates and plain/signed first Y 510/510/539/532.
+// The same four forms with the existing projection helper writing its output 549/549/549/549.
+// NOT kept: returned forms grow. Output forms shrink the frame but finish 64 bytes short and raise the score.
+// M3 lane GB r4 (fast with 0x36b50, 0x24590 and 0x259d0; control 486, al 422, mask 267; 20 trials): calling
+// function_259d0(&g_4e7408->seed, NULL, 0, -1.0f, 1.0f) in motion_random_step with (double, double) 486 (same code),
+// with (real, real) 502 (2019 B, al 400, step-first same 502: reproduces all 92 instructions of retail's random-step
+// block including all three `fmul st(2)` and the third step's double `fstp st(0)`), inline without helper 571 (fr 0x5c);
+// LTCG-inlined magnitude3d(velocity) (0x24590 linked) 510 (2011 B, mask 264), with normalize3d 522 (1999 B, al 406);
+// unified 3x transform4x3f point helper (`point3f *out`) for world pos and both projections 537 (fr 0x44, yxz same 537),
+// proj-only 514 (fr 0x44, al 357), proj-only with real-param 259d0 and `x *= scale` 517 (fr 0x44, al 365); unified
+// transform4x3f + magnitude3d + 259d0 563 (fr 0x44); full retail-shaped body (byte cycle read, shared saved position,
+// stored camera delta, phase/distance/fade arm order, field-read divisor/maximum, size if/else, unified transform4x3f)
+// with magnitude3d + normalize_inline 585 (fr 0x3c), + normalize3d 604 (fr 0x3c), + vector3f_add 610 (fr 0x3c), + indexed
+// velocity writes 612 (fr 0x30, 1907 B); on that indexed-write retail base with real-param 259d0 + `x *= scale` + double
+// k,i,j speed test + normalize_inline 594 (fr 0x30, 1928 B, al 390, mask 254, 0x36b50 247: velocity add, separate double
+// reloads, normalize+max scales and size if/else match retail), float k,i,j speed test 585 (fr 0x3c), same-pointer
+// velocity add 589 (fr 0x3c), point2f output helper 561 (fr 0x34, mask 263); real-param 259d0 + float k,i,j speed test on
+// main 520 (al 390, 0x36b50 247). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6232,6 +6285,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // The same forms with four-channel color 225/385/225/379.
 // NOT kept: the 225 forms regain frame 0xe0, gain six and grow to 1826 bytes.
 // The other color forms reach 1819 bytes and raise the score.
+// Separate axis selections from a shared test, per-axis tests, guarded captures, or a complete
+// point snapshot: 392/518/231/717. With four-channel color: 390/516/225/723.
+// NOT kept: 225 gains six, grows to 1826 bytes, and leaves the radius spill at +0xc.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -7502,6 +7558,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // call, and that call needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched 0x14ac0's frame and realigns
 // this function), so its argument setup stays different.
 // MiniMax H (11-20): no new form, no lower score (96); the clear call's first argument is stacked where retail passes it in eax (BLOCKED-BY 0x14b60).
+// Other source-pass helper for mode 3, 3 and 8, 3 and 20, 3 and 7, 3 with 20
+// and 7, 3 with 8, 20 and 7, 8 and 20, or 8 and 7: 179/186/177/185/178/196/168/171.
+// NOT kept: all raise the score. The first-pass clear argument setup still differs.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

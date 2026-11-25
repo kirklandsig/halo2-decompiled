@@ -945,6 +945,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // read 208/230/304; with a distinct bounded result for yaw/pitch 200/222.
 // NOT kept: the single-axis forms recover the store pair but all regress. The yaw zero
 // placement and later rotation schedule remain.
+// With planar first, selected target, selected current, two selected pitches, or selected current
+// in the difference: 296/237/251/251. Both angles before signs with selection or updates 312/148.
+// Assign signed target first and subtract selected or updated current 311/312.
+// NOT kept: all regress, including the 148 form with retail length and the J/depth store pair.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
