@@ -4071,6 +4071,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 154/164, named recipient bit with a separate route 171/179, removed local intersection 154/164, and named bit
 // with in-place route filtering 178/179 (indexed/walking). NOT kept: the masks raise the score and the
 // walking forms shorten the function.
+// Channel still lacks EBP, and member and route homes differ. Refresh the bound at the loop tail,
+// long/byte, seeded by the live header 139/139 or validated clamp 156/156. With a walking packet
+// 164/164 and 163/163. NOT kept: indexed forms tie or regress, and the walking forms shorten the body.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -1008,6 +1008,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // through approach_126660 914; the fade's pins with both flag setters 867 (3301 B); the used bit with the audible setter
 // alone 926 (3304 B); that with the fade's pins 925 (3305 B); the audible setter alone 863 (3304 B, masked 253). The
 // setters give retail's two byte operations but shorten the body (retail's word read for the audible flag stays).
+// Shared gain buffer reused as a count-prefixed active list, store/increment first, for short/short
+// query and choice 876/877, short/long 936/946, full/short 899/901, full/long 937/937. NOT kept:
+// the 0x4e0 frame returns, but the count and query homes differ and all scores rise.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

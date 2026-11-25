@@ -929,6 +929,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // fallback: saved length test 570, early fallback 315, fallback alternative 315, combined short or zero guard
 // 317, staged normalized pair 570, saved fallback decision 222, named raw coordinates 570, short-input guard
 // alone 302. NOT kept: the helper forms disturb the entry and move away from the 1144-byte extent.
+// The opening SSE square still follows the x87 addition and the unity register differs. Initial planar
+// normalizer with its own input as fallback 222, reuse for heading 242, for blend 147, and for both 139.
+// The aggregate velocity copy gives 222/242/147/139. NOT kept: the common normalizer raises the score.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -7295,6 +7298,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Transpose returned by value after swaps of the value input or a copied reference
 // 1139/1139, or produced by axis from a pointer/reference 1205/1205. With a separate
 // relative product 1125/1125/1174/1174. NOT kept: each leaves frame 0xfc and grows past 5094 bytes.
+// Shared angular-query and torque vector, relative product into desired/current/spent flip/separate
+// matrices 1020/1034/1031/1146, with spent current reused for state 1020/1027/1031/1145. Shared
+// query/quaternion/torque slot 1020, with spent flip product 1031, and with spent current for state 1031.
+// NOT kept: these forms leave frames 0x10c or 0xe4 against 0xd8 and all raise the score.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
