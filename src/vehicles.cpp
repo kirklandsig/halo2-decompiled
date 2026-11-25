@@ -917,6 +917,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // xx+yy normalize with y-first blend 217 (aligned 112, masked 28); explicit forward normalize else 218; forward declared
 // first 107; xy normalize + rotate_2d helper 281; left after heading 129; blend helper 217; diag #pragma optimize("t") 107.
 // NOT kept: 1.0f stays in XMM2 (retail XMM3) and forward.y/x in XMM7/XMM4 (retail XMM0/XMM1) across all forms.
+// The SSE planar sum and unity still differ at +0x69. Steering/reversing/both perpendiculars
+// as one subtracted scalar 245/107/152, steering scalar at its angle 239; initialized steering/
+// reversing/both points 107/107/107, both projections using the components at their use 238.
+// NOT kept: the initialized points tie and omitting the steering copy changes the frame.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
