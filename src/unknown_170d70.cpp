@@ -463,6 +463,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // basis tail, and the adjacent addresses keep its first difference at +0x34b.
 // Named deadline with exchanged multiplication reads in k, i, j, ki, kj, ij or kij scores 94 each.
 // Staging the kij dot after both length tests scores 92. All reach +0x34b at 1396 bytes.
+// M3 lane 16 r188 (H2M_FAST with 0x16fe90, MATCH; control 64). Frame reading: the group counter and the time step's
+// compiler pointer both pack with four references, and the counter's references come first at the loop's head and at
+// its latch, so it takes the lower cell. The orthogonality dot (retail: k term, then forward.i * up.i, then up.j *
+// forward.j; ours k, j, then up.i * forward.i): the i term in parentheses 151 (1384 B), the j term in parentheses 151
+// (1384 B), the k term in parentheses 64 (same code); `up->k * forward->k + up->i * forward->i + forward->j * up->j` 64,
+// the j term written ahead of the i term 64 (same code each: the terms sort by rank). Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {

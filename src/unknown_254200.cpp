@@ -900,6 +900,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // `short stage` shared with the 0x14390 call 465 / 465 (a local stage is folded before the updates are merged), the
 // stage local with the by-reference helper 2 (same code); the eleven types read from a file-scope constant table
 // through the inline setter or through 0x224f0 465 / 465 (a constant table element is folded as early as a literal).
+// M3 lane 16 r189 (single-address H2M_FAST, control 2): the first quad's colour copied by value into a `color3f` 392 (2238 B,
+// the frame grows), as a `color3f const` value 392, bound to a `color3f const &` 2 (same code); the colour read through the
+// getter's own dword view with each component read as a real 2; one `real const` zero shared by both readiness tests and
+// both 0x14390 calls 2 (same code each).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

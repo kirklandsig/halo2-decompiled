@@ -2184,6 +2184,15 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // lead: `long weapon_index` read once for the test and the object lookup (0x16760c's spelling) 17; the callback by
 // if/else 17; the found arm's duration and frame-position calls through `channel` 17; its frame-position read through
 // `channel` 60 (2192 B); the callback ternary inside the update call 17 (same code).
+// M3 lane 16 r188 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172; lane 8 r232's 17 lead rebuilt,
+// 17). Frame reading on main: retail packs the weapon-active byte and mode ahead of unit (ours packs unit first, as it
+// reaches three references first), so retail's active byte joins spring d's cell and zoom then joins unit's; that needs
+// one more reference each for the active byte (the preset) and for mode (the play written per arm), both match-only. The
+// active value as `unit and weapon valid ? !busy && animating : false` 172 (same code). On the lead: one channel pointer
+// for the +0x98 block, then set to +0xb8 for the last block, 62 (2193 B); the +0xb8 clear through the member 17; the
+// orientation index as `user_index * 2 + weapon` 17; the +0xb8 play through the channel pointer 17 (same code each).
+// With the +0xb8 pointer forced into ESI (diagnostic, not source) the lead reads 14; the other 14 rows are the weapon's
+// EDI reload, placed at its first use where retail places it one block earlier. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

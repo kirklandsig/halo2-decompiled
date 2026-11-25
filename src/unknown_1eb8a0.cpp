@@ -1005,6 +1005,15 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Both remainders from two subtractions 602, with named halves 613. Activation and
 // live fall stages 700, explicit duration arms 678, admitted remainder clamp 693.
 // NOT kept: the one-point gain is below the threshold; sampled velocity still lacks the EBX home.
+// M3 lane 16 r188 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 567, aligned 709). Reading: the
+// first row is EBX's parameter: retail loads q (the fourth stack argument) into EBX at entry, keeps it on the path that
+// skips the update, reloads it after the update block and picks the zero vector with `cmove ebx`; ours gives EBX to d
+// across the update block (the allocator ranks d's range there; q's range starts only at the output copy) and stores
+// the zero-vector pick into q's argument slot. Forms: the pick into a new `vector3f const *input = counter == 0 ?
+// g_4687a4 : q;` read for the three components 664 (2871 B, aligned 705: the `cmove` appears, into EAX), the same as
+// `input = q; if (counter == 0) input = g_4687a4;` 662 (2872 B); `vector3f qr = *(counter == 0 ? g_4687a4 : q);`
+// 684 (2853 B); the unlimited target's three products written `dt * s->direction.n` 567, with the alignment term's
+// three as `w * s->direction.n` as well 567 (same code each: the product operands sort by rank). Body unchanged.
 // The clock and 0x24 frame agree, with direction still in EBX. Named square before the root
 // for initial, impulsed, both, sample, initial/sample, impulsed/sample or all
 // 679/679/668/565/679/679/668. Named i/k sum at both activation roots 666.
