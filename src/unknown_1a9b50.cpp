@@ -1634,6 +1634,12 @@ static __forceinline long real_to_long(real value);
 // the rejection as `return false;` with the result returned after the body 508; `return true;` at the end of the body
 // and `return false;` after it 508; `return local_2;` at the end of the body and `return false;` after it 508 (each
 // 1904 B with 0x25d740 expanded, the listed 508 code). Still BLOCKED-BY 0x25d740's expansion at this site.
+// M3 lane 15 r146 (H2M_FAST with 0x25d740, MATCH each run; control 382 at 1904 B, 21 calls). Ours is retail's
+// instruction for instruction up to the first goto arm's jump; retail then places the false exit (`xor al, al`, its
+// own epilogue) there and ours places it last, so every later row is four off. Forms: the entry test as `!(f13 || f14
+// || f2d)` 382, the far-limit flag declared ahead of the limit 382, the result declared ahead of the slot pointer 382
+// (same code each); `local_2 = true` after the two lookups 389; the prop pointer declared ahead of the tag lookup 496
+// (1913 B). Still BLOCKED-BY 0x25d740's expansion at this site.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

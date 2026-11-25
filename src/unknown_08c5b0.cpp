@@ -372,6 +372,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // read from the message header global in place of the request 11 (101 B): the request still takes EAX and dies at the
 // kind's load, so the kind lands in AX only because EAX is free again; retail's ECX request means the kind was given
 // EAX before the request was placed, which here only the two late-merged compares of r104 reproduce.
+// M3 lane 13 r157 (fast with 0x8c5b0, MATCH each run; control 4): allocator trace of the volatile-read body: the
+// request and the kind rank equal (20 each: two references apiece in the entry block) and the request wins the tie, so
+// it takes EAX; one more kind reference that survives to allocation, or one fewer request reference, gives retail's pair
+// (forced, never source). The kind by a two-byte memcpy (no volatile) 4 with the same ranking; that with the index declared
+// first 4; both fields by memcpy 4; the controller accessor taking `long const &` 4; 1-3 dead locals leave the ranking as it
+// is. The r104 identical-arm chain (diagnostic) ranks the kind 20 over the request 16.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
