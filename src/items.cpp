@@ -1028,6 +1028,10 @@ struct s_item_collision_bsp
 // marker-first pos 242 (mask=32); x+y+z-d dist 193; surface_plane*=offset 249-250; branch-local spin factor 240 (al=66);
 // double spin factor 244 (fr=0xa4); outer k + no-fold r 196; sp=plane copy 307 (fr=0xa4); normal+plane_d 244 (mask=33);
 // inline dist/offset 235/244; single plane in-place 245. Body unchanged.
+// Snapshot the up axis 273, forward 271, left and up 306, left and forward 305,
+// up and forward 304, or all three axes 350. Complete basis with or without a
+// shared left coefficient 338 each. NOT kept: all copies grow the body and
+// raise the score. The original rotated-normal and contact registers still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1443,6 +1447,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // shifts else/epilogue by 2 lines); naming `real align = ...` before `square = (align + 1.0f) * 2.0f` recovers retail's exact j*j+i*i+k*k dot order at
 // fr=0xb4 (831 B, 173; with j,i,k scaled scalars 848 B, 170); in-place facing-first cross + j,i,k scale 129 (fr=0xc0, -1 below bar); in-place raw->scale /
 // cross-before-sqrt / two-struct raw+axis 130 (fr=0xc0); sequential `align +=` 168-172 (fr=0xb8/0xc0); cross into up 200 (fr=0xbc). Body unchanged.
+// Address-free axis with a seeded projection, named projection products, scalar row
+// results or grouped weighted cross terms, 159 each. With a named alignment dot,
+// 173 each. NOT kept: both groups recover 0xb4 but raise the score. The named
+// alignment also shortens the function to 831 bytes. Rotation scheduling still differs.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
