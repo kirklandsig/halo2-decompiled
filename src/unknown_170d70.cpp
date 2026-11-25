@@ -1234,6 +1234,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // Direct pool index 106, array base 105, const entry reads with indexed store 106, and bind after admission 106.
 // With a separate camera displacement those forms score 17/11/17/17. NOT kept: the one-use displacement
 // requires an exact match. The camera base still loads late, and the key is pushed before the address add.
+// M3 lane 3 r308 (H2M_FAST with 0x1730a0, MATCH throughout). The table load waits for the count store because the
+// scratch cycle gives it EDX, the register of the `volume_index + 1` value the store reads; retail's table is in ECX
+// and rises to the block top, and its key then takes EDX. 60 forced allocator decisions leave 105. On the offset lead
+// (re-measured 11): the volume address ahead of the count store 84; `camera_offset + cameras` 11; `NONE != portal_index`
+// 11. Diagnostic: a second use of the table (a probe store) 91 at 438 B, the table still a plain load.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1647,6 +1652,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Transform row accumulators 390; partial sums 346; terms formed one row at a time 356; all terms before output 453; partial and final terms before output 395.
 // Bounded alignment 337; separate reciprocal arms 352; named squared deviation 337. Reduced control 337.
 // NOT kept: the tied forms leave the opening unity register and two squares spilled. The staged row terms increase the frame.
+// M3 lane 3 r308 (H2M_FAST with 0x1726d0 and 0x170fd0, MATCH throughout; control 337, aligned 250): 50 forced XMM
+// rankings and picks give 333 at best. The file's generic builder at both calls 360 (1455 B), the generic transform at
+// the four calls 368 (1441 B), both 359 (1473 B); this builder's rows in retail's order (diagonal, complement, each
+// pair's product beside its rows) 357 (1448 B), with the sine products named right after the sine 337 (frame 0x54).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2676,6 +2685,10 @@ struct s_camera_reference_171830
 // zero moves ahead of the flag branch again. The flagged arm with the helper call in the test (no named distance)
 // 281/285/288/288 [36-61], with those four centres 282/286/289/289 each; the flagged arm with the dot written out
 // 155/263/264/264 [36-61] (no pairs: the control's code), with those four centres 158/266/267/267 each.
+// M3 lane 3 r308 (H2M_FAST with 0x170fd0 and 0x171d00, MATCH throughout; control 155 [32]). Round 154's lead
+// re-measured 9 at 1219 B (first +0xd0, only the centre's first product left). On it: the rear-vector products in
+// parentheses 267 (1223 B); `real depth = offset + *distance;` 9; the first rear product written `forward->i * depth` 9;
+// `real const depth` 9; depth declared after the rear vector 9 (all four the lead's code).
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
