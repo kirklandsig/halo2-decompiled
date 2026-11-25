@@ -2437,6 +2437,7 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// score 420 (was 420; 513 earlier): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
 // MiniMax I (11-17, run 103): no new form, no lower score (420): retail still holds the region index in EBP and the
 // permutation pointer in EBX, where this build holds them the other way round, and retail reads the info argument
 // after its first push where this build reads it before the pushes; reading the region index directly scores 510 and
@@ -2451,7 +2452,6 @@ struct s_unit_event
 // permutation are still in a cycle against retail's EBP/EBX/ESI, the region index is still read through its own
 // address (the parameter stays on the stack as retail has it) and the first argument is still read before the pushes
 // where retail reads it after.
-// score 420 (was 420; 513 earlier): The 0x38 frame and 1868-byte extent agree. EBX and EBP still exchange region and permutation roles, and the datum displacement is reloaded.
 // Earlier detail: Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
 // permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
 // the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
@@ -2800,6 +2800,12 @@ struct s_unit_event
 // Byte displacement for the typed datum lookups 511; with the slot helper 419, retained pool 459,
 // or shared vehicle datum 511. Helper/pool 419, helper/vehicle 419, pool/vehicle 459, all 419.
 // NOT kept: the one-point gain leaves the exchanged region and permutation registers.
+// The region ordinal and permutation record still exchange EBX and EBP.
+// first drop flag snapshot 420; second drop flag snapshot 420.
+// independent drop flag snapshots 420; deferred destruction admission 391.
+// selected destruction result 499; positive preservation result 409.
+// shared vehicle flag setters 420; shared setters and deferred destruction admission 391.
+// NOT kept: the 391 form emits a combined mask and a dynamic stack argument. Retail tests two flag bits separately and pushes literal mode values.
 // Lane GA round 2 (fast with 0xdaaa0/0xdae60/0xdb760, all MATCH; control 420 at 1868 B, aligned 267, masked 57):
 // on the named region-states lead (L = 523 at 1852 B, +0x5a, aligned 126, masked 54): region-states returned by a
 // forceinline helper 420 (entry cycle returns), element-pointer helper 420, vehicle block through a datum pointer
@@ -2813,6 +2819,19 @@ struct s_unit_event
 // null check lengthen permutation's range enough to flip region_index into EBP and pad 1852 to 1868, not retail's code);
 // with `kept` and indexed scans 468. On every clean form `object` still beats `datum_offset` for ESI from 0xda1ca on,
 // keeping the 16-byte gap and preventing g_4e0300 from holding EDI across the drop blocks. Body restored.
+// m3 lane 6 r243 (allocator reading): the permutation pointer (priority 66) colours before the region index (58: one
+// reference each at the entry, the 0xa8360 push and the update) and avoids EBX, so the index takes EBX; the named
+// region states give the index a second reference at the update (74) and retail's entry. On that lead `object`'s later
+// web (32) takes ESI as the only register left, where retail keeps the datum offset there (each type read and each
+// inlined weapon lookup addresses the pool data plus the offset directly, the data pointer re-read from the pool global
+// held in EDI) and reloads `object` from its slot into EDX at the flag stores. Forms: the datum type read once per drop
+// block into a `long type` for both tests 419 (1868 B); the same on the region-states lead 521 (1852 B); the lead with
+// the seat block's type and tag read through the lookup 429 (1868 B, the entry exchange returns); diagnostic, the lead
+// with the four flag-byte stores through the lookup (a second path, match-only) 505 (1884 B, first +0x32): the datum
+// offset then takes ESI from the second notification on as in retail; left there: the pool global in EDI across the
+// drop blocks (ours still forms one data-plus-offset sum per block), the constant 1 spilled into the region slot at
+// the update, the vehicle block's constant 1 in ESI, the section scan's count/cursor pair, and scratch rotations in the
+// seat and event blocks.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5691,6 +5710,12 @@ struct s_damage_object_creation
 // shared test and store bit 205, with word setters 205. With masked node bits 232, or with
 // word setters and masked node bits 224. NOT kept: the extra mask moves the count and ordinal
 // away from the retail allocation. The exact-length form changes the frame and raises the score.
+// The count and primary mask registers still differ, as does the node-loop padding.
+// primary mask shifted to the selected bit 203; secondary mask shifted to the selected bit 201.
+// both masks shifted to the selected bit 184; both selected bits with shared word setters 184.
+// attached-node mask shifted to the selected bit 206; piece-search mask shifted to the selected bit 169.
+// both node masks shifted to the selected bit 204; selected bits through both phases 220.
+// NOT kept: the right-shift test encodings differ from retail and raise the score. Both 808-byte forms change the entry registers.
 // M3 lane GA r2 (fast with 0xdb810/0xdbb40/0xd6800/0xd8a40, all MATCH; control 167, aligned 42, masked 12):
 // forceinline section-mask helper 167; inline find_first_bit_set helper 223 (793 B, frame 0x13dc); named
 // `s_damage_object *piece` used twice for `piece->node_index` 168 (794 B, aligned 32, masked 9: lines 188-226
@@ -5704,6 +5729,24 @@ struct s_damage_object_creation
 // (808 B, 0x13e0, emits `cmp eax, -1` + `cmovne`), with `else i++` 162 (810 B, aligned 135, masked 54).
 // Diagnostics: one-use `dword m = (word)section_mask_a` + `piece` 111 (810 B, aligned 24; fixes section/node/search
 // pads and lines 171-226); same + `first_node == NONE` search 215 (808 B). Body unchanged.
+// m3 lane 6 r243 (allocator reading): the section loop's rotation is a colouring order. The bit `1 << i` (priority
+// 50: the loop head at weight 2 with four referenced values, the second test, minus the first store) colours before
+// `info` (48: the entry block's ten referenced values and the count read's four), takes EAX, and the mask and count
+// follow into EDX and EDI. With `info` coloured first (EAX) the count's EAX preference keeps EAX away from the bit and
+// the mask, which gives retail's EDX/EDI/EAX: forcing the bit into EDX, or info's priority to 51, scores 107 (first
+// +0xc2); 49 changes nothing. So the cause is one more value referenced in the entry block (or two more in the count
+// read's block), or two more in the first store's block. The one-use first-mask local works that way (its definition
+// joins the count read's block, info 52), which is also why its zero-extension lands ahead of the count guard.
+// Forms this round: the count from `info ? info->unknowne0 : 0` with no `if (info)` 182; `1u << i` in both tests 167
+// (same code); the second mask read through a pointer to the parameter 167 (same code, still hoisted); the info
+// lookup ahead of the object and definition lookups 229 (the call moves up); the getter's result as a `long` cast at
+// the count read 167 (same code); the one-use first-mask local after the count 112 (811 B, the zero-extension still
+// ahead of the guard); `word` mask parameters without casts re-measured 167 (the second mask is still reached only
+// through its hoisted load, so it adds no value to the entry block). The for/break search re-measured 223 (793 B):
+// `detached_nodes` becomes one value of priority 79 across the detach block and takes ESI. Diagnostic only (changes
+// the code): the detach test as `section_mask_a | section_mask_b` gives the second mask a value in the entry block, the
+// bit then takes EDX as retail's does, but that value holds EDI and the count is spilled, 128 (811 B); retail's extra
+// entry-block value must be one that gets no register there (a constant or a parameter value like the first mask's).
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

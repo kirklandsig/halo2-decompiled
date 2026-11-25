@@ -1865,6 +1865,20 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Material byte-address addition with integer or pointer storage: nested admission and selected address
 // 158 each, failure first and complete conditional result 659 each. NOT kept: the first forms tie and leave
 // the definition spill displaced; the complete assignments shorten the body by 32 bytes.
+// M3 lane 13 r156 (H2M_FAST, control 158; the walking-preload lead re-measured 137 at first +0x84). Frame-packing reading
+// (back-end view, in my words): homes are packed by size, then references, and the cells are sorted by references per
+// byte. On main the definition and material both have four references and material reaches its fourth first (the call's
+// read), so material shares the distance cell (+0x04) and the definition gets its own; the lead's reload of the
+// definition after the 0xdfa60 call gives it a fifth and retail's +0x04. On the lead every home below +0x60 is retail's;
+// above it retail's order (animation flags +0x60, position +0x64, facing +0x70, case 6 target +0x7c, boost +0x88,
+// material +0x8c, the c0 byte +0x90, the flags_348 byte +0x94, component +0x98, gravity +0x9c) puts material among the
+// three-reference cells, so retail's material has one reference fewer than ours (init, one store per pill-test arm, the
+// read): it keeps four as one ternary, as a pointer ternary cast to long, and through an inline helper returning the
+// value (diagnostic). Other differences on the lead: case 1's rate quotient formed ahead of the 0x6000085 compare, one
+// add's operand order in the case 6 eye lookup, one store pair and one `lea ebx` placement. Forms on main: the case 6
+// target copied after the velocity reset 168; the boost as one ternary 158 (same code); material as dword 158 (same
+// code); `distance` declared ahead of `moved` 160; case 1's rate quotient named ahead of the call 158 (same code; on the
+// lead 137, same code). Body unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4192,8 +4206,8 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 
 struct rigid_transform_scaled;
 struct real_quaternion_transform;
-bool function_1faf80(long arg_159e6d, void const *definition_flight, vector3f const *control, real rate,
-	vector3f *facing, real *turn);
+bool function_1faf80(long arg_159e6d, vector3f *facing, void const *definition_flight, vector3f const *control, real rate,
+	real *turn);
 bool function_bf5d0(long object_index);
 void matrix4x3_rotation_between_vectors(transform4x3f *matrix, vector3f const *arg_5f338b,
 	vector3f const *arg_bc44c6);
@@ -4223,7 +4237,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // MiniMax I (11-19): no new form, no lower score (537): the frame is still 0x7c against retail's 0x78 - the definition's row pointer is taken into ebx where retail takes it into ebp - so the changed flag byte sits at [esp+0x12] against retail's [esp+0x11] and the flight threshold's home at +0x14 against +0x18.
 // MiniMax E (11-20): no new form, no lower score (537): the frame is 0x7c against retail's 0x78 - this build keeps the definition's row pointer in ebx and homes the index offset at [esp+0x1c] where retail keeps it in ebp; a single index local used at all three lookups measures 644 and both weapon reads taken from the biped local 670, so the body stands.
 // MiniMax G (11-20): no new form, no lower score (598): the changed byte is still at +0x12 where retail keeps it at +0x11, this build's frame is still 0x7c against retail's 0x78 because retail keeps the definition pointer in ecx with a home at +0x18 where this build keeps it in ebp with a home at +0x1c, and the flight call's arguments are still one register out; the listed three-part combination gives 590 in the full image, so the body stands.
-// score 537 (was 537; earlier 548): Full frame 0x78 agrees. The changed byte is at +0x12 against retail +0x11, and the flight scalar uses +0x14 against +0x18.
+// score 569 (was 537; earlier 548): Full frame 0x78 agrees. The changed byte is at +0x12 against retail +0x11, and the flight scalar uses +0x14 against +0x18.
 // Earlier detail: The 0x78 frame agrees. The changed byte is at +0x12 versus +0x11, then the flight
 // threshold uses +0x14 versus +0x18 and the vector schedules differ.
 // MiniMax E (11-17): no new form, no lower score (548): the frame is still 0x7c against retail's 0x78, and the definition's row pointer is still taken into ebx where retail takes it into ebp and pushes ebp as well, so the definition, biped and state homes sit four bytes apart and the flight call's arguments stay one register out.
@@ -4672,9 +4686,23 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Movement pointer or reference, at entry or in the movement gate, with conditional or
 // branch-assigned threshold: 646 in all eight forms. NOT kept: all enlarge the existing
 // 0x7c reduced image and leave the frame there against retail's 0x78. Reduced control 598.
+// M3 lane 8 r236 (plain check): 0x1faf80's parameters are now (object_index, facing, settings, control, threshold,
+// turn), the order both retail callers' argument setup shows, and 0x1faf80 still matches byte for byte. This call's
+// setup is then retail's but for one push/lea pair (retail forms the facing address before it pushes the settings
+// address). The count reads 569 at 2722 bytes (retail 2712) where it read 537 at 2726: the body is now one row shorter
+// than retail's 650 rows, so the rows behind the call pair off one place apart; row for row after alignment the
+// difference falls from 442 to 437.
 // Stationary gates split at turn state, at object flags, at both, or with the animation exception first:
 // 602 each with a long exception, 645 each with a bool. NOT kept: long forms tie the reduced control,
 // and bool forms grow by four bytes. The full changed-byte and flight-threshold homes still differ.
+// M3 lane 13 r156 (plain checks with 0xdd360, MATCH throughout; control 537, aligned 442 / register-masked 230): the wall
+// sine summed with the up.k term first 537 (same code: the sum order follows operand ranks, not the text); the flight
+// rate as the threshold overridden by 0.99f under the control flag 650 (2734 B, frame 0x7c); the node count as `(long)(size
+// / sizeof(real_quaternion_transform)) > 0` in place 552 (2725 B, aligned 444); that with the two node pointers ahead of
+// the test, the current weapon through unit_get_current_weapon after the 0xe5d50 call, the stationary limit as 0.99f
+// then the threshold under `!(flags & 8)` and `special` as a direct bool 612 (2703 B, aligned 446 / masked 211); the
+// flight rate written in the call with that limit form 549 (2722 B). The reduced image, linked with or without the
+// extra functions, builds this body with a 0x7c frame (602), so its allocator ranking is not this build's. Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4695,7 +4723,7 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 			{
 				real rate = (biped->control_flags & 8) ? 0.99f : definition->biped.cosine_stationary_turning_threshold;
 
-				function_1faf80(arg_159e6d, &definition->biped.physics.flying_physics, &biped->control, rate, &biped->facing_goal,
+				function_1faf80(arg_159e6d, &biped->facing_goal, &definition->biped.physics.flying_physics, &biped->control, rate,
 					&biped->unknown3a0);
 			}
 			else
@@ -6496,6 +6524,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Float CRT cosine or sine alone 93/93, with sine produced first 125/125, with a double angle 97/97.
 // Both float entries with sine first 175, or with a shared rounded angle 159. NOT kept: every form raises
 // the score and the paired forms shorten past retail. The first rotation still spills the cosine complement early.
+// M3 lane 13 r156 (H2M_FAST with 0x1ecf50, 0x30bf0 and 0xe3c90 MATCH; control 79; without the rotation helper's file in
+// the image this body builds 483 B, 621): the forward pointer as `vector3f *const` 79; angle, cosine and sine declared
+// at their assignments 79; the fallback up reset through a cast of the field 79; the final test as `!function_30bf0(...)`
+// 79; the axis declared bare and copied just ahead of the angle 79 (same code each). The rotation helper's file was on
+// the Avoid list again, so the held separate input/result lead stays unmeasured. Body unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -7573,6 +7606,11 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Definition, state and animation ID spill homes still cycle. Typed unit access for state, control flags,
 // and the late timing read scores 586 for all seven combinations. A named view for both entry reads
 // also scores 586. The original body and include list are restored.
+// A shared forward sample for both copies, by value 638 or through the
+// setter at the biped/output/both 660/663/667. Three scalar components for
+// both stores 636 with each of the four publication forms. Reduced control
+// 586. NOT kept: all regress, and the definition/state/animation homes and
+// inlined position completion still differ.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

@@ -718,6 +718,10 @@
 // both point setters with opposite cross between updates 646.
 // Shared scale then vector sum on mixed wave, short wave, both, or both with overlapping crosses 698/561/664/649.
 // The same four starting from the staged first cross 698/561/664/649. NOT kept: those with the 0x60 frame grow the body without separating the wave slots.
+// Retail's frame still holds separate rounded waves and the first cross products.
+// Perspective store order for side/up/both/both with early fourth-component clear 536/536/536/535.
+// Both complete unscaled rows before the half reciprocal, divisors paired or per row, with opening
+// or retail store order 536/536/536/536. NOT kept: the one-point change leaves the 0x54 frame.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
