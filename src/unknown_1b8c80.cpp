@@ -2385,6 +2385,13 @@ void function_1f86a0(long actor_index);
 // 256/252; named selection requirement 248; rejection set by the three tests 240; entry name 123.
 // NOT kept: all keep frame 0x10; the three-way result frees the mask but the full flags byte takes BL.
 // The opening loop still spills the entry in place of the mask, and the actor index arrives in ECX.
+// M3 lane 12 r188 (h2m fast with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123, aligned 82). Tracer
+// readings: in the head the object table's data load is ready at cycle 0 but is given EAX, which the actor index work
+// holds until cycle 20, so it is emitted after that work; retail gives it ESI and loads it right behind the actor
+// table. 24 single forced allocator and scheduler decisions (colour picks, priorities, cuts, flags, heights, ready
+// cycles) gave nothing below 123. Forms: the decline test's mask as a plain truth test 134; both mask tests as truth
+// tests 134; the entry's element index named once for the lookup and the accept 242; the unit through the existing
+// OBJECT_DATUM_GET macro 123 and through object_header_get 123 (same code each). Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

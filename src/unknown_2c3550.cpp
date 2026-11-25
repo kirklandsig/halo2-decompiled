@@ -1026,6 +1026,14 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // aligned 1071), that with `bool result` 776, that with no result variable (`done: return true;`) 776; the actor's
 // 0x26c and 0x86 reads through `((s_actor_view *)actor)->` 675 (same code); the actor as an `s_actor_view *` from
 // actor_get with those fields 676. Body unchanged.
+// M3 lane 12 r188 (h2m fast with 0x270930, 0x2c4030, 0x2c0d60, 0x29a190 and 0x29cbb0; control 675, aligned 418). Tracer
+// ledger: the pathfinding pointer is live but unread over 132 blocks (priority -672, only four reading blocks: entry,
+// both searches and the trace call), so it is never coloured here, where retail gives it EBX at entry and then stores
+// it; the NONE constant ranks -783 in its first pass and takes EDI later at 60. Forms: the actor table bound as a
+// `byte *const &` to the clump data (retail loads the table first) 675 (same code); the pathfinding pointer declared
+// ahead of `result` 675 (same code); `result` assigned true just ahead of the step loop 757; the radius lines ahead
+// of the pathfinding pointer 674 (one count, a declaration move, not kept); the radius read first and raised to 0.2
+// (re-measure of round 108's form) 754. Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

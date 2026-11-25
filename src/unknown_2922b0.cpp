@@ -961,6 +961,20 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // collision result assigned to hit byte 637, distance guarded by hit byte 673.
 // slot minimum before the hit byte 661, reused ray-vector workspace 518.
 // NOT kept: The selected-distance form gains four points and is one byte shorter. The query-result byte changes entry allocation and raises the score. The other forms tie or regress.
+// M3 lane 12 r188 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 518, aligned 271; lane 2 r113's lead rebuilt on
+// this body 331 at 2896 B, aligned 130). Cause of the lead's second-cross difference, read from the compiler's operand ranks:
+// a load through a global pointer at offset 0 ranks by that global's symbol number mod 8 (0x2000 per step), and globals are
+// numbered from 32 in order of first mention in this function's own text, objects reached through an inline getter after
+// them. Here the forward default global is 32, the up-axis global 33 (rank 0x2008, below the forward copy's j and k at
+// 0x5c40/0x5c80), so axis i is folded as a memory operand; retail's six axis-first products need the up-axis global at 35
+// to 39. Diagnostic only (removed): `(void)` reads of the left default, forward default and object table globals at the
+// top give the up-axis global 35 and the lead then 188 (2896 B, aligned 120): the whole second cross is retail's and the
+// loop pad goes; left on it are one load order ahead of the ray loop, the ray loop's minimum-store order, the root
+// clamp's product order for rays 1 and 2, the two rotations' XMM colouring and the tail. Natural forms: the object read
+// through the existing OBJECT_DATUM_GET macro (object table global then 32, up axis 34, rank 0x4008, still below)
+// 518 on this body (same code) and 331 on the lead (same code); the forward copy written member by member (the copy's j
+// and k then early symbols, every product direction-first) is worse on both. Up axis needs one more global mentioned
+// ahead of it. Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
