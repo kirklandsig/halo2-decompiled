@@ -7405,6 +7405,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // output these score 1129/1096/1096/1096.
 // NOT kept: a distinct relative output reaches 0xdc but shortens the body
 // and raises the score. The handle and header-displacement registers still differ.
+// Frame 0xfc and the exchanged handle and displacement remain.
+// Quaternion vector in place 1042, axis copied after length 1048, axis produced
+// in the normalization arms 1003, axis copied after normalization 1082. With
+// a distinct relative product these score 1130/1115/1094/1126. NOT kept:
+// the branch-produced axis with distinct output reaches 0xdc and 5095 bytes,
+// but raises the score and leaves the handle and stride reversed.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

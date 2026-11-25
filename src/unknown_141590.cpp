@@ -1364,6 +1364,9 @@ void function_143250(
 // transverse group, root-105 axial group, both, and the three complete
 // family selections all 939. Component-first names for either family 939.
 // The 0x2fc frame and separate weighted spill homes still differ.
+// The first three basis spills and the missing scalar word still differ.
+// Component names for forward j, left j, forward i, their pairs and all three,
+// or the complete nine-component set, all 939. The original names are restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

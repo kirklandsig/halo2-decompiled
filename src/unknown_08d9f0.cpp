@@ -283,6 +283,10 @@ void function_8dd70(void);
 // 235/226/249/229. With success assigned in branches 238/255/254/232.
 // NOT kept: the shared enum ties at retail length but still keeps the link
 // result in a register and the registration calls remain expanded.
+// The entry frame, link byte and registration call boundaries still differ.
+// One continuing short/bool link-to-observer outcome 234/227, failure outcome 244/236,
+// clear on observer failure 235/233, or reuse that result through the list clear 228/223.
+// NOT kept: the 223 form gains three points. The result sharing remains match-only.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {
