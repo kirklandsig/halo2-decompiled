@@ -5715,6 +5715,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // both, and both with a named horizontal magnitude 97/72/69/69 and 97/74/70/70.
 // NOT kept: the split copies lengthen to 772 bytes. The first cross preload and the final
 // x87 forward-scale lifetime still differ.
+// First-cross up.i still loads early. Saved aim published before the second cross, before
+// normalization, after fallback, or with separately corrected up: 217/212/215/249 with either
+// first-cross helper. NOT kept: the aim copy grows the frame to 0x5c and separate up to 0x68.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

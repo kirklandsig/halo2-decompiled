@@ -4710,6 +4710,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // then the threshold under `!(flags & 8)` and `special` as a direct bool 612 (2703 B, aligned 446 / masked 211); the
 // flight rate written in the call with that limit form 549 (2722 B). The reduced image, linked with or without the
 // extra functions, builds this body with a 0x7c frame (602), so its allocator ranking is not this build's. Body unchanged.
+// The changed byte stays at +0x12 in the reduced control, and the special state still needs +0x12
+// beside retail's changed byte at +0x11. Explicit mode-3 result, true default, mode-6 default,
+// and joint bypass result 587/642/633/653. With bool special 653/635/645/620 (reduced control 601).
+// NOT kept: the 587 form adds length and still shifts the result byte; all bool forms grow the frame.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6541,6 +6545,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Grouped cosine/sine or sine/cosine with the forward field throughout 116/112.
 // NOT kept: both assignment forms reach 887 bytes and delay the complement spill, but move
 // the cosine home and the first dot load at +0xc6. Every form raises the score.
+// The first rotation still spills the cosine complement early, and the final cross reloads forward j.
+// Rotated forward snapshot published before normalization, after it, after up rotation, or after
+// both crosses: 246/250/252/243 with either side-cross helper. NOT kept: all lengthen the body and
+// keeping the snapshot through both rotations grows the frame to 0x30.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
