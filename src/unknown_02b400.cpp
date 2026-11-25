@@ -177,6 +177,14 @@ struct s_projection_scalars
 
 byte function_016a90();
 
+// score 73 (was 73): left: 1.0f in xmm1 where retail loads it into xmm2 at entry (forced below the aspect value it
+// gives 70), then the tail: retail re-reads output.half_height from memory after the aspect branches (ours keeps the
+// local in xmm6), multiplies half_width * aspect before tangent (ours reassociates to aspect * tangent * half_width),
+// and stores right between the scales. Tried: half_width * aspect named first 73 (528 bytes, retail's product order);
+// output.half_width read at the scale 73; function_13cb40() for both written-out tests 76; with the named product: the
+// scales then the reciprocals then the four bounds stored in place 71, main's order with left stored in place 70,
+// scale locals stored then reciprocals 71; the clip rows scaled through a box2f pointer 70 and 73 (same code); the half
+// extents and offsets written straight into the output 113.
 // @retail 0x2fb70
 void function_2fb70(s_2f800_view const *view, box2f const *clip, s_projection_scalars *out)
 {
@@ -642,6 +650,14 @@ s_28580_view g_4b9a04[5];
 // blend, and the first normalize is written in place while the second stays a call to 0x2b400 as in retail. Left:
 // the x row's load order, the == 0 compare after the inlined normalize, the speed lerp's folded load, the order of
 // the target rows and of the out rows' products.
+// Retail compares the first normalize's result at the join (the zero arm copies 0.0f into the result register and
+// falls through to the test), the shape of 0x2b400 expanded at link time; written in place, ours threads the zero arm
+// straight to the (1, 0) stores. 0x2b400 keeps its existing noinline (about fifty retail sites call it), so that part is
+// BLOCKED-BY 0x2b400. Tried: the x blend row reading the element directly 151 (same code), the target pointer taken
+// in the turn block with the blend rows on the element 202; the out rows as (x * speed) * delta 151, through a named
+// speed * delta 155; the cross terms written in place 148 (846 bytes); the side terms named first (side * (0 - y),
+// x * side) 148, with keep = 1.0f - turn named 147 (855 bytes, retail's length), keep named first 147, the side terms
+// over the cross locals 147, the sums written side term first 147.
 // @retail 0x28580
 void function_28580(long tag, real time, vector3f *out)
 {
