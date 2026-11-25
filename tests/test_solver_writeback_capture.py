@@ -2007,3 +2007,47 @@ def test_single_writeback_captures_time_pointer_before_impulse(
                 context = label, kind, precision, rounding, replacement_time
                 assert snapshot == (bytes(data), 1), context
                 assert bytes(machine.mem_read(frame + 0x10, len(expected))) == expected, context
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('overlap', [None, -3, -2, -1, 0])
+def test_iteration_limit_precedes_increment_publication(solver_images, precision, overlap):
+    frame = STACK + 32768 - 0xd0
+    counter = frame + 0x2c
+    step = STEP if overlap is None else counter + overlap - 28
+    retail, compiled, symbols = solver_images
+    for rounding in range(4):
+        data = solver_case(3, 0)
+        put(data, OPS + 24, '4I', 14 | (12 << 8) | (2 << 16), CALLBACK, 0, 0x400)
+        put(data, HEAP, 'B', 3)
+        if overlap is None:
+            put(data, step, '7fi', 0, 0, 0, 0, 1, 0, 0, 1)
+        snapshots = []
+        for label, machine, entry, gate in (
+                ('retail', retail, 0x31c940, 0x480c60),
+                ('compiled', compiled, address(symbols, 'solve_operations_31c940'),
+                 address(symbols, 'g_480c60'))):
+            machine.mem_write(frame, b'\0' * 208)
+            if overlap is not None:
+                machine.mem_write(step, struct.pack('<7fi', 0, 0, 0, 0, 1, 0, 0, 1))
+            callbacks = []
+
+            def callback(uc, va, size, user):
+                # This is the actual operation callback boundary. The second
+                # value only bounds a reconstruction which incorrectly repeats.
+                callbacks.append(1)
+                assert len(callbacks) <= 2
+                limit = 1 if len(callbacks) == 1 else (0x7fffffff if overlap == -3 else -1)
+                uc.mem_write(step + 28, struct.pack('<i', limit))
+                return_from_hook(uc)
+
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data, [step, OPS, HEAP, IMPULSES],
+                               hooks=[(CALLBACK, callback)],
+                               precision=precision | (rounding << 10))
+            context = label, precision, rounding, overlap
+            assert callbacks == [1], (context, callbacks)
+            assert words(machine, counter, 1) == (2 if overlap == 0 else 1,), context
+            assert snapshot[1] == 1, context
+            snapshots.append((snapshot, tuple(callbacks)))
+        assert snapshots[0] == snapshots[1], (precision, rounding, overlap)

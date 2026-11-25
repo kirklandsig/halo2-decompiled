@@ -1524,10 +1524,10 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 		function_31c7d0();
 		if (!g_480c60) return 0;
 	}
-	// Capture the first count before publishing the counter; reload later counts
- // after each increment because the input can overlap the counter home.
+	// Capture the first count before publishing zero. At each iteration end,
+ // retain the current limit before publishing the incremented counter.
  long iteration_count=step->iterations;
-	for (state.solving.iteration = 0; state.solving.iteration < iteration_count; ++state.solving.iteration,iteration_count=step->iterations)
+	for (state.solving.iteration = 0; state.solving.iteration < iteration_count;)
 	{
 		solver_step_31c940 *initial_parameters = step;
 		// Capture both input words before publishing either saved value.
@@ -2196,6 +2196,14 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 			}
 
 		}
+		// The limit may partly overlap the counter home. Retain both inputs
+		// before publishing the increment, as in the retail epilogue.
+		struct { long counter, limit; } next;
+		next.counter = state.solving.iteration;
+		next.limit = step->iterations;
+		++next.counter;
+		state.solving.iteration = next.counter;
+		iteration_count = next.limit;
 	}
 
 	// Publish impulses and remaining error using each header's destination and
