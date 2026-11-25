@@ -83,7 +83,6 @@ struct solver_scalar_work_31c940 {
 };
 
 
-
 // Keep the SSE reduction in a scalar result object before x87 arithmetic.
 struct solver_scalar_31c940 { float value; };
 
@@ -163,25 +162,6 @@ static __forceinline void project_second_linear_velocity(solver_linear_row_31e7b
 	sum_three_to_arena_31c940(work_0,projection_output);
 }
 
-static __forceinline __m128 project_first_spin_velocity(solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
-{
-	__m128 w[5];
-	w[0]=b->linear;
-	w[1]=a->linear;
-	w[3]=b->angular;
-	w[2]=row->a;
-	w[1]=_mm_sub_ps(w[1],w[0]);
-	w[0]=a->angular;
-	w[0]=_mm_mul_ps(w[0],w[2]);
-	w[2]=row->linear;
-	w[1]=_mm_mul_ps(w[1],w[2]);
-	w[2]=row->b;
-	w[3]=_mm_mul_ps(w[3],w[2]);
-	w[0]=_mm_add_ps(w[0],w[3]);
-	w[0]=_mm_add_ps(w[0],w[1]);
-return w[0];
-}
 static __forceinline void circular_first_projection_fields(solver_linear_row_31e7b0 const *row,solver_velocity_31c940 *a,solver_velocity_31c940 *b,__m128 *&angular_b,float &output)
 {
 	__m128 work_0,work_1,work_2,work_3;
@@ -228,10 +208,6 @@ static __forceinline void circular_second_projection_fields(solver_linear_row_31
 	w[2]=_mm_add_ss(w[2],w[1]);
 	_mm_store_ss(&projection_output,w[2]);
 }
-
-
-
-
 
 
 static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 const *row,
@@ -365,7 +341,6 @@ static __forceinline void apply_circular_second_fields(float impulse,
 	*angular_receiver=w[0];
 	*result+=impulse;
 }
-
 
 
 // The first positive row retains its unshifted linear cursor while angular
@@ -552,36 +527,64 @@ struct spin_projection_output_31c940 {
 __forceinline spin_projection_output_31c940(spin_projection_output_31c940 const &v):address(v.address),linear_home(v.linear_home),linear_input(v.linear_input){}
  __forceinline void store(__m128 const &v) const {*linear_home=linear_input;_mm_store_ss(address,v);}
 };
-static __forceinline void reduce_into_spin_output(__m128 const &v,spin_projection_output_31c940 out) {
- __m128 xy=_mm_add_ss(_mm_shuffle_ps(v,v,0x55),v);
- __m128 xyz=_mm_add_ss(_mm_shuffle_ps(v,v,0xaa),xy);
- out.store(xyz);
+// Reuse four consumed vectors across both linear rows and the spin projection.
+// Publish the linear receiver after first-row inputs and before its scalar.
+// Later projections retain their separate body reads and scalar publications.
+static __forceinline void project_spin_contact_rows_31c940(solver_linear_row_31e7b0 const *rows,
+	solver_velocity_31c940 *a,solver_velocity_31c940 *body_b,
+	__m128 *const &linear_home,__m128 const &angular_b,
+	spin_projection_output_31c940 output,solver_scalar_arena_31c940 &pool){
+ __m128 w[4];
+ w[0]=body_b->linear;
+ w[1]=a->linear;
+ w[2]=rows[0].a;
+ w[3]=body_b->angular;
+ w[1]=_mm_sub_ps(w[1],w[0]);
+ w[0]=a->angular;
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=rows[0].linear;
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=rows[0].b;
+ w[3]=_mm_mul_ps(w[3],w[2]);
+ w[0]=_mm_add_ps(w[0],w[3]);
+ w[0]=_mm_add_ps(w[0],w[1]);
+ w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
+ w[1]=_mm_add_ss(w[1],w[0]);
+ w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
+ w[2]=_mm_add_ss(w[2],w[1]);
+ output.store(w[2]);
+ w[0]=*linear_home;
+ w[1]=a->linear;
+ w[2]=rows[1].a;
+ w[3]=rows[1].b;
+ w[1]=_mm_sub_ps(w[1],w[0]);
+ w[0]=a->angular;
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=angular_b;
+ w[2]=_mm_mul_ps(w[2],w[3]);
+ w[3]=rows[1].linear;
+ w[1]=_mm_mul_ps(w[1],w[3]);
+ w[0]=_mm_add_ps(w[0],w[2]);
+ w[0]=_mm_add_ps(w[0],w[1]);
+ w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
+ w[1]=_mm_add_ss(w[1],w[0]);
+ w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
+ w[2]=_mm_add_ss(w[2],w[1]);
+ _mm_store_ss(&pool.spin_second,w[2]);
+ solver_angular_row_31e7b0 const *spin=(solver_angular_row_31e7b0 const *)(rows+2);
+ w[1]=spin->a;
+ w[0]=a->angular;
+ w[2]=angular_b;
+ w[0]=_mm_mul_ps(w[0],w[1]);
+ w[1]=spin->b;
+ w[2]=_mm_mul_ps(w[2],w[1]);
+ w[0]=_mm_add_ps(w[0],w[2]);
+ w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
+ w[1]=_mm_add_ss(w[1],w[0]);
+ w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
+ w[2]=_mm_add_ss(w[2],w[1]);
+ _mm_store_ss(&pool.spin_angular,w[2]);
 }
-static __forceinline void project_second_spin_fields(solver_linear_row_31e7b0 const *row,
- solver_velocity_31c940 *a,__m128 const &linear_b,__m128 const &angular_b,float &output)
-{
- __m128 w[5];
- w[0]=linear_b;w[1]=a->linear;w[2]=row->a;w[3]=row->b;
- w[1]=_mm_sub_ps(w[1],w[0]);w[0]=a->angular;
- w[0]=_mm_mul_ps(w[0],w[2]);w[2]=angular_b;w[2]=_mm_mul_ps(w[2],w[3]);
- w[3]=row->linear;w[1]=_mm_mul_ps(w[1],w[3]);
- w[0]=_mm_add_ps(w[0],w[2]);w[0]=_mm_add_ps(w[0],w[1]);
- w[1]=_mm_shuffle_ps(w[0],w[0],0x55);w[1]=_mm_add_ss(w[1],w[0]);
- w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);w[2]=_mm_add_ss(w[2],w[1]);
- _mm_store_ss(&output,w[2]);
-}
-
-
-
-
-
-// Keep the angular projection's A load distinct from the tangential rows.
-static __forceinline void project_spin_angular_velocity(solver_angular_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, __m128 const &angular_b, float &projection_output)
-{
-	sum_three_to_arena_31c940(_mm_add_ps(_mm_mul_ps(_mm_load_ps((float const *)&(a->angular)), row->a), _mm_mul_ps(angular_b, row->b)), projection_output);
-}
-
 static __forceinline __m128 const *apply_spin_first_fields(double impulse,
  solver_linear_row_31e7b0 const *row,solver_velocity_31c940 *a,
  __m128 inertia_a,__m128 linear_axis,__m128 *const &linear_home,__m128 &angular_b,
@@ -2021,33 +2024,30 @@ result+=2;
 					float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
 
 					spin_projection_output_31c940 projection_output(projection_pool.spin_first,linear_b_pointer,&body_b.body->linear);
-					reduce_into_spin_output(project_first_spin_velocity(((solver_linear_row_31e7b0*)terms),a,body_b.body),projection_output);
-					project_second_spin_fields(((solver_linear_row_31e7b0*)terms)+1,a,*linear_b_pointer,*angular_b_pointer,projection_pool.spin_second);
-					// Round the initial spin before the coupled tangential calculation.
-					project_spin_angular_velocity(spin, a, *angular_b_pointer, projection_pool.spin_angular);
-					scalar_work.first_error = (spin_target * load_friction_scale(step) - projection_pool.spin_angular * load_velocity_scale(step)) * spin_mass;
+					project_spin_contact_rows_31c940((solver_linear_row_31e7b0 const *)terms,a,body_b.body,linear_b_pointer,*angular_b_pointer,projection_output,projection_pool);
+scalar_work.first_error = (spin_target * load_friction_scale(step) - projection_pool.spin_angular * load_velocity_scale(step)) * spin_mass;
 					// Observe each target before multiplying by the current step scale.
 					float captured_target_a = (float const &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
 					scalar_work.pair_b = captured_target_a * load_friction_scale(step) - projection_pool.spin_first * load_velocity_scale(step);
 					double captured_target_b = (float const &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
 					// Both products precede the limit publication, including aliased scales.
 					double target_product = captured_target_b * load_friction_scale(step);
-					double velocity_product = projection_pool.spin_second * load_velocity_scale(step);
+					float velocity_product = projection_pool.spin_second * load_velocity_scale(step);
 					state.solving.spin_limit = operation_float(op, 12);
 					scalar_work.fallback_scalar = target_product - velocity_product;
-					// Keep the norm, ratio and limited impulses wider until their stores.
-					// SIMD consumption below has its own explicit float conversion.
+					// Keep limited impulses in native x87 intermediates until their stores.
+					// The norm and ratio use native scalar locals; SIMD rounds separately.
 					double impulse_a = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3] * scalar_work.pair_b + scalar_work.fallback_scalar * operation_float(op, 8);
 					double impulse_b = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3] * scalar_work.fallback_scalar + scalar_work.pair_b * operation_float(op, 8);
 					// Reload after the tangential impulses to retain spin-squared first
 					// in the x87 norm accumulation.
 					double impulse_spin = scalar_work.first_error;
-					double norm = impulse_spin * impulse_spin + impulse_b * impulse_b + impulse_a * impulse_a;
+					float norm = impulse_spin * impulse_spin + impulse_b * impulse_b + impulse_a * impulse_a;
 					if (norm > state.solving.spin_limit * state.solving.spin_limit)
 					{
 						// The norm comparison uses the saved limit; division reloads the
 						// live record after the tangential error was published.
-						double factor = operation_float(op, 12) / sqrt(norm);
+						float factor = operation_float(op, 12) / sqrt(norm);
 						impulse_a *= factor; impulse_b *= factor; impulse_spin *= factor;
 						((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] *= factor;
 						((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
