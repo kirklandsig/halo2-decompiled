@@ -990,6 +990,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // The 0x1c frame still shares the random sample and sine word. Bounded sample as unsigned short/signed long,
 // converted at fraction/after oscillation/inside angle 199/199 at each point; drawn before the clock product
 // 213/213. NOT kept: both widths remove the retail unsigned correction, keep the short frame and raise the score.
+// The random sample and sine share a slot in the 0x1c frame. Capture rotation axis i/j/k
+// individually 152/152/152, i+j/i+k/j+k 151/152/151, all in i/j/k or j/k/i order 151/151.
+// NOT kept: all reach 880 bytes but leave the small frame, increase the score and
+// disturb shared rotation users.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

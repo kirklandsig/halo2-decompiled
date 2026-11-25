@@ -1083,6 +1083,13 @@ void __stdcall function_1160c0(real dt)
 // aggregate initialization or point setter, 331 each. With separate prediction
 // coordinates, 332 each. NOT kept: the frame and extent shrink and the
 // selected segment still has a different spill.
+// M3 lane 5 r245 (h2m fast with 0x116750, 0x116010, 0x1160c0 and 0x211060 listed; control 144, sequence-aligned 159
+// rows exact, 41 with registers and stack offsets masked; body unchanged; still BLOCKED-BY 0x211060's parameter order).
+// Caller-side forms on main's order: sine and cosine named after the offset copy 169 (1373 B); the angle taken ahead
+// of the offset copy 180 (1375 B); the trig arguments through explicit double casts 158; the predicted point through
+// the existing vector3f_add 204 (retail's 1368 B, masked 35); the velocity through the existing scaled_difference3f
+// 171 (1369 B); the blend's complement named once 262 (1355 B). A forced pick of EDX for the segment (diagnostic, not
+// source) 120, as lane 3 r304 measured.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

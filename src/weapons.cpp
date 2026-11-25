@@ -3670,6 +3670,11 @@ struct s_ammo_conversion_entry
 // conversion with unloaded/loaded 197/204, both debits 204, all four 203;
 // shared short minimum for conversion and both debits 204.
 // NOT kept: all retain the 0x20 frame and 731 bytes, but the saved-register discrepancy persists.
+// The 0x20 frame agrees; destination, source and conversion search register homes still differ.
+// Declared source kind, destination sound, source sound, both sounds and simulation index 190 each.
+// Declared kind at each use 212; all declared fields with one kind read or per-use reads 190/212.
+// Both source counts shared with the limits or carried into the debit stores 211/221.
+// NOT kept: one kind read ties; per-use reads grow and the count snapshots change the frame and raise the score.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4126,6 +4131,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // shot count/sequence, continuation handle and all runtime fields: 630 each in the reduced image.
 // NOT kept: all tie the reduced control, which has a 0x1c60 probe and 2542-byte extent. The full
 // 0x1c64 probe, weapon/barrel register roles and separate magazine spills remain.
+// Typed weapon-tag heat cap, destruction, misfire and holder feedback; typed barrel-tag recovery/heat,
+// pitch curve and event kind; all fields together: 593 each. NOT kept: all tie. The 0x1c64 probe
+// and separate magazine-tag and loaded-round spills remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4696,6 +4704,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Named raw and clamped ramp rise/fall/both 1437/1441/1483. Blend rise/fall/both
 // 1411/1412/1412. Both rising updates 1448. All four 1484. NOT kept: the two
 // ramp updates recover frame 0x38 but grow to 5748 bytes and still spill the dual result.
+// The 0x34 frame, pool and header registers and spilled dual result remain.
+// Typed runtime barrel, barrel tag, thermal tag and ramp tag fields 1412/1412/1417/1412.
+// Typed barrel and tag together, both weapon tag phases, runtime weapon, all fields 1412/1416/1412/1416.
+// NOT kept: ties and regressions at retail length; every form retains frame 0x34.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5399,6 +5411,11 @@ struct s_weapon_projectile_creation
 // complete vectors 1177/1154/1154, direct component stores 1245/1216/1239. Result-vector updates in two
 // or three phases 1250/1257. NOT kept: all raise the score and move away from retail length. The
 // 0x1ea4 frame and separate clipping output remain.
+// The 0x1ea4 probe and separate point homes remain.
+// Separate world point using the getter result 1120; synchronization output in place 1141 or 1140 with getter result.
+// Muzzle center or clipped point reused for the world point 1136/1136, both with getter result 1134/1134.
+// World point transformed in place and copied 1155.
+// NOT kept: the first form gains one. Sharing a point reaches frame 0x1e98 but shortens the body; retail keeps distinct clipping and synchronization points.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
