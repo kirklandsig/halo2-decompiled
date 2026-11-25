@@ -771,6 +771,11 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // named turn components 597, named distance fraction 597, local ring normalization 592,
 // shared records base 631, shared projected extents 597, shared quadratic complement 597, typed
 // filter state 597. NOT kept: local ring normalization gains five and writes the wrapped index once.
+// Independent crossing tests 566, positive-first refresh 604, indexed initialization 958,
+// complete random point then indexed assignment 537, selected refresh destination 642,
+// signed-remainder wrap 638, local wrap passes 624, named integer advance 597.
+// NOT kept: independent tests repeat the sign check on the negative path; complete
+// points add temporary stack stores absent from retail.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -961,6 +966,10 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // (zero in XMM2, still a stack-passed state), named extent and camera 832, typed emitter 832,
 // shared volume distance with a local camera sample 962, shared exclusion distance 891,
 // absolute partition end 863. The opening extent and camera homes still differ.
+// Extent copy through memcpy 832, scalar camera snapshot 846, camera-first copy 833,
+// named live extent axes 858, explicit player divisor 857, explicit extent maximum 832,
+// shared scaled velocity update 831, staged velocity increment 885, array element
+// references 832. The scaled update gains one at the same extent; the stacked state remains.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1230,6 +1239,11 @@ bool function_143c0(long, short, short, real);
 // real line width 352, current mode selecting the primitive 366, partition offset 340,
 // positive age branch 344, previous point setter 346, typed shader slot 344, indexed vertex 371.
 // NOT kept: the partition-offset loop gains four at retail length.
+// With the ordinary vertex cursor, selected primitive 409, common final submission 509,
+// final width assigned with color 509, submitted position snapshots 436, aggregate previous
+// point 409, direct SDK width and separate begins 474, vertex element reference 409,
+// shared displacement setter 408. The stack state comes back in six forms; each shortens
+// the push-buffer code and raises the score.
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {

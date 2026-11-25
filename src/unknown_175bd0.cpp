@@ -4083,6 +4083,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // matrix declared at the block's head 103 each [lost], without the record 103 [lost]. Reading: in every form here the
 // convention follows the count of locals rather than
 // the code: dropping the cached mode lets LTCG put the effect index in a register too. Body unchanged.
+// Named cursor slot, color tag, and both 93 each. With direct per-call mode,
+// named cursor slot 108, color tag 126, both 126. Mode-field pointer 108,
+// with named color tag 126. The 108 forms lose the matched update caller;
+// the 126 forms retain it with frame 0x50 and 352 bytes.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

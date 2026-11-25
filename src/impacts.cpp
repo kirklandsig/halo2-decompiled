@@ -1968,6 +1968,10 @@ void function_2294a0(
 // copies 231, conditional mass ratio 457, shared constraint position sum 237, tangent setter 231,
 // staged normal projection 233, reversed admission operands 231. The midpoint setter still
 // preserves the 0x70 frame and the position base while grouping all three calculations.
+// Sequential midpoint assignments 231 and compound additions 231, both first +0x24f
+// at 1989 bytes. A transform-scope position pointer with stores or setter 485 each.
+// Common transform for both endpoints or its returned second endpoint 781 each.
+// Endpoint and separation names 231, original point snapshot at publication 519.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
