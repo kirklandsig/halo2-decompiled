@@ -2030,6 +2030,10 @@ long function_10f5f0(long object_index);
 // Door handle, bounds handle and named physics record individually 567 each.
 // Handle pair, either handle with the record, all three, and reused handle 561 each.
 // NOT kept: the frame, predicate bytes and shared output home remain unresolved.
+// Indexed zero fill then chained names, memset then indexed prefix, two indexed fills,
+// and indexed prefix then final zero: 561/572/561/561. On shared bounds/velocity/names
+// storage: 556/568/557/557. NOT kept: the independent forms do not gain and the shared
+// frame requires equality. The native predicate byte stores still differ.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -6405,6 +6409,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Separate magnitude dispatch for unrestricted, guarded and derived paths, individually
 // 853/883/1108, paired 801/857/975, all 1117, magnitudes in the default switch 801.
 // NOT kept: the dispatch splits raise the score and leave the entry SIMD registers different.
+// Unclamped sign, combined forced activity, sign default with forced override, and forced
+// default with sign override: 767/783/751/940. Separate bounded value with sign/combined
+// activity 767/783; upper-first bounds with sign or separate combined activity 767/774.
+// NOT kept: 751 restores the extent but tests raw positivity where retail tests the bounded
+// result. The entry definition and zero/result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

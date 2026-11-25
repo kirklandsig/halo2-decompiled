@@ -3888,6 +3888,10 @@ real magnitude3d(vector3f const *v);
 // nested or full conditional: 169/169/169/169. With a shared lower step bound: 185/185/185/185.
 // NOT kept: 169 gains one and grows to 1050 bytes. The raw root and promoted dot still spill
 // to different homes from retail.
+// Clamped arccosine helper, PIN at arccosine, lower-first and upper-first input selection:
+// 292/292/292/292. Dot bounded before both uses 287; lower and upper inverse-cosine bounds
+// alone 211/266; axis built before clamped arccosine 191. NOT kept: the new input boundary
+// changes the frame or extent and the raw magnitude still lacks its retail home.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4695,6 +4699,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // consecutive replacement runs with a separate gate or selected start 340/358.
 // NOT kept: the best forms construct a skipped ordinal where retail branches past the scan.
 // The prefix and ordinal homes, and the creation ordinal register, still differ.
+// Creation ordinal initialized before the direct capacity skip, reused or separate 357/393;
+// nested creation predicates, named capacity decision or while traversal on those two forms
+// 357/393 each. NOT kept: the earlier ordinal changes the prologue and raises the score.
+// Separate signed-word ordinal on the inclusive direct-skip form 340. NOT kept: the
+// narrowed ordinal still differs from retail.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -7328,6 +7337,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // retail's clear call passes its flags in EAX and needs 0x14b60's real body (BLOCKED-BY 0x14b60, whose body pads matched
 // 0x14ac0's frame and realigns this function); what still differs is that call's argument setup and the cull arm order.
 // MiniMax H (11-20): no new form, no lower score (111); the clear call still needs 0x14b60's real body (BLOCKED-BY 0x14b60) and the cull arm order comes from the shared pass header.
+// Range-based pass at modes 1, 3, 2, their three pairs and all three:
+// 106/101/106/106/111/106/111. Explicit enable at the first pass 223.
+// NOT kept: no reduction at retail length. The clear flags still travel on the stack.
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {
