@@ -735,6 +735,16 @@
 // components in place at quarter/half/both 536/536/536. Join the mode store without
 // or with quarter/half/both attenuation 593/593/593/593. Name each attenuated product
 // at its clamp 537. NOT kept: the extent stays 2622 bytes and the frame does not change.
+// M3 lane 16 r190 (fast screen with 0x4a1e0, unchanged at 322; control 536 at 2622 B, aligned 593, masked 183; body
+// unchanged). Retail's special arm read product by product: both crosses run in the staged helper's order (k, j, i).
+// The first forms v4.i * v2.j, v4.k * v2.i and v4.j * v2.k into three cells and its k and j into two more, with only
+// its i written to w's first member; the second is each kept second product minus the stored first one, then w's
+// three stores. Forms: the first cross through cross3f_staged straight into w with the second wave reading w 533
+// (aligned 605, masked 188, frame still 0x54: this build still forms the first cross i first and gives its j and k no
+// cells); both crosses staged, the first into w, 533 (same code); both staged with the first in its own vector 537;
+// the second cross staged alone 536 (same code as the body); both staged into w with the plain sine declared ahead
+// of the first cross 533 (same code as the second form: the sine is still substituted after the mixed wave). The
+// frame's three missing cells (the cross's j and k, one more wave cell) do not appear in any of them.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
