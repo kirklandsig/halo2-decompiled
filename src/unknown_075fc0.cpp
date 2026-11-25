@@ -515,6 +515,30 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // three getters in the image, 429 (1388 B: each use still reloads). Diagnostics, restored at once: `inline` on the three getters'
 // definitions expands all three here (494, 1442 B); an undefined call after the window getter 486 (on the lead 384) spills the
 // float registers retail keeps across that call, so retail has the getters' register and memory summaries as this build does.
+// M3 lane GA r8 (fast with 0x75910, 0x76520, 0x765c0, 0x77940, 0x89030, 0x88fd0 and 0x89000, all MATCH each run; control
+// 356 at 1374 B, aligned 192, register-and-offset-masked 123; body unchanged). New structural reading: retail's entire
+// second half (from `if (local_14)` through the three tail epilogues) comes out verbatim from zero-goto structured C++:
+// `bool can_send = true;` with `if (local_17 > 0.0f) { ... can_send = local_23 >= local_13; } else if (local_17 == 0.0f)
+// can_send = false;`, `if (can_send && local_18 >= 0) { ... if (local_6 < 48) can_send = false; }`, `if (can_send)` around
+// the counter update and reliable-bytes check (with `long payload = local_29 - 45;` and two `local_2 = false;` failure
+// arms), `if (local_2)` around the packet/tail work, nested `local_6 >= 0` payload floor, `*(__int64 *)&g_4e6398`
+// snapshot/reset, `!(local_17 > 0.0f && 1.0f / local_22 > local_17)` pacing test, and every channel field indexed through
+// `channels[local_0]` (no pointer local): 367 at retail's exact 1369 B, aligned 114, masked 51 (100% clean, no match-only
+// forms; recovers both `test bl, bl` budget picks, `setge; test; je` with no result store, the out-of-line `ucomiss`
+// falling into the shared exit, `lea ebp, [ecx - 0x2d]` with two unmerged false stores, and all three epilogues). Trials
+// on that zero-goto shape: original counter composition with `local_4` pointer 400 (1389 B, masked 84), nested `if (can_send)`
+// 400; 64-bit snapshot reused in elapsed/reset 442 (1331 B, frame 0x34); `*(__int64 *)` view with `local_4` pointer 440
+// (nested 440, union copy 440, 64-bit subtract 440); reusing `local_2` instead of `can_send` 395 (1369 B, frame 0x34);
+// indexed fields with original pacing 367 (1369 B, masked 53), with `local_16 = false` beside `local_7` 421 (1342 B, frame
+// 0x34), plus NONE locals before search 378 (1369 B, masked 47); tail `return local_2; / return false;` 437 (with early
+// `local_16` 440); `local_3` fetched after the NONE/zero locals 367 (masked 51); counter pointer after NONE 430 (1336 B,
+// frame 0x34, +0x7). Match-only diagnostics (`F` = has-host flag started false and set in arm): indexed + `F` 384 (1373 B,
+// aligned 104, masked 43); + `F` + `local_3` after NONE 361 (1371 B, aligned 104, masked 39); + `F` + NONE before search
+// 412 (1373 B, frame 0x34, `local_3` spilled); + `F` + tail returns 418; + `F` + `local_4` after NONE 404 (1369 B, frame
+// 0x34, aligned 101); + `F` + counter pointer after NONE 405 (nested reused snap 406; with NONE before search 415, +0x9
+// matching `sub esp, 0x34; push ebx; push ebp; push esi; or esi, -1`). Left on the 367/361 zero-goto forms: `local_3` takes
+// EBP instead of spilling to `[esp+0x1c]` (forcing `local_18` to `[esp+0x20]` and frame 0x38, and delaying `this + index *
+// 0x528` until `field_48c` instead of right after the NONE stores), plus 0x75910's `long` return. Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
