@@ -3880,6 +3880,10 @@ real magnitude3d(vector3f const *v);
 // place or with separate projected storage: 183/196/183/196. With the complete shared tangent:
 // 170/197/170/197. NOT kept: the two 170 forms tie at 1045 bytes and still store the raw root
 // at +4, leaving the real root, dot and cosine transfer slot unresolved.
+// Complete size selected in each arm, accumulated from the current length, or selected by a
+// nested or full conditional: 169/169/169/169. With a shared lower step bound: 185/185/185/185.
+// NOT kept: 169 gains one and grows to 1050 bytes. The raw root and promoted dot still spill
+// to different homes from retail.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -6314,6 +6318,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // or retained: scalar alpha 628/507/628/507, four-channel color 634/516/634/516.
 // NOT kept: the separate scaled result reaches frame 0xe0 with scalar alpha, but the indexed
 // variants lengthen the corner expansion and leave the radius spill at +0xc.
+// Split output into successive edges, depth ends and middle pair, a separate first corner, or
+// a separate last corner: scalar alpha 390/244/234/386; four-channel color 387/228/218/371.
+// NOT kept: 218 recovers frame 0xe0 but grows to 1829 bytes and leaves the radius at +0xc.
+// The retail-length color form raises the score.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

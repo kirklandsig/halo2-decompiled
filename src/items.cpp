@@ -998,6 +998,9 @@ struct s_item_collision_bsp
 // 190 in all eight forms. Last angular store with the direct or named product after the paired i/j
 // outputs 186/186 at 1362 bytes. NOT kept: four-point gain below the threshold. The transformed-plane
 // registers and pending x87 scale still differ.
+// Translation terms after their rows, after the first two rows, after all rows, or with X
+// early and Z before Y: 199/199/199/199 in both plane-row and scalar-row storage.
+// NOT kept: the length and frame stay at 1366 and 0xa0. The queried coefficient order still differs.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1386,6 +1389,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // member stores 293, separate axis and setter 293, output axis and setter 298,
 // output axis and complete result 323 for either cross. NOT kept: scale adds calls
 // and grows the frame. The scaled axis still lacks retail's register allocation.
+// Transform up as scaled-axis storage 212 for either cross. As fallback-cross storage 195
+// for either cross. Both lifetimes in transform up 232 for either rotation cross. Transform
+// left or forward for fallback 195/195. NOT kept: the 0xb4 forms expand the body and score
+// higher. Fallback-only forms retain 0xc0.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

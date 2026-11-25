@@ -3963,6 +3963,10 @@ real g_47ff30 = 2.5f;
 // Named lateral determinant with direct inputs or scalar linear, facing, or both pairs 672 each.
 // Separate final mass scales on those four forms 710 each, frame 0xfc and first +0x66. NOT kept:
 // the 0xfc forms raise the score, and the acceleration spill and planar input homes still differ.
+// Linear query storage reused for axis, axis and torque, axis with angular output reused
+// for force, or both reuses: 676/676/676/676. With separate mass reads: 713/713/713/713.
+// NOT kept: the 0xfc forms retain retail length but raise the score and still spill
+// acceleration at +0x20 instead of +0x34.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
