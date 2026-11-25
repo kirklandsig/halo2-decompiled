@@ -2800,6 +2800,19 @@ struct s_unit_event
 // Byte displacement for the typed datum lookups 511; with the slot helper 419, retained pool 459,
 // or shared vehicle datum 511. Helper/pool 419, helper/vehicle 419, pool/vehicle 459, all 419.
 // NOT kept: the one-point gain leaves the exchanged region and permutation registers.
+// Lane GA round 2 (fast with 0xdaaa0/0xdae60/0xdb760, all MATCH; control 420 at 1868 B, aligned 267, masked 57):
+// on the named region-states lead (L = 523 at 1852 B, +0x5a, aligned 126, masked 54): region-states returned by a
+// forceinline helper 420 (entry cycle returns), element-pointer helper 420, vehicle block through a datum pointer
+// 523 (aligned 107), notifications through a forceinline helper 523, drop blocks through a forceinline helper 521
+// (aligned 139), seat event block through an inline helper 706 (1680 B, outlined), unit weapon lookup through
+// DAMAGE_OBJECT 523, mark-region-destroyed inline helper 523; single-body destroy test on L via ternary 524 (1884 B),
+// via `||` 513 (1868 B, +0xc), ternary with vehicle datum and indexed scans 495 (1884 B), diagnostic `kept` flag
+// alone/with vehicle datum 521/523 (1852 B; without L 433 at 1868 B), byte_flags_set for the four +0x19 stores 523,
+// word_flags_set for the region-state update 523, entry datum local 523. Diagnostic type-mask (`!= 0`) and null-checked
+// vehicle-getter forceinline helpers on baseline/L: 374/463 at 1868 B (+0x5a, masked 72/71: the extra `shr/test 1` and
+// null check lengthen permutation's range enough to flip region_index into EBP and pad 1852 to 1868, not retail's code);
+// with `kept` and indexed scans 468. On every clean form `object` still beats `datum_offset` for ESI from 0xda1ca on,
+// keeping the 16-byte gap and preventing g_4e0300 from holding EDI across the drop blocks. Body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3907,6 +3920,11 @@ enum
 // 448/503; derive the last index from count 304; accumulate the last valid index 267; derive it from
 // the end pointer 510. NOT kept: 304 gains five at retail length. The 267 form also reaches retail
 // length, but starts at NONE and increments before the store. Retail counts from zero after the store.
+// The initial child-permission homes and the parent count register still differ. NOT kept: the chained
+// defaults gain one, the separate range test loses one at 1883 bytes, and other forms tie or regress.
+// chained child defaults 308; single child flags word 309; native child permission masks 309; shared
+// primary pass Boolean 540; nested damage-report admission 309; late absorption initialization 449;
+// separate region span and flag tests 310; separate shield-and-body gate 309.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -5673,6 +5691,19 @@ struct s_damage_object_creation
 // shared test and store bit 205, with word setters 205. With masked node bits 232, or with
 // word setters and masked node bits 224. NOT kept: the extra mask moves the count and ordinal
 // away from the retail allocation. The exact-length form changes the frame and raises the score.
+// M3 lane GA r2 (fast with 0xdb810/0xdbb40/0xd6800/0xd8a40, all MATCH; control 167, aligned 42, masked 12):
+// forceinline section-mask helper 167; inline find_first_bit_set helper 223 (793 B, frame 0x13dc); named
+// `s_damage_object *piece` used twice for `piece->node_index` 168 (794 B, aligned 32, masked 9: lines 188-226
+// byte-exact); `dword detached_nodes` 167; `creation` at `while` scope 167; `bit_vector_test` on `attached_nodes`
+// 223 (819 B); signed section tests without `(word)` casts 168; both prototype and definition with `word` masks
+// 167 (with `piece` and no casts 168). On `piece`: tag guard outside `while (detached_nodes > 0)` 211 (808 B);
+// combined `while (detached_nodes > 0 && tag != NONE)` 220; `do ... while (detached_nodes != 0)` 168; `for/break`
+// search 224 (792 B, 0x13dc, `detached_nodes` takes ESI); `while (i < node_count)` with break 224;
+// `if (info && info->unknowne0 > 0)` 184; `i` before `section_count` 168; `first_node == NONE` in `for`/`while`
+// search header (`i < count && first == NONE`, `first == NONE && i < count`, `while`, `do-while`, baseline) 217
+// (808 B, 0x13e0, emits `cmp eax, -1` + `cmovne`), with `else i++` 162 (810 B, aligned 135, masked 54).
+// Diagnostics: one-use `dword m = (word)section_mask_a` + `piece` 111 (810 B, aligned 24; fixes section/node/search
+// pads and lines 171-226); same + `first_node == NONE` search 215 (808 B). Body unchanged.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

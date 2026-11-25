@@ -923,6 +923,24 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // the side point's rows, the byte conversion, the scale factor's load order, the zero held in XMM1 through the stop
 // block, the five products of the frame-velocity block (retail keeps the object's axis on the left except its first
 // member) and the blend tail. Nothing kept: the two forms that lower the count gain one point.
+// M3 lane 6 r242 (fast screens with lane 15 r139's companion list plus 0x22bbca; control 489 at 3503 B, aligned 178, 158 with
+// stack offsets masked, 45 with registers masked too; body unchanged). Frame reading: the position's 12-byte home has 7 packing
+// references and the home shared by the path output, the translated target and the pre-turn copy has 8, so the position sorts
+// above it; retail reads the position's y twice (0x29be33-0x29be56: `A = r; y = r * h + py` in one arm, `t = 0 - r; A = t;
+// y = t * h + py` in the other, the x row after the join from A), which is the one count that puts it below. Both arms use
+// the selected value itself, so retail's row was cloned into the arms after the select, not written on A. The normaliser:
+// our squares are leaf * leaf on the copy's three forwarded members (ranks i < inverse < j < k, hence k, j, i); retail's
+// i, k, j with `inverse * i`, `j * inverse`, `k * inverse` cannot come from one numbering of those members.
+// Forms (score at bytes; aligned / stack-masked / register-masked): the y row inside the select's arms with a second select
+// for x (`side ? r * h + py : -r * h + py`, then `(side ? r : -r) * n + px`) 718 at 3533 B (334/197/67; the second select is
+// threaded into the first, but the else arm folds to `py - r * h` and forms `0 - r` again); the signed distance as
+// `r * (side ? 1.0f : -1.0f)` 712 at 3488 B (314/171/51); both rows written in each arm with `r` and `-r`, y first or x
+// first, 750 at 3539 B each (371/191/70: the position then sits below the shared home, nothing is merged); an assignment
+// inside the y row's select with x after it (diagnostic) 708 at 3488 B (309/171/49). Re-measured to read their code: two
+// selects with the y row first 722 at 3514 B (356/176/57; not threaded, the y row sits between them), the y row in both arms
+// with different operands 718 (351/175/55; the rows are merged after the join again), the side point as two scalars y first
+// 688 at 3499 B (263/182/64), the copy through vector3f_assign 665 at 3499 B (249/185/71; squares still k, j, i). A scan of
+// every game function for a float select whose arms both end in the same product-and-add row finds only this one.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
