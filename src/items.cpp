@@ -1952,6 +1952,10 @@ struct s_item_flags_view_10b850
 // and the write as bit members: 824 each. Both reads, second read and write,
 // or both reads and the write with the signed short field: 824 each.
 // The entry flag bytes and 0x154 frame still differ.
+// The entry Boolean stores and ray/flow home still differ. Zero magnitude on a missing
+// flow query, selected by a conditional, a guarded default, or either branch order:
+// 824 each with separate vectors, 881 each with shared ray and flow storage. NOT kept:
+// the shared form shrinks the frame to 0x148 but shortens the body and raises the score.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

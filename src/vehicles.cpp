@@ -5280,6 +5280,11 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // default, signed range or default range rotation 141/133/138/147. If/else angle with
 // the same rotation tests 130/126/133/132. NOT kept: even the 806-byte forms raise the
 // score, and the first projection operand and trig homes still differ.
+// The last projection product still loads forward.i instead of up.i. Projection copied
+// from forward before or after the up copy, then scaled in place with the dot from
+// facing or the projection, and member or indexed removal: before 224/234, after
+// 215/225, each in both removal forms. NOT kept: the snapshots enlarge the frame to
+// 0x10 and the body to 822 or 832 bytes.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

@@ -2474,6 +2474,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // the spawn record as an aggregate initialiser with `multiplied()` as the argument 135; `spawn_here` as a long 167 (560
 // B); the location's node index named for the spawn call's flag 128 (same code); the 0x1751d0 result named ahead of the
 // 0x137bd0 call 128 (same code). Body unchanged.
+// The early system and color slots still disagree. Preset true or false placement
+// result, positive or inverted, with assigned or branch-set zone decisions:
+// positive 128/164 and inverted 139/164 for each preset. NOT kept: each retains
+// frame 0x40, and the branch-set results lengthen the body to 564 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4040,6 +4044,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // convention, but the effect pool load then follows the call); that without the address read 127 (348 B; both indices
 // in registers, 0x176f60 8); with the effect pool's base named at the top and indexed after the call (diagnostic) 124
 // (352 B; 0x176f60 MATCH; the index arithmetic still follows the call, system EDI / next index EBX). Body unchanged.
+// The system still needs ESI and the definition needs a spill. Explicit initial and
+// recurring advances, in a for increment or at the while tail, with cached word/short
+// 93/93 and direct/reference mode reads 108/108 in each loop. NOT kept: the live reads
+// recover the 0x54 frame but move the effect index off the stack and break the update caller.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
