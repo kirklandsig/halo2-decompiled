@@ -1705,6 +1705,17 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // on this main 95 (3374 B). Frame packing: the pivot and the first and second sweep points tie at 9 references each, so
 // their order is the sort's (retail puts the pivot first); the reverse trace result has 7 references to the forward
 // one's 6 and sits below it (retail the other way round); both counts follow the XMM5 radius.
+// M3 lane 11 r168 (fast screen with 0x29a190, 0x298c30, 0x2108a0 and 0x210770, MATCH each run; control 569; all
+// restored, body unchanged; still BLOCKED-BY 0x2108a0: lane 6 r207's lead needs `inline` on that definition, a held
+// form). The 108 lead re-applied on this main 108 (3374 B, aligned 30); main's body with the keyword alone 726. A rule
+// found on 0x516d0 this round (the operands of a commutative float product and the terms of a float sum are ordered by
+// the age of their symbols, the younger first, age being the first assignment) tried on what the lead leaves: the
+// distance helper's three deltas assigned x,z,y / y,x,z / y,z,x / z,x,y / z,y,x with the sum parenthesised as in the
+// lead 116 / 120 / 128 / 124 / 124 and plain 116 / 116 / 120 / 120 / 116, x,y,z plain 108 (the assignment order does
+// move the x87 squares, never to retail's order at the first sweep site); the obstacle rotation helper taking the two
+// components by value ahead of the sine and cosine 122, after them 118, the same with trig-first rows 118; the
+// components read into locals inside the helper 116; the sine products alone written trig-first 108 (same code); the
+// y row's terms exchanged 108 (same code); double sine and cosine parameters 169.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

@@ -1135,6 +1135,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Combined short-circuit gate/allocation test and conditional allocation result:
 // byte 334/334, word mask 334/334, word shift 334/334, bitfield 344/344.
 // NOT kept: the effect load and gate spill remain in AL and ESP+0x1f.
+// Single failure exit with a typed byte shift, word mask, named bit or named
+// low byte: 334/334/344/334. Enclosing admission with the same first three
+// projections: 334/334/344. Both admission-result arms before allocation 425.
+// NOT kept: the address remains folded. The result arms add 13 bytes.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -5727,6 +5727,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // First-cross up.i still loads early. Saved aim published before the second cross, before
 // normalization, after fallback, or with separately corrected up: 217/212/215/249 with either
 // first-cross helper. NOT kept: the aim copy grows the frame to 0x5c and separate up to 0x68.
+// Scaled additions from vertical/transverse contributions: own vector 276/272,
+// direction output 169/169, projected vector 276/272, forward vector 272/268.
+// NOT kept: the direct output ties and the workspaces grow the frame and body.
+// The early up.i load and x87 forward-scale lifetime remain.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5948,6 +5952,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // named limits 58, per-direction saturation defaults 167, shared selected bound
 // with ternary/branch joins 113/113. NOT kept: the six-point lead leaves the
 // clamp registers and coefficient schedule different. The opening body gives 58.
+// Bounds record initialized together or through its members 58/58. Angular products, rate products,
+// or both stage pairs in a bounds record 58/58/58. Signed lower endpoint 196, with signed comparisons
+// 212, signed bounds record 212. NOT kept: the records preserve the wrong XMM allocation, and the
+// signed forms grow the body. The angular limit and coefficient still occupy separate registers.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -9834,6 +9842,21 @@ struct s_unit_melee_collision
 // 500/553, and shared ray setter 447/536, each with a range snapshot or per-product loads.
 // NOT kept: the direct default gains one at the original frame. Late response assignment
 // reaches 0x17c even with a range snapshot, but lengthens the function to 2232 and raises the score.
+// Occupied-hit rejection, selected-type conditional, signed candidate type snapshot, and staged hit
+// selection with the range snapshot: 496/496/525/531. With a range read at each product: 539/539/542/491.
+// NOT kept: the live range recovers frame 0x17c but shortens the body and all selection forms regress.
+// The unit and fan ordinal homes remain displaced.
+// The frame is still 0x180 against 0x17c, and the fan carries the unit and loop ordinals in different
+// homes.
+// Direct tag in each selector arm cached 521, direct tag in each selector arm live 450, live hit output
+// fields cached 553, live hit output fields live 562, timer player handle cached 447, timer player
+// handle live 534, damage owner initializer cached 447, damage owner initializer live 534.
+// NOT kept: The range-at-use forms either shorten the body or retain the displaced frame, and no form
+// beats the opening score.
+// Short row ordinal with cached/live range 538/514, short column 520/524. One self-damage
+// origin for both consumers with cached/live range 447/534. Distinct surface and damage
+// workspace names with cached/live range 447/534. NOT kept: ordinal widths enlarge the frame,
+// and the other live forms reach 0x17c but shorten the body. The unit and fan spill homes still differ.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

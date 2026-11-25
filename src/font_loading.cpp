@@ -1067,6 +1067,20 @@ static inline word font_character_pixel(long alpha, long color)
 // add/OR, narrowed at the complete pixel or at the high contribution, each 45.
 // Each with per-arm length reaches 30. NOT kept: the per-arm forms still differ,
 // and the signed conversion leaves a 508-byte body with different literal loads.
+// Extending the literal from its decoded header by shift/OR, byte places, base-256
+// addition, or a word accumulator: 103/103/103/95 with the shared length,
+// 84/84/84/90 with per-arm lengths. NOT kept: the word form reaches 504 bytes
+// with the shared length but still fuses the literal byte loads, and the packed count join differs.
+// M3 lane GA r5 (93 fast trials on score-41 and score-12 bases with 0x140960/0x122540/0x122570 MATCH; body restored):
+// Clean length=1 on score-41 base: long length = 1 at loop top 182 (516 B); if/else-if/else chain with length=1 at top 119 (512 B).
+// Literal hunt on score-12 base (504 B): 3-part nibble split ((dword)(source[1]>>4)<<12)|((dword)(source[1]&0xf)<<8)|(word)source[2]
+// and 4-nibble ARGB4444 in dword both break OR-fusion to 11 at 504/504 B (movzx ecx,[edi+1]; movzx eax,[edi+2]; shl ecx,8; or eax,ecx);
+// source[2] nibble split in dword (((dword)(source[2]>>4)<<4)|(dword)(source[2]&0xf))|((dword)source[1]<<8) (either operand order) breaks
+// OR-fusion with zero extra instructions -> movzx eax,[edi+2]; xor edx,edx; mov dh,[edi+1]; or eax,edx (30 at 504 B, 1 B shorter from 32-bit
+// movzx eax vs retail's 16-bit movzx ax, shifting trailing pad/jump table; casting to word inhibits the nibble collapse -> 102-106 at 520-524 B).
+// Other forms on score-12 base: word/short/dword/long/maskff00/shl24>>16/two-step/shift-assign/s_pix_bf_only/maskf0|0f OR forms all fuse to
+// 496 B (90); & 0xffff / & 0xfff / dword union bitfield write break fusion but keep `and` -> 82 (508 B); word union bitfield write spills to
+// stack -> 33 (508 B); byte union -> 92 (512 B); word ptr bswap -> 82 (504 B); word+mul256 / word+word<<8 -> 30 (508 B); color-first alpha|color -> 182 (512 B).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

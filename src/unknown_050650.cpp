@@ -2340,6 +2340,19 @@ struct s_actor_looking_structure_view
 // pointer handed to dot3f 32; the rotation run on a local copy that is stored to the array afterwards 195; the score
 // computed ahead of the fraction test 34; lane 3 r277's merged helper with the dot between the sine and the cosine
 // (retail's instruction order) 6 (0x296e60 273; the lead's code here, match-only).
+// M3 lane 12 r189 (reduced-image screen with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590; control 23). Rank levels
+// read per form: main's body has the candidate at 6/6/6 and the axis at i 1, j 2, k 0. One redundant pair on the angle
+// 132 (candidate 4, axis 1/4/2); the in-place helper's projection as `dot3f(axis, vector) * (1 - cosine)` 144, that with
+// the angle pair 66: there the candidate's k sits on its own level (2, beside the axis j) with i and j on 6, the first form
+// where the three members split, though to the wrong side. Lane 3 r277's merged helper rebuilt 6 (0x296e60 282): the
+// candidate (2/2/2) ties exactly with the axis j (2), which gives retail's dot order and puts the axis j first in all
+// three products that pair it with the candidate, where retail has the candidate's k first in cross i's second term; the
+// score's i, j, k comes from forward's members being numbered k (at its clear), then j and i (at the score). On that
+// lead: `dot3f(axis, vector)` 6 (same code: the helper's argument order does not settle the tie); 1/2/3 pairs on the
+// angle 88/135/149, the same with the axis-first dot; forward's k cleared through a pointer in an inline helper
+// (diagnostic) 47, k still numbered ahead of j and i; the score as `dot3f(&directions[i], &forward)` or
+// `dot3f(&forward, &directions[i])` with 0-3 pairs on the clamp product 145/139/88/145 each. Left: a form where the
+// candidate's k alone ranks above the axis j.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
