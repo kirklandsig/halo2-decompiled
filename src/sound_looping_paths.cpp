@@ -1023,6 +1023,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Shared gain buffer reused as a count-prefixed active list, store/increment first, for short/short
 // query and choice 876/877, short/long 936/946, full/short 899/901, full/long 937/937. NOT kept:
 // the 0x4e0 frame returns, but the count and query homes differ and all scores rise.
+// Lane AO r3 (fast with 0x18bb80 and ten callees, control 837 at 3327 B): the targets array declared after the two
+// counts 837, the primary declared ahead of the target count 837, the choices declared ahead of the query arrays 837,
+// the query count declared ahead of the arrays 837 (same code each: declaration order moves no home); the duplicate scan
+// as a plain loop with `break` 966 (3272 B); the fraction as an if/else 837 (same code); each target filled as
+// `targets[target_count].field` with the count stepped last 940 (3289 B); the muted flag as `!g_509420` 837. Reading:
+// retail walks the query with the long count read from its home, keeps the choice count in ESI with a copy at frame
+// +0x24, and spills the loop index at frame +0x4 where ours puts the short query count. Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
