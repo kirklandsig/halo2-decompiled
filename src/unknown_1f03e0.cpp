@@ -1604,6 +1604,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 234/234/234/597/234. All contact reads 599, with direct declared first 596,
 // and with the input address after the flag reads 599. The saved-flag forms leave the
 // first extraction unchanged. Using the helper at the gates shortens the body.
+// M3 lane 16 r187 (h2m fast with 0x1f0450, 0x1f1460, 0x24590 and 0xa75d0; control 234, aligned 194, register-masked 119;
+// body unchanged). First-arm forms, each worse: an `up` pointer local for the cross and the last add-scaled 429 (3052 B);
+// a `facing` pointer local for the cross and the first scale 429 (3052 B); the input scaled ahead of the cross 252
+// (aligned 217: the two up.k products do not turn and the speed load moves); the cross moved after the facing scale 268
+// (aligned 236); the output vector named once for the arm's three calls 621 (3050 B).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
