@@ -2380,6 +2380,11 @@ struct s_unit_motion
 // NOT kept: the accumulator takes XMM4 and returns with ret 4. It inlines
 // into 0xc7840 and loses 0x1e5af0 and 0x1faf80 in the preview. The current
 // velocity arrives on the stack and the two output paths remain split.
+// Single output block with exhausted-time exits 86, with a running velocity 69.
+// With a final completion assignment 108/69, phase-local durations 86/69,
+// direct time or original first-phase inputs on the running-velocity path 69/69.
+// NOT kept: every running-velocity form inlines into the caller and loses
+// both matched transitive callers. The stack velocity load and ret 8 remain.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -5686,6 +5691,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // up with the ordinary cross, staged second cross or branch selection 194 each;
 // select both new axes 196. NOT kept: the live aim reads through the unit where
 // retail copies it and grows the body to 781 bytes. Separate up grows the frame to 0x5c.
+// Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
+// Separate queried up with branch publication 218/218, or publication after its correction 211/211.
+// NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
 // The 0x50 frame remains. The first cross still loads up.i before the forward copy and the last row
 // consumes the forward scale. NOT kept: staged k with leading pair copy grows to 773 bytes and stages a
 // one-use component. The 767-byte forms raise the score. staged k with leading pair copy 99; staged i
@@ -5694,6 +5702,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
 // Separate queried up with branch publication 218/218, or publication after its correction 211/211.
 // NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
+// Read aim in the first cross with copy before/between 210/208, in the second with
+// copy before 203, or in both with copy before/between/after 213/213/211.
+// Staged first-cross helper with first-live/between or both-live/after 208/211.
+// NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -8811,6 +8823,11 @@ real function_50650(real cosine);
 // Paired outputs 591, idle-arm defaults 544, late reciprocal with
 // original/separate speed outputs 498/505. NOT kept: all forms tie or
 // regress. The frame and speed slots still differ.
+// Framed directions through shared basis dots, setter, or both 491/491/491.
+// Return by value 628, with shared dots 627. Pass by value 669, with setter
+// 669, and pass/return by value 703. NOT kept: the shared operations tie.
+// Returned values raise the score, and by-value inputs also lose the two
+// matched transitive callers. The frame and step arguments still differ.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -9101,6 +9118,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Object-header or object accessor for the grenade owner alone or with the
 // initial lookup, each with or without a named grenade handle, 62 in all
 // eight forms. The owner load order and call setup still differ.
+// Sampled player/object, player/object/team, player alone or object alone
+// before publishing the owner, player first or object first: 62/58 in each pair.
+// NOT kept: the object-first forms fix the first owner block through +0x14b
+// at 1602 bytes, but four points is below the threshold and the one-use
+// samples require a match. The damage flag, later call setup and shake remain.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
