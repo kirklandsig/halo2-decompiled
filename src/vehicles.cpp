@@ -6367,6 +6367,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // clamp arms, forced default and three limits, lower arm, or upper arm
 // 772/948/772/777. The 0x18 frame agrees and the entry zero/result registers
 // and EBP definition still differ.
+// Once-read gear byte, kind word, both, both with a positive gear gate or
+// explicit zero 759 each. Both with entry definition 982, linear-velocity
+// reference 784 or shared flag address 759. NOT kept: the entry-definition
+// form restores EBP but merges later tag lookups and shortens the body.
+// The 0x18 frame agrees and the zero/result registers still differ.
 // Retail comparison-stream case order in four dispatch spans, three adjacent pairs,
 // and the whole switch: eight at 759. The 0x18 frame agrees; the entry definition
 // and zero/result registers still differ.
@@ -7270,6 +7275,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // early transpose with separate relative matrix 1139, early transpose with reused rotation output 1085.
 // scoped basis with named rounded delay 1218, early transpose with named scaled delay 1139.
 // NOT kept: The current-basis forms reach frame 0xdc, leaving a four-byte gap to retail. All shorten the body and raise the score. Early transpose with reused output is the closest of these forms at 1085 and 5046 bytes.
+// Driver handle read once 959; two-arm or conditional pointer selection 1029/1029.
+// Header accessor on the flip refresh or named delay with one driver read 959/959.
+// Parent read with scoped relative output 1129, with byte boost 1126; const
+// selected driver 1029. NOT kept: the relative output reaches 0xdc but shortens
+// the body and raises the score. The 0xfc frame and entry register swap remain.
 // Transpose returned by value after swaps of the value input or a copied reference
 // 1139/1139, or produced by axis from a pointer/reference 1205/1205. With a separate
 // relative product 1125/1125/1174/1174. NOT kept: each leaves frame 0xfc and grows past 5094 bytes.
