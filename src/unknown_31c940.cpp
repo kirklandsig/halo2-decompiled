@@ -1702,11 +1702,12 @@ result+=2;
 				case 9:
 				{
 					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-					float const * &friction_scale_pointer = scalar_work.friction_scale;
-	 friction_scale_pointer = &step->friction_scale;
-					__m128 *velocity_b_pointer = &body_b.body->angular;
+					// Publish both pointer homes before retaining the angular receiver.
 					__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
 					inverse_b_pointer = &body_b.body->inverse_inertia;
+					float const * &friction_scale_pointer = scalar_work.friction_scale;
+					friction_scale_pointer = &step->friction_scale;
+					__m128 *velocity_b_pointer = &body_b.body->angular;
 					do
 					{
 						// The target precedes the limit store, including when they share storage.
