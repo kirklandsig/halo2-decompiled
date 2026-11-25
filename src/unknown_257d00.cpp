@@ -2934,6 +2934,15 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI / state EBX (+0x9). On main's actor-EBX base: early actor+7 + no `local_5` 431, plus case 13/20/4 579
 // (swapped), plus case 13/20/2-agg 620 (swapped), main + case 13 dropped + case 20 inline return-1 + else arm +
 // case 5/7/8 swaps 404 (2416 B, actor EBX, masked 92; match-only swaps), without the swaps 510 (2428 B). NOT kept.
+// M3 lane GA r6 (12 trials, fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429, peers MATCH; body unchanged):
+// on the clean retail-shaped base (no volatile, no case-5 swap): base 580 (2380 B, aligned 180, masked 45, actor/state swapped);
+// nested request `if`s in cases 6/21 580 (same code); tail direct `return 0`/`return 1` keeping `local_5` 640 (2372 B, masked 192);
+// restoring `vector3f_assign` (through pointer or direct reads) 627/627 (2412 B, still swapped); case 2 `memcpy` 580 (same code);
+// keeping case 2 aggregate copy without case 4 dot3f and case 18 held targets 605 (2412 B, still swapped); caching `local_2->field_3`
+// in tail locals 594 (2384 B, masked 48); case 6 split global OR + case 20 main-arm shared exit + `b0 == NONE || d1` 546
+// (2396/2396 B, aligned 166, masked 32, still swapped); case 20 y/x/z subtraction + `b0 == NONE || d1` 602 (2376 B, masked 48).
+// On main's actor-EBX base (keeping case 13 and cases 2/4/18): case 20 conditional clear + `b0 == NONE || d1` 526 (2436 B, EBX, masked 71),
+// with main-arm shared exit 540 (2444 B, EBX, masked 69).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
