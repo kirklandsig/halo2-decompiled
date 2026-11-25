@@ -471,6 +471,18 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // default as `break` 343 (1180 B, a range check returns); the tail's object index read at the top 369 (1180 B); the
 // shape match as a bool set by a second test 331 (1184 B); the input's flags word through a named pointer 319 (same
 // code). Body unchanged.
+// M3 lane 11 r168 (fast screen with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0 and 0x1c4a80, all MATCH each run; control
+// 319 at 1176 B, aligned 321; body unchanged). Reading: the allocator ranks the move pointer first (175 against the
+// input's 93) and it takes EDI because EBX carries a large penalty over its range; retail's case-3 callee takes the
+// input in EDI, which is what would turn that choice, so still BLOCKED-BY 0x1ec690. Diagnostic (a forced register
+// choice, not source): the move pointer alone moved to EBX gives 296 with the first difference at +0x8f, so 296 of
+// the count is layout, the expanded 0x1c4a80 and capsule destructor and the hand-written 0xb77d0 / 0xb7430 bodies.
+// Forms: the velocity as a pointer local set at the top and used for the two calls, the test and the products 319
+// (same code: this build already reloads that address from its slot into EBX for 0x1c4b00, as retail does); with a
+// null pointer local for the angular argument (diagnostic) 319 (same code); the pointer local with the rate named
+// once and the products as rate * i, j * rate, k * rate 320; the j and k components read into named locals ahead of
+// the products 319 (same code); the pointer local, the named rate and the object index read again for the position
+// move 325 (1180 B); the named rate and the second index read alone 325.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

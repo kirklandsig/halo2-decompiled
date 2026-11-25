@@ -1086,6 +1086,13 @@ real g_55e618;
 // the existing vector3f_add_scaled 193 (1540 B); the tangent as member statements through the pointer 108 (1538 B, masked
 // 48; lane 12 r155's form re-measured); the dot named once ahead of vector3f_scale with the helper tangent 194; the member
 // tangent with the vector3f_add_scaled position 193. BLOCKED-BY 0x169510 and 0x244980 (the record's capture) stands.
+// M3 lane 5 r246 (H2M_FAST with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102). Operand ranks (a diagnostic print
+// of the back end's reassociation sort): the normal's components read through `normal` number after `dot` (0x12740+
+// against 0x11fc0), so each perpendicular row copies the normal component where retail copies the dot; retail's rows
+// need dot above the three normal reads. A forced-ranking search (16 single decisions) found none below 102. Forms: the
+// normal copied into a local vector for the dot and the rows 229 (1564 B); the perpendicular through vector3f_scale 102
+// (same code); the velocity copy as one assignment 223 (as listed); the perpendicular rows k, j, i 103; the tangent rows
+// k, j, i 102. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
