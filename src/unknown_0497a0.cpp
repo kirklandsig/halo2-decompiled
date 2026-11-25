@@ -722,6 +722,10 @@
 // Perspective store order for side/up/both/both with early fourth-component clear 536/536/536/535.
 // Both complete unscaled rows before the half reciprocal, divisors paired or per row, with opening
 // or retail store order 536/536/536/536. NOT kept: the one-point change leaves the 0x54 frame.
+// The rounded waves still share a slot in the 0x54 frame. Attenuate the existing
+// components in place at quarter/half/both 536/536/536. Join the mode store without
+// or with quarter/half/both attenuation 593/593/593/593. Name each attenuated product
+// at its clamp 537. NOT kept: the extent stays 2622 bytes and the frame does not change.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

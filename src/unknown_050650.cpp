@@ -1073,6 +1073,9 @@ struct s_collision_result_buffer_1697c0
 // row's first product 304 (levels 3/4/2; around the k row's sine product the same levels), around the dot's first product
 // 300 (3/6/4), both 301 (masked 59), around all three dot products 296 (the lead's code; 0x297d30 143). Live scratch
 // stores ahead of the loop (diagnostic) 371/392. Body unchanged.
+// Scaled vector published via assignment, setter, memcpy or memmove 666/337/666/648;
+// early rejection with the same four transfers 666/337/666/648.
+// The startup zero register, axis j preload and transfer-word reuse remain. NOT kept: all staged normalizations change the frame and increase the score.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
