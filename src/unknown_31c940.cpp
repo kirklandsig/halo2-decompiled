@@ -1535,6 +1535,14 @@ static __forceinline void decode_solver_header_31c940(unsigned char *&op,
 	op += sizeof(*header);
 }
 
+// Accumulate all four lanes through the aligned body-field storage.
+static __forceinline void accumulate_velocity_field_31c940(__m128 &sum, __m128 const &value)
+{
+	__m128 input = _mm_load_ps(value.m128_f32);
+	__m128 accumulated = _mm_load_ps(sum.m128_f32);
+	accumulated = _mm_add_ps(accumulated, input);
+	_mm_store_ps(sum.m128_f32, accumulated);
+}
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -2011,7 +2019,10 @@ result+=2;
 					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
 					continue;
 
-				default: continue;
+				default:
+					// Redispatch unknown kinds through the current row-axis address.
+					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+					continue;
 				}
 
 				// Both entry paths consume the same three-axis friction record.
@@ -2129,8 +2140,8 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 				case 2:
 					do
 					{
-						body->accumulated_angular = _mm_add_ps(body->accumulated_angular, body->angular);
-						body->accumulated_linear = _mm_add_ps(body->accumulated_linear, body->linear);
+						accumulate_velocity_field_31c940(body->accumulated_angular,body->angular);
+						accumulate_velocity_field_31c940(body->accumulated_linear,body->linear);
 						++body;
 					} while (body->kind == 2);
 					break;
