@@ -5225,6 +5225,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // with a rotated up, forward or both row pointers before or after the copy
 // 118/121/121 in each placement. Mixed pointer/reference pairs 121 each.
 // NOT kept: the first difference moves to +0x82 in the j/k dot products.
+// Default-arm sine/cosine/both/both immutable before common up rotation
+// 126/124/128/128; with the indexed projection setter 128/126/130/130.
+// NOT kept: the two opening-projection pairs recover the prefix through +0x107
+// but score higher and shorten the body. Cross and trig homes still differ.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6334,6 +6338,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // clamp arms, forced default and three limits, lower arm, or upper arm
 // 772/948/772/777. The 0x18 frame agrees and the entry zero/result registers
 // and EBP definition still differ.
+// Retail comparison-stream case order in four dispatch spans, three adjacent pairs,
+// and the whole switch: eight at 759. The 0x18 frame agrees; the entry definition
+// and zero/result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7228,6 +7235,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // early transpose with separate relative matrix 1139, early transpose with reused rotation output 1085.
 // scoped basis with named rounded delay 1218, early transpose with named scaled delay 1139.
 // NOT kept: The current-basis forms reach frame 0xdc, leaving a four-byte gap to retail. All shorten the body and raise the score. Early transpose with reused output is the closest of these forms at 1085 and 5046 bytes.
+// Transpose returned by value after swaps of the value input or a copied reference
+// 1139/1139, or produced by axis from a pointer/reference 1205/1205. With a separate
+// relative product 1125/1125/1174/1174. NOT kept: each leaves frame 0xfc and grows past 5094 bytes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
