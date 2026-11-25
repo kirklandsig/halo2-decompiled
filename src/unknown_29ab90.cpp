@@ -687,6 +687,15 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // settings pointer reloaded after the 0x1f9e70 call (the lead keeps it in ESI), and the blend, where retail holds the
 // weight in XMM6 for the three history products and reads the field again for the complement. Site 1 still BLOCKED-BY
 // 0x2b400.
+// M3 lane 5 r246 (H2M_FAST with lane 2 r148's 18-callee set: 286 at 1865 B as the full build). Frame packing (a diagnostic
+// print of the back end's slot assignment: size ascending, then references, ties to the first to reach the count): our
+// 4-byte cells are the magnitude helper's root (5 references) and the settings pointer (5, tied, the root first), then
+// local_17 with local_20 in a new 8-byte cell and the object view; retail's order (settings 6, magnitude 4, object 2,
+// local_17 in an argument home) needs one more settings reference and one fewer root reference. A forced-ranking search
+// (14 single decisions) found none below 286. Site 1 is retail's inlined 0x2b400 body, but retail calls 0x2b400 out of
+// line from 37 other functions (many matched), so its existing noinline declaration stays. Forms: site 1, sites 1-2 and
+// all three planar steps through the existing planar_normalize (include/vector2f_normalize.h) 286 each (same code);
+// local_17 declared ahead of local_16 286, at function scope 286. Body unchanged.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

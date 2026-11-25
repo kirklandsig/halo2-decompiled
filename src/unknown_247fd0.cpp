@@ -1120,6 +1120,18 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // not retail's test-first shape: not kept. Without V: D 335 (1654 B), RCD 353 (1658 B), LD 375, LRD 376, LCD 393, LRCD
 // 393 (1696 B, aligned 187, register-masked 78: the closest natural structure so far, 44 bytes long from the blend and
 // draw stores). LRCV with the `(short)` ordinal, `!local_3->unknown0c` or the sibling's record index 327 each (same code).
+// Typed cursor advance at the gate, velocity, particle and child lookups 443/367/442/354.
+// Gate/velocity, gate/particle, velocity/particle and all three 459/446/460/462.
+// Direct cursor updates at the gate, velocity, particle and both effect reads 334/348/334/350.
+// NOT kept: the library advance adds calls and bytes. Direct updates retain 1652 bytes,
+// but the gate still folds the address and uses AL, with its spill at +0x1f.
+// The effect load still folds the base addition. Mask then shift (byte/word) 334/334;
+// low-nibble threshold 403/403; rejection-path flag store 426/426; admission-first
+// flag stores 440/440. NOT kept: the best forms tie and the split stores grow.
+// Nullable velocity receiver by ternary/branch 353/353. Nullable gate by ternary/branch
+// 421/421, each with the two nullable velocity forms 424/424. NOT kept: the nullable
+// gate gives the separate address add and DL but adds a null branch, grows to 1665
+// bytes and leaves the gate byte at +0x1f.
 // Single failure exit with a typed byte shift, word mask, named bit or named
 // low byte: 334/334/344/334. Enclosing admission with the same first three
 // projections: 334/334/344. Both admission-result arms before allocation 425.

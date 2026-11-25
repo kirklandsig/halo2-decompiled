@@ -1891,7 +1891,10 @@ void function_2294a0(
 	impact->unknown11 = false;
 }
 
-// score 485 (was 485): walked statement by statement against retail 0x228770-0x228f2a (2026-11-05): fields, offsets,
+// score 231 (was 485): the midpoint through the existing vector3d_from_points3d + real_point3d_set (Gemini lane GA
+// round 5, cut down at coordinator review 2026-11-25): retail's 0x70 frame and EBX = &impact->position come back;
+// 1988 B against retail's 1981, first difference +0x248; whole-image check on main 12,400 matched, nothing lost.
+// Earlier 485 (was 485): walked statement by statement against retail 0x228770-0x228f2a (2026-11-05): fields, offsets,
 // condition directions, callee arguments and loop shape all agree; the remaining difference is register allocation
 // and block layout. Retail keeps &impact->position in ebx for the whole function (lea ebx,[edi+0x68] at 0x228803,
 // [ebx] in the constraint loop) and spills component to [esp+0x18] (frame 0x70); ours folds the address into
@@ -1923,6 +1926,20 @@ void function_2294a0(
 // pointer like B's 485; `position.x *= inverse_count;` 485. LEAD (not kept, the component fetched again only to move
 // loads): the two rigid-body-A velocity calls given `havok_component_get(impact->component_a)` 351 at 2050 B, aligned
 // 121: with fewer uses in that block the component loses EBX and much of the body becomes retail's.
+// Not kept beyond the midpoint (coordinator review 2026-11-25, Gemini lane GA round 5): 228 at retail's 1981 B (first
+// difference +0x248; all 27 matched impacts.cpp peers MATCH) from existing helpers only: the midpoint as
+// vector3d_from_points3d + real_point3d_set (retail's 0x70 frame and EBX = &impact->position come back), the
+// constraint position sum through vector3f_add, the average through vector3f_scale (dropping the one-use
+// inverse_count), the relative velocity computed into velocity_a through vector3d_from_points3d (dropping the
+// relative_velocity copy and its else arm) and its tangent part as dot3f + vector3f_scale + vector3d_from_points3d,
+// and rigid_bodies[i] for .data[i]; without the two velocity forms 234 at 1994 B. On main the whole-image check then
+// loses the matched 0x185be0 (2, +0x21c) and 0xc2d00 (2, +0x12e); the midpoint alone (kept, 231) loses nothing, and
+// the other forms alone score 502 at 1960 B and lose both, so they wait for a form that keeps them. The lane's 76
+// added statement order (unknown44 and unknown40 zeroed between the normal and the position), a local keep predicate,
+// scoped locals for the two dead point-velocity calls and a new three-caller vector3f_sub (kept only with a byte
+// match); its match-only leads: a new one-caller helper for the point along a line plus a one-use pointer to the
+// first rigid body, 2 at 1981 B (only position.x + constraint->position.x at +0x43e), the position sum as a
+// three-element loop 8 at 1982 B.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
@@ -1950,12 +1967,15 @@ void function_228770(
 		if (impact->component_b != NONE)
 		{
 			point3f position_b;
+			vector3f delta;
 
 			havok_component_get(impact->component_b)->rigid_body_matrix_get(rigid_body_index_b, &matrix);
 			function_2281a1(&matrix, &impact->local_position_b, &position_b);
-			impact->position.x += (position_b.x - impact->position.x) * 0.5f;
-			impact->position.y += (position_b.y - impact->position.y) * 0.5f;
-			impact->position.z += (position_b.z - impact->position.z) * 0.5f;
+			vector3d_from_points3d(&impact->position, &position_b, &delta);
+			real_point3d_set(&impact->position,
+				impact->position.x + delta.i * 0.5f,
+				impact->position.y + delta.j * 0.5f,
+				impact->position.z + delta.k * 0.5f);
 		}
 	}
 	normal = *g_4687a4;

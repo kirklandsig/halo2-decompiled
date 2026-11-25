@@ -561,6 +561,23 @@ const dword g_455978[81] = {
 // pointer / vector3f_add_scaled for arg_11 / transforms before loop / vector3f_add for ray 268 each (same code);
 // vector3f_add_scaled for blend 285; j*j+i*i radial alone 308. Body unchanged (still needs shared header for 0x1d01c0's
 // release helper).
+// M3 lane 15 r146 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH each run; control 268, aligned 206, masked
+// 130; "aligned" = difflib-aligned rows with addresses masked, then registers masked too). Re-measured: the bounds test
+// written per axis through the vector's element accessor 373 (2011 B), with the ray end as a copy of `*arg_11` plus the
+// offset 323 (2037 B), with the first release through a file-local copy of 0x1d01c0's release helper (diagnostic) 277
+// (2083 B, aligned 121 / 42). New on that 277 form: the direction's planar part as the table entry with its height set
+// to 0 and normalized by the shared normalize_inline (the zero height then multiplies the reciprocal in the zero
+// register, the x87 length is retail's i-first order, and the too-short exit threads to the loop's continue as retail),
+// scaled by arg_6 through vector3f_scale: 278 (2076 B) but aligned 80 / 30, the planar block then retail's but for
+// registers; the same with the blend through vector3f_add_scaled 276 (aligned 85 / 30), the blend factor computed
+// ahead of the scale 280, the scale written per component 278, the blend written k, j, i 278, the position through
+// vector3f_add_scaled 278 or real_point3d_set 280. Without the per-axis bounds and the release copy the normalize_inline
+// form is 324 (2030 B) or 308 (2078 B, listed). normalize3d there 298 (2092 B: its short exit is not threaded); the
+// radial term as `0.0f` then `*= local_17` 268 (same code). Allocator (diagnostic): on the 278 form the three blended
+// direction components tie at priority 312 and colour k, j, i (ties follow creation order); forcing k one below the tie
+// gives 133 (not source: the trio then colours j, i, k, so retail's i, j, k needs i above j as well). The 278 form is held as a patch by the coordinator. Still
+// needs 0x1d01c0's release helper in a shared header for the first release and a non-steering way to keep 0x11bed0 out
+// of line (BLOCKED-BY 0x11bed0's expansion here).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

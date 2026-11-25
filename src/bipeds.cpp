@@ -1879,6 +1879,26 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // target copied after the velocity reset 168; the boost as one ternary 158 (same code); material as dword 158 (same
 // code); `distance` declared ahead of `moved` 160; case 1's rate quotient named ahead of the call 158 (same code; on the
 // lead 137, same code). Body unchanged.
+// M3 lane 6 r244 (H2M_FAST, control 158; check.py --fast agrees). Frame-packing reading of the cause: our material has
+// four stack references when the frame is packed (the init, one store per pill-test arm, the read), so it packs
+// ahead of the definition and takes the distance cell; retail's material sits among the three-reference cells.
+// LEAD 132 (match-only, a one-use local): the selected address named before one store, `byte *shape_material =
+// count ? pill address + 0x20 : sphere address + 0x30; material = (long)shape_material;` gives material three
+// references, the definition joins the distance cell (retail's +0x04) and material lands at retail's +0x8c; with
+// the walking-preload lead as well 120 (first +0x8c). The same selection as one ternary cast to long 158 (four
+// references, same code). On the 120 form the slot sort's ties are what is left of the frame: our creation order
+// (facing, target, position; the 750-density cells material, boost, c0 byte) sorts to facing/position/target and
+// c0 byte/material/boost where retail has position/facing/target and boost/material/c0 byte; a model of the back
+// end's sort reproduces ours and needs position created ahead of facing plus a different 4-byte creation order.
+// Still needed for a match besides: case 1's rate quotient formed ahead of the 0x6000085 compare, and 0xe59e0's
+// register argument order (contributor code, see r178), so neither lead can be kept yet.
+// Direct base and bias 158, joined integer address 132, joined byte address 132,
+// shared base and offset predicate 565. With the walking preload, 137/120/120/548.
+// NOT kept: the preload requires a one-use settings pointer across the speed call.
+// The joined integer address reproduces the two branch-local biases and one material store.
+// NOT kept (coordinator review 2026-11-25): the 132 form assigns a second local in both arms, adds each bias in its
+// own statement and then copies it into material: a steering copy and a split store, kept only with a byte match
+// (also reverted from Codex F round 498).
 // The joined material store scores 132 in the reduced image, with the walking-settings preload 120.
 // Typed pill-array reference and conditional result 176/155, copied pill descriptor 561/547, and
 // sphere-first joined result 137/125 (opening walking block / walking-settings preload).
@@ -4710,6 +4730,14 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // then the threshold under `!(flags & 8)` and `special` as a direct bool 612 (2703 B, aligned 446 / masked 211); the
 // flight rate written in the call with that limit form 549 (2722 B). The reduced image, linked with or without the
 // extra functions, builds this body with a 0x7c frame (602), so its allocator ranking is not this build's. Body unchanged.
+// The changed byte stays at +0x12 in the reduced control, and the special state still needs +0x12
+// beside retail's changed byte at +0x11. Explicit mode-3 result, true default, mode-6 default,
+// and joint bypass result 587/642/633/653. With bool special 653/635/645/620 (reduced control 601).
+// NOT kept: the 587 form adds length and still shifts the result byte; all bool forms grow the frame.
+// Not kept (coordinator review 2026-11-25, Gemini lane GA round 5): 554 at retail's 2712 bytes from three forms kept
+// only with a byte match together: a and b declared ahead of the count test, the stationary limit stored as 0.99f
+// and then overwritten when bit 3 is clear, and the count test as an unsigned division by the transform's size in
+// place of the >> 5 (it reads differently for a negative count). Leads: the node-transform block and frame agree.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6536,6 +6564,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // at their assignments 79; the fallback up reset through a cast of the field 79; the final test as `!function_30bf0(...)`
 // 79; the axis declared bare and copied just ahead of the angle 79 (same code each). The rotation helper's file was on
 // the Avoid list again, so the held separate input/result lead stays unmeasured. Body unchanged.
+// Grouped cosine/sine initializer, assignments at the producers, or entry declaration 87 each.
+// Sine/cosine initializer 122, assignments at the producers or entry declaration 83 each.
+// Grouped cosine/sine or sine/cosine with the forward field throughout 116/112.
+// NOT kept: both assignment forms reach 887 bytes and delay the complement spill, but move
+// the cosine home and the first dot load at +0xc6. Every form raises the score.
+// The first rotation still spills the cosine complement early, and the final cross reloads forward j.
+// Rotated forward snapshot published before normalization, after it, after up rotation, or after
+// both crosses: 246/250/252/243 with either side-cross helper. NOT kept: all lengthen the body and
+// keeping the snapshot through both rotations grows the frame to 0x30.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -7618,6 +7655,13 @@ void __stdcall function_b8600(long object_index, long unknown);
 // both stores 636 with each of the four publication forms. Reduced control
 // 586. NOT kept: all regress, and the definition/state/animation homes and
 // inlined position completion still differ.
+// M3 lane 6 r244 (h2m fast, control 586): 0xb7430's matching body enabled (its stub dropped) and called here in place
+// of the hand-written unparented position update 501 (2195 B), but 0xb75a0 drops to 73 and 0xb7430 itself to 109 (the
+// call cycle in src/unknown_0b7430.cpp); with 0xb7b40 and 0x2902b0 enabled too the same (all restored). A frame trace
+// shows the cause of the cycled homes: retail's animation-id cell also holds the resting flag (two byte stores and the
+// dword push read), so it has 6 references and sorts ahead of state (5) and definition (4); ours keeps the flag in AL
+// and the cell sorts last with 3. 0x1c4b00's last formal as bool in all declarations (diagnostic) 601 (0x118700 14 ->
+// 90); the resting flag as a long 591; the early exit through a named result 586 (same code).
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

@@ -2385,6 +2385,11 @@ struct s_unit_motion
 // direct time or original first-phase inputs on the running-velocity path 69/69.
 // NOT kept: every running-velocity form inlines into the caller and loses
 // both matched transitive callers. The stack velocity load and ret 8 remain.
+// Velocity still arrives on the stack. Internal linkage alone, with separate phase durations or with phase-
+// limit selections 86/86/86. Internal linkage with a running velocity alone, separate durations or limit
+// selections 69/69/70, and original launch velocity with shared or separate durations 69/69. NOT kept: the
+// XMM4 forms use XMM2 for time, inline both motion steps into the caller and lose two downstream matches in
+// the preview.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -5711,6 +5716,13 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // copy before 203, or in both with copy before/between/after 213/213/211.
 // Staged first-cross helper with first-live/between or both-live/after 208/211.
 // NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
+// Split aim copy, pair first or depth first: reused forward projection, paired angles,
+// both, and both with a named horizontal magnitude 97/72/69/69 and 97/74/70/70.
+// NOT kept: the split copies lengthen to 772 bytes. The first cross preload and the final
+// x87 forward-scale lifetime still differ.
+// First-cross up.i still loads early. Saved aim published before the second cross, before
+// normalization, after fallback, or with separately corrected up: 217/212/215/249 with either
+// first-cross helper. NOT kept: the aim copy grows the frame to 0x5c and separate up to 0x68.
 // Scaled additions from vertical/transverse contributions: own vector 276/272,
 // direction output 169/169, projected vector 276/272, forward vector 272/268.
 // NOT kept: the direct output ties and the workspaces grow the frame and body.
@@ -5932,6 +5944,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // seeded rate displacements 57, both pairs 61, in-place angular/rate scaling at their tests
 // 169/173, full-turn constant shared with angle wrapping 175.
 // The clamp registers and shared angular coefficient still differ. NOT kept: the rate pair gains one, and the other offset forms tie or regress.
+// Named bound decision 52, bound-first/unity-first scales 58/71, common scale 58,
+// named limits 58, per-direction saturation defaults 167, shared selected bound
+// with ternary/branch joins 113/113. NOT kept: the six-point lead leaves the
+// clamp registers and coefficient schedule different. The opening body gives 58.
 // Bounds record initialized together or through its members 58/58. Angular products, rate products,
 // or both stage pairs in a bounds record 58/58/58. Signed lower endpoint 196, with signed comparisons
 // 212, signed bounds record 212. NOT kept: the records preserve the wrong XMM allocation, and the
@@ -7777,6 +7793,9 @@ public:
 // paired Boolean accumulation 526, provisional empty result 494, usable and empty counts 518,
 // loaded count 508, any usable and all empty 508. NOT kept: the provisional result reaches 1785
 // bytes but writes the final flag inside the scan, clears it afterwards and leaves the early spills.
+// The early EBP save and unit/tag spills remain. Typed magazine block reads for the pickup, matching slot
+// or held weapon and their four combinations all score 508. Using a reused pickup magazine block pointer
+// with all three typed lookups also scores 508. The frame stays 0x3c and the refill query remains expanded.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -9140,6 +9159,10 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // NOT kept: the object-first forms fix the first owner block through +0x14b
 // at 1602 bytes, but four points is below the threshold and the one-use
 // samples require a match. The damage flag, later call setup and shake remain.
+// The owner indices still load in the opposite order. Typed damage, effect, or both grenade tag links
+// 62/62/62, and both with a typed input block and projectile link 62. The four corresponding object-first
+// forms score 58 and reach +0x14b. NOT kept: the tag types do not change the emitted loads, and the owner
+// order alone gains four.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9806,6 +9829,15 @@ struct s_unit_melee_collision
 // Aggregate impact record 537; aggregate with per-product range 510; BSP and damage names 447;
 // query-center declaration first with live range 534. NOT kept: both deferred tag forms and the
 // aggregate with live range recover frame 0x17c at 2229 bytes but raise the score. The fan register homes remain.
+// The fan still needs the native unit and ordinal homes with a 0x17c frame.
+// Resolved-type capture snapshot/live range 532/552, replacement from tests 521/528,
+// candidate time shared on live range 534, shared type and time 532/556,
+// and resolved-type replacement with the shared time 548.
+// NOT kept: live-range frames recover 0x17c at shorter lengths and higher scores.
+// Direct damage default after the fan 446/535, response default 520/537, both defaults
+// 500/553, and shared ray setter 447/536, each with a range snapshot or per-product loads.
+// NOT kept: the direct default gains one at the original frame. Late response assignment
+// reaches 0x17c even with a range snapshot, but lengthens the function to 2232 and raises the score.
 // Occupied-hit rejection, selected-type conditional, signed candidate type snapshot, and staged hit
 // selection with the range snapshot: 496/496/525/531. With a range read at each product: 539/539/542/491.
 // NOT kept: the live range recovers frame 0x17c but shortens the body and all selection forms regress.
