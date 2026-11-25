@@ -945,7 +945,7 @@ static __forceinline void solve_linear_friction(float target, float &limit,float
 	} work;
 	__m128 temporary;
 	__m128 contribution;
-	__m128 axis;
+
 
 	// Reuse the two consumed projection values for the body weights.
 	work.first=linear_b;
@@ -975,38 +975,39 @@ static __forceinline void solve_linear_friction(float target, float &limit,float
 		row->linear.m128_f32[3] *= factor;
 	}
 
+	__m128 update_0, update_1, update_2, update_3, update_4;
 	// Retain the extended impulse for accumulation, rounding only its SIMD copy.
-	temporary=a->inverse_inertia;
+	update_2=a->inverse_inertia;
 	simd_scratch=impulse;
-	work.second=_mm_load_ss(&simd_scratch);
-	work.first=_mm_shuffle_ps(work.second,work.second,0);
-	work.first=_mm_mul_ps(work.first,temporary);
-	temporary=*inverse_b_pointer;
-	work.second=_mm_load_ss(&simd_scratch);
-	work.second=_mm_shuffle_ps(work.second,work.second,0);
-	work.second=_mm_mul_ps(work.second,temporary);
+	update_1=_mm_load_ss(&simd_scratch);
+	update_0=_mm_shuffle_ps(update_1,update_1,0);
+	update_0=_mm_mul_ps(update_0,update_2);
+	update_2=*inverse_b_pointer;
+	update_1=_mm_load_ss(&simd_scratch);
+	update_1=_mm_shuffle_ps(update_1,update_1,0);
+	update_1=_mm_mul_ps(update_1,update_2);
 
 	// Capture B angular before either body can replace its saved home.
 	__m128 *angular_receiver=angular_b_pointer;
-	axis=row->linear;
-	temporary=_mm_mul_ps(_mm_shuffle_ps(work.first,work.first,0xff),axis);
-	contribution=_mm_mul_ps(_mm_shuffle_ps(work.second,work.second,0xff),axis);
-	axis=a->linear;
-	axis=_mm_add_ps(axis,temporary);
-	a->linear=axis;
-	temporary=linear_b;
-	temporary=_mm_sub_ps(temporary,contribution);
-	linear_b=temporary;
-	temporary=row->a;
-	work.first=_mm_mul_ps(work.first,temporary);
-	temporary=row->b;
-	work.second=_mm_mul_ps(work.second,temporary);
-	temporary=a->angular;
-	temporary=_mm_add_ps(temporary,work.first);
-	a->angular=temporary;
-	work.first=*angular_receiver;
-	work.first=_mm_add_ps(work.first,work.second);
-	*angular_receiver=work.first;
+	update_4=row->linear;
+	update_2=_mm_mul_ps(_mm_shuffle_ps(update_0,update_0,0xff),update_4);
+	update_3=_mm_mul_ps(_mm_shuffle_ps(update_1,update_1,0xff),update_4);
+	update_4=a->linear;
+	update_4=_mm_add_ps(update_4,update_2);
+	a->linear=update_4;
+	update_2=linear_b;
+	update_2=_mm_sub_ps(update_2,update_3);
+	linear_b=update_2;
+	update_2=row->a;
+	update_0=_mm_mul_ps(update_0,update_2);
+	update_2=row->b;
+	update_1=_mm_mul_ps(update_1,update_2);
+	update_2=a->angular;
+	update_2=_mm_add_ps(update_2,update_0);
+	a->angular=update_2;
+	update_0=*angular_receiver;
+	update_0=_mm_add_ps(update_0,update_1);
+	*angular_receiver=update_0;
 	*result+=impulse;
 }
 
