@@ -2474,6 +2474,13 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // the spawn record as an aggregate initialiser with `multiplied()` as the argument 135; `spawn_here` as a long 167 (560
 // B); the location's node index named for the spawn call's flag 128 (same code); the 0x1751d0 result named ahead of the
 // 0x137bd0 call 128 (same code). Body unchanged.
+// M3 lane 6 r244 (h2m fast; a ranking trace): the particle system's whole web is not coloured in the first pass (live
+// across the loop, -76), and its entry piece runs through the colour call, so it ranks 46 under the type object (70)
+// and takes EDI; retail's entry piece ends at the 0x1751d0 call and the colour call reloads the system into ESI.
+// Both colours as locals after the spawn setup 184 (572 B); colour A alone right after set_location 187 (572 B, the
+// system piece 52 against the type object 80); multiplied() as the colour call's argument with tinted named (the
+// 0x177040 spelling) 135; that with both colour locals 178; the spawn location index first and colour B a local
+// before the spawn floats 185.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4040,6 +4047,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // convention, but the effect pool load then follows the call); that without the address read 127 (348 B; both indices
 // in registers, 0x176f60 8); with the effect pool's base named at the top and indexed after the call (diagnostic) 124
 // (352 B; 0x176f60 MATCH; the index arithmetic still follows the call, system EDI / next index EBX). Body unchanged.
+// M3 lane 6 r244 (h2m fast, caller 0x176f60 in brackets): a frame trace shows this body gives the effect index a stack
+// home that the tint and the node flag join, as retail does; with the mode read at each call LTCG passes the index in
+// a register and that home is gone. Per-call mode re-measured 108 [25]; it with the loop as a `for` calling the
+// location walker in its init and step 108 [25] (same code); this body so written 93 [0] (same code); the per-call form
+// with a const definition pointer 108 [25] (same code), with the system re-derived from its index for the loop's call
+// 135 [25] (358 B).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
