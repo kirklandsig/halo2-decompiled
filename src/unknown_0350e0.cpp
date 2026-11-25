@@ -568,6 +568,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 341 (1765 B, 338/338 insns, frame 0x8c); with 4 named trig locals ahead of builders 350 (1814 B, frame 0x90, +0x10,
 // mask 291: reproduces retail's pass-1 double-spill rotation schedule; accum and sq-first same 350), matrix3x3 locals
 // 336 (1780 B), row loop over `&g_467104.forward` 347 (1801 B, mask 298). Body unchanged.
+// Three named diagonal complements at the squares, after the squares, after the cross
+// coefficients, or at each diagonal 334 each. With the early sine products 371/371/386/386.
+// NOT kept: the complements alone tie, and the sine-product forms move the first difference
+// to the frame and grow to 1812 or 1819 bytes. The opening square and sine homes still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5173,6 +5177,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // reloads, normalize+max scales and size if/else match retail), float k,i,j speed test 585 (fr 0x3c), same-pointer
 // velocity add 589 (fr 0x3c), point2f output helper 561 (fr 0x34, mask 263); real-param 259d0 + float k,i,j speed test on
 // main 520 (al 390, 0x36b50 247). Body unchanged.
+// One camera/element/advanced point with the source camera reads: components 535, setter
+// 540, point value 485, scaled add 535. With stored camera reads 512/512/523/512.
+// NOT kept: the 485 form gains one with a larger 0x64 frame. The forms that shrink the
+// frame shorten and regress. Independent velocity reads and projection homes still differ.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

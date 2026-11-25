@@ -1100,6 +1100,11 @@ void function_245400(s_source_245400 const *source, long index,
 // 224/209/211/210, source words 224/209/221/210.
 // NOT kept: all raise the score and the two code words still lack retail's separate homes.
 // The original decode and both plane lookups are restored.
+// On the widened-code frame with the shared rotation, surface table entry, advanced cursor,
+// and surface reference 152 each. Indexed surface reads 155. Start ordinal before its table,
+// both ordinals around or ahead of the table, and each ordinal at its lookup 152 each.
+// NOT kept: the 152 forms retain the surface address in ECX and grow to 790 bytes.
+// Indexed surface reads grow to 789 and change the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -1879,6 +1879,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // target copied after the velocity reset 168; the boost as one ternary 158 (same code); material as dword 158 (same
 // code); `distance` declared ahead of `moved` 160; case 1's rate quotient named ahead of the call 158 (same code; on the
 // lead 137, same code). Body unchanged.
+// Direct base and bias 158, joined integer address 132, joined byte address 132,
+// shared base and offset predicate 565. With the walking preload, 137/120/120/548.
+// NOT kept: the preload requires a one-use settings pointer across the speed call.
+// The joined integer address reproduces the two branch-local biases and one material store.
+// NOT kept (coordinator review 2026-11-25): the 132 form assigns a second local in both arms, adds each bias in its
+// own statement and then copies it into material: a steering copy and a split store, kept only with a byte match
+// (also reverted from Codex F round 498).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -6529,6 +6536,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // at their assignments 79; the fallback up reset through a cast of the field 79; the final test as `!function_30bf0(...)`
 // 79; the axis declared bare and copied just ahead of the angle 79 (same code each). The rotation helper's file was on
 // the Avoid list again, so the held separate input/result lead stays unmeasured. Body unchanged.
+// Grouped cosine/sine initializer, assignments at the producers, or entry declaration 87 each.
+// Sine/cosine initializer 122, assignments at the producers or entry declaration 83 each.
+// Grouped cosine/sine or sine/cosine with the forward field throughout 116/112.
+// NOT kept: both assignment forms reach 887 bytes and delay the complement spill, but move
+// the cosine home and the first dot load at +0xc6. Every form raises the score.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
