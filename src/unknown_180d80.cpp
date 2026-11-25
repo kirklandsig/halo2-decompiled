@@ -460,6 +460,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // declared first and assigned in the loop 87 (same code as without). No single forced register or reload decision
 // brings the call setups' scratch registers to retail's (100 tried). None kept: every form here needs the pairs
 // (match-only) to score. Patches in m3-lane7 build/r226/lead-180d80-*.patch.
+// M3 lane 5 r245 (h2m fast with 0x180b60, MATCH each run; control 91, sequence-aligned 61 rows exact, 27 with registers
+// and stack offsets masked; body unchanged): the per-vertex maximum as one conditional assignment 112; the vertex
+// record element through a pointer used for its stores and the distance terms 588 (2690 B); the time stamp stored
+// ahead of the point copy 111; the definition's type word read once into a named short for both tests 166; the vertex
+// loop's counter declared in the `for` after the luminance store 142 (masked aligned unchanged at 27).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
