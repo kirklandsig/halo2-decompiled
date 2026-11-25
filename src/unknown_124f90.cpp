@@ -5052,6 +5052,10 @@ struct s_128ca0
 // (`s_decibels((dword)local_6) + s_decibels((real)gain)`) 181 (1079 B), both pins that way 210 (1102 B); the count's
 // extraction cast to byte 48; the count taken as `count = controller->synch_count--;` 48; the first controller block's
 // listener gain as an if/else 48 (same code each). Body unchanged.
+// The pin scratch pairs and controller sentinel still differ. Completed guard 48, absent
+// successor first 83, both 83, with pending guard 83. Return on absent/valid successor
+// 83/48, with completed and pending guards 83/48. NOT kept: the absent-first forms
+// shorten to 1053 bytes and raise the score. The native shifted pending read remains.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

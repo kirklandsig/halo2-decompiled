@@ -1014,6 +1014,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // `input = q; if (counter == 0) input = g_4687a4;` 662 (2872 B); `vector3f qr = *(counter == 0 ? g_4687a4 : q);`
 // 684 (2853 B); the unlimited target's three products written `dt * s->direction.n` 567, with the alignment term's
 // three as `w * s->direction.n` as well 567 (same code each: the product operands sort by rank). Body unchanged.
+// The clock and 0x24 frame agree, with direction still in EBX. Named square before the root
+// for initial, impulsed, both, sample, initial/sample, impulsed/sample or all
+// 679/679/668/565/679/679/668. Named i/k sum at both activation roots 666.
+// NOT kept: the sample-only gain is two points. Activation forms raise the count.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,
