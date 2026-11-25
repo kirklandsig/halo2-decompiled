@@ -1478,9 +1478,17 @@ struct solver_complete_scalars_31c940
 	solver_scalar_arena_31c940 projections;
 };
 
-// Own the consumed scalar homes together; pointer-phase storage stays separate.
-struct solver_scalar_owner_31c940 {solver_work_prefix_31c940 prefix;solver_simd_word_31c940 simd;solver_complete_scalars_31c940 scalars;};
-typedef char solver_scalar_owner_size_31c940[sizeof(solver_scalar_owner_31c940)==176 ? 1 : -1];
+// The saved body pointer and scalar roles occupy 45 four-byte words.
+// Keep this record word-aligned so their observed retail homes stay contiguous.
+struct __declspec(align(4)) solver_scalar_owner_31c940
+{
+ solver_pointer_phase_31c940 pointers;
+ solver_work_prefix_31c940 prefix;
+ solver_simd_word_31c940 simd;
+ solver_complete_scalars_31c940 scalars;
+};
+typedef char solver_owner_alignment_31c940[__alignof(solver_scalar_owner_31c940) == 4 ? 1 : -1];
+typedef char solver_scalar_owner_size_31c940[sizeof(solver_scalar_owner_31c940)==180 ? 1 : -1];
 
 typedef char solver_work_size_31c940[(sizeof(solver_work_prefix_31c940)+4+sizeof(solver_work_tail_31c940)) == 20 ? 1 : -1];
 typedef char solver_phase_size_31c940[sizeof(solver_phase_state_31c940) == 28 ? 1 : -1];
@@ -1491,8 +1499,8 @@ typedef char solver_scalar_frame_size_31c940[(sizeof(solver_work_prefix_31c940)+
 // Still substantially unmatched; no exact solver match is claimed.
 // The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
-// The second normal pair retains a biased row cursor; friction can dispatch
-// directly into the next body header.
+// The second normal pair walks its active row through a local cursor; friction
+// can dispatch directly into the next body header.
 // Publish the header inputs, then advance the shared stream cursor.
 static __forceinline void decode_solver_header_31c940(unsigned char *&op,
  __m128 *&terms, solver_velocity_31c940 *&a, solver_velocity_31c940 *&b,
@@ -1519,7 +1527,7 @@ solver_complete_scalars_31c940 &frame=owned.scalars;
 solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 	solver_phase_state_31c940 &state = frame.phase;
 	solver_scalar_arena_31c940 &projection_pool = frame.projections;
-	solver_pointer_phase_31c940 pointer_phase;
+	solver_pointer_phase_31c940 &pointer_phase=owned.pointers;
 
 	if (!g_480c60)
 	{
