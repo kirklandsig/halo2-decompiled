@@ -1085,6 +1085,17 @@ void function_245400(s_source_245400 const *source, long index,
 // selected point with plane table between codes 139, selected ordered facing comparison 208.
 // explicit facing exits on selected point 212, explicit exits with plane table between codes 212.
 // NOT kept: the 139 forms recover frame 0x2c and the entry through the material comparison, but grow to 787 bytes and retain the differing float and code homes. The two explicit facing-exit forms regress.
+// M3 lane 12 r188 (h2m fast with 0x245aa0 and 0x245400, both MATCH; control 163, aligned 135; lane 12 r186's body of lane 5
+// r213's lead re-measured 50 at 789 B, aligned 30: the cross's operand sides and the j and k rows of the written-out
+// transform are all that is left, both operand-rank questions). On that lead: the facing test's side agreement named
+// once ahead of the side bits and used in both arms 118 (788 B), named inside the plane test ahead of the cross 73
+// (783 B, aligned 42: the two side bytes then fold into one xor where retail compares two stored bytes); main's two
+// short material locals in place of the second record pointer 197 (786 B, first +0x11); the edge vector formed right
+// after the two point pointers 198; the plane test as `((local_2 ^ local_3) & 0x7fff) != 0` 190.// Read from the rank view on the lead: the cross's four member addresses take classes 3, 2, 1, 2 (first j, second k,
+// second j, first k) and retail's sides need each one level higher, that is one more distinct expression met ahead of
+// them; a first-material record pointer used like the second one 50 (aligned 31, only the offset-0 levels move), the
+// two point pointers as casts of the vertex address 50 (same code), the dot written cross-first k, j, i 50: none moves
+// the four classes. Body unchanged.
 // Shared packed-code decoder returning index/side/plane/bare plane, promoted codes
 // 224/209/211/210, source words 224/209/221/210.
 // NOT kept: all raise the score and the two code words still lack retail's separate homes.

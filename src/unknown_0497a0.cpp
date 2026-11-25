@@ -731,6 +731,10 @@
 // as well (diagnostic) 641, the second cross by value too 667 (2668 B), the second cross alone by value 652 (2648 B);
 // the first cross staged into w (listed 533) re-measured 533; sin x and both cosines as named doubles 534, with the staged
 // first cross into w 532; the second input scaled in place before its three reads 536, with both of those 532.
+// The rounded waves still share a slot in the 0x54 frame. Attenuate the existing
+// components in place at quarter/half/both 536/536/536. Join the mode store without
+// or with quarter/half/both attenuation 593/593/593/593. Name each attenuated product
+// at its clamp 537. NOT kept: the extent stays 2622 bytes and the frame does not change.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1030,7 +1034,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
-// score 285 (was 351): earlier 233 and 250; frame 0xa0 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 285 (was 285): earlier 351, 233 and 250; frame 0xa8 versus retail 0xac (retail's u_step and V end sit in 8-byte spill slots at +0xa4/+0xac); half-width/first-edge XMM colouring and packer channel homes differ.
 // MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
 // definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
 // slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
@@ -1677,6 +1681,23 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // this base: the V end formed at the outer vertex's store, either operand order, 287 / 287 (frame 0xa0); the negation
 // at the advance as `u += -u_step`, `u -= u_step` or `u = -u_step + u` 603 each (frame 0xa8, 2596 B: the negation
 // stays in the loop); those with the V sum at the store 602 each.
+// Lane GA r4 (fast with 0x42c50/0x42b20/0x43720/0x43740, all MATCH each run; control 285 at 2596 B, frame 0xa0, aligned 226,
+// masked 45; 36 trials): kept 214 at retail's 2596 B (frame 0xa8, aligned 201, masked 32, plain-check confirmed): replacing the
+// three raw `(real *)&` color-interpolation loops with a 3-caller typed `color4f_interpolate` helper and typed `color4f
+// next_color` drops 285 -> 223 (recovers frame 0xa8, exact +0x70/+0x74/+0x78..0x80/+0x8c slots and case-0's 8-byte XMM spill,
+// dropping the bogus +0x70 inverse spill; direct 4-field writes give the same 223, loop inside helper 447, typed next_color
+// with raw loops 486); removing case 1/2's `offset_y`/`offset_x` locals (matching case 4) reaches 221; storing the packed pixel
+// via a two-use `dword pixel` in retail's `vertex[0]` then `outer` order reaches 219; writing case 0's edges in natural x, y, z
+// order reaches 214 at 2596 B (all four natural x, y, z spellings — first-then-second, second-then-first, paired, chained x/y —
+// tie 214 at 2596 B). Kept at review without the offset change: case 1/2's two offset locals stay (a computed value written
+// at each of its two uses in place of a local is kept only with a byte match): 215 at 2596 B, plain check. HELD at the
+// batch 346 gate (coordinator 2026-11-25): the 215 form alone flips matched 0xc2d00 (src/unknown_0bffa0.cpp, score 2 at
+// +0x12e, the /GL layout coin flip) in a split build, so the code stays as before (285) and the form is a lead until it can
+// land without that loss. Not kept: case 4 neighbor declared at top of else 341 (342 with pixel, 338/339 on 223, 337 on 219, 238
+// with inline case 1/2 on 285), case 4 vector3d_from_points3d + vector3f_add_scaled 563, case 4 vector3f_scale offset vector
+// 451 (449 with nbr+pixel, 223 on 219), case 4 normal before scale 328, source.uv point2f + definition.uv_scale vector2f 643 /
+// def only 634, state valid arm first 552, both case 1/2 and 4 scaled 444, case 0 pos ptr 482, typed tint fields 442, case 1/2
+// x-before-y on 219 335 / all-xyz-21 329 / all-xyz-12 296, case 0 struct copy 693.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
