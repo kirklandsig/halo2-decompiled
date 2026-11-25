@@ -1816,6 +1816,14 @@ bool function_108530(long device_index, long name)
 // acceleration zero between, 123 (525 B, callers 31/13); the halves adjacent after the acceleration zero, down first,
 // 123 (525 B, callers 31/13), up first 116 (same code); both halves written out at their two uses 136 (callers
 // 26/28); the denominator from `remaining` re-measured 131 (528 B, callers 31/13).
+// M3 lane 16 r188 (H2M_FAST with 0x108600/0x108670, both MATCH; control 116). Reading: retail never gives the
+// zero-clamped ramp-down a register (`ja` over a store of the zero straight from XMM0, then the minimum compares
+// `remaining` with the stack cell); ours holds it in XMM2 from the zero clamp to that compare (the allocator ranks it
+// 14 over five blocks). Forms: the ramp-down minimum as `ramp_down_time < remaining ? ramp_down_time : remaining` 116;
+// the ramp-up minimum as `duration < ramp_up_time ? duration : ramp_up_time` 116; the ramp-down zero clamp as `0.0f <
+// ramp_down_time ? ramp_down_time : 0.0f` 116, with that minimum as well 116; the cruise numerator's products written
+// velocity first (`initial_velocity * half_ramp_up_time`, `final_velocity * half_ramp_down_time`) 116 (same code each).
+// Body unchanged.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

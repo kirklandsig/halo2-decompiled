@@ -5048,6 +5048,10 @@ struct s_128ca0
 // Invalid controller link as inactive byte: separate active-first/inactive-first arms 208/212,
 // byte initialized from the link 131, joined selected byte 203. Complement test on effect/link/both
 // 138/129/140, with link-derived inactive byte 151. NOT kept: all raise the score.
+// M3 lane 16 r188 (H2M_FAST with 0x1293f0, MATCH throughout; control 48): the first pin's sum written bits first
+// (`s_decibels((dword)local_6) + s_decibels((real)gain)`) 181 (1079 B), both pins that way 210 (1102 B); the count's
+// extraction cast to byte 48; the count taken as `count = controller->synch_count--;` 48; the first controller block's
+// listener gain as an if/else 48 (same code each). Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
