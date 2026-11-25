@@ -1399,6 +1399,15 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // retail's order. Forms, 2 unless given: the definition through the existing sound_definition_get 2 (same code), with
 // the playing element unnamed 2, with no index local (`long index = iterator.index;` in the body) 2; the promotion lookup
 // through the out-of-line 0x221810 116 (236 B, a call); `long index = NONE;` 2 (removed before allocation).
+// M3 lane 4 r261 (fast screen with 0x21be20, 0x21b870, 0x126df0, 0x12a810 and 0x21b0e0; control 2). The allocator's
+// split pass: the integer candidates numbered below the first index are the NONE, zero, 0xffff and 0x80 constants; the
+// pieces draw numbers in candidate order from the freed list 4, 19, 15, 14, 21, 12, 22 (19 and 15 are the float
+// duration and 1000.0f), the 0x80 constant draws none, so the first index gets 14 and the count 21. Forms, 2 unless
+// given: 0x126df0's fade-out arm with a named `long milliseconds` 2 (0x126df0 MATCH); 0x126df0 with one sound pointer
+// declared at its top for both arms 2; its fade-out gain named ahead of the lookup 64, the lookup after the gain call
+// 64 (0x126df0 45 each); one milliseconds local at 0x126df0's top for both arms 2 (0x126df0 52, 0x21be20 63); the
+// definition through sound_definition_get with its promotion_index field 2 (same code). Diagnostics: the call's
+// duration `* 1.0f` 2, `* 2.0f` 26 (294 B), `(real)(double)duration` 2. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {

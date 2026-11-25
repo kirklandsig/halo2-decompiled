@@ -1415,6 +1415,13 @@ __forceinline long vehicle_round(real value)
 // the plain first cross 93, with the `up` pointer at the side cross too 96 (734 B); S with the clamp through PIN in the
 // strength update or as `rate = PIN(...)` 4/4 (same code); the strength as `-0.3` then `if (mode == 2 || mode == 4)
 // strength = 0.3;` 143 on S and on the kept body.
+// M3 lane 4 r261 (fast screen, 4). Reading: each product's operands are ordered by a rank built from the base symbol's
+// first-reference ordinal and the field offset; the side cross reads up through the vehicle pointer (+0x7c..0x84) and
+// forward through the cached forward address, so its i-by-k and j-by-i products flip with one more inline-expanded
+// symbol in the arm (the earlier dead-helper-local diagnostic). Forms: plain cross3f at both crosses 6; cross3f_staged
+// at both 4 (the other two products flip); plain cross3f at both with the up pointer at the side cross 94 (735 B); the
+// side scale as `-vehicle->forward.k` 4 (same code); the rate as `up->k / rate` then `rate *= -2.0f` 6; `strength =
+// rate * strength` 4 (same code). All restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2644,6 +2651,13 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // the kind loop 465 (state is then reloaded first, as retail, but the index still before the graph); arm 3's forward
 // speed through a fresh VEHICLE_GET pointer 397 (2039 B); `long i` and the overlay channel declared ahead of `state` 28
 // (the state lookup moves ahead of the channel constructor); the graph test as `graph != NULL` 9 (same code).
+// M3 lane 4 r261 (fast screen, 9). The three reloads after the update block are split pieces numbered in candidate
+// order (a constant, the definition, the vehicle index, callback, user, graph, state) from the freed list 3, 2, 14,
+// 56, 55, 54, 22: index 14, state 22, graph 54; retail's state, graph, index needs the index numbered highest. Forms:
+// the final loop's clamp as an if/else-if pair 9 (same code); the kind loop's result named before the store 53; arm
+// 2's speed fraction named 13; the forward speed as its i term then `+=` the j and k terms 9; the state's graph index
+// named for the update test and the store 13; vehicle_speed_fraction reading the forward limit first 21, choosing one
+// limit by the speed's sign 331 (2007 B). All restored.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
