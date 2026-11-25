@@ -1059,6 +1059,16 @@ static inline word font_character_pixel(long alpha, long color)
 // Long opacity 192/240/192/240, byte opacity 192/183/192/183.
 // NOT kept: all raise the score. Subtraction also changes the pixel-copy caller.
 // Lane GA r3: word-returning font_character_pixel without (byte) cast + word pixel at ordinary fill + run scoped to type==2 (count += 2 in type!=2, goto-free switch with if (run > 0 && output), case 1 run before pixel) + length = 1 per arm -> 12 at retail's 504 B (machine 3 review: length = 1 back after the type test, as before, gives 41 at 508 B; the per-arm form is not kept) (matches all 4 pixel sites, EBX/EBP fill registers, switch, jump table and exits byte-for-byte; only the 4-instruction literal at 0x122744 differs). Tried on score-12 base: switch(type) 13; word color 51; run=0 init 176; run!=0 41; word switch pixel 41; split count+=2 155; direct/masked/word byte-swap macros 76-125; bitfield/union/MAKEWORD/shift-or/inline-helper/nibble-split literal forms 90-97 (all fuse to 8-byte mov ah/al, even with count++ between 76, or under /G6 /G7 /Ox /Ob1 90); word-bitfield read p->lo|(p->hi<<8) 89 (emits movzx ax, [edi+2]; mov ah, [edi+1]); color-first then &=0xfff 37; no value local 180; (word)source[2] | (word)(source[1]*256) 30; (dword)source[2] | ((dword)source[1]*256) 12; ((word)source[2] & 0xfff) | ((dword)source[1] << 8) 81 (breaks fusion -> movzx ax, [edi+2] + xor/mov dh, [edi+1] + and 0xfff); diagnostic (word)source[2] ^ ((dword)source[1] << 8) 4 at 504/504 B (breaks OR fusion -> movzx dx, [edi+2]; xor eax, eax; mov ah, [edi+1]; xor eax, edx; not kept since retail uses or).
+// M3 lane GA r5 (93 fast trials on score-41 and score-12 bases with 0x140960/0x122540/0x122570 MATCH; body restored):
+// Clean length=1 on score-41 base: long length = 1 at loop top 182 (516 B); if/else-if/else chain with length=1 at top 119 (512 B).
+// Literal hunt on score-12 base (504 B): 3-part nibble split ((dword)(source[1]>>4)<<12)|((dword)(source[1]&0xf)<<8)|(word)source[2]
+// and 4-nibble ARGB4444 in dword both break OR-fusion to 11 at 504/504 B (movzx ecx,[edi+1]; movzx eax,[edi+2]; shl ecx,8; or eax,ecx);
+// source[2] nibble split in dword (((dword)(source[2]>>4)<<4)|(dword)(source[2]&0xf))|((dword)source[1]<<8) (either operand order) breaks
+// OR-fusion with zero extra instructions -> movzx eax,[edi+2]; xor edx,edx; mov dh,[edi+1]; or eax,edx (30 at 504 B, 1 B shorter from 32-bit
+// movzx eax vs retail's 16-bit movzx ax, shifting trailing pad/jump table; casting to word inhibits the nibble collapse -> 102-106 at 520-524 B).
+// Other forms on score-12 base: word/short/dword/long/maskff00/shl24>>16/two-step/shift-assign/s_pix_bf_only/maskf0|0f OR forms all fuse to
+// 496 B (90); & 0xffff / & 0xfff / dword union bitfield write break fusion but keep `and` -> 82 (508 B); word union bitfield write spills to
+// stack -> 33 (508 B); byte union -> 92 (512 B); word ptr bswap -> 82 (504 B); word+mul256 / word+word<<8 -> 30 (508 B); color-first alpha|color -> 182 (512 B).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
