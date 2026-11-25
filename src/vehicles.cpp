@@ -5247,6 +5247,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // with a rotated up, forward or both row pointers before or after the copy
 // 118/121/121 in each placement. Mixed pointer/reference pairs 121 each.
 // NOT kept: the first difference moves to +0x82 in the j/k dot products.
+// Default-arm sine/cosine/both/both immutable before common up rotation
+// 126/124/128/128; with the indexed projection setter 128/126/130/130.
+// NOT kept: the two opening-projection pairs recover the prefix through +0x107
+// but score higher and shorten the body. Cross and trig homes still differ.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6361,6 +6365,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // reference 784 or shared flag address 759. NOT kept: the entry-definition
 // form restores EBP but merges later tag lookups and shortens the body.
 // The 0x18 frame agrees and the zero/result registers still differ.
+// Retail comparison-stream case order in four dispatch spans, three adjacent pairs,
+// and the whole switch: eight at 759. The 0x18 frame agrees; the entry definition
+// and zero/result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7266,6 +7273,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Parent read with scoped relative output 1129, with byte boost 1126; const
 // selected driver 1029. NOT kept: the relative output reaches 0xdc but shortens
 // the body and raises the score. The 0xfc frame and entry register swap remain.
+// Transpose returned by value after swaps of the value input or a copied reference
+// 1139/1139, or produced by axis from a pointer/reference 1205/1205. With a separate
+// relative product 1125/1125/1174/1174. NOT kept: each leaves frame 0xfc and grows past 5094 bytes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

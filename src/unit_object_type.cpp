@@ -5691,6 +5691,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // up with the ordinary cross, staged second cross or branch selection 194 each;
 // select both new axes 196. NOT kept: the live aim reads through the unit where
 // retail copies it and grows the body to 781 bytes. Separate up grows the frame to 0x5c.
+// Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
+// Separate queried up with branch publication 218/218, or publication after its correction 211/211.
+// NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
 // The 0x50 frame remains. The first cross still loads up.i before the forward copy and the last row
 // consumes the forward scale. NOT kept: staged k with leading pair copy grows to 773 bytes and stages a
 // one-use component. The 767-byte forms raise the score. staged k with leading pair copy 99; staged i
@@ -5704,6 +5707,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // rotation member 169; rotation reference, three axis references or
 // rotation reference with paired angles 191/191/191. NOT kept: the
 // references grow the body. The first cross still preloads up.i.
+// Read aim in the first cross with copy before/between 210/208, in the second with
+// copy before 203, or in both with copy before/between/after 213/213/211.
+// Staged first-cross helper with first-live/between or both-live/after 208/211.
+// NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
