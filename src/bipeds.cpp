@@ -6573,6 +6573,14 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Rotated forward snapshot published before normalization, after it, after up rotation, or after
 // both crosses: 246/250/252/243 with either side-cross helper. NOT kept: all lengthen the body and
 // keeping the snapshot through both rotations grows the frame to 0x30.
+// Named spin with forward field throughout 79 at 877 bytes and first +0x218. Immutable trig
+// with direct forward 154; scoped up/side 79; named final length with direct forward 89;
+// both staged crosses with direct forward 154; default vector setter with direct forward 153;
+// named spin and fixed forward/up pointers 230; full-record default moves with direct forward 165.
+// On the named-spin forward-field form, staged side 79, ordinary final cross 82, initialize
+// the rotated up at its producer 79, one up-field pointer 97, and header rotation on up 89.
+// NOT kept: the longer matching prefix still scores 79 and shortens past retail to 877 bytes.
+// The second rotation product schedule and final cross memory operands remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

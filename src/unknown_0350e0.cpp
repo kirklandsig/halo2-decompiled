@@ -4982,6 +4982,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // point pointer 502/499, point reference 502/499, scalar outputs 502/499.
 // NOT kept: returned points enlarge the frame. Output arguments retain
 // 0x60 and shorten the body. The independent velocity reads still differ.
+// Immutable moved point, immutable projected points, immutable saved points, fixed position/velocity
+// receivers, named projected points with compound offset updates, scoped speed limiter, and one
+// particle position receiver 486 each. Signed screen difference helper 498; shared scaled-add
+// for the moved point 556. NOT kept: the signed difference increases the score and length;
+// the scaled-add shortens the body to 1964 bytes and raises the score. The frame, stored-velocity
+// reloads and projection homes remain different.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

@@ -1003,6 +1003,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // vehicle index re-read + `long type` at the four arms + inner helpers 528 (3731/3731 B, 921/921 insns, aligned 146,
 // masked 46). Left on that path: retail's no-actor `straight = true;` store (0x2c0e9a), the type-1 single-store `if`,
 // `long type` at the four arm compares, the `vehicle_index` re-read.
+// Reduced control 845 at 3731 bytes. Immutable direction dot, immutable typed actor unit,
+// typed candidate position, earlier-center difference helper, immutable query count/index,
+// shared candidate getter, and separate short ordinal 845 each. Candidate difference helper 841.
+// Straight default from heading availability 842, from actor absence 778, from heading availability
+// inside the actor arm 834, both defaults from heading availability 936. NOT kept: the candidate
+// helper gains four against the reduced control. The actor-absence form retains frame 0x2cac
+// but grows to 3736 bytes and exchanges the actor/unit registers. The other default forms grow
+// to 3752 bytes. The no-actor byte store and early dot operand loads still differ.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
