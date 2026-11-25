@@ -1083,6 +1083,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Current-cluster predicate shared after provider, before provider, within the palette arm, or
 // across weighted winners: short slot 733/741/739/717, signed byte 729/740/735/713.
 // First difference moves into accumulator setup. Retail repeats the cluster comparisons.
+// Existing tag block with direct members or one block pointer, direct or saved previous index:
+// short slot 607/607/607/606, signed-byte slot 700/700/700/699. NOT kept: the best count falls by one,
+// and the provider result, native palette compare and shared lookup test still differ.
 // M3 lane GA r11 (fast with 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH across 42 trials;
 // control 607 at 3832/3817 B, mk=169; body unchanged): clean `arg_3->field_6c = local_2;` before reciprocal 604 (-3,
 // under keep bar); clean `fog_accumulate` (from 0x131030) / `efb3` weight-first / `efb5` 4-scalar alone 703/705/708;

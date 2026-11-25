@@ -2200,6 +2200,14 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // reference declared ahead of the aiming springs and used for all six rate reads 208 (2193 B); the first-weapon test
 // without its null check 565 (2185 B: retail keeps the check); the user flags tested and set through the field (no flags
 // local) 172 (same code); the weapon loop's index declared in the for statement 172 (same code). Body unchanged.
+// Indexed aiming inputs with mutable or const unit pointer/reference, each with
+// or without one vector address shared by the first spring and later magnitude:
+// eight at 172. The unit and mode slots remain exchanged.
+// Orientation count or buffer ordinal before object lookup 361/172; typed
+// target, output or both banks 172/171/171; shared user ordinal or byte offset
+// 172/383; both banks and count before lookup 361. NOT kept: the output bank
+// gains one and the early count changes its read phase. The byte offset grows
+// the frame to 0x30. The unit and mode slots remain exchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

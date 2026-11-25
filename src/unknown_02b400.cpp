@@ -1220,7 +1220,7 @@ void function_1cf80();
 bool function_143c0(long, short, short, real);
 
 
-// score 344 (was 365): initializing the draw result before the geometry check restores the early
+// score 310 (was 344): initializing the draw result before the geometry check restores the early
 // true byte and puts the failure exit after the draw exit. The state still arrives in EAX,
 // and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
 // W-buffer state 365; separate primitive branches 421, with a fresh mode read 422; named partition
@@ -1235,6 +1235,29 @@ bool function_143c0(long, short, short, real);
 // point 409, direct SDK width and separate begins 474, vertex element reference 409,
 // shared displacement setter 408. The stack state comes back in six forms; each shortens
 // the push-buffer code and raises the score.
+// M3 lane 3 r310 (fast screen, control 344). Kept: the three vertex writes given the platform's vertex-register
+// constant (-1) where the body passed 0 (retail's method word is 0x101518 at all three, ours was 0x101a00; same count,
+// a real behaviour fix); point-scale A and B set from the scale local, as a float zero read through its address the
+// way the C value is (retail stores a float zero; a separate named zero is the same code) 310. Not kept: the primitive chosen in a local under a fresh mode-word test with the
+// line width read as a float (retail compares the mode word again and passes the width through a stack copy) 299,
+// with the player count as a short (retail's 16-bit compares) 296: the fresh test re-reads the mode word that `lines`
+// holds at every other use (a mix), and without it the same arm under `lines` is 316, with the `long` count 317; the
+// short count alone on 310 is 310. Tried: the non-volatile cursor with the named zero 366 (1357 B,
+// aligned rows 96 against 172); three named point-scale floats 352; one scale local set to 0 and then 1 310 (same
+// code); a by-value float-bits helper for A and B 352, for all three 351; the existing 0x1cbe0(0, 0, 22) for the
+// shader slot read 349 (retail's add and load pair, aligned 172 -> 160), with the non-volatile cursor 397, on the 299
+// form 350 (1424 B), with the short count 348; separate primitive arms with a fresh mode test 360 (1368 B: both begin
+// calls stay out of line), with the non-volatile cursor 406 (1319 B); a named line-mode bool selecting the primitive
+// 357; the primitive selected under `lines` 317; the width under `lines` with the conditional begin argument 326 (1432
+// B); the `!= 2` arm first 315 (1425 B); the state read once through its address 310 (stack-passed but held in EDI:
+// retail keeps the constant 2 there), on the 296 form 319 (1429 B); the 296 form with the non-volatile cursor 339 (1387
+// B). Diagnostic, not kept: a forced-inline wrapper for the begin call (both arms expanded, as in retail) with the
+// non-volatile cursor, the slot helper and the short count 251 at retail's 1420 B (aligned 101). Our link leaves a
+// begin site under two tests out of line where retail expands both (the inliner's limit, not a spelling). Left on that
+// form: the constant 2 not held in EDI, the point-scale zero passed through the stack, the loop's induction homes and
+// the line arm's product order. On the 296 form: the line arm's products written scale first 296, the state factor
+// first 296, `(velocity * scale) * factor` 295; the zero `real const` 296; 1-12 dead longs at the top 296 each (not a
+// symbol-count state).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
@@ -1253,9 +1276,10 @@ bool __stdcall function_391f0(void *state_address)
         {
             D3DDevice_SetRenderState(D3DRS_POINTSPRITEENABLE, TRUE);
             D3DDevice_SetRenderState(D3DRS_POINTSCALEENABLE, TRUE);
-            D3DDevice_SetRenderState(D3DRS_POINTSCALE_A, 0);
-            D3DDevice_SetRenderState(D3DRS_POINTSCALE_B, 0);
-            real scale = 1.0f;
+            real scale = 0.0f;
+            D3DDevice_SetRenderState(D3DRS_POINTSCALE_A, *(dword *)&scale);
+            D3DDevice_SetRenderState(D3DRS_POINTSCALE_B, *(dword *)&scale);
+            scale = 1.0f;
             D3DDevice_SetRenderState(D3DRS_POINTSCALE_C, *(dword *)&scale);
         }
         dword first_alpha = (dword)(long)(*(real *)(state + 0x70) * 256.0f) << 24;
@@ -1285,7 +1309,7 @@ bool __stdcall function_391f0(void *state_address)
             if (!lines)
             {
                 D3DDevice_SetVertexDataColor(1, vertex->color);
-                D3DDevice_SetVertexData4f(0, vertex->position.x, vertex->position.y,
+                D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, vertex->position.x, vertex->position.y,
                     vertex->position.z, vertex->size * 16777215.0f);
             }
             else
@@ -1296,9 +1320,9 @@ bool __stdcall function_391f0(void *state_address)
                 previous.y = vertex->position.y - particle->velocity.j * scale * *(real *)(state + 0x78);
                 previous.z = vertex->position.z - particle->velocity.k * scale * *(real *)(state + 0x78);
                 D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | first_alpha);
-                D3DDevice_SetVertexData4f(0, previous.x, previous.y, previous.z, 1.0f);
+                D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, previous.x, previous.y, previous.z, 1.0f);
                 D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | second_alpha);
-                D3DDevice_SetVertexData4f(0, vertex->position.x, vertex->position.y, vertex->position.z, 1.0f);
+                D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, vertex->position.x, vertex->position.y, vertex->position.z, 1.0f);
             }
         }
         D3DDevice_End();

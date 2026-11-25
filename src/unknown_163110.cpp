@@ -1417,6 +1417,20 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Classification with named x/y, x/z or y/z subtotals 55/68/62; x/y or x/z subtotal with a separate
 // accumulation 55/70; named component products 185; signed classification bytes 52; separate branch
 // stores 755. The three unrolled copies still need retail's product schedule; the signed-byte form ties.
+// M3 lane 15 r147 (fast screen with 0x1648d0, 0x320b0, 0x168b40 and 0xb7740, all MATCH each run; control 52; without
+// the last two files the reduced image scores 555). Lead, match-only (a renaming reference): the classification reading
+// the plane through `plane3f const *const &clip = plane;` (bound to a converted temporary) 30: the three unrolled copies
+// become retail's j, i, k, but the first copy's and the remainder loop's j term now load the point first; the same 30
+// with the reference ahead of `long i` or after it, passed to the clip helper too 30, and in all 48 term orders and
+// operand sides of the classification 30 (the text order is ignored). On that lead with lane GA r9's walking-output tail
+// (`total` first, `point3f *out = cursor;` and `out++` at the k-loop bottom) 25 (the projection entry is then retail's
+// but for `cursor += 2` scheduled early; the statements in output/culled/total/cursor order 25). Not better: the
+// reference bound to `plane` itself (`plane3f *const &`, ahead of the plane tests) 46; a plain `plane3f const *` copy
+// 199; the pass's plane typed const 52 (same code); the classification index, `total`, or one segment/segment_count
+// pair shared by both loops declared at the top 52/52/52 (same code); on the 25 form, the point read through a pointer
+// or a reference 45/45 (the unrolled copies go back to the old order), through a const reference to its address 183,
+// the clip helper's start point through a const reference 25 (same code), its direction 349, its plane 47, both 185;
+// diagnostic, the helper's dot as one i, k, j expression on the 25 form 55 (0x1648d0 186). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
