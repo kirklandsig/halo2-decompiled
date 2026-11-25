@@ -1422,66 +1422,8 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 	}
 }
 
-// score 18 (was 18; 19 before the stand-in SDK headers): the only differences are in the last block (everything before it, the loops, the division, the
-// scaling loop and the memset tail, is instruction for instruction retail). Retail reads the refresh rate
-// (movsx [0x485ac0]) into edx BEFORE `inc ecx` / `imul ecx, eax` and keeps burst in ecx with the minimum in eax; ours
-// reads it after the clamp and keeps burst in eax, so the flag byte registers (al/dl) and the burst register swap.
-// Tried: frame rate before the burst (31), between the minimum load and the clamp (23), before the clamp's compare
-// (25), as the call's argument (19), `limited` first (71), burst factors swapped (19), `samples` local (19),
-// `quotient` local (19), min-clamp spelled with ?: (19/25), reversed clamp `if (burst > m) m = burst` (18, cmov flips),
-// refresh read into a short local (25).
-// Permuter (25 min on r660): nothing below 19.
-// At 18 (from 19) with stand-in SDK headers: the burst local starts at the configured minimum and is raised to the burst.
-// M3 lane 12 r180 (h2m fast, 18): retail gives the refresh word EDX (the scheduler then hoists its load above the
-// product) and the rate test's bool DL with its argument loads in AL; ours EAX, AL and DL. `if (burst <= minimum)
-// burst = minimum;` 19; the quotient bound as a `long const &` (0x79850's form) with that clamp 18 (product into ECX
-// and cmovle as retail, refresh still EAX; steering, no gain), with a named `periods` 18, the current clamp 19, a
-// ternary 18, `minimum >= burst` 18, product operands swapped 18, the minimum read as the rates[16] word 18; on it the
-// frame rate before the product 24, before the quotient 30, between minimum and clamp 45, between product and minimum
-// 24 (refresh EDX, but its branches split ahead of the product); the frame rate as the argument 18; `limited` stored
-// first 19; burst stored first 20; the test stored straight into the channel after the budget and rate 67/72 (1035
-// B); the out-of-line 0x78190 called instead 135/134 (926 B, LTCG keeps the call).
-// M3 lane 4 r255 (h2m fast, 18; on lane 12 r180's base, the quotient through `long const &` and the `<=` clamp, 18
-// with the product in ECX as retail): the tail written as a call to the existing 0x79600 (whose body it repeats)
-// 387/385 (880 B, LTCG keeps the call; retail inlines this site and calls 0x79600 only in the loop); 0x78190's wrapper
-// force-inlined and called (diagnostic) 24; the rate-test result through `bool const &` 18, the frame rate through
-// `real const &` 18, the minimum through `long const &` 18, the burst clamped through `long &` 18; a second channel
-// pointer for the tail's stores 18; the frame rate and test in their own block 18; const locals 18; budget and rate
-// stored ahead of the test 72 (1035 B); `false` for the wanted flag 83 (973 B); the refresh read and 60 fallback as a
-// nested inline getter inside network_frame_rate 18/18 (main/base); the shared rate test with its configured test
-// nested 18, its result through `bool &` 35, the halved frame rate as a local 18, early `return true` exits 32 (0x78190
-// 27). Diagnostic (network_frame_rate written out): the refresh word read ahead of the quotient or the product, its
-// tests after the clamp, 42/34: the refresh then takes retail's EDX and hoists, but the flag stays AL with the field
-// loads in DL, so the tail has two independent causes.
-// M3 lane 16 r183 (h2m fast; control 18; L = lane 12's `long const &` quotient with the `<=` clamp, 18): 1 to 7
-// initialised dead longs at the top, on main and on L, 18 each (the scratch choices are not numbering-dependent); the
-// shared rate test computing the frame rate itself (its frame-rate parameter dropped at all three callers) 18 (0x78190
-// 7, 0x79600 1), with the frame rate after the false default 20; 0x78190 marked `inline` and called for the tail 24; on L
-// the wanted flag read into a local ahead of the frame rate 17 (only that load hoists into DL, the flag stays AL), after
-// it 18, all three flags as locals 35; on L the refresh read ahead of the product with a wanted local 34, with three
-// flag locals 51; the tail as a call to 0x79600 marked `inline` 258 (948 B), with 0x78190 also `inline` 382 (902 B):
-// LTCG does not expand either here.
-// M3 lane 1 r164 (h2m fast with 0x78190 and 0x79600; on lane 12's form L, 18 with retail's clamp): on L only two
-// register picks differ, and neither is a ranking: the rate test's result and the refresh word each take EAX, the
-// first free register, where retail has EDX (nothing interfering wants EAX); with both picked as EDX L is byte for byte
-// retail's, with only the result 8. Forms on L: the wanted flag in a local right before the test call 18 (same code,
-// forward substituted; a repeat); `bool limited = false;` then assigned the test 18 (same code); the frame rate
-// passed straight into the test 18 (same code); the burst stored before the result 19; the test's first condition as
-// the result's initialiser in the shared helper 44 (0x78190 28); the clamp after the test 59. Diagnostic (held form):
-// 0x78190 marked `inline` and called on L 24 (0x79600 then 133), with the same EAX picks in the tail.
-// M3 lane 14 r154 (reduced image with 0x78190, 0x79600 and 0x79850; control 18, L re-measured 18). Reading on L: the
-// refresh word and the test's result are each offered EAX and EDX with no preference either way, so the first one
-// (EAX) is taken; nothing live beside them wants EAX (the allocator only penalises EAX for a value when a not yet
-// placed neighbour that can use EAX prefers it: a quotient, a dividend). Forced compiles: the result alone in EDX 8,
-// the refresh word alone in EDX 10, either one's priority raised or lowered 18 (both are the last values placed).
-// Forms on L: the tail as two nested forced-inline copies of 0x79600 and of 0x78190's wrapper (the flags as their
-// arguments, evaluated ahead of the frame rate) 18 (same code); the shared frame-rate helper reading the refresh global
-// at each use, as `g > 0 ? g : 60`, as an early `return 30.0f`, as one `g > 0 && g == 50` test, or through a nested
-// refresh getter 50/31/24/50 (1016/1014/1014/1016 B: the global is then loaded twice, and matched 0x78090, 0x78190
-// and 0x78210 read 65/9/9/65, 36/9/9/36 and 27/39/39/27). The helper's refresh read through `long const &` bound to
-// the global, then copied to the local 18 (same code here); the reference used directly in one `> 0 && == 50` test,
-// or in `g > 0 ? g : 60`, 18/18 (0x78090 7 and 0x78210 31 each). Not tried: a natural value in the tail that
-// prefers EAX.
+// The tail is the burst limit of 0x79850 again: the per-interval quotient read through a reference-bound local,
+// and the larger of the product and the configured minimum held in its own local until the store.
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {
@@ -1567,9 +1509,11 @@ void function_78e60(s_network_observer *observer, long index)
 	channel->smoothed_interval = 0;
 	real rate = network_observer_rate_for_size(observer, budget, channel->has_callback, channel->callback_inactive);
 	long intervals = real_truncate(minimum_delay * rate * 0.001f) + 1;
-	long burst = (intervals + 1) * (minimum_delay * budget / (intervals * 8000));
-	long clamped_burst = *(long *)((byte *)observer->configuration + 0xe0);
-	if (clamped_burst < burst) clamped_burst = burst;
+	long quotient = minimum_delay * budget / (intervals * 8000);
+	long const &kept = quotient;
+	long burst = (intervals + 1) * kept;
+	long minimum_burst = *(long *)((byte *)observer->configuration + 0xe0);
+	long clamped_burst = burst > minimum_burst ? burst : minimum_burst;
 	real frame_rate = network_frame_rate();
 	bool limited = function_78190(frame_rate, rate, observer, channel->wanted, channel->has_callback, channel->callback_inactive);
 	channel->budget = budget;
