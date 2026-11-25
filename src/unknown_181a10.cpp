@@ -1277,6 +1277,15 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // friction before origin and restitution before hit 238. Either early coefficient with
 // mesh material before hit 230/230. NOT kept: frame 0x44 agrees, but first/second
 // node homes become +0x14/+0x18 instead of retail's +0x10/+0x20.
+// M3 lane 15 r145 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238). Frame packer
+// reading with retail's cells counted: retail's four-byte objects pack first, origin y, origin z, index, other_index,
+// second, distance (y and z carry three references each and are their own objects; `second` has two home references,
+// its store at entry and its reload in the non-24 arm, because the kind-24 arm replaces it in EBX with the shape, which
+// is spilled into the same slot), then the hit and a 12-byte origin that carries only x's three references. Tried: the
+// origin through a file-local force-inlined setter taking x, y and z by `real const &` 251 (1260 B, the same code as
+// real_point3d_set: one home), with the hit through it too and aggregate publication 334; a kind-24 shape local for the
+// data read and the material call with aggregate publication 359 (1261 B), that with `short material` at the top of the
+// body 359; the material at the top with aggregate publication 330 (1227 B). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

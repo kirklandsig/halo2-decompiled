@@ -1985,6 +1985,12 @@ static inline dword voice_get_player_mask_inlined(void);
 // tests in the two orders not yet listed, second flag, muted, first flag 65 and muted, second flag, first flag 85 (427 B);
 // the active word as a select 127; the muted word as a select 105; `~muted & remote` 64 (same code). The second port
 // query stays out of line in every form. Body unchanged.
+// M3 lane 15 r145 (H2M_FAST with 0x53bb0, 0x53b90, 0x54890, 0x53a20 and 0x53be0, all MATCH; control 64): the inner
+// player's bit named once for the test and the clear 64 (same code); that with retail's test order (muted bit, first
+// flag, second flag) 85 at 427 B (aligned 40: the second flag is still a call and the first flag's availability bytes
+// are read again where retail reuses CL); the mask test and the three queries as nested ifs 64 (same code); the outer
+// test as `local & active & bit` 122 (405 B); the outer bit written out at both tests 64 (same code). Still BLOCKED-BY
+// 0x53bb0. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

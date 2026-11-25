@@ -1166,6 +1166,25 @@ void swarm_leader_detach(long actor_index);
 // Direct type with stop member pointer 4, and const slot record with guard declaration 4.
 // NOT kept: the six 980-byte forms still form the slot address before the handler test.
 // The fixed-size copies grow the frame to 0x24 and keep the early address.
+// M3 lane 15 r145 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at
+// 980 B). Measured cause of the listed whole-allocation flip (297): on the 4 form the handler is a scratch temporary
+// (EDX, the slot offset's register once the address is formed); a handler pointer local with `handler->stop` tested and
+// called makes it an allocator candidate that takes ECX as retail's does, but the slot loop's test block then holds six
+// candidates instead of five, the actor pointer's rank rises from 14 to 18 (its one reference there, weight 2), passes
+// the memory walk's pointer (15), the actor is coloured first and the scaled actor offset then takes EBX for the head
+// and the memory walk. With that one rank forced back under the walk pointer's (a forced compile, not source) the
+// handler-local form MATCHes, so one count is left: the actor pointer must rank at or below the memory walk's pointer
+// with the handler named (three points). On the handler-local form: the handler read once into a `stop` local 4 (it
+// folds back); the clump index, the unit index, the prop index or the view index named for their two uses 297 / 297 /
+// 297 / 295; a guard `if (0 <= actor->current)` around the slot loop 270 at 980 B (the allocation and the slot loop are
+// retail's: the index's initialisation leaves the entry block, nine candidates become eight and the actor ranks 8; but
+// the head then tests `cmp ..., 0` ahead of `xor esi, esi` and jumps over padding), written `actor->current >= 0` 272;
+// the index initialised ahead of the guard, or assigned inside it 297 / 297; the index declared ahead of the lookup,
+// or initialised outside a `for (; ...)` 297 / 297; an empty `do {} while (false);` after the lookup, after the slot
+// loop, ahead of the memory walk, or wrapped round the slot loop 297 each; the memory test through a pointer local 297;
+// the owner looked up after the entry pointer 355 (1028 B); the `current` store after the 0x258600 call 297; the memory
+// walk in a force-inlined helper 297; the slot loop (handler local) in a force-inlined helper, with or without the
+// `current` store 297 / 297. Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {
