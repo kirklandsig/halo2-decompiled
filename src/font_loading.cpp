@@ -1081,6 +1081,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Other forms on score-12 base: word/short/dword/long/maskff00/shl24>>16/two-step/shift-assign/s_pix_bf_only/maskf0|0f OR forms all fuse to
 // 496 B (90); & 0xffff / & 0xfff / dword union bitfield write break fusion but keep `and` -> 82 (508 B); word union bitfield write spills to
 // stack -> 33 (508 B); byte union -> 92 (512 B); word ptr bswap -> 82 (504 B); word+mul256 / word+word<<8 -> 30 (508 B); color-first alpha|color -> 182 (512 B).
+// The 0xc frame agrees. The packed length/count join and literal low-word/shifted-high OR still differ.
+// Common nonliteral count with zero header, nested tests or dispatch switch, branch or selected span 188/187/188/179;
+// with zero type and payload 176/181/183/193. NOT kept: an early literal branch changes the prologue and the caller.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

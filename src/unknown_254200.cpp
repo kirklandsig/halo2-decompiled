@@ -904,6 +904,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the frame grows), as a `color3f const` value 392, bound to a `color3f const &` 2 (same code); the colour read through the
 // getter's own dword view with each component read as a real 2; one `real const` zero shared by both readiness tests and
 // both 0x14390 calls 2 (same code each).
+// M3 lane 3 r309 (H2M_FAST with 0x254490 4 and 0x254200 MATCH; control 2): the float-valued texture stage states
+// written as float bit patterns (a named real read through a dword view), as the platform's interface takes them: the
+// first block's LOD bias 443 (2271 B, first +0x83: the real takes a frame home), the second block's 160 (2263 B), the
+// first block's 0x46000000 value as 8192.f 463 (2265 B); the first block's LOD bias as `(dword)0.f` 2 (same code: the
+// conversion folds before the reload numbering); the colour fetched ahead of the first pixel-shader clear 292 (2260 B).
+// The two reloads stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

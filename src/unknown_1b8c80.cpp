@@ -1079,6 +1079,12 @@ extern "C" void _ReadWriteBarrier(void);
 // through a view of the slot's data block formed first 50 (210 B: the slot then loads in the entry block into ECX, but the
 // pool pointer takes EDX, the data base ESI and the 0x26c load is hoisted into EDX ahead of the add), formed after the
 // lookup 49 (210 B), between a named pool data read and the written-out lookup 50.
+// M3 lane 7 r229 (fast with 0x1ba3f0/0x1ba5c0, both MATCH each time; control 6). The allocator gives the slot
+// one piece over the NONE block only (its load sits where the block starts), and a forced-ranking search over 300
+// single scheduling decisions finds no match, so the entry-block load is decided before scheduling. Forms (each read
+// after the barrier, tested in the NONE block): the flags byte in a local 6; that with a `point3f const *` to the point
+// for the copy 6; the flags in a `long` 6; the test held in a bool 6 (all four the same code: the read sinks into the
+// NONE block with the slot load); the flags byte local with no barrier 44 (208 B).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

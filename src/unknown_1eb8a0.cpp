@@ -1025,6 +1025,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // and activation success result: 659/654/659/687. With the initial speed factor before
 // the time product: 680/698/680/716. NOT kept: the reload and result forms retain the
 // supplied direction in EBX. The early factor forms shrink the frame and lose the caller match.
+// M3 lane 1 r168 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 567): the duration sum written
+// `n2 + (s->fast ? 7 : 1)` 567 (same code); the settle length through the existing magnitude3d 567 (same code); the
+// closing test as `s->duration + 6 > s->counter` 568; the 12/8 factor written inside the cap at all three clamps (no k
+// locals) 567 (same code); both activation step counts as one conditional expression each 677 (2879 B). Body unchanged.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

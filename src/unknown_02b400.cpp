@@ -757,6 +757,16 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // float angle literal with promoted camera component 597; named double cosine 596; named double
 // turn increment 597; named distance span 596; plain phase pointer 597; direct phase field 597; double
 // bitmap phase terms 596. NOT kept: the float angle literal fixes the three operand widths for four points.
+// The random-pair tails are still shared, and the cosine and distance fraction have different homes.
+// Float cosine with a shared blend complement 598, bitmap phase rounded after the index 597,
+// named turn components 597, named distance fraction 597, local ring normalization 592,
+// shared records base 631, shared projected extents 597, shared quadratic complement 597, typed
+// filter state 597. NOT kept: local ring normalization gains five and writes the wrapped index once.
+// Independent crossing tests 566, positive-first refresh 604, indexed initialization 958,
+// complete random point then indexed assignment 537, selected refresh destination 642,
+// signed-remainder wrap 638, local wrap passes 624, named integer advance 597.
+// NOT kept: independent tests repeat the sign check on the negative path; complete
+// points add temporary stack stores absent from retail.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -943,6 +953,14 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // from separate progress branches 833; geometry-success scope 850; promoted player divisor 857;
 // radius through the extent view 832; horizontal radius local 860 at retail length; partition-relative
 // index 832; volume count initialized after the lock 860. The state parameter remains on the stack.
+// Active fade initialized to zero 832, fade before the snapshots 832, explicit fade results 845
+// (zero in XMM2, still a stack-passed state), named extent and camera 832, typed emitter 832,
+// shared volume distance with a local camera sample 962, shared exclusion distance 891,
+// absolute partition end 863. The opening extent and camera homes still differ.
+// Extent copy through memcpy 832, scalar camera snapshot 846, camera-first copy 833,
+// named live extent axes 858, explicit player divisor 857, explicit extent maximum 832,
+// shared scaled velocity update 831, staged velocity increment 885, array element
+// references 832. The scaled update gains one at the same extent; the stacked state remains.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1207,6 +1225,16 @@ bool function_143c0(long, short, short, real);
 // and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
 // W-buffer state 365; separate primitive branches 421, with a fresh mode read 422; named partition
 // end 365; shader mode helper 364; shader slot helper 378.
+// The unqualified vertex cursor restores the stack-passed state but shortens the draw body.
+// Unqualified vertex 409, with live primitive branches and a real width 459. Typed state 344,
+// real line width 352, current mode selecting the primitive 366, partition offset 340,
+// positive age branch 344, previous point setter 346, typed shader slot 344, indexed vertex 371.
+// NOT kept: the partition-offset loop gains four at retail length.
+// With the ordinary vertex cursor, selected primitive 409, common final submission 509,
+// final width assigned with color 509, submitted position snapshots 436, aggregate previous
+// point 409, direct SDK width and separate begins 474, vertex element reference 409,
+// shared displacement setter 408. The stack state comes back in six forms; each shortens
+// the push-buffer code and raises the score.
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {

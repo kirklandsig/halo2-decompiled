@@ -2970,6 +2970,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // tail goto + `bool local_3` on lead 632, on 404 form 404; tail nested flag ifs on lead 632; case 12 flipped `case 2` test on lead 630 (masked 85);
 // case 4 inline `k/j/i` dot on lead 519 (2384 B, masked 62); `s_cs_order const *command` in request cases on lead 519 (2384 B, masked 62);
 // case 20 loop inline `dy/dx/dz` squared distance on lead 632 (masked 66). State still outranks actor (+0x9) on the 2380/2384 B lead; 404 depends on match-only swaps, so body stays at 429.
+// M3 lane 1 r168 (fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; 0x110ab0 differs at 164 as in the
+// full check): case 13 through the shared exit (`local_30 = 1;` and the goto) 477 (2404 B); case 4 reading the facing
+// from local_2->field_c with no copy 611 (2400 B, first difference +0x9); case 7/8's condition written inline (no
+// local_9) 479 (2404 B); case 6's stores written through the global with no local_8 428 (one point, under the bar: the
+// two flag ORs still merge into one `or byte [eax + 0x22], 0x69`); cases 6 and 18 both through the global 428 (same).
+// Body unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
