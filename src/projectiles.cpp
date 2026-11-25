@@ -2059,6 +2059,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // and datum views at 280 plain (1211 B). The seat tests now shift and test both
 // bits separately, with the original calls and stores. The slot and tag homes
 // still differ where retail expands the speed update.
+// Early owner/type/weapon-and-seat rejection in all seven subsets, plus separate weapon and seat guards, all 342.
+// NOT kept: the 1227-byte forms raise the score and keep the pool in EBP. The speed update stays out of line.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2581,6 +2583,11 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // Header pool still takes EDI before the first flag test, and the header offset and flag write use other homes.
 // Common datum entry 422; header accessor entry 422; entry table 422; common datum all lookups 422;
 // header accessor all lookups 422; typed parent view 422; typed parent and scale fields 422; resolved header local 422.
+// The 0x184 frame still spills the header offset at +0x30, and admission and mark share the flag load.
+// The child-count tag snapshot and single definition receiver shorten the body to 2175 bytes. named
+// point workspaces 360; named attachment and material slots 360; shared parent handle at admission 360;
+// cached tag during child count 410; dword admission shift 360; nested definition gate 360; named parent
+// and position fields 360; single definition receiver 410.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -2924,6 +2931,15 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // Index EBX and definition ESI still differ from retail's EDI and EBX.
 // Step-to-average or average-to-step velocity 1030/1030; library velocity copies 1030;
 // speed from step or average copy 1037/1038; named speed square 1030; vector setters 1048; speed before copies 1030.
+// Frame 0x114 and index EBX still differ. One live velocity field pointer or
+// reference, formed at entry, before the motion loop or inside it: 1048 each.
+// Loop pointer with iteration-local collision record 1049, with endpoint at its
+// producer 1048. NOT kept: the frame remains 0x114 and each body is shorter.
+// Player-hit result accumulated by call-first logical OR 976 or bitwise OR 1029.
+// Separate sweep outcome with conditional store or logical OR 967/1036, hit mask
+// 1021, hit count 1033, complemented miss state with conditional store or call-first
+// AND 1030/976. NOT kept: the 976 forms add a reload and extra stores, the 967
+// form adds sweep initialization and a tail copy, and all retain the 0x114 frame.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -3436,6 +3452,9 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // with short material 1166. Existing material class throughout 1213. NOT kept:
 // the extra primary-default change gains one beyond the short material, and the
 // other forms regress. Frame and definition homes still differ.
+// Component setter for input/fallback/both/marker/input and marker/fallback and marker/all 1153/1145/1131/1132/1152/1144/1160.
+// All three fixed-size copies 1146. One reinitialized damage record scoped to the damage and selector phase 1146.
+// NOT kept: the two best forms change retail's integer copy shape and keep the 0x21c frame. The scoped record leaves the comparison unchanged.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)
