@@ -1355,6 +1355,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // 121/170, + plane helpers 206-274; changing shared ray_plane_distance_1648d0 to i,k,j breaks 0x1648d0 (186/194); diagnostic
 // partial-sum ratio + plane helpers + vector3f_scale 106 (reuses t for denominator, not kept) and phase sweep k=1..15 on
 // rpd_ikj + walkout 156..208 (period 8, best 156 at k=4/12, ~18 aligned diffs). Body unchanged.
+// M3 lane AO r1 (fast; control 115): the intersection as vector_products.h's vector3f_add_scaled(p0, &delta, t, ...) in
+// place of the scale and the three adds 119 (1851 B: the x row is retail's `t * delta.i + p0.x`, but the y and z rows
+// form t first where retail scales delta.j and delta.k in place, and the head's XMM roles rotate once more); the segment
+// flag set by an `if` 274 (1867 B); `outside0` as bool 259; the second pass without its `pass == 1 &&` 370; the clip
+// denominator and the near distance each as one expression 247/251 (1867 B); plane 0's d as `near_distance - d` 423;
+// the pass's plane as `&planes[pass]` behind one conditional test 380 (1835 B); the projection output taken as
+// `&projected_points[total]` with no cursor 249 (1867 B). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -694,6 +694,20 @@ struct s_visibility_bound_record
 // Scalar-input shared rotation with coordinate stores/vector add/in-place input/independent rotation 430/426/457/426;
 // axes rotation with the same four consumers 430/426/514/430.
 // NOT kept: the 426 forms gain four at 1745 bytes and leave entry/table allocation unresolved.
+// M3 lane 12 r187 (H2M_FAST with 0x458d0, 0x45a80, 0x44720, 0x45560, 0x1428b0 and 0x142570, all MATCH; control 430
+// at 1751 B, aligned unmatched rows [exact, stack masked, registers masked] 215/184/73; body unchanged). The query data
+// as `if (!parts) ... else ...` with the +0x2c field read in each arm, through a named base or written out, 456
+// (1763 B) [217/191/74] each (re-measured for its aligned count); the view counter declared ahead of its loop 430
+// (same code), declared after the four count stores (retail zeroes it with them from one register) 430 [216/185/73];
+// both with the two-arm query 453 (1760 B); the tag table read into a local at the top (ahead of or after the entry
+// pointer) and used in the bottom arm 430 (same code: the copy is folded and the load stays in the lookup's arm), with
+// the two-arm query 456. Reading: retail holds three values in saved registers from the head, the entry (EBX), the
+// tag table (ESI, loaded once ahead of the tag test and read again in the bottom arm) and the geometry (EDI), and keeps
+// the view state pointer in EDX for its two reads; this build gives ESI to the view state pointer and EBX to the
+// views, so the table is a scratch piece that ends in the lookup and the entry is spilled. Diagnostic (a file-local
+// copy of the lookup taking the entry pointer, removed): alone 449 (1760 B) [244/208/75]; with the two-arm query
+// 481 (1777 B) [213/184/71], and then the entry is in EBX from the first instruction with the tag read through it and
+// the geometry in EDI, as retail; the table is still loaded inside the tag arm.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

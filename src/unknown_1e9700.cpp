@@ -402,6 +402,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // [edx+eax+0x16]; lea`, but swap EBP/EDI at +0x16). Reading: 0x195a40 (which passes 0x510cb0's address to 0x321aae in
 // retail) is still `todo`, explaining why lane 8 r207's 0x510ca0..0x511000 object did not escape in this LTCG image.
 // Body unchanged (76).
+// Existing player statistics record for consecutive/recent/timestamp in all seven subsets 85 each.
+// Typed increment before binding the row 85. NOT kept: all reach 434 bytes but exchange the opening player and kind registers.
+// The later enable reload and previous maximum home still differ.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

@@ -1120,6 +1120,20 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // object read 69. Diagnostic: the back end's allocator search on R (20 forced decisions) finds nothing near a match
 // (best 51): the difference is made before allocation (the two lookups merged), so the allocator readings do not reach
 // it. Body unchanged.
+// M3 lane 13 r155 (H2M_FAST with 0xa5b10 and 0xbb780, matched throughout; control 8; R = retail's shape with 0xbb780
+// given the local, re-measured 77 at 160 B; F = the field-read form, re-measured 67 at 176 B). Reading of F against
+// retail: both recompute the index, but F shares one data pointer (EDX) and caches `f` in EBP, where retail keeps the
+// table pointer in EDX, loads the data pointer twice and reads `f` from the stack at both calls. Forced allocator
+// decisions (diagnostic) do not give that: with the shared header address or the shared data pointer left without a
+// register (R 65, F 79) the value gets a stack home and is not loaded again from the table, so retail's second data
+// load is a real second load, made because the first was no longer valid when the lookups were merged. New forms: the
+// header test through a local copy of the table pointer (`s_record_pool *headers = g_4e0300;`) declared in the NONE
+// block, on F 67 (same code), on R 77 (same code); that local declared at the function's top, ahead of the creation
+// call, on F 53 at 183 B (the table pointer is loaded before the call and kept in EBP across it); diagnostics, removed
+// at once: the header flags read through a volatile byte view on F 67, on R 77 (same code each: a volatile read does not
+// end the data pointer's reach); the header test through a reference bound to the table global on F 67 (same code).
+// The retest form (flagged arm storing NONE, then `if (entity->object_index != NONE)`) re-measured 67 at 176 B with
+// its re-read and compare. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1691,6 +1705,21 @@ bool c_projectile_type::v8(long a, long b)
 // fewer, or one more in the 0x400 compare, the 0x400 store or the NONE test block, gives retail's registers. All with
 // the mask: the copy as `static_cast` to the base 12; `NONE != index` 12; `result = result | 0x800` 12; a `long` flags
 // local 12; `(flags & 0x800) != 0` 12; the index as a value local 12; a const entry pointer 12 (all the mask's code).
+// M3 lane 13 r155 (H2M_FAST with 0xa5e70, 0xa3a00 and 0xa02e0, MATCH each time; word read 5, mask control 12). The
+// ranking written out per block (n = values referenced in the block: entry 10, 0x400 compare 3, 0x400 store 4, 0x800
+// test 2, NONE test 2): flags = 4 x entry - compare - store + 2 x test = 37, object = 2 x entry + 2 x compare + 2 x
+// store - test + 2 x NONE = 36. Retail's registers need object >= flags, so any one of: entry 9, compare 4, store 5,
+// 0x800 test 1, NONE test 3. Diagnostics (semantics changed, reverted): the 0x800 arm setting 0x801 alone 1 (only that
+// constant differs: the 0x800 test's block then counts one value and the object takes ESI); the 0x400 arm setting 0x401
+// alone 13 (still swapped: the entry and the store block both lose the constant). All with the mask: the two result bits
+// set through one-bit bit-field members of a shared-storage view of the result 12, only the 0x800 bit so 12, both flag
+// tests through one-bit bit-field members of a view of the flags 12 (bit-field tests and sets become the same 0x400 and
+// 0x800 constants before allocation); the index as a value local with a `long const &` bound to it, the NONE test
+// through the reference and the mask on the local 12, the reverse 12, a second value local for the NONE test 12, a
+// reference-bound copy inside the NONE block for the mask 12 (every copy is merged: the NONE test's block keeps two
+// values); an empty `do {} while (false);` after the 0xa5e70 call or after the definition copy 12 / 12 (straight-line
+// blocks are merged, no join is kept); the base v27 called inline re-measured 51 (its copy takes `a`'s dead home). Word
+// read kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

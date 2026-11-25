@@ -5221,6 +5221,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // with indexed projection 126, or with the direct final cross 124. Indexed projection
 // with reordered trig names or renamed vector workspaces 115/115; with both and
 // shared negation 126. NOT kept: best gain three. Cross operands and trig homes still differ.
+// Projection input order and trig homes still differ. Indexed subtraction
+// with a rotated up, forward or both row pointers before or after the copy
+// 118/121/121 in each placement. Mixed pointer/reference pairs 121 each.
+// NOT kept: the first difference moves to +0x82 in the j/k dot products.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -7208,6 +7212,22 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // through the receiver or vehicle 959/978, root and pitch before the receiver 978,
 // named squared input through the receiver or vehicle 959/978. NOT kept: the pitch
 // forms tie or raise the score without recovering the 0xd8 frame or entry registers.
+// Frame 0xfc versus 0xd8 persists. Transpose after current basis, desired
+// selection, driver tilt or bank with in-place product 1052/1086/1051/1041.
+// With separate scoped relative product 1139/1173/1155/1073. NOT kept:
+// the separate product reaches 0xdc but shortens the body and raises the score.
+// With independent relative output and Boolean boost, round delay before lookup 1206,
+// scale delay before lookup 1144, stage scale and rounding before lookup 1206,
+// rounded value at the test 1126, signed tick rate before lookup 1126, signed tick rate
+// and rounded delay before lookup 1206, elapsed byte 1196, elapsed byte and early delay
+// 1206. NOT kept: the 0xdc frame falls four bytes short of the required reduction,
+// the vehicle index and displacement still differ and every form shortens the body.
+// The 0xfc matrix frame and the vehicle handle and stride registers still differ.
+// current basis at multiply 1179, late current with separate relative matrix 1217.
+// current and relative scope 1217, late basis with reused rotation output 1209.
+// early transpose with separate relative matrix 1139, early transpose with reused rotation output 1085.
+// scoped basis with named rounded delay 1218, early transpose with named scaled delay 1139.
+// NOT kept: The current-basis forms reach frame 0xdc, leaving a four-byte gap to retail. All shorten the body and raise the score. Early transpose with reused output is the closest of these forms at 1085 and 5046 bytes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
