@@ -1815,6 +1815,11 @@ PRIVATE inline long score_string_list_1608e0()
 // Row-cursor memmove into the title origin 689/679.
 // NOT kept: the best transfer scores 672 with frame 0x7a0.
 // the separate origin copy requires a byte match.
+// The 0x798 frame and independent origin still differ. Signed scroll extent
+// with separate or shared row heights 740/746/746, admitted extent first 742,
+// late limit 740, range bounds 741, existing height 740, and one scroll read 757.
+// NOT kept: the signed extent moves subtraction ahead of the fit test,
+// shortens the body and retains the four-byte frame gap.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
