@@ -114,7 +114,7 @@ void function_7f930(void);
 void pending_messages_reset(void);
 void function_53210(void);
 void function_8dd70(void);
-// score 245 (was 253; 909 bytes): walked statement by statement against retail 0x8d9f0 (2026-11-06): every store,
+// score 245 (was 253): 909 bytes. A statement-by-statement comparison against retail 0x8d9f0 (2026-11-06) found every store,
 // callee, argument and branch agrees, including the register/stack argument split of 0x59ad0 and 0x58ee0, the
 // 12-byte session-list clear, the 0x38/0x5a0/0x70f8/0x268-byte clears and the tail stores. One behaviour difference
 // is left: retail clears 0x4d8f08 with a dword store (0x8dc44, with the dwords around it), ours with a byte store,
@@ -268,6 +268,9 @@ void function_8dd70(void);
 // session base 264; shared gateway and manager session base 263; named manager session roles 264; three
 // native session-list clears 239; chained session-list clear 239; chained search sentinels 245; chained
 // completion sentinels 245.
+// Boolean failure for link, observer, sessions, link/observer, link/sessions,
+// observer/sessions and all 239/257/242/253/234/250/249; all with explicit link outcomes 249.
+// NOT kept: the 234 form still lacks the native frame and uses a register failure flag instead of the stacked link-success byte. The out-of-line calls and pointer reloads also remain.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {

@@ -994,6 +994,10 @@ struct s_item_collision_bsp
 // The embedded basis reference also scores 190. Reading j/k/i once with the left-axis or
 // embedded-basis reference scores 190/190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
+// Pending spin k product scheduled between linear or paired output stores, including compound multiply:
+// 190 in all eight forms. Last angular store with the direct or named product after the paired i/j
+// outputs 186/186 at 1362 bytes. NOT kept: four-point gain below the threshold. The transformed-plane
+// registers and pending x87 scale still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1937,6 +1941,10 @@ struct s_item_flags_view_10b850
 // Function scope for the incoming linear sample, working linear velocity and angular
 // velocity, seven subsets and all with the carrier delta: eight at 824.
 // The 0x154 frame, entry Boolean stores and ray/flow home still differ.
+// First object bit, second object bit, both, second read and write, or both reads
+// and the write as bit members: 824 each. Both reads, second read and write,
+// or both reads and the write with the signed short field: 824 each.
+// The entry flag bytes and 0x154 frame still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

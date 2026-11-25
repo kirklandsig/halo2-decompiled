@@ -5702,6 +5702,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
 // Separate queried up with branch publication 218/218, or publication after its correction 211/211.
 // NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
+// Lateral intermediate declared with the queried axes, first, or after the
+// aim copy 169/169/169; first declaration with staged cross 169. Direct
+// rotation member 169; rotation reference, three axis references or
+// rotation reference with paired angles 191/191/191. NOT kept: the
+// references grow the body. The first cross still preloads up.i.
 // Read aim in the first cross with copy before/between 210/208, in the second with
 // copy before 203, or in both with copy before/between/after 213/213/211.
 // Staged first-cross helper with first-live/between or both-live/after 208/211.
@@ -5919,6 +5924,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // or explicit test outcomes 209. Separate final rate bounds selected, branched or initialized
 // from rate candidates 133 each. Both joins as selected results 213, or as candidates 200.
 // NOT kept: all grow and score higher. Clamp registers and coefficient reuse still differ.
+// Seeded angular displacements 62, upper subtraction staged 58, lower addition staged 62;
+// seeded rate displacements 57, both pairs 61, in-place angular/rate scaling at their tests
+// 169/173, full-turn constant shared with angle wrapping 175.
+// The clamp registers and shared angular coefficient still differ. NOT kept: the rate pair gains one, and the other offset forms tie or regress.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -9785,6 +9794,10 @@ struct s_unit_melee_collision
 // shared across scale 532, shared up scale 532.
 // shared transverse stages 533, three shared vector operations 480.
 // NOT kept: live-range forms recover 0x17c but shorten the body. The other ray forms tie or regress.
+// Unit tag at branch entry or each use 524/524; the same with per-product range 536/536.
+// Aggregate impact record 537; aggregate with per-product range 510; BSP and damage names 447;
+// query-center declaration first with live range 534. NOT kept: both deferred tag forms and the
+// aggregate with live range recover frame 0x17c at 2229 bytes but raise the score. The fan register homes remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

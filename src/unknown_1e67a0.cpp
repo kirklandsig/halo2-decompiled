@@ -1416,6 +1416,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Positive/complementary combined turn admission before sampling 336/336, before velocity
 // publication 208/208, before the angle gate 204/204, and before the forward copy 193/193.
 // The rotation multiplicands, side products and final direction copies still differ.
+// M3 lane 5 r245 (h2m fast with 0x1e5af0 and 0x1eb640, both MATCH; control 111 at 1393 B, sequence-aligned 73 rows
+// exact, 57 with registers masked; body unchanged): the velocity scale from the speed parameter instead of the stored
+// field 365 (1369 B); the rotation axis copied by value into a local 248 (1422 B); the six flag bits built in a local
+// word and stored once 397 (1326 B); `angle` declared ahead of `movement` 111 (same code); the rotation angle computed
+// ahead of the forward copy 122.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
