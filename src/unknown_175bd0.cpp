@@ -2466,6 +2466,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // with the location pointer or the cluster word, 128 each. The four forms
 // with an early color A capture give 187 each. The frame reaches 0x44 there,
 // with 572 bytes and the system still in EDI.
+// M3 lane 13 r156 (H2M_FAST with 0x178eb0/0x179020, both matched throughout; control 128). Allocator reading on main: the
+// type object (priority 70) takes ESI ahead of the system's entry piece (46, set_location through the colour call), so
+// the system falls to EDI; the definition is never coloured (it is live across the whole loop body and referenced only
+// by the mode and placement reads), where retail keeps it in EDI in the loop and reloads the system for each spawn call.
+// Forms: `multiplied()` as the colour call's argument with the loop's matrix declared at the top of the loop body 135;
+// the spawn record as an aggregate initialiser with `multiplied()` as the argument 135; `spawn_here` as a long 167 (560
+// B); the location's node index named for the spawn call's flag 128 (same code); the 0x1751d0 result named ahead of the
+// 0x137bd0 call 128 (same code). Body unchanged.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4022,6 +4030,16 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Actual pooled effect, system and definition object references, each alone,
 // each pair and all three 93 each. All three with the particle-location
 // object reference 93. The system/successor registers and 0x4c frame persist.
+// M3 lane 13 r156 (H2M_FAST with 0x176f60; control 93, caller matched). Allocator reading on main: the type object
+// (priority 110) is coloured ahead of the system (96) and takes ESI. Convention reading, on lane 3 r306's per-call form
+// (both type queries in the colour call, the mode read from the definition at each call, the effect index read once
+// through its own address; re-measured 92 at 337 B, 0x176f60 18): the system index arrives in ECX whenever the effect
+// index is first read ahead of the 0x1751d0 call, and in EAX (retail's) once that read comes after the call. Forms on
+// that per-call body: the system lookup declared ahead of the effect lookup 129 (352 B; 0x176f60 18); the effect lookup
+// after the next index 109 (342 B; 18); the effect lookup after the definition 130 (352 B; 0x176f60 MATCH, retail's
+// convention, but the effect pool load then follows the call); that without the address read 127 (348 B; both indices
+// in registers, 0x176f60 8); with the effect pool's base named at the top and indexed after the call (diagnostic) 124
+// (352 B; 0x176f60 MATCH; the index arithmetic still follows the call, system EDI / next index EBX). Body unchanged.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
