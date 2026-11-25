@@ -678,6 +678,15 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Lexical homes for texture byte count, pixel output, allocation result, requested size,
 // mode, movie receiver, texture-output pair and reservation pair all 272. NOT kept:
 // the 0x3c frame and early ESI save stay in place, with no change to the status or clock homes.
+// Shared startup dword mask at entry, after status, after initialization
+// check or after the loading guard 282/283/283/278. Packed byte at those
+// sites 287/287/290/289.
+// NOT kept: the masks retain the 0x3c frame and the packed byte shrinks it
+// to 0x38 against retail's 0x40.
+// The 0x3c frame, early ESI save and format call remain different.
+// Late shared width/height/both and publication reads 271/272/272/272. With
+// the bitmap format passed to the bit-depth call 273/274/273/274. NOT kept:
+// the one-point gain is below the threshold and the native call lengthens the body.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

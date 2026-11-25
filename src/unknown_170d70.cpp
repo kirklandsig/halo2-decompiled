@@ -469,6 +469,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // forward.j; ours k, j, then up.i * forward.i): the i term in parentheses 151 (1384 B), the j term in parentheses 151
 // (1384 B), the k term in parentheses 64 (same code); `up->k * forward->k + up->i * forward->i + forward->j * up->j` 64,
 // the j term written ahead of the i term 64 (same code each: the terms sort by rank). Body unchanged.
+// Shared unit-length predicate on the indexed traversal 64. Named deadline with shared forward,
+// up or both unit tests 94 each. With both tests plus ordered basis dot 70, staged left cross
+// 94, both alternate normalizations 92, or ordered dot and staged cross 70.
+// NOT kept: the indexed form ties and the independently walked forms raise the score.
 // @retail 0x170630
 void function_170630(long player_index)
 {

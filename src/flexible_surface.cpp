@@ -998,6 +998,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 204/201/206, with the oscillation delayed too 206/171/181. Normalized draw
 // kept across setup or axis 206/202. NOT kept: all regress, integer forms
 // shrink the frame to 0x18 and alter the caller. Sample and sine still share a home.
+// On the rounded-real angle carried as double, shared integer draw 135, unsigned/signed
+// draw converted after oscillation 135/194, unsigned conversion in the angle 135. With a
+// named wave cosine product, product and rounded sine, sum and envelope, or two separate
+// cosines 161 each. NOT kept: all raise the score despite restoring the 0x20 frame.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

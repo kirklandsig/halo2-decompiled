@@ -5062,6 +5062,10 @@ struct s_128ca0
 // successor first 83, both 83, with pending guard 83. Return on absent/valid successor
 // 83/48, with completed and pending guards 83/48. NOT kept: the absent-first forms
 // shorten to 1053 bytes and raise the score. The native shifted pending read remains.
+// With staged gain assignments and shifted pending test, use the sampled count for the debit
+// as signed char/short/long or byte 207/123/126/79. With a retained synchronization handle,
+// signed char/byte 207/79, and with both controller handles retained 207/79.
+// NOT kept: the signed byte moves the first difference to the pitch setup, and all forms regress.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

@@ -1149,6 +1149,17 @@ real function_30bf0(vector3f *vector);
 // 101); diagnostic (not keepable, reused variable): `PIN` + one scalar for `amount`/`distance_squared` 69 (1308 B, exact
 // retail offsets for `range` +0x30, `delta` +0x4c, `motion` +0x24, `plane` +0x38, `a`/`b` +0x58/+0x5c, `facing_primary`
 // +0x18). Body unchanged.
+// GB9 (43 trials, fast with 0x263740/0x26d370/0x25c9d0/0x263d70, all MATCH, control 84 at 1310/1308 B, al=109, espm=22, mk=59;
+// body unchanged): combining `PIN(amount, 0.0f, 1.0f)` (97 alone) + split `mode == 0` (86 alone) reaches 76 (1308/1308 B, +0x27,
+// `result` at +8, `range` in xmm0 and at retail's +0x30, `motion+side` at +0x24; with b-max first 75; `NOT kept`: both parts alone
+// regress and `al=111, espm=25, mk=68`, `amount` still pairs with seat counter at +0x14). On `PIN`+split: sec-first 76, single
+// `if (facing)` 140, ternary 3:2 76, `vector3f_add_scaled` 84, no `clipped` 140, `plane.d` `dot3f` 139, `delta` helper 143,
+// `long i` 166 (on base 173), scoped `facing_secondary`/`facing_primary` 140 (with `bool facing` 95, init before `if` 193, else-first
+// 140), `range` after `delta` 81, else sec-first 96. Passing `&secondary, &primary` directly to 0x263740 (dropping `facing_secondary`/
+// `facing_primary`) cleanly pairs `amount` with `distance_squared` at retail's exact `+0x1c` (`T09` 190 at 1334 B, `B2_10` with `bool
+// facing` 187 at 1331 B, `al=92`; on base 199, on split 195; init-before 203, else-first/ternary/b-max/else-sec/range-after 190-210,
+// `real_bounds` 192-243, `real_bounds` for `facing_limits` 100/108), matching 11 of 13 stack slots and 14/16 first-cross insns, but
+// emits +23..26 B of extra `xmm1`/`xmm2` reloads of `secondary`/`primary` inside the seat loop.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

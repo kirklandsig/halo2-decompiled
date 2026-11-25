@@ -970,6 +970,7 @@ void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 void function_14bc0(short index, short element, bool use_depth);
 void function_12d50(bool scaled, real const *projection, real *output);
+dword function_1cbe0(long mode, dword index, long slot_index);
 point3f g_4c1b08[4];
 
 #pragma inline_depth(0)
@@ -988,20 +989,12 @@ PRIVATE __forceinline void submit_quad_vertices(void)
 }
 #pragma inline_depth()
 
-// score 182 (was 192): size equals retail (837) and every instruction after the first shader lookup is the same; the score is the
-// one-instruction shift of that lookup. Retail reads the tag as `mov eax,[eax+0x5c]; add eax,0x10; mov eax,[eax+4]` (slot 2 of an
-// 8-byte table; the same separate add is at 0x26c6b, 0x34d5a, 0x35097, 0x3923d, 0x5261b), ours folds it to [ecx+0x14], which also
-// puts the 0x14bc0 index in edx instead of ecx. Tried (all 182): slot struct + &slots[2], same through a __forceinline accessor
-// taking the slot pointer / the index / a void* element helper / a tag-block helper, a 16-byte slot, tags[1] through a long
-// pointer, struct copy of the slot (scalarized), memcpy of the slot, an unused first-word read. Stage addresses are written
-// through sampler_state_write (retail ORs the dirty flags once per call) and the quad through a file-scope inline_depth(0) helper
-// (the old whole-function pragma plus the in-body pair left the SetRenderState/SetTextureStageState wrappers out of line: 192).
 // @retail 0x3bf20
 long __stdcall function_3bf20(s_slot *slot, byte *data)
 {
     g_4670bc = true;
     function_16b10((s_render_reset_state *)g_485b48);
-    function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x14), 0);
+    function_1cbe0(0, 0, 2);
     function_1c710(g_51f0f0);
     function_14bc0((short)g_4858b8, 0, true);
     D3DPIXELSHADERDEF program;
@@ -1121,10 +1114,10 @@ void function_3c650(byte const *state)
 
 
 
-extern byte g_485ac2;
+byte function_016a90();
 s_3c9a0_matrix g_4c1b68;
 
-// score 291 (was 315): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
+// score 229 (was 291): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
 // 1.0, 1.13, 1.5, 0.0001); no behaviour difference found. Retail spills tangent and view_tangent to float stack slots and
 // divides with divss, ours keeps them on the x87 stack (fdiv st(1)); retail also keeps the near_x/near_y/z stores to
 // g_4c1b08 and reloads them in the corner sums, ours forwards them and drops the stores (1330 vs 1387 bytes), and its
@@ -1135,6 +1128,29 @@ s_3c9a0_matrix g_4c1b68;
 // for both rows, which a real held in a register also gives (same code here but one fadd), and a double local made
 // the caller 0x3c3c0 pad its frame for 8-byte stack parity, which retail's 0x3c3c0 does not (315 -> 291 in the full
 // build, 0x3c3c0 150 -> 136 with it).
+// M3 lane 2 r151 (fast screen; 291 at 1330 B before; the reused pair and the `-12.0f *` form are HELD as a patch at
+// m3 review: computing the far corner after the near stores is statement order and `-12.0f * (angle * 0.04f)` is
+// operand order, both kept only with a byte match; the 0x16a90 call is kept, same code): one pair of corner_x/corner_y locals reused for the near and then the
+// far corner (retail's shared cells: the near values are re-read from g_4c1b08 in the corner sums once the far ones
+// overwrite the locals) 239 at retail's 1387 B; the hand-written aspect test replaced by the existing 0x16a90, which
+// retail expands here, 239 (same code); the near angle as `-12.0f * (angle * 0.04f)`, so the two constant products stay
+// apart as in retail (`angle * 0.04f * -12.0f` folds them into one), 229 (1388 B); without the reused pair that form
+// measures 287 (1336 B). Lead, not kept (0x3c9a0 matches in every order, so only this caller's count moves): 0x3c9a0's
+// parameters as (matrix, forward, up), the order retail's register setup implies (EAX before EBX, last to first), 237 on
+// the 239 form and 227 on the 229 form; (matrix, up, forward) and (up, matrix, forward) also 237. Left: retail rounds the
+// first tangent and the view tangent through stack cells and divides and compares in SSE (1.0 held in XMM0, the
+// distance in XMM5); ours keeps both on the x87 stack (fdiv st(1), fcompi) and keeps the near corner_x there too, where
+// retail stores it at once; frame 0x54 against 0x4c.
+// Tried, none lower: the half-angle local reused for the view tangent 291 (same code); on the 239 form, the width scale
+// as a copy then `/=`, the view tangent as tan then `*=`, the tangent as tan then `*=`, the width scale computed in place
+// of the view tangent, the tangent and corner_x as one local, the aspect and corner_y as one local, 239 each (same code);
+// corner_x/corner_y as members of a point2f local 242; the near angle as `angle * 0.04f * -12.0` 230 (1388 B), as
+// `angle * 0.04 * -12.0` 242, through a named `angle * 0.04f` step 227 (the kept form's code with the lead reorder); on
+// the 227 lead form, position stored z, x, y, then the scale 226; the camera
+// local's z rewritten and copied as a whole, scale first or last, 281 (1408 B); the view tangent through the float tan
+// overload 227, the first tangent through the double overload 227. Diagnostic (reverted): a float-consistency pragma around
+// the body 433 (1545 B: tan becomes a library call, so retail is not built that way, though the divide and compare then
+// turn SSE).
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1153,7 +1169,7 @@ void function_3ca90(byte const *state)
 	g_4c1b68.position.z = height - distance * offset;
 	real aspect = ((real)(short)g_48564e - (real)(short)g_48564a) / ((short)g_48564c - (short)g_485648);
 	real tangent = (real)(tan(*(real const *)(state + 0x7c) * 0.5f) * *(real const *)(state + 0x80));
-	if (!(g_4e6948 && g_4e6948->flag && g_4e6948->index != NONE && g_4e6948->state == 3) && g_485ac2)
+	if (function_016a90())
 		aspect *= 1.5f;
 	real half_angle = g_485640 * 0.5f;
 	if (!(half_angle < 0.7806857824325562f)) half_angle = 0.7806857824325562f;

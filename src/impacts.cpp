@@ -1958,6 +1958,11 @@ void function_2294a0(
 // match); its match-only leads: a new one-caller helper for the point along a line plus a one-use pointer to the
 // first rigid body, 2 at 1981 B (only position.x + constraint->position.x at +0x43e), the position sum as a
 // three-element loop 8 at 1982 B.
+// Codex lane F round 514 (2026-11-25): no kept change (231). The default position copied after the two field clears
+// gives 221, as do the copies as initializers at the declarations or the two clears chained; each moves a statement
+// or a store, kept only with a byte match, so the code stays as main has it (lead only). The vector setter 288; a typed
+// point advance 485 (it loses retail's frame and position base), with the clears separated 485, a named acceptance
+// 482, a shared normal sum 486. Left: the midpoint still groups its coordinate calculations ahead of the stores (+0x248).
 // @retail 0x228770
 void function_228770(
 	long impact_index,

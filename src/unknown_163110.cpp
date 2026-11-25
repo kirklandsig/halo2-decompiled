@@ -1414,6 +1414,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // recovers `[direction+4]` in 0x1648d0 (27, only sum order `(k+i)+j`) and scores 29 here; 2-stmt `i` then `j+k` 25
 // (0x1648d0 200); `dot3f` for `offset` only 56 (0x1648d0 16); `return`/ternary/`distance=0` in rpd 230-251; rpd param
 // reorders 31 (0x1648d0 186); 3 term locals in rpd 31 (0x1648d0 188). Body unchanged.
+// Classification with named x/y, x/z or y/z subtotals 55/68/62; x/y or x/z subtotal with a separate
+// accumulation 55/70; named component products 185; signed classification bytes 52; separate branch
+// stores 755. The three unrolled copies still need retail's product schedule; the signed-byte form ties.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -4173,6 +4173,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Tried for the last 2 SIB bytes (all score 2): offset+ptr, idx[arr], dword cast, header local, barrel inside if,
 // forceinline recoil helper before/after, function-scope updated/object_data, shadow block, no updated_definition local,
 // objects local; non-inline/deferred inline helpers stayed out of line (846-850); without chance 18.
+// Pre-heat loaded snapshot short/long 593/621; separate pre- and post-heat snapshots short/long 593/621;
+// post-heat short for the minimum and debit 593; one short refreshed across both samples 593; debit
+// through the post-heat short 593, with its clamp also 593 at 2521 bytes. The 0x1c64 probe and magazine spill remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

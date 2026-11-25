@@ -187,7 +187,17 @@ struct s_physical_block_iterator
 // score 201 (was 201): MiniMax I (11-16, round 2): no new form, no lower score: clamping the second age as well
 // (`MAX(physical->time - best.time, 0)`) measures 209, worse - the clamp restores retail's mask, but the age lands in
 // EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead
-// of loading it into EAX; the 194 form in the notes below is a seven-point gain under the bar. Body unchanged.
+// of loading it into EAX; the 194 form in the notes below is a seven-point gain under the bar. GB8 (38 fast trials,
+// 7 peers MATCH): without a one-caller helper, `if (!have_best)` around the switch 255, nested ternary case 0 209,
+// `better = false; if (...) better = true;` inside case 0 209 (223 with two-stage insert/uninit better), and a
+// block-scoped `bool older = false; if (...) older = true; better = older;` 221/218 (recovers retail's exact in-place
+// case 0 and case 1 block layout without a helper, masked 37, but swaps default-arm EAX/ECX and is match-only); on the
+// match-only case-0 helper + two-stage insert base (96 at 1213 B, first diff +0x338; with `at_head` 83 at +0x356,
+// aligned 23), inline block-insert helper 96, before-pointer stage 2 96/109, single-stage head/reversed-else 96/100,
+// ternary next 121/100, direct pool reads 97, single `entry->previous = NONE` 102/92 (drops hoisted `or edi, -1` before
+// `cmp eax, -1` but CSEs `-1` into `esi` so `or ebx, -1` disappears), `after` pointer in head-nonempty 96/83, `pages +
+// best.offset` / `function_13d8b1` / `ranges_overlap` inline / walk rank trials 96/94/83 (walk still lacks `mov edx, edi;
+// cmp eax, edx` and `at_head` leaves `sete dl; test dl, dl`). Body unchanged.
 // Earlier at 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; a second score line, merged in round 252): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // Earlier header detail: 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax R (11-15): score 194 (was 201): the default arm matches retail instruction for instruction now (both ages
@@ -1062,6 +1072,14 @@ struct s_physical_block_iterator
 // 201 (same code); the predecessor's next index named once (`long next = before->next;`) for its test, the successor
 // lookup and the entry's next link 203 (first difference +0xcc); the overlap end named ahead of the deletion walk
 // (`long end = best.offset + pages;`) 387 (1227 B). Body unchanged.
+// Timestamp rejection with rejection or acceptance default, opening/symmetric age
+// masks 229/207 each. Three-arm rejection 257/265, equality first 286/226.
+// NOT kept: all shorten the scan and score higher. The default forms add a
+// CL test and SETE ahead of the joined AL test.
+// Saved timestamps with a distinct-time branch 284, earlier test and tie override
+// 235, named tie result in the later arm 230, and scoped equal/unequal result 284.
+// With both age bounds in the same operand order 279/227/213/280. NOT kept:
+// all shorten the body past 1213 bytes and fail to recover the shared policy join.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
