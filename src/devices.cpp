@@ -1816,6 +1816,11 @@ bool function_108530(long device_index, long name)
 // acceleration zero between, 123 (525 B, callers 31/13); the halves adjacent after the acceleration zero, down first,
 // 123 (525 B, callers 31/13), up first 116 (same code); both halves written out at their two uses 136 (callers
 // 26/28); the denominator from `remaining` re-measured 131 (528 B, callers 31/13).
+// Duration is still in XMM3 and ramp-down is cached at the upper bound. Float absolute
+// value at duration, distance and both 116/116/116; both comparisons in double 130;
+// direct clamped duration 117; with double distance 120; signed distance limits 132;
+// both direct limits 121. NOT kept: the first three tie and the other forms lose both
+// XMM6 caller matches.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

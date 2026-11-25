@@ -1352,6 +1352,10 @@ void function_143250(
 // forward-left/forward-up/left-up 1450/1446/1476, all rows/full matrix 1321/1328.
 // NOT kept: typed captures do not resolve the independent scalar homes
 // at the opening extent.
+// The extra scalar word and first-band spills still differ. Moving third-band products
+// confined to a column to their first consumer gives 1600/1552/1576/1602/1574/1585/1590;
+// moving all seven product groups gives 1698. NOT kept: the second column recovers
+// frame 0x300 at 10765 bytes and first +0x3b, with a higher score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

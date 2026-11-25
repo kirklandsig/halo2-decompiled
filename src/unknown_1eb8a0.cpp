@@ -1009,6 +1009,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // for initial, impulsed, both, sample, initial/sample, impulsed/sample or all
 // 679/679/668/565/679/679/668. Named i/k sum at both activation roots 666.
 // NOT kept: the sample-only gain is two points. Activation forms raise the count.
+// The 0x24 frame agrees, but EBX still holds the supplied direction instead of the sample.
+// Descriptive names for initial timing, capped timing, movement workspace, output sample,
+// output ramp, settling, both timing blocks and all six groups score 567 each.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

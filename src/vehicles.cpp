@@ -932,6 +932,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // The opening SSE square still follows the x87 addition and the unity register differs. Initial planar
 // normalizer with its own input as fallback 222, reuse for heading 242, for blend 147, and for both 139.
 // The aggregate velocity copy gives 222/242/147/139. NOT kept: the common normalizer raises the score.
+// The opening SSE and x87 interleave and XMM3 unity still differ. A branch or ternary
+// selecting reciprocal or identity scores 285/291 in place, 308/304 with a pair,
+// 284/288 with scalar inputs, and 284/288 with both scalar products before the stores.
+// NOT kept: the scores rise, and retail skips scaling in the low-speed path.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -7326,6 +7330,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // matrices 1020/1034/1031/1146, with spent current reused for state 1020/1027/1031/1145. Shared
 // query/quaternion/torque slot 1020, with spent flip product 1031, and with spent current for state 1031.
 // NOT kept: these forms leave frames 0x10c or 0xe4 against 0xd8 and all raise the score.
+// The frame is still 0xfc against 0xd8. Copying only the two live flip rows as vectors,
+// components, setters or memcpy scores 1091/1092/1095/1091. With the relative product
+// in the spent flip matrix the same forms score 1058/1039/1064/1058 at frame 0xdc.
+// NOT kept: scores rise and retail copies all nine flip words.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
