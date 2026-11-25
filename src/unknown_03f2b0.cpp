@@ -1634,6 +1634,14 @@ struct s_133f70;
 // after the force push, the flag address and the override push, when nothing is busy (ECX). Retail's EAX needs the distance
 // loaded right behind the level push: while both register parameters are still unpushed, or as a reuse of the register the
 // level address has just left (as consecutive address arguments of one call reuse theirs in this function).
+// M3 lane 12 r188 (h2m fast with the r128 caller/callee list; control 93, aligned 48, register-masked 19). The tracer's
+// post-pass view (memory operands take the first dead scratch register after a cursor that walks each block backward)
+// fits both first-row differences, the distance in ECX for retail's EAX and the call's result in EDX for ECX, if
+// retail's block ended right after the 0x4bcc0 call; an empty `do {} while (false);` right after the call or ahead of
+// it 93/93 (same code: no join is kept). The header read through the shared object-header element type 93 (same code);
+// the header array bound as `s_render_object_header *const &` to the cast object data 352 (1310 B, aligned 47: the
+// table is then loaded first into EDX as retail, but its address folds into the type byte's load); the active-view
+// entry taken by address before its index test 93 (same code, no dead entry lea). Body unchanged.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
