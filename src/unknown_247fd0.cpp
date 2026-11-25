@@ -1104,6 +1104,20 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // assignment or a terminal failure guard. Low-byte projection 417/417/417/417; bitfield
 // 344/344/344/344. NOT kept: the low-byte forms gain the two homes through a readback,
 // and the bitfield forms retain the folded address and raise the score.
+// M3 lane 16 r187 (h2m fast with 0x247fd0, 0x248cc0 and 0x247470, all MATCH each run; control 334 at 1652 B, aligned 246,
+// register-masked 106; body unchanged). Ranking read: the definition pointer never gets a register piece here (its
+// piece from the 0x249170 call to the child loop has three costed uses and comes out at a negative cost in the seventh
+// pass), while the shared `&local_2->field_28` address is coloured in the third pass (49) and takes EDI from the second
+// rotation call to the velocity add; retail keeps the definition in EDI over that span (the unknown0c load, the bit-4
+// load, the tag index) and forms the field's address again at each use. Forms (G the bit-4 test as
+// TEST_FIELD_BIT(local_3->flag4), L the in-loop particle_object_for_tag, R the if/else reciprocal, C the sibling's cache
+// test and store order, V the velocity default, D the link call given the DATUM sum as the sibling writes it): G 352,
+// GR 352, GV 354, GRV 354, GC 358 (1665 B), GRC 357, GCV 359, GL 390 (1696 B), GLR 391, GLC 391, GLV 393, GLRCV 390; with
+// G the definition still does not take EDI. LRV 331, LRCV 327, LRCVD 318 (1696 B each), but with V the frame is 0xb4
+// (first difference +0x2) and the aligned count rises (LRC 196, LRCV 221), so those drops are positional only and V is
+// not retail's test-first shape: not kept. Without V: D 335 (1654 B), RCD 353 (1658 B), LD 375, LRD 376, LCD 393, LRCD
+// 393 (1696 B, aligned 187, register-masked 78: the closest natural structure so far, 44 bytes long from the blend and
+// draw stores). LRCV with the `(short)` ordinal, `!local_3->unknown0c` or the sibling's record index 327 each (same code).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -1881,6 +1881,20 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // at the comparison with conditional false store or Boolean AND 883/880. NOT kept: 858
 // loses 0x73530. The 863 range and repeated result stores differ from retail's countdown
 // and conditional false store. Frame 0xd0 versus 0xb4 and lookup expansion remain.
+// M3 lane 16 r187 (h2m fast with 0x73530, 0x63220 and 0x192e60; control 871 at 2780 B; lane 3 r304's guarded lead rebuilt
+// 858 at 2828 B; body unchanged). Every matched caller of 0x192e60 on main (0x73530, 0x741f0, 0x90880 and the others)
+// keeps its top-level lookup out of line only inside an inline-depth 0 region, so retail never expands the lookup at
+// an entry-level site and expands it only inside the hotter player loop; this build expands it at every site that
+// runs once. On the lead's exit structure (the chain clearing the result, one exit test after it, one after the type-5
+// scan, the loop through 0x63220): the plain opening 945 (2900 B, 0x73530 8, re-measured); the index computed by a
+// written-out `live ? value49c8 : NONE` 947; as a NONE default overridden under the liveness test (0x73530's own
+// spelling) 945; the lookup written in both arms of the liveness test (`if (live) { index = value49c8; variant =
+// lookup(index); } else { index = NONE; variant = lookup(index); }`) 850 at retail's 2828 B with 0x73530 MATCH: each
+// arm's call then runs at half the entry's rate, neither is expanded and the two calls merge back into retail's single
+// call after the join. Not kept: two arms that differ only in the index are a steering form (patch
+// build/r187/lead-7e210-850-two-arm.patch in the m3-lane16 worktree). Callee side, with the plain opening: 0x1934f0
+// declared without its noinline 945 (same code everywhere); 0x192e60 with two returns 1043 (0x192e60 itself 60 B for
+// 68, 0x63220 150 B for 94); 0x192e60 with the validity chain written in its own body 945 (0x192e60 14).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

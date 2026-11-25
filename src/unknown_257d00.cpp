@@ -2906,6 +2906,24 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // State flags, facing timer and direction through the native state and existing
 // facing declarations, in seven subsets and with both facing fields from their view,
 // 429 each. NOT kept: the dispatch span and late completion block are unchanged.
+// M3 lane 16 r187 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; lane 5 r233's retail-shaped lead
+// rebuilt 631 at 2380 B, with the own-parameter volatile read 249; body unchanged). Ranking read on the lead: once the
+// datum has EBP the allocator ranks the state's piece 196 and the actor's 158. The state's four request blocks carry 138
+// of that, because every block that jumps straight into the countdown tail also counts one entry per constant that is
+// used both ahead of the tail and inside it (0, 4, 8 and 0x10 here: case 2's mode 4, the case 7/8 and case 12 masks and
+// the tail's masks), so their candidate counts are 4 higher than the blocks' own; the actor is live and unused there and
+// loses by the same counts. Forms on the lead, each 631 with the same code and the same ranking (196 / 164): the request
+// flag set as a byte bit-field assignment; its test and set both through the bit-field; every flag test and set of the
+// tail and case 7/8 through byte bit-fields; all of them together (on main 429 each, same code). The two flag bytes as
+// one 16-bit flags word (tail, case 7/8 and the request cases; a view in the record type) 326 at 2408 B with the actor in
+// EBX and the state in EDI (state 175, actor 183: the tail's masks are then 0x400, 0x800 and 0x1000 and no longer shared
+// with the earlier 4, 8 and 0x10), with case 12 through the word as well 351 (2412 B); as bit-fields in a 16-bit
+// container 326 / 351 (same code as the masks); on main 522 (2448 B) and 509 (2436 B). Not kept: the word form loads
+// `mov cx, [edi + 2]; test ch, 4` where retail loads the byte at +3, and the request cases hold 0x2000 in a register (a
+// type picked by score; patch build/r187/lead-259430-wordflags-326.patch in the m3-lane16 worktree). Diagnostics (wrong
+// code, removed): the tail's 0x10 test on another bit lowers the state to 177, the tail without a -1 compare 195, case
+// 7/8 and case 12 on other bits 172, while the actor's piece stays at 158 to 166: two of the three shared mask constants
+// have to go before the actor is ranked first.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
