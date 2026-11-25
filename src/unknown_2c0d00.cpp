@@ -976,6 +976,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // result 865/875. Positive entry default with direct or separate team case 843/925. Complete byte
 // skip/positive results 931/865. NOT kept: the positive default grows to 3744 bytes. The 3728-byte
 // positive per-type form changes the retail skip stores. The frame remains 0x2cb0.
+// The actor and optional unit still compete with the classification byte in the 0x2cb0 frame.
+// Read-only physics pointer/reference, positive count guard and that guard on the reference
+// 925/925/925/925. Existing tag block as members/reference/positive members/positive reference
+// 925/919/925/919. NOT kept: both block references move the actor to EBX but grow to 3762 bytes
+// and retain the extra frame word.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
