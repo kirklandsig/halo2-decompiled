@@ -293,6 +293,11 @@ void function_8dd70(void);
 // One continuing short/bool link-to-observer outcome 234/227, failure outcome 244/236,
 // clear on observer failure 235/233, or reuse that result through the list clear 228/223.
 // NOT kept: the 223 form gains three points. The result sharing remains match-only.
+// The missing four-byte frame, byte link result and expanded registration calls remain.
+// Explicit conditional link result 232; carry link into observer 224; carry observer
+// into the list clear 229; carry both 227; first session via handler 237;
+// handler link via gateway 224; handler message table via gateway 231;
+// positive short readiness tests 226. NOT kept: the best forms gain two points.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {

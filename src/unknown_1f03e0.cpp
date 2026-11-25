@@ -1615,6 +1615,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // test (no `limited_step` flag) 549 (3049 B); the speed-band reads through one `real const *` to the settings at +0x4c
 // 466; `magnitude *= state->speed` 234, the low arm's offsets as `-shape_dot(...)` 234, the flying arm's length tests
 // as `!function_30bf0(&left)` 234 (same code each). Body unchanged.
+// The damping register, gravity store order and both raw/bounded vector homes differ.
+// Fixed declarations before the input pointer 246; constant planar rotation 234;
+// constant planar delta 234; raw spatial delta setter 505; history offset/relative
+// setters 234/234, both 234; in-place scaled normal correction 232.
+// NOT kept: the last form gains two points and adds three bytes.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
