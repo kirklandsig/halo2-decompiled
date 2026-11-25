@@ -1408,6 +1408,18 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // 64 (0x126df0 45 each); one milliseconds local at 0x126df0's top for both arms 2 (0x126df0 52, 0x21be20 63); the
 // definition through sound_definition_get with its promotion_index field 2 (same code). Diagnostics: the call's
 // duration `* 1.0f` 2, `* 2.0f` 26 (294 B), `(real)(double)duration` 2. All restored.
+// M3 lane 3 r310 (fast screen with 0x126df0, 0x12a810, 0x21be20 and 0x21b870; control 2). The integer pieces draw from
+// the numbers no integer candidate holds: the dropped AND-1 constant of the curve test (4), the two float
+// loop-invariant loads (19 the 1000.0f constant, 15 the duration), then 14, 21, 12, 22. 1000.0f as a file-scope named
+// constant in 0x126df0 2 (same pieces: it folds); the iterator set-up as the for-init 2. The ring step as one
+// conditional expression (`index = next == first ? NONE : next`, either compare) gives this function MATCH and
+// 0x21b870 MATCH but 0x21be20 24 (its index and element pointer swap ESI and EDI: the allocator ranks the index 166
+// against the element's 144, 120 of it from five index references in the stepped block; a forced-ranking search
+// gives a byte match with the index at 143). On that step: a named next with no links local 71 (0x21be20 54,
+// 0x21b870 32), as an if/else 71, with the links local kept 71; `first == next` 1 (0x21b870 1, 0x21be20 24); the
+// if/else step re-measured 0 (0x21be20 24); 0x21be20's element named ahead of its state test 24, its state test as
+// an early `continue` 24; 0x126df0's fade-in end time named 24. 0x21be20 needs one more candidate referenced in its
+// post-join store block (164 each, the element then wins the tie) or 22 fewer index points. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {

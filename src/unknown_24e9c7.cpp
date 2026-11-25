@@ -801,6 +801,12 @@ struct s_24e9c7_points
 // with `0.0f -` 170; the side pair built from the across products and scaled in place 139 (742 B, listed), its j built
 // first 138, `forward_i * size` 139, scaled with `*=` 139, with `back` as scalars 139; the side as two scalars scaled in
 // place 138, with `back` as scalars 146. Body unchanged.
+// The returned-height home and the early across-Y spill still differ.
+// Complete upper/lower/all corner expressions 157/164/229, aggregate 229.
+// Native draw quad with staged/full/aggregate corner updates 191/229/229,
+// and aggregate with native draw rectangle 243.
+// NOT kept: complete expressions shorten the frame and body; the typed
+// rectangle also changes the matched caller.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

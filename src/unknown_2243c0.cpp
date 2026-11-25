@@ -1020,6 +1020,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // method's argument now gives the chain's late +0xd8 read). On that chain with the method: the material tag read in
 // place 106, the fallback unbound 35, the head and stage unbound 152, the definition unbound 10. A forced-ranking
 // search on the chain (70 single decisions, scratch picks included) finds nothing under 8 (best 9). Body unchanged.
+// The dispatch span and the fallback EDX mask with the EDI directory still differ.
+// Existing typed group entry and direct indexed group reads, word/full mask
+// 117/152 and 165/135. Typed directory through fallback 117, through all
+// lookups with word/full mask 165/152, with typed fallback shader field 152.
+// NOT kept: the word entry ties; the full mask still moves the directory.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -1142,6 +1142,15 @@ static inline long team_score_195ed0(long team)
 // flag in BL from ahead of the loop to a store after it). So the first loop reloads the flag only while its references
 // form one web with the player loop's; retail's player-loop read after the copy needs the record stores to reach the
 // flag, which splits that web unless the first loop's own team-entry stores reach it too (r125's 328 form).
+// Signed-byte team/player/both rank ordinals 181/165/196, with matching signed
+// count snapshots 181/165/196. Separate unsigned bytes 198, shared signed byte 196.
+// NOT kept: narrow team ordinals compare to an immediate and add a byte spill
+// where retail uses BP. The early teams load and final score call still differ.
+// Address reset before copy 150; counter before copy, between copy and address,
+// or before teams update 378/376/376; address reset after teams update with
+// either counter order 276/276; counter-address-copy or address-counter-copy
+// 329/329. NOT kept: early counters cache the teams byte, and the address-first
+// form hits retail length while reading the teams byte before the copy.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

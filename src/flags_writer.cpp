@@ -7,7 +7,6 @@
 #include "bitstream.h"
 #include "flags_writer.h"
 
-void function_194710(s_bitstream *stream, bool discard);
 
 /* starts a field: marks the stream's position and writes the field's bit,
    set when the field was requested; returns whether the field follows */
@@ -53,7 +52,7 @@ void flags_writer_end(s_flags_writer *writer)
 	if (rewind)
 	{
 		writer->written = ~bit & written;
-		function_194710(writer->stream, true);
+		writer->stream->function_194710(true);
 	}
 	else
 	{

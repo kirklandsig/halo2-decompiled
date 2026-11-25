@@ -2500,6 +2500,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // locals ahead of the spawn stores, A first or B first, 184/185; at the function's top, before the location test, 195;
 // the spawn record's three stores after the colour call 188 (0x178eb0 32, 0x179020 28), with the colour locals 190.
 // Body unchanged.
+// The early color spill and system register still differ. With the two colors
+// read on opposite sides of individual spawn stores, A first scores
+// 184/184/184/184 and B first scores 185/185/185/185.
+// NOT kept: every split grows the frame to 0x48 and the body to 572 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {

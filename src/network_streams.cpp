@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void function_194710(s_bitstream *stream, bool discard);
 
 
 
@@ -351,7 +350,7 @@ bool c_network_unreliable_stream::v4(long identifier, s_bitstream *stream, long 
 						if (previous == NONE)
 							m_unknown05 = true;
 						result = true;
-						function_194710(stream, true);
+						stream->function_194710(true);
 						break;
 					}
 					stream->checkpoint_count--;

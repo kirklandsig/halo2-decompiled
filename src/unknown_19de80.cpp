@@ -1086,6 +1086,10 @@ static inline bool teams_enabled_19e1c0()
 // `do { ... } while (false);` on the kept result 584 (1586 B); on the plain result 425 (listed, re-measured), with the
 // event teams read at each use 589 (1586 B), with a `long` opponent team and `best_score <=` 429 (1432 B), with both
 // 576 (1576 B); the kept result with the wrapper and the scan pair 486 (1511 B). Body unchanged.
+// Initial result clipped from capacity or token length. Zero at optional-arm
+// entry or on rejection, with engine success publication or miss-length
+// selection: 663/659/490/626/664/659/490/626. NOT kept: count rises, and the 0x204
+// form merges name tails. Token preload and EBP capacity still differ.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
