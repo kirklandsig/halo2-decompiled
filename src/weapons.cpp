@@ -4096,6 +4096,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Holder, magazine, effect tags, selected entries, owner and barrel role-name trials 630 each (reduced control 630).
 // Shared effect-history word setter 627, pending weapon byte setters 630, both 627. NOT kept: a three-point
 // preview change. The full probe still differs by four bytes and the weapon index and barrel occupy different registers.
+// Fallback-produced balance, admission or initial balance 621/623/640. Conditional fallback cost,
+// burst or both 593/639/639. Separate admitted cost 547, or 545 with path-produced admission.
+// NOT kept: both forms have retail length but carry the required rounds in EDI before the magazine check.
+// Retail keeps one stack home through debit. The 547 form keeps frame 0x1c64 and the 545 form grows it to 0x1c68.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4656,6 +4660,9 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Trigger/barrel runtime-array lvalues, tag pointer fields, paired lvalues, and array bases with
 // tag field pointers: 1413/1412/1413/1413 before their loops, 1412 each inside. The loop-entry
 // runtime array forms shorten the barrel phase by four bytes. The 0x34 frame and dual spill remain.
+// Named raw and clamped ramp rise/fall/both 1437/1441/1483. Blend rise/fall/both
+// 1411/1412/1412. Both rising updates 1448. All four 1484. NOT kept: the two
+// ramp updates recover frame 0x38 but grow to 5748 bytes and still spill the dual result.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5344,6 +5351,10 @@ struct s_weapon_projectile_creation
 // Shared spread weight, named blended endpoints or separate endpoint products 1121 each.
 // Captured default endpoints 1134; early spread position 1140; cone products 1154; shot-wide default weight 1158; selected shot scale 1154.
 // NOT kept: the local blend ties; the shot-wide form grows the frame. The 0x1ea4 probe remains.
+// Whole rotation result with direction, axis or cross component locals 1154/1154/1121.
+// Direction/axis, direction/cross, axis/cross or all three 1121/1154/1154/1121.
+// Both inputs and in-place projection 1154. NOT kept: ties or shorter bodies with higher scores.
+// The separate clipping output and 0x1ea4 frame remain in the opening body.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

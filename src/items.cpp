@@ -1359,6 +1359,9 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // final products, weighted cross with second/final products, and per-row scalar accumulation
 // all score 130. Output accumulation in three passes or with the first pair combined scores
 // 239/235. NOT kept: both output accumulations grow the body and retain the spill.
+// Address-free axis with marker up, facing or marker forward snapshots 159/213/159. Up/facing,
+// up/forward, facing/forward and all three 213/159/213/213. Up snapshot and in-place projection 159.
+// NOT kept: 159 reaches frame 0xb4 and 848 bytes, with different alignment products and greater score.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
