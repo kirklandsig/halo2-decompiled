@@ -1900,6 +1900,9 @@ struct s_item_flags_view_10b850
 // components/setter 821, components/scaled add 824; setter with components/setter/scaled add
 // 904/911/904; scaled add with components/setter/scaled add 824/821/824.
 // NOT kept: the bounce setter alone gains three and the impact setter shortens the body.
+// Function scope for the incoming linear sample, working linear velocity and angular
+// velocity, seven subsets and all with the carrier delta: eight at 824.
+// The 0x154 frame, entry Boolean stores and ray/flow home still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

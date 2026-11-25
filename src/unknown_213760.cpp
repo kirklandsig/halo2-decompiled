@@ -2175,6 +2175,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // effective count with nested live-handle guard 178; conditional completion bool 165; record-sized effective count 178;
 // conditional short write with record handle 188; with named size-match predicate 188. NOT kept: all reserve 0x1140
 // and fail to recover retail's separate output homes.
+// Differing-bit tests for query size, write count and checksum in seven subsets
+// 164/121/167/90/165/121/169; all with a named size difference 169.
+// NOT kept: retail compares the full operands directly. The two count slots and
+// write setup still differ.
 // @retail 0x213970
 void function_213970(void)
 {
