@@ -1587,6 +1587,12 @@ struct s_item_flags_view_10b850
     byte flag7 : 1;
 };
 // score 813 (was 824): Frame 0x154 versus 0x12c, entry Boolean byte stores and settle/bounce order still differ.
+// GA10 (17 fast trials, baseline 813 at 4096/4096 B, body unchanged): byte_flags_set 871 (fr=0x148); spin no-hoist / direct-mem +
+// cross3f_staged 858/880 (mk 763->718/697); item_dot i+j+k 813; vector3f_add_scaled + vector3d_from_points3d 890 (fr=0x148, exact
+// [edi]/[edi+4]/[edi+8] integration/ray); SSE >=0 flow abs 907 (fr=0x13c); TEST_FIELD_BIT flag14/flag4 + tail cross3f_staged 841;
+// combined clean forms 857-921 (fr=0x13c, al 927->672, mk 763->487, exact flow/0x168f40..0xb8d30 sequence); entry local bools 882
+// (still fold to shr/test); scoped ray 920/931 (fr=0x130, 4 B from 0x12c due to carrier spilling without the entry flag byte slot
+// and 0x16a040 staying noinline).
 // GB8 (36 fast trials, plain-confirmed 813 at 4096/4096 B, al 929->807, mk 622->589; 17 peers + 0x109a00 + 0x54590 MATCH):
 // KEPT semantic/retail fixes: swapped `function_109a00` args fixed to `(object_index, &carrier_delta, true, &local_c01284_3)`
 // (matches retail 0x10b901 and matched 0x109a00; alone 824), `switch (collision.type)` + `TEST_FIELD_BIT` bit-6 for `surface`

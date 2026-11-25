@@ -526,6 +526,16 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // through `s_entry_24a64d *const &kept = entries` 84, with the plain arm through it too 84 (the reference folds). On the
 // lead: the terminator's index through `long const &found = i` 39; the arm's entry as a reference 39 (same code each);
 // the entry pointer formed ahead of the append test and used by the plain arm 72. Body unchanged.
+// M3 lane GA r10 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a09b, all MATCH; control 67 at 189/210 B, frame 0x24; 12 source
+// trials + 4 flag diagnostics; body unchanged). Flag diagnostics on the indexed-terminator body: /O1 /Gr 84 (breaks 0x24a09b
+// and 0x24a52b), /O1 /Ob1 /Oi /Gr 84, /O1 /Oi /arch:SSE /Gr 84, /Os without /Og 220 (332 B, breaks all peers), confirming
+// /O1 /Oi /Gr. Source trials with indexed terminator `entries[i].field_1e4[49] = 0`: plain early-break before append 84 (197 B);
+// append direct-return + plain break 77 (199 B); plain direct-return + append break 83 (193 B); `buffer` bound after copy 84
+// or after first wcsncat 84; non-forceinline template string wrapper on field_1e4 86 (189 B, out-of-line method calls);
+// `result = buffer` ahead of copy 84; nested `if (append)` with `entry` + indexed terminator 83 (190 B); `entry` bound after
+// ascii call 84; NULL result with ternary fallback at return 76 (201 B); loop-top `entry` used only for copy/wcsncat 84;
+// `long count = 0` + indexed terminator 78 (198 B). Every indexed-terminator form still CSEs `&entries[i]` into EBX across
+// the five calls with frame 0x24 and no [ebp-8] base spill.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

@@ -735,6 +735,18 @@
 // components in place at quarter/half/both 536/536/536. Join the mode store without
 // or with quarter/half/both attenuation 593/593/593/593. Name each attenuated product
 // at its clamp 537. NOT kept: the extent stays 2622 bytes and the frame does not change.
+// M3 lane GA r10 (fast with 0x42c50/0x42b20/0x43720/0x43740 MATCH and 0x4a1e0 at 322; control 536 at 2622/2622 B, frame
+// 0x54; 18 source trials + 1 flag diagnostic; body unchanged). Flag diagnostic `/Op` 861 (frame 0x70, 2786 B, breaks 0x42c50).
+// All 4 crosses via cross3f_staged with first cross into `&w` 532 (2622 B, mk 289); that + perspective rows via
+// vector3f_add_scaled/vector3f_scale (named `k`) 638 (2603 B, mk 314), with `inv * 0.5f` inline and camera->f6c/f70 read at
+// use 651 (2595 B, mk **213**: stops 0.5f from hoisting above source->type==0 and keeps 0.5f in retail's xmm7 through the
+// m>1 tail), with d scaled in place 652 (2594 B, mk 222), with plain cross3f for r/s 652 (mk 222), with separate `c` 652 (mk
+// 222), writing into result->v20/v30 then scaling in place 696 (2647 B, mk 271), with sx before s cross 643 (2643 B) or
+// scaling r before s 703 (2584 B). Staged crosses + retail k,i,j perspective order 532 (2622 B); staged-into-w + d scaled in
+// place + camera shifts inline 531 (2622 B, mk 277; -5, below 8-pt bar; same with `inv * 0.5f` inline 531 or v1 typed
+// vector3f 531; plain cross3f base + inv*0.5f/cam/d-in-place 534); staged-into-w + add_scaled/scale + d in place /
+// vector3f_scale(&d) 639/639; s1 before staged cross + named doubles + d in place 597 (2625 B); diagnostic scalar ck/cj/ci
+// without union 693 (frame 0x50, 2555 B), proving c.j/c.k's 4-byte cells require separate s0/s1 homes.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
