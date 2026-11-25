@@ -5956,6 +5956,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // or both stage pairs in a bounds record 58/58/58. Signed lower endpoint 196, with signed comparisons
 // 212, signed bounds record 212. NOT kept: the records preserve the wrong XMM allocation, and the
 // signed forms grow the body. The angular limit and coefficient still occupy separate registers.
+// Scoped angle limit, rate limit, both, or shared scalar offsets with independent
+// products 58 each. Scale each at its test 169/65/173/170. NOT kept: the separate
+// products tie, and test-time scaling raises the score. The clamp and limit
+// registers still differ.
+// Named direction test with separated angle products, rate products or both
+// 52/52/52, both range calls 74, wrapped angle local 73, named endpoints 73,
+// updated turn rate used by store and integration 43, shared sample cap 57.
+// NOT kept: the 43 form uses the opening rate-integration instructions and gains
+// in the unchanged inlined rotation. The clamp registers still differ.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -9857,6 +9866,15 @@ struct s_unit_melee_collision
 // origin for both consumers with cached/live range 447/534. Distinct surface and damage
 // workspace names with cached/live range 447/534. NOT kept: ordinal widths enlarge the frame,
 // and the other live forms reach 0x17c but shorten the body. The unit and fan spill homes still differ.
+// Candidate parent captured in the vehicle branch or selected by type, cached/per-product
+// range 481/537 each. Separate trace handle or publish selected type first, 447/534 each.
+// NOT kept: the parent selections raise the score. Per-product range restores 0x17c
+// but shortens the body and leaves the unit and fan homes displaced.
+// Per-product range and one aim receiver in both paths, pointer/reference 516/516.
+// Point and center names 534, basis and normal names 534, material reset before ray 533,
+// fan-wide trace storage 534, normal declared before point 534, distinct controller and
+// timer indices 534. NOT kept: both aim forms recover frame 0x17c at 2235 bytes but
+// raise the score. Other forms reach 2203 bytes and still displace the fan homes.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

@@ -1360,6 +1360,13 @@ void function_143250(
 // intermediate axial and transverse pairs 1534/1493; late root-35 squares, root-105
 // mixed consumers and both weighted pairs 1368/1511/1515. NOT kept: the last two
 // recover frame 0x300 and first +0x39, but shorten the body and raise the score.
+// Third-band weighted product declarations at band entry for the root-35
+// transverse group, root-105 axial group, both, and the three complete
+// family selections all 939. Component-first names for either family 939.
+// The 0x2fc frame and separate weighted spill homes still differ.
+// The first three basis spills and the missing scalar word still differ.
+// Component names for forward j, left j, forward i, their pairs and all three,
+// or the complete nine-component set, all 939. The original names are restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

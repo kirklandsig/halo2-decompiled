@@ -1023,6 +1023,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Shared gain buffer reused as a count-prefixed active list, store/increment first, for short/short
 // query and choice 876/877, short/long 936/946, full/short 899/901, full/long 937/937. NOT kept:
 // the 0x4e0 frame returns, but the count and query homes differ and all scores rise.
+// Query-only array scope, shared query ordinal, direct provider count, or both:
+// 837/840/911/911. Early choice count or enclosing choice storage in that scope:
+// 837/837. Early long choice count alone or with direct count/shared ordinal:
+// 938/948. NOT kept: the 0x4dc frame persists and long choice counts shorten the body.
 // Lane AO r3 (fast with 0x18bb80 and ten callees, control 837 at 3327 B): the targets array declared after the two
 // counts 837, the primary declared ahead of the target count 837, the choices declared ahead of the query arrays 837,
 // the query count declared ahead of the arrays 837 (same code each: declaration order moves no home); the duplicate scan
@@ -1030,6 +1034,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `targets[target_count].field` with the count stepped last 940 (3289 B); the muted flag as `!g_509420` 837. Reading:
 // retail walks the query with the long count read from its home, keeps the choice count in ESI with a copy at frame
 // +0x24, and spills the loop index at frame +0x4 where ours puts the short query count. Body unchanged.
+// Exact-end bounds for query, duplicate, repair, conversion, both target walks, active lookup,
+// both query walks, or all choice and target walks: 837/905/837/837/837/837/837/905.
+// The 0x4dc frame and count homes persist. Retail uses a relational duplicate bound.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

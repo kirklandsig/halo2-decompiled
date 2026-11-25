@@ -1062,6 +1062,14 @@ struct s_physical_block_iterator
 // 201 (same code); the predecessor's next index named once (`long next = before->next;`) for its test, the successor
 // lookup and the entry's next link 203 (first difference +0xcc); the overlap end named ahead of the deletion walk
 // (`long end = best.offset + pages;`) 387 (1227 B). Body unchanged.
+// Timestamp rejection with rejection or acceptance default, opening/symmetric age
+// masks 229/207 each. Three-arm rejection 257/265, equality first 286/226.
+// NOT kept: all shorten the scan and score higher. The default forms add a
+// CL test and SETE ahead of the joined AL test.
+// Saved timestamps with a distinct-time branch 284, earlier test and tie override
+// 235, named tie result in the later arm 230, and scoped equal/unequal result 284.
+// With both age bounds in the same operand order 279/227/213/280. NOT kept:
+// all shorten the body past 1213 bytes and fail to recover the shared policy join.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -1058,6 +1058,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // selecting it after lookup, checking palette precedence, or setting the palette
 // pointer in each arm: 1085/1085/1087/1087 with short, 1081/1081/1083/1083 with char.
 // NOT kept: the provider and palette roles still differ and the body grows past 4140 bytes.
+// Typed scenario table indexing, shared scenario receiver, cached previous index,
+// or record-selection initializer: 607/607/607/607 with short palette, 700/700/700/700
+// with signed byte. NOT kept: the provider register and shared lookup test still differ.
 // M3 lane GB r7 (fast with 0x12e5e0, 0x12e960, 0x12eb00, 0x130f60, 0x131030 and 0x1317a0, all MATCH; control 607 at
 // 3832/3817 B, al=362, mk=232; 82 trials; body unchanged): copying 0x131030's `fog_accumulate` (ternary clamp +
 // `fog_color_add_scaled` + intensity/distance/height/weight/remaining order), putting `if (weight > 0.0f)` first in
@@ -1077,6 +1080,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // and recover `cursor=EBP, local_13=ESI, local_23=ESI`, but score 702 (short slot) / 705 (signed char inline) / 691
 // (all array indexing) / 694 (no alias with lookup helper) because `cluster_index` folds into `imul`. Lead 86 NOT kept
 // (mixes `cluster_index` local with `local_12->cluster_index` and uses a one-caller lookup helper without byte match).
+// Current-cluster predicate shared after provider, before provider, within the palette arm, or
+// across weighted winners: short slot 733/741/739/717, signed byte 729/740/735/713.
+// First difference moves into accumulator setup. Retail repeats the cluster comparisons.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
