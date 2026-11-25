@@ -1863,6 +1863,19 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 36 MATCH) the same three values; both together the same; 0x193250 returning 0x193300 from each of its two cases
 // instead 868 (2848 B) with 0x193250 lost (56 B for 100). So the choices do not follow the callees' spelling, and the
 // opening lookup still needs one more two-way test in front of it that emits no code.
+// M3 lane GA r1 (fast with 0x73530, 0x63220, 0x192e60, 0x193300, 0x1932c0, 0x1931a0, 0x193250, 0x631f0; control 871 at
+// 2780 B, aligned 1016 / masked 616, 0x73530 MATCH; body unchanged). Tested 11 untried combinations of the single-exit /
+// 0x63220 / long-histogram / result-first helpers: all 5 file-local helpers in result-first form on base 919 (2724 B,
+// aligned 795, masked 399, 0x73530 MATCH); that + `if (!balance_teams_by_count) result = false;` + 3-way add_mask minimum
+// 924 (2724 B, aligned 792, masked 399, 0x73530 MATCH); single-exit + 0x63220 + `long histogram[16]` memset 913 (2868 B,
+// aligned 887, 0x73530 8); same with `word histogram[16]` 957 (2920 B, 0x73530 8); same + all 5 result-first + balance
+// `if` 891 (2868 B, aligned 791, masked 397, 0x73530 8) and with word histogram 897 (0x73530 8); that + excess early
+// `{ result = false; return result; }` + 3-way add_mask minimum 935 (2892 B, aligned **788**, masked **390**, 0x73530 8);
+// single early return after `else if (type == 5)` + 0x63220 + long histogram 880 (2836 B, aligned 819, 0x73530 8); opening
+// `{ result = false; return result; }` + type-5 + `if (result)` + 0x63220 + long histogram 1141 (2480 B, 0x63220 stays a
+// call, 0x73530 MATCH); positive nested 5-term `&&` admission + 0x63220 + long histogram 1157 (2464 B, 0x63220 a call,
+// 0x73530 MATCH); single-exit + 0x63220 + long histogram with summary read before variant_index/variant 914 (0x73530 8).
+// Confirms every form that inlines both the opening 0x192e60 and 0x63220 spills session off EAX and breaks 0x73530 (8).
 // Round 469: cached machine-scan count with conditional false store/Boolean AND/logical
 // update 871/878/858. Pointer range with the same updates 883/879/863. Cursor advanced
 // at the comparison with conditional false store or Boolean AND 883/880. NOT kept: 858

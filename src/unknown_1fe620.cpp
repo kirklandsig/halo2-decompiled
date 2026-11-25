@@ -462,6 +462,19 @@ static __forceinline long real_to_long(real value);
 // Local range seed with one final write. Sign-result inputs 440/440, stored inputs 440/440,
 // after-first-draw inputs 434/436, shared sign-step inputs 440/440. All keep the 0x4c frame
 // and leave the third input off ESI. Original draws and result stores restored.
+// M3 lane 12 r187 (H2M_FAST with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373, aligned
+// unmatched rows [exact, stack masked, registers masked] 237/193/64; body unchanged). The four conversions written
+// without their `(real)` casts (the assignment converts): both angular caps 378 [236/192/63], the timed cap 378
+// [236/192/63], the magnitude's root 373, the four trig results 373 (same code each). Lane 3 r297's composite
+// re-measured 347 at 1855 B [111/102/9], with the quotient cast 340 at retail's 1861 B [113/104/10]: left there are
+// the two point copies (retail loads all three words first: the resolved point is not treated as captured there,
+// BLOCKED-BY 0x1697c0's parameter-address locals through 0x1fe410; its file is on this round's avoid list) and one
+// colouring order: retail colours the side vector's three components first (XMM1, XMM2, XMM3, live from the cross to
+// the output rows) and fits the displacement round them (k XMM1, i XMM3, j XMM4, with a copy of the k zero product
+// and of j), where this build colours the displacement's components first (144/126/108 against 101/65 for the side
+// vector's) and computes the side vector in what is left. Next: a form that ranks the side vector's components above
+// the displacement's (more references to them in the output rows, or fewer register references to the displacement),
+// once 0x1697c0 no longer captures its point.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

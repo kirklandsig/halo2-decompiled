@@ -1466,6 +1466,11 @@ bool __stdcall function_2399da(long controller_index)
 // `!(!have_member && !may_change)` 114; the copy under `!have_member && may_change` with the refusal as the next arm
 // 92 (430 B); the refusal arm ahead of the copy arm in the chain 114 (433 B); may_change tested first 122 (438 B).
 // Identity ECX / rank EAX remain in every one.
+// Guarded 64-bit selected ID 106; selected-record reference with one missing-selection tail 90;
+// removal-target pointer 105; assignable rank with a refusal sentinel 108 or a rank cap 103;
+// request action before validity 121; authorized action before dispatch 92; early confirmation
+// predicate 130. The removal-target and rank-cap forms put rank in ECX and identity in EDX.
+// All eight forms restored; identity ECX/rank EAX and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

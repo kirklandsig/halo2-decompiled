@@ -1501,6 +1501,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Shared offset with the two squared-length helpers 646/646; separate offset in opening sum order 418/418
 // with either dot operand order; separate offset in k/j/i sum order 416/416, NOT kept: changed grouping and
 // two-point gain. Squared-length helper for nearest alone or both scans 418/418.
+// The 0x1c frame still lacks the candidate-X home and second induction address. Exact-count bounds
+// suppress the unrolling of the affected scans. Branch and candidate-position forms shorten the body and
+// raise the score. first exact count 924; second exact count 1236; both exact counts 1609; three-way
+// sample branch 606; four-way sample branch 606; shared initial distance limit 418; winner-first
+// comparisons 418; shared candidate position 593.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
