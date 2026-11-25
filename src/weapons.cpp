@@ -4126,6 +4126,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // shot count/sequence, continuation handle and all runtime fields: 630 each in the reduced image.
 // NOT kept: all tie the reduced control, which has a 0x1c60 probe and 2542-byte extent. The full
 // 0x1c64 probe, weapon/barrel register roles and separate magazine spills remain.
+// Typed weapon-tag heat cap, destruction, misfire and holder feedback; typed barrel-tag recovery/heat,
+// pitch curve and event kind; all fields together: 593 each. NOT kept: all tie. The 0x1c64 probe
+// and separate magazine-tag and loaded-round spills remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

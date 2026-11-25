@@ -3831,6 +3831,10 @@ real magnitude3d(vector3f const *v);
 // Step interval in fallback, rotation or both 170/175/186; shared lower step with staged rotation
 // clamp 186. NOT kept: fallback-only forms tie, and sharing the step bounds changes the frame.
 // The raw current length still uses the bounded length’s slot in the fallback-only forms.
+// Joint length tests, joint angle/current-length test, independent target-length test, independent
+// angle test, all three tests together, eager lengths before angle, ordered lengths with independent
+// angle, and joint lengths with real absolute dot: 190/190/186/186/205/201/198/190.
+// NOT kept: all grow the body and leave the raw current magnitude in the bounded length's slot.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4624,6 +4628,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // entry-identity guard 372. Duplicate self-swap guard 327, both removal guards 437, creation
 // and fallback guards 366, creation exit plus other guards 381. NOT kept: all regress.
 // The state and prefix still exchange registers and the creation ordinal still spills.
+// Eager paired bytes, eager bound with first byte, independent bound with paired bytes, all three
+// admission tests together, eager creation pair, eager duplicate key tests, eager duplicate
+// eligibility, and both removal predicates: 373/408/421/429/369/409/399/417.
+// NOT kept: all regress. The paired byte forms add a frame word or more code.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -6226,6 +6234,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // The same forms with four-channel color 225/385/225/379.
 // NOT kept: the 225 forms regain frame 0xe0, gain six and grow to 1826 bytes.
 // The other color forms reach 1819 bytes and raise the score.
+// Separate axis selections from a shared test, per-axis tests, guarded captures, or a complete
+// point snapshot: 392/518/231/717. With four-channel color: 390/516/225/723.
+// NOT kept: 225 gains six, grows to 1826 bytes, and leaves the radius spill at +0xc.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
