@@ -2384,6 +2384,12 @@ bool function_1900a5(long index);
 // binding 726, and chosen from a bound record 765. Valid identity pointer 758/758,
 // valid properties pointer 749, and bound record with identity gate 758.
 // NOT kept: the record result at retail length still changes the cursor and scores 726.
+// M3 lane 1 r167 (h2m fast; control 643 at 2862 B, aligned 409 / registers masked 154). The write and read polls as a
+// `switch` on the poll state (the matched 0x8bf70's idiom; retail tests both polls' ranges first), each alone: write
+// 643 (masked 150, same positional count), read (`case 0: case 1: break;`, failure as `default`) 645; with the last
+// write time in a two-use local: write switch 660 (2846 B), read switch 639; the write switch with both time locals
+// 662 (2846 B). Declaring the file's request globals `static` (a test of whether the clock call's reload of the last
+// read time is an aliasing kill) 643 (same code), so the reload is 0x75890 not being expanded. Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
