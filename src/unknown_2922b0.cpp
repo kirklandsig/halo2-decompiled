@@ -945,6 +945,32 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // scaled side or up contribution 519/525, both 554. Shared i-k-j rotation projection 524,
 // immutable origin copy 518. NOT kept: first-axis definite assignment recovers the success
 // byte home, but shortens the body and leaves the early zero in XMM1.
+// The clearance byte still sits four bytes below its retail home, and the ray and inactive-exit layout differ.
+// distance array staging 661, split raw/clamped distance stores 683.
+// shared selected distance 514, positive range with split distance stores 643.
+// collision result assigned to hit byte 637, distance guarded by hit byte 673.
+// slot minimum before the hit byte 661, reused ray-vector workspace 518.
+// NOT kept: The selected-distance form gains four points and is one byte shorter. The query-result byte changes entry allocation and raises the score. The other forms tie or regress.
+// The success byte remains at ESP+0x13. On the outer-origin positive-range form,
+// fallback cross by product then subtraction, axis/direction first and two row orders:
+// 333 each. Component arrays for axis, direction or both 331 each. Single reads
+// of the three axis components 478. NOT kept: the outer-origin form requires a match,
+// and the fallback cross still folds the wrong input into its multiply.
+// Near-ray turn used to seed the final angle at the opposite ray, first/second/both
+// 633/634/663. Opposite-ray test produces the final angle, first/second/both 664/611/667.
+// Compose the angle after the direction store, first/both 664/673.
+// NOT kept: six forms recover the clearance byte at ESP+0x17, but zero stays in XMM1,
+// the active path shortens and every score rises.
+// The clearance byte still sits four bytes below its retail home, and the ray and inactive-exit layout differ.
+// distance array staging 661, split raw/clamped distance stores 683.
+// shared selected distance 514, positive range with split distance stores 643.
+// collision result assigned to hit byte 637, distance guarded by hit byte 673.
+// slot minimum before the hit byte 661, reused ray-vector workspace 518.
+// NOT kept: The selected-distance form gains four points and is one byte shorter. The query-result byte changes entry allocation and raises the score. The other forms tie or regress.
+// Selected normalized forward/left/up 518/521/516, forward+left/forward+up/left+up
+// 659/520/660, all 652, shared normalization workspace 662.
+// NOT kept: upper-axis selection gains two points. All axes reach 2886 bytes at 652.
+// The entry clearance byte stays at ESP+0x13. The in-place basis producers are restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

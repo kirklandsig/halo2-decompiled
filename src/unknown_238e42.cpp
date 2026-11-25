@@ -1447,6 +1447,30 @@ bool __stdcall function_2399da(long controller_index)
 // permission test as `may_change || own_rank > member_rank && own_rank >= 2` 92, with `may_change` tested last 95,
 // with the `&&` pair in parentheses 90 (same code); the id test `!= 0ULL` 90 (same code); the copy block as an early
 // refusal `if (!have_member && !may_change)` then `if (!have_member)` copy 114 (433 B). Re-measured `NONE == rank` 90.
+// M3 lane 16 r187 (h2m fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e and 0x239a3d, all MATCH each run;
+// control 90, aligned 15; body unchanged). Sequence read from the allocator: may_change takes EBX first and that costs
+// the identity its last whole-range register, but the walk that cuts it reaches the join (the 0x18ffc3 call and the
+// identity test) from the have_member path with ESI and EDI still free, so the only cut is at the end of the copy arm
+// and the identity stays one call-spanning piece. In the second pass the rank (15) is coloured ahead of the zero (14)
+// and the controller index (11) and takes EAX with nothing against it; only when the controller index then takes EDI
+// is the identity cut before its test, and its test-to-removal piece (6) finds EAX gone. Retail needs that piece to
+// exist before the rank is coloured (the rank then avoids EAX because the piece asks for it). Diagnostic (wrong code,
+// removed): the identity copy written in the have_member arm too, so ESI and EDI are taken on every path into the
+// join, gives retail's registers and retail's late member store (rank ECX, `mov [ebp - 0x20], ecx` after the pushes;
+// 119 at 437 B from the extra copy). The rank would also be coloured after the controller index at a priority of 10
+// or less (store 3 x 3 candidates in its block, each test 1 x 2). Forms for the copy block, none of which moves the
+// walk (the join is always reached first over the direct have_member edge) and all of which move the 0x6e dialog
+// out of retail's place at the end: nested with the refusal first 114 (433 B); nested with the copy first, with or
+// without the empty have_member arm, 92 (430 B); an early refusal on `!have_member && !may_change` 114; the rest of
+// the function under `have_member || may_change` with the 0x6e dialog as its else arm 114 (433 B), the test as
+// `!(!have_member && !may_change)` 114; the copy under `!have_member && may_change` with the refusal as the next arm
+// 92 (430 B); the refusal arm ahead of the copy arm in the chain 114 (433 B); may_change tested first 122 (438 B).
+// Identity ECX / rank EAX remain in every one.
+// Guarded 64-bit selected ID 106; selected-record reference with one missing-selection tail 90;
+// removal-target pointer 105; assignable rank with a refusal sentinel 108 or a rank cap 103;
+// request action before validity 121; authorized action before dispatch 92; early confirmation
+// predicate 130. The removal-target and rank-cap forms put rank in ECX and identity in EDX.
+// All eight forms restored; identity ECX/rank EAX and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

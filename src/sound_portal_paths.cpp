@@ -335,6 +335,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // declared ahead of the output loop 382 / 379. Leads: build/r185/held-0x18d730-natural-nearest.patch and
 // build/r185/lead-0x18d730-two-assignment-clear.patch. Still BLOCKED-BY 0x14b240's write summary while 0x18ae80 rises
 // on it (837 on main; its two callees have to be listed for a fast screen and it still builds short there).
+// M3 lane 15 r145 (H2M_FAST with 0x18dc90, 0x14b240, 0x249d60 and 0x18ae50; control 287, twin 295 unchanged): the other
+// cluster's index as `short` 287; the side as `portal->clusters[encoded < 0]` 359 (1368 B); the portal index as
+// `(short)encoded & 0x7fff` 287; the seed distance stored as integer zero 287; the seed bit through the existing
+// bit_vector_set 287 (the same code each but the side form). Still BLOCKED-BY 0x14b240's write summary.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

@@ -991,6 +991,18 @@ extern point2f *g_468778;
 // Native prop datum/node lookup 389/389, one prop-index read 395/395, null in the absent arm 370/370,
 // conditional distance limit 395/395. NOT kept: retail zeros EBX before the presence test. The absent-arm
 // forms move the zero and leave the spill. The typed receivers alone tie.
+// M3 lane 13 r156 (H2M_FAST with 0x265d30, MATCH each run; control 280, aligned 101 / register-masked 44). Allocator
+// reading: the prop pointer is split into pieces and never coloured as a whole (live through the field_12 logic with
+// few referencing blocks), so it spills to arg_1's home where retail holds it in EBX from the NULL to the 0.8 test; the
+// facing pointer (priority 152) takes EDI over the dot and arms, so the view falls to EBX with a separate `lea` where
+// retail forms the facing pointer in place (`add edi, 0x2c` between the dot's j and i reads). Forms: the unit index
+// as a local inside the field_12 arm only, the facing arm reading the field at its call 394 (1567 B, but aligned 61 /
+// masked 29: both 0x110ab0 calls then retail's, EBP for the field_12 one; the 18 extra bytes are the prop's spill
+// stores and reloads); on that, the -0.4 dot through the facing pointer 403 (frame 0x44), its i term alone through the
+// pointer 401 (1572 B, masked 24; on main 385); the prop's NULL assigned in the absent arm 375 (1567 B, aligned 61; on
+// main 266 at 1561 B, aligned 101 / masked 44 as main: positional only, and an initialiser moved into a branch, so
+// match-only); the facing pointer formed right after the view with the dot through it 407 (frame 0x44; on main 406).
+// Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1615,6 +1627,13 @@ static __forceinline long real_to_long(real value);
 // branch or handle no metadata first 415/415; checked index with read-only metadata
 // 382. Usable prop index selected first, missing index arm first, or exhaustive pointer
 // assignment from the selected index 382/496/473. NOT kept: the tying forms still send rejection to the late exit.
+// M3 lane 3 r307 (H2M_FAST with 0x25d740, MATCH each run; control 382 at 1904 B, aligned 155 by a sequence diff): the
+// facing read off the view at every use with no pointer 517 (1945 B, aligned 218); the velocity through an AI object
+// pointer at each use 486 (1924 B, aligned 223); both 531 (1960 B, aligned 219), all re-measures of listed forms on
+// this base with the aligned count added: none is closer structurally either. The exits respelled on the nested body:
+// the rejection as `return false;` with the result returned after the body 508; `return true;` at the end of the body
+// and `return false;` after it 508; `return local_2;` at the end of the body and `return false;` after it 508 (each
+// 1904 B with 0x25d740 expanded, the listed 508 code). Still BLOCKED-BY 0x25d740's expansion at this site.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

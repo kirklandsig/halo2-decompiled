@@ -835,6 +835,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 }
 
 // score 418 (was 418; 439 earlier): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
+// M3 lane GB r3 (fast with 0x22750, 0x22c30, 0x24550, all MATCH unless noted; control 418, 2094/2122 B, +0x2, frame 0x1c; 18 compiled trials, body unchanged): real_point3d_set for delta/offset on 418 base 418/418 (same code), for delta on source->entries + first ahead 554 (2112 B, frame 0x20); union .n[0..2] for delta on entries 554, for offset on 418 base 433 (2122 B, frame 0x28); direct delta members on entries + first ahead 554; entries + first ahead + second=NULL then if 554; shared 2-caller forwarding helper point3f_difference with 0x22c30 (breaks 0x22c30 at 36, diagnostic only) on entries + first ahead 401 (2124 B, +0x9, frame 0x2c, al 119), with samples for delta/first/second and entries in scan 2 401 (same code), with late first 564 (2130 B, +0x9, frame 0x2c, al 117), on 418 base 417 (2112 B, frame 0x28), with length_sq3f of second diff 550 (frame 0x20: loses offset home when distance_sq3f is replaced by local length_sq3f); nested count==1 else + vector3f_assign fallback 419; typed s_light_sample_source count read 418; first from entries before samples 439; opposite before scan 1 on 418 572; consistent samples before count==1 625; entries + distance_sq3f(position, sample) 561.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
 // Earlier header (merged r240): 418 (was 418, 439 earlier):
 // Earlier header (418, was 418, 439 earlier):
@@ -1497,10 +1498,31 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // The 0x2c frame, second induction address and first-component spill are still missing. Reusing the candidate
 // with the ordered dot product, nested/skip: shared difference 646/646, live entries 623/623,
 // scan-scope offset 646/646, aggregate difference 649/649. The original second scan is restored.
+// M3 lane GB r1 (fast with 0x22750, 0x22c30 and 0x24550, all MATCH each run; control 418, 2094/2122 B, frame 0x1c).
+// Tried 15 forms: 3-pass component loops for delta on samples 766 (2286 B, 0x24), on source->entries with first ahead
+// 807 (2317 B, 0x2c), with threaded second tail 807, with samples kept 789 (0x28), with reversed distance_sq3f 879;
+// 3-pass component loop for offset on samples 1184 (1467 B, suppresses 4x unroll), on entries 1239, both 1126, delta
+// loop + dvec loop on entries/samples 1148/1112; delta via existing vector3f_assign on samples 418 (2094 B, al 266/255),
+// on entries with first ahead 554 (2112 B, 0x20, al 162/115), aggregate init on entries 554 (same code), assign + second
+// vector3d_from_points3d + length_sq3f on entries 558 (al 196/116) and on samples 416 (2094 B, al 249/247; 2 pts, NOT
+// kept). Body unchanged.
 // The second scan still lacks its separate candidate-X store and alternating induction addresses.
 // Shared offset with the two squared-length helpers 646/646; separate offset in opening sum order 418/418
 // with either dot operand order; separate offset in k/j/i sum order 416/416, NOT kept: changed grouping and
 // two-point gain. Squared-length helper for nearest alone or both scans 418/418.
+// The 0x1c frame still lacks the candidate-X home and second induction address. Exact-count bounds
+// suppress the unrolling of the affected scans. Branch and candidate-position forms shorten the body and
+// raise the score. first exact count 924; second exact count 1236; both exact counts 1609; three-way
+// sample branch 606; four-way sample branch 606; shared initial distance limit 418; winner-first
+// comparisons 418; shared candidate position 593.
+// M3 lane 2 r149 (h2m fast with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, aligned 197, registers and frame
+// masked 134). Retail reads: the source parameter's stack cell is reused for the opposite distance after the samples
+// pointer is loaded, `first` (the nearest sample's address) is formed ahead of scan 2 and held in EBP for the fraction
+// call, the count has a home re-read at each unrolled step, and offset.i is stored to its home each pass and never read.
+// Forms: the opposite distance declared ahead of the samples local and the delta 419 (masked 133); the delta declared at
+// the top of the sample branch 418 (same code); the samples local declared ahead of scan 1 and used there too 623 (2071 B);
+// scan 2's offset built through the existing vector3f_assign 418, the delta through it 418 (same code each). A forced-
+// decision search (14 links) gives at best 409 (one pick), the frame staying 16 bytes short.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

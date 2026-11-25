@@ -1985,6 +1985,12 @@ static inline dword voice_get_player_mask_inlined(void);
 // tests in the two orders not yet listed, second flag, muted, first flag 65 and muted, second flag, first flag 85 (427 B);
 // the active word as a select 127; the muted word as a select 105; `~muted & remote` 64 (same code). The second port
 // query stays out of line in every form. Body unchanged.
+// M3 lane 15 r145 (H2M_FAST with 0x53bb0, 0x53b90, 0x54890, 0x53a20 and 0x53be0, all MATCH; control 64): the inner
+// player's bit named once for the test and the clear 64 (same code); that with retail's test order (muted bit, first
+// flag, second flag) 85 at 427 B (aligned 40: the second flag is still a call and the first flag's availability bytes
+// are read again where retail reuses CL); the mask test and the three queries as nested ifs 64 (same code); the outer
+// test as `local & active & bit` 122 (405 B); the outer bit written out at both tests 64 (same code). Still BLOCKED-BY
+// 0x53bb0. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -4051,6 +4057,16 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 139/139, separate forwarding header from fields or whole copy 159/146. Header declared before the loop
 // with the same four producers 139/154/159/146. NOT kept: separate headers add stores and enlarge the frame
 // or body, and outer value initialization shortens the body without restoring EBP.
+// Channel index field reference or pointer, bound per iteration or per delivery arm: 139 each indexed,
+// 164 each walking. The indexed forms keep data in EBP. The walking forms give EBP to the member and shorten
+// the body to 478 bytes. Original 488-byte body restored.
+// The channel still lacks EBP at entry and the member/cursor homes differ. NOT kept: moving both checks
+// before dispatch retains the 0x10 frame but shortens the body, and early cursor advancement increases
+// the frame. member gate then shared kind test 172; member gate then shared kind test with walking
+// packet 164; member selection then shared kind test 187; member selection then shared kind test with
+// walking packet 181; combined member and kind validation 172; combined member and kind validation with
+// walking packet 164; separate relay and direct validation phase 153; separate relay and direct
+// validation phase with walking packet 170.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -976,6 +976,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // result 865/875. Positive entry default with direct or separate team case 843/925. Complete byte
 // skip/positive results 931/865. NOT kept: the positive default grows to 3744 bytes. The 3728-byte
 // positive per-type form changes the retail skip stores. The frame remains 0x2cb0.
+// The actor and optional unit still compete with the classification byte in the 0x2cb0 frame.
+// Read-only physics pointer/reference, positive count guard and that guard on the reference
+// 925/925/925/925. Existing tag block as members/reference/positive members/positive reference
+// 925/919/925/919. NOT kept: both block references move the actor to EBX but grow to 3762 bytes
+// and retain the extra frame word.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1510,7 +1515,7 @@ PRIVATE __forceinline real normalize_offset_direction_2c(point2f *v)
 }
 
 // @retail 0x2c2910
-void function_2c2910(point2f const *center, point2f const *points, point2f const *previous, real radius, point2f *result)
+void function_2c2910(point2f const *points, point2f const *center, point2f const *previous, real radius, point2f *result)
 {
     struct s_candidate_x
     {
@@ -1607,8 +1612,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
     s_pathfinding_node const *node = &data->nodes[index];
     return (node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(data, node));
 }
+/* the second parameter is never read: retail drops it from the call (six stack arguments), and its one
+   caller still forms the argument (0x2c22ed) */
 // @retail 0x2c3030
-bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
+bool function_2c3030(s_pathfinding_data const *data, byte const *unread_source_field, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
 {
     long first_vertex = NONE;
@@ -1832,787 +1839,45 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
-// MiniMax B (11-20): no new form, no lower score (400): the body's arithmetic already agrees with retail block by
-// block, so the whole gap is MSVC's own allocation of the loop's locals. Tried and reverted: the conversion fallback
-// respelled as an if/else-if pair, so that the source-point copy appears twice as in retail (468); the same pair with
-// the failed-call copy written component by component, which is the other shape retail uses (483); the found flag hoisted
-// out of the traversal loop (400, the same 1752 bytes); the direction and distance locals hoisted out of the candidate
-// loop (400, the same 1752 bytes: MSVC gives them the same homes either way). The permuter's two runs over this body
-// (300 s, then 600 s with seed 77, one job each, annealed) reached nothing below the baseline of 395 differing
-// instructions on the reduced image. What still differs is the frame and the homes in it: ours reserves 0x114 against
-// retail's 0x10c, so the two byte flags sit at +0x6 and +0x7 against retail's +0x2 and +0x3, the origin at +0x8 against
-// +0x4 and the next at +0x10 against +0xc, and retail's order (distance, sector, index, direction) is ours' (sector,
-// edge, distance, index, direction) with the edge in a stack slot where retail holds it in EBX; retail keeps the count
-// in SI and re-reads it from its parameter home in the scan loops, while ours keeps it in BX for the whole function.
-// MiniMax E (11-20): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so every home
-// sits low, and retail still keeps the zero in EBX at the head and the count in SI while this build keeps the zero in
-// EDX and the count in BX; the difference follows from the loop's own locals, whose slots MSVC lays out by liveness and
-// not by declaration order (the step pointer last, the edge after the link and the edge first all compile to the same
-// code), and from retail's inlined 0x210a30 in src/path.cpp, which has to stay inline or 0x1f45c0 loses its match:
-// BLOCKED-BY that file. The body stands.
-// MiniMax D (11-19): no new form, no lower score (400): every block's own arithmetic agrees with retail (the x87 chain of
-// the candidate loop, the corner calls, the attempt loop and the emit block are the same code, only their stack homes
-// differ), and what is left is MSVC's own allocation of the loop's locals: retail keeps the zero in EBX at the head, puts
-// the count in SI and reads it back from its parameter home in the scan loops and holds the edge in EBX, while this build
-// keeps the zero in EDX, the count in BX and the edge, the next and the step in stack homes, with the frame at 0x114
-// against retail's 0x10c; the declaration orders of the loop's locals (the step pointer last, the edge after the link and
-// the edge first) all compile to the same code.
-// score 368 (was 400): m3 lane 15 r144 (kept forms and readings at the end of this note): the side is flipped in place between the two tangent calls and the output element's point has a named pointer; the frame is retail's 0x10c, the body 1740 bytes against 1746. Left: the step pointer's and the edge's registers, NONE's register, the entry zero, the flipped side's push and the distance tail.
-// Earlier first line at 400: r141 unchanged. Frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
-// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
-// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
-// M3 lane 3 r272 (fast with 0x270930/0x2c3030/0x26ccb0/0x2c2a70, matched throughout; control 400, aligned 350, masked
-// 94): the count bound by `short const &` and read through it at its four loop uses 400 (same code); `edge = 0xffff` at
-// the scan hit 433 (retail's second store appears, the edge stays in a slot, as r169 found); the candidate search
-// under a guard on its own range 500 (1783 B); the corner results tested through `bool const &` references 400 (same
-// code); the trace's edge read through a `long const &` 400 (same code). Retail's distance block is 0x210a30's inlined
-// body (already listed: calls to it stay out of line here).
-// MiniMax E (11-17): no new form, no lower score (400): the permutation search over the body (38 tries, 300 s, annealed,
-// one job) reached nothing below the baseline of 395 differing instructions on both the full and the reduced image, so the
-// body is unchanged. What still differs is the frame and its slots: ours reserves 0x114 against retail's 0x10c, so every
-// home sits eight bytes off, the three homes the body uses are at +0x54/+0x58/+0x5c against retail's +0x64/+0x68/+0x6c and
-// the two byte homes are at +0x12/+0x13 against retail's +0xe/+0xf, and the first difference is the frame size itself.
-// MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
-// MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
-// and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
-// Earlier at 400 (r123, r125 unchanged; second score line merged into the note's first, r272): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
-// Earlier (400, was 400): r123, r125 unchanged. frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
-// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
-// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
-// M3 lane 11 r123 (fast with 0x2c3030/0x26ccb0, both MATCH): retail never holds the count parameter in a register (every
-// use reads [ebp+0xc]); a no-code address-take of it, diagnostic, 400 (same code). The emitted type from the `type`
-// local instead of the step 403 (1755 B; retail re-reads the step); `found` declared ahead of the edge 400 and the edge
-// as a dword 400 (same code each); the step pointer declared after the loop's NONE defaults 400 (same code).
-// m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
-// step pointer 473 (1758 B); `bool other_side = !side;` at the top of the attempt loop 435 (retail's 1746 B,
-// register-masked aligned 79 against 80); the center as `side ? corners[0] : corners[1]` 473 (1710 B); index, used
-// and copied_last declared ahead of the source pointer 399 (only the sector store moves after the zero stores: not
-// kept); the origin copied field by field 442 (1768 B). Diagnostic, reverted: the count read through a volatile
-// cast at its four loop uses 474 (the edge stays in a stack slot, so the count register is not the only cause).
-// MiniMax R (11-15): no new form, no lower score (400). The frame is 0x114 against retail's 0x10c, and the homes are
-// measured from ebp: the source radius sits at -0xe4 against retail's -0xe0, the expanded radius at -0xd8 against
-// -0xdc, the source pointer at -0xdc against -0xe4, the node table pointer at -0xe8 against -0xe0, the origin at
-// -0x10c and -0x108 against retail's -0x108 and -0x104, the sector at -0x100 against -0xf8, the next index at -0x104
-// against -0x100, the found byte at -0x10e against -0x10a, the copied-last byte at -0x10d against -0x109, the two
-// selection indexes at -0xcc and -0xc4 against -0xa4 and -0xac and the step pointer at -0xc8 against -0x94; only
-// the count argument agrees, at -0xf4. Retail holds the global's count in edx, the zero in ebx, the count argument in
-// si, the step pointer in ecx and the node table pointer in edi, and it keeps the edge in ebx; ours holds the zero in
-// edx, the global's count in esi, the count argument in bx, the step pointer in edi and the node table pointer in ebx,
-// and keeps the edge in a stack slot. Dropped forms: writing the second side flag as !side at both use points, which
-// makes the frame 0x10c like retail's and puts the complement in bl with sete bl as in retail but frees a slot that
-// moves the other homes and raises the score to 434 (403 differing instructions and 31 bytes short); the edge value
-// declared outside the loop (400, unchanged); the previous-point pointer written into the corner call (459). A
-// permuter run over this body (48 tries in 302 s) found nothing better.
-// Earlier at 400 (was 400): the frame is 0x114 against retail's 0x10c, the registers holding the count, the zero and the
-// step pointer are swapped with retail's, and the frame homes of the radius pair, the origin, the flags and the edge
-// differ.
-// MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
-// source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
-// +0x34, and retail keeps the count in ebx where this build holds it in esi.
-// Earlier at 400 (was 400): earlier 400, 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
-// the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
-// MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
-// MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
-// scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
-// lowered the 444.
-// Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
-// (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
-// retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
-// loop indexes against the count on the stack (ours holds it in bx) and forms the output element at
-// the emit point. The distance test is retail's inlined expansion (one shared (z*z + y*y) + x*x sum),
-// not 0x210a30, whose two branches sum differently.
-// Frame 0x11c versus 0x10c; radius, zero and metadata/endpoint homes still differ.
-// Earlier at 453: Frame 0x10c and exact extent agree; radius, persistent zero and metadata/endpoint homes remain.
-// Earlier: Frame 0x10c and 1746-byte extent agree; source-radius, metadata/index and endpoint homes remain.
-// Earlier unsigned outer word 493; default data result 478; expanded-radius name 478; native origin fields 493; early
-// Earlier 469 (was 469): Frame 0x104 versus 0x10c, radius/metadata/index homes still differ.
-// Earlier at 469: Frame 0x104 versus 0x10c, radius/metadata/index homes still differ.
-// Earlier: Frame 0x104 versus 0x10c and radius/metadata homes remain. Unsigned outer
-// Frame 0x104 versus 0x10c and radius/metadata homes remain. Unsigned outer
-// word 493; default data result 478; expanded-radius name 478; native origin fields 493; early
-// output slot 469; with unsigned outer 470 (frame 0x10c); unsigned next 493.
-// frame 0x104 versus 0x10c; radius/index and metadata homes remain.
-// frame 0x104 versus 0x10c; metadata result homes recover 0x10c at 482 but radius, index and branch allocation still differ.
-// metadata common emission 482; metadata long type 482; metadata long link 483; metadata both long 482;
-// metadata outer index 482; metadata radius home 482; metadata ordinary output 513; metadata index register
-// 522
-// frame 0x104 versus 0x10c; radius and emitted-index homes differ.
-// Short outer index with original qualifiers 513; broader trace outputs 478; native copied-last 504;
-// native found-step 494; current-step fallback first 478.
-// Round 310: terminal fallback return 526; double rounded radius 489; long next 519;
-// unsigned edge 478; shared point setters 478. Double radius recovers 0x10c but worsens scalar homes.
-// frame 0x104 versus 0x10c and radius/index homes differ; trace continues 478;
-// unsigned output word 478; byte attempt 495; distinct trace-origin name 478; outer world endpoints
-// 478.
-// Trace endpoint names 478; first trace at entry 478; target at entry 478;
-// outer candidate point 478; complete path-record memcpy 478.
-// direct entry 489; direct output 471.
-// native source 470; entry/output 483.
-// entry/source 485; output/source 477.
-// all three accesses 475; direct endpoints 469.
-// Target Z once/shared endpoint zero initialization 470/470; one sector-trace output 466; avoidance at entry/iteration 469/469; sector pair before attempts 469; outer direction 469; outer tangents 469.
-// Round 318, early-output-pointer body: signed-word outer 485; unsigned/native output count
-// 469/522; native attempt 470; native end/candidate/both 500/472/516;
-// word outer with native attempt 486. All bounded domains and trace inputs retained; all restored.
-// Round 129: common corner phase 469; with corner-data/location/both receivers 476/460/464;
-// with next-entry receiver 453 kept plain, plus corner-data/location/both 452/470/468
-// (one-point extra rejected). Nested next receiver 460; role-based radius names 453; earlier
-// source address 456; plus names 456; consistent source receiver with/without names 456/456.
-// Round 132 on the shared next-entry graph: entry fallback/used/both zero lifetimes 453/453/453;
-// native word outer 490, with entry fallback/used/both 485/491/491; dword fallback state 448;
-// with entry fallback/used/both 451/453/451. Five-point reduction rejected above 30.
-// Round 187 selected/emitted point receivers and both 469/472/530; existing world-point
-// conversion helper alone/selected/emitted/both 515/526/492/505; full form with
-// actual selected-element reference 505. All original receivers and conversions restored.
-// Existing tangent/candidate/corner inline declarations, their pairs/all, and all
-// three noinline declarations 453 each. Original declarations and body restored.
-// Current/selected/both native record values 461/464/469; with word outer index
-// 444/461/454; ordinary output index with current/selected value 462/461. Current
-// record value and word outer index 444 plain kept, 1740/1746 bytes; other forms restored.
-// frame 0x10c and exact extent agree; radius, persistent zero and
-// metadata/endpoint homes remain. Retail places the count <= 1 arm at the end, keeps 0 in EBX for
-// the whole function, compares a 16-bit loop index and forms the output element at the emit point.
-// Earlier (frame 0x104 era): unsigned outer word 493; default data result 478; expanded-radius name
-// 478; native origin fields 493; early output slot 469; with unsigned outer 470 (frame 0x10c);
-// unsigned next 493; metadata common emission/long type/long link/both long/outer index/radius home
-// 482 each; metadata ordinary output 513; metadata index register 522; short outer index with
-// original qualifiers 513; broader trace outputs 478; native copied-last 504; native found-step 494;
-// current-step fallback first 478. Round 310: terminal fallback return 526; double rounded radius
-// 489; long next 519; unsigned edge 478; shared point setters 478 (double radius recovers 0x10c but
-// worsens scalar homes); trace continues 478; unsigned output word 478; byte attempt 495; distinct
-// trace-origin name 478; outer world endpoints 478; trace endpoint names 478; first trace at entry
-// 478; target at entry 478; outer candidate point 478; complete path-record memcpy 478; direct
-// entry 489; direct output 471; native source 470; entry/output 483; entry/source 485; output/source
-// 477; all three accesses 475; direct endpoints 469; target Z once/shared endpoint zero
-// initialization 470/470; one sector-trace output 466; avoidance at entry/iteration 469/469; sector
-// pair before attempts 469; outer direction 469; outer tangents 469. Round 318 (early-output-pointer
-// body): signed-word outer 485; unsigned/native output count 469/522; native attempt 470; native
-// end/candidate/both 500/472/516; word outer with native attempt 486. Round 129: common corner phase
-// 469; with corner-data/location/both receivers 476/460/464; with next-entry receiver 453 kept plain,
-// plus corner-data/location/both 452/470/468; nested next receiver 460; role-based radius names 453;
-// earlier source address 456; plus names 456; consistent source receiver with/without names
-// 456/456. Round 132 on the shared next-entry graph: entry fallback/used/both zero lifetimes
-// 453/453/453; native word outer 490, with entry fallback/used/both 485/491/491; dword fallback state
-// 448; with entry fallback/used/both 451/453/451.
-// Round 93 (fast base 453): `count > 1` arm first 466 (retail's branch placement); with a short loop
-// index 475; with the source pointer formed before the loop 466; all three 475; output element
-// formed at the emit point 518 (1692 bytes; aligned differences 604 -> 532).
-// Round 62: the distance test through 0x210a30 730 (called, not inlined: 1478 bytes); with a
-// forceinline declaration here 730; with `inline` on its definition 541 (inlined, but 0x1f45c0 then
-// inlines it too and stops matching; 0x210850 stays called); data as default plus if 444; the step
-// as a const reference 490 (aligned 443 -> 342, query in ecx and frame 0x104 as retail's entry); plus
-// the count > 1 arm first 475 (aligned 339); plus the output element at the emit point 506 (aligned
-// 318); plus a plain output index 551 (aligned 316). The reference form is the lead: it needs retail's
-// saved type/link slots and the stack-compared count to recover the length.
-// Round 227: Mutable current record, iteration assignment/CRT, traversal assignment/CRT,
-// immutable current-step home and traversal current-step assignment/CRT 444/444/444/444/444/444/444/444. All restored.
-// Final source/emitted/both native coordinate values 476/484/557;
-// with existing point difference 492/484/557; both values emitted first
-// without/with point difference 557/557. All restored; original current record retained.
-// Round 194: native output-count/copied-result/found-result widths 505/468/476;
-// both result words 479; wide count with copied/found/both 492/478/473;
-// all native words with found from its bound test 500. Original carriers restored.
-// Lane 9 r25: retail keeps two NONE-initialised shorts at +0x6c/+0x74 (set to the step's type and link
-// when its type is not NONE, tested at the emit, which reads the type itself through the step pointer).
-// Step pointer plus those two locals 461 (frame 0x10c as retail's); plus the count > 1 arm first 483;
-// plus the output element at the emit point 505; used/copied-last at function scope 476; the two
-// locals on the copied step 493. Retail's zero in EBX from the data test is still missing.
-// Round 10 (lane 10): retail reads the step through a pointer (it loads the step's unknown02 after
-// storing the output element) and keeps type/link values, NONE unless the step has a type, in two
-// stack slots for the emit test. Step pointer with type/link locals set in the typed-step branch 463
-// (frame 0x10c as retail, 1752 bytes); with the emit copying the type through the pointer 461 (1749
-// bytes); plus the output count declared at the top 473; plus the count > 1 arm first 478; count at
-// the top alone 444 (same code); plus the output element formed at the emit point 509/505 (with arm).
-// Retail's EBX is a zero register from entry to the loop (data tests, index/count/flag stores).
-// Round 234: entry-snapshot/displacement/conversion scope endings and combinations
-// 442/444/442/444/442/444/442; tangent consumption scope 444. Two-point gains rejected; original body restored.
-// Round 255: entry ordinal/count/fallback zero lifetimes 444, 444, 444;
-// ordinal-count/ordinal-fallback/count-fallback/all 444, 471, 471, 472;
-// all with byte fallback 472. Original lifetimes restored; frame remains 0x11c.
-// Round 379: Data/single-step/both terminal exits 484/444/484; data-first acquisition alone/with data/single/both exits 470/478/470/478; traversal-only radius with both exits 485. Original body restored.
-// Round 165: Early actual data-result NULL lifetime coupled with source-radius/output-
-// index/traversal store subsets 469/486/491/466/471/487/496; combined existing endpoint setters
-// 496. Original data producer, both inherited local qualifiers, arm order and endpoint
-// construction restored. Frame 0x11c versus 0x10c, persistent zero and metadata/radius homes
-// remain.
-// Round 385: Natural tangent-search attempt result, short/word/long/dword
-// at search eligibility 445/445/447/447, at iteration entry 445/445/447/447. Original jump restored.
-// Round 388: Both corner-success carriers byte/short/word/long 444/440/440/450,
-// with the same domains declared at selection 444/440/440/450. Four-point gains
-// above 30 rejected; original Boolean carriers and declarations restored.
-// Round 172 DL: Selected successor in the ordinary for increment 444; its
-// entry declaration 444; ordinary output-index/radius/both storage 486/469/491;
-// paired word corner results 440; current-record lifetime ending at metadata
-// publication 494, with paired word results 485. The four-count gain fails
-// the eight-count gate. Original successor lifetime, both qualifiers,
-// Boolean corner results, snapshot and full body restored.
-// Round 175: Existing selector inline/noinline declarations 444/444; output receiver formed
-// after successful selection alone/inline/noinline 502/502/502; the same three with the immutable
-// current type retained across all uses 502/502/502. All original declarations, address and
-// metadata lifetimes, native record snapshot, qualifiers and complete body restored.
-// Round 37: native member-produced record, const/mutable and before/after the pure output address,
-// 494/493/494/493; complete coordinate member producers 469/464/469/464. Query/radius homes recover,
-// but the 0x11c frame remains; original complete record copy and body restored.
-// Round 79: candidate direction by direct initialiser (retail forwards y, `fst`) 458; step through a
-// pointer with type/link in two short locals and the output element at the emit 509 (1686 bytes,
-// frame 0x104, aligned unmatched 442 -> 317); both 517; no output_index volatile (retail: di) 486,
-// with the step pointer 541 (aligned 308); no source-radius volatile 469/498; source pointer before
-// the loop identical code.
-// Round 301: Full count / named terminal ordinal / both 496/474/500;
-// with paired word corner results 490/472/491; complete bound graph
-// with ordinary radius, without/with word corners 500/491. Original count,
-// ordinal expressions, Boolean corner carriers, radius qualification and body restored.
-// Round 229: attempt-owned tangent orientation with complement passed to the second call and
-// advance after unsuccessful attempts; bool/byte/word/long with indexed centers 446/459/444/448;
-// branch-selected centers 446/451/442/439. Original orientation phases and full body restored.
-// Coupled paired word/short corner results on long orientation 444/444; word orientation
-// 439/439. Best 439 is a five-point gain above 30, rejected; complete original body restored.
-// Round 45: complete four-field scalar input snapshots, short/long metadata
-// subsets 0/1/2/4/3/5/6/7, 459/461/470/470/461/461/470/461. Frame 0x10c
-// recovered, radius/zero homes still differ; match-only forms and full body restored.
-// Round 35 (lane 11): the file's direction normalizer now passes `1.0f / magnitude` straight to the
-// scale helper as 0x2c2910/0x2c2740 do (that matched 0x2c2a70); here it gives an in-place y product
-// (444 -> 458), so this body calls the file's other normalizer, normalize_local2d_2c (444, identical code).
-// Also (fast): normalize2d_fast 444 (same code); out-of-line normalize2d 562; step through a pointer with
-// short type/link locals set for a typed step, type re-read through it at the emit, output element at
-// the emit 509 (frame 0x104, 1686 bytes); that with a long type local 515.
-// Round 27 (m3 lane 15, plain): both point differences through vector3d_from_points3d with length_sq3f
-// 501 (1707 bytes), the differences alone 501; delta as a vector3f with length_sq3f 444 (same code); no
-// output_index volatile 486, no source_radius volatile 469 (round 79's numbers after this round's
-// 0x2c3030/0x2c0d60 changes).
-// Round 121 (m3 lane 5, fast = full here): retail sets next/edge/found together at the loop top, at
-// the scan's typed step (a second `mov ebx, 0xffff`) and at a candidate's success. `edge = 0xffff`
-// also in the scan's `end < count` block 471 (gives that second store); edge assigned only where next
-// is chosen, no initialiser 469 (1757 bytes); the one-step arm with its own `return` 444 (same code);
-// the copy-last block after the loop through two gotos 444 (same code: its placement is not source
-// order); the next-step pointer only inside the corner branch, the fallback indexing points[next] 478.
-// Round 443: zero-extended word type with short/word/long/dword link results,
-// at typed selection 493/493/492/492; at native emission with common stores
-// 517/520/517/517. Complete record, signed domains and body restored.
-// Round 479: native positioned-point subobject with short/long type-link
-// combinations 477/488/477/476; native position subobject 474/471/473/471
-// (fast control 444). Original complete record snapshot and body restored.
-// Round 27 (lane 17, fast; aligned = difflib over the listing): body rewritten to retail's map, 444 -> 420 (aligned 442 ->
-// 238, 1737 bytes, frame 0x10c; both volatiles gone: the source radius's alone cost 9, 411 with it, its `mov; mov; fld` needs
-// another form): count > 1 arm first, a step pointer in place of the record copy, type/link locals set in the
-// typed branch, the corner logic inside the untyped branch, a plain output index (its volatile removed), the corner chosen by
-// if/else, target.z set once outside the attempts, a named location, the next side in its own bool assigned at the loop end,
-// sector read before the output index. On the way: the rewrite alone 453 (1696, aligned 289), plus corner/z/location 429 (1727),
-// no second `edge = 0xffff` in the scan 429 (aligned 268; retail has that store), plus next side 412, plus sector order 411. The
-// first conversion nested as 0x210850's body 408 (1747, aligned 244; retail's two copies merge in the second, not kept: that
-// helper's shape written out); without the type/link locals 482-492, without one of them 480/482 (with nesting 433/470); the
-// scan as the compound `while (end < count && type == NONE)` with a test after it 456 (hence the break form). Registers
-// left: retail zero EBX (ours EDX, 0xc4 count in ESI where retail EDX), y read first through the query (`mov edx,[ecx+0x18]`),
-// points EDX, index EDI, step ECX then +0x84, NONE ESI, edge EBX, count never enregistered in the loop; ours points ECX, index
-// EDX, step EDI, NONE EBX, edge in memory. Retail also stores query+4 at +0x64 (never read). Retail inlines existing 0x210a30
-// (and 0x210850) here: a call to 0x210a30 stays out of line even with an inline or __forceinline declaration (697, 1495 bytes;
-// its file has /Ob1). Tried on these: the origin as two statements, y first or x first, 491/492; sector read before the origin 443
-// (1746 bytes, aligned 273); origin through the query, source after it, zero-init first 428/429; data as an if or if/else 429;
-// the count/data locals named 451; used shared with the no-data arm 469; scan as a for 548 (1858); type as long 487; out point pointer
-// 450-481 (aligned down to 245, 1757-1770); both conversions nested 410; z in a local +4; second edge store 442-449 (1770-1777).
-// DL237: Complete native query-source mutable/immutable/memcpy/memmove copies 495/495/495/504;
-// with existing origin setter 524/524/524/529. All restored; source-radius staging, persistent
-// zero and metadata homes remain.
-// Round 316: Eager classification short/word/long/dword with short/long links
-// 427/420/415/422/473/420/473/420; eager word with paired corner results
-// short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;
-// original classification, Boolean corners and complete body restored.
-// Round 331: Consumed trace/world start and destination positions shared separately/both 435/438/405;
-// in-place second-tangent output alone/with start/with destination/with both 424/440/445/444; all with
-// paired short corner results 454. Best: both positions shared (start/target hoisted to the step scope,
-// the else arm's start/end reusing them) 405 plain, frame 0xf4 versus 0x10c, 1709 bytes. NOT kept: locals
-// shared across arms to steer the frame are kept only with a match; body restored at 420.
-// Round 529: successive source/expanded-radius assignments crossed with candidate-direction,
-// circle-center and tangent-point workspace identities: 420/420/420/420/420/420/420/420.
-// Frame agrees; radius staging folds and zero/metadata homes remain. Original complete body restored.
-// DH302: Actual typed-step scan cursor with short/short, long/short, short/long, long/long
-// scan/candidate ordinals 477/455/496/434; also walking the reverse candidates from one-past
-// 485/460/488/458. Original indexed traversals restored; radius staging and zero/metadata homes remain.
-// Round 371: Native selected successor/type/link widths, subsets 1/2/4/3/5/6/7,
-// 455/424/463/462/456/424/458; all with full output count 503. Original short
-// carriers and complete pointer body restored; radius/zero/metadata homes remain.
-// Typed-selection, trace-admission and found-result branch orientations and their pairs/all
-// 493/420/420/493/493/420/493; all with metadata-arm orientation 493. Radius staging, persistent zero
-// and metadata homes remain; original body restored.
-// M326: Native data-availability bool/byte/short/long predicates, conditional/default-null
-// pointer production, 420/420/420/420/420/420/420/420. All canonicalize to the original
-// radius stage and zero/metadata homes; complete original body restored.
-// N327: Actual avoidance, tangent and predecessor last-consumer scope subsets on the retained
-// step-pointer graph, then all with trace-result scope: 420/420/420/420/420/420/420/420. Original
-// scopes/body restored; source-radius staging, persistent zero and metadata homes remain.
-// Round 345: existing direction-difference/normalizer/squared-length forceinline declarations, seven
-// subsets; all with dot product: 420/420/420/420/420/420/420/420. Original body and contracts restored.
-// Radius staging, persistent zero and metadata homes remain.
-// Round 380: Complete positive-distance/avoidance admission, bool/byte/short/long
-// acceptance then rejection complement: 420/420/420/420/420/420/420/420. All canonicalize; radius staging,
-// persistent zero and metadata homes remain. Original separate guards/body restored.
-// P288: Whole-function completion publication, preservation/clear-required results in
-// bool/byte/word/long: 420/420/405/429/428/428/458/435. Word preservation 405 at 1755/1746,
-// frame 0x114 versus 0x10c. NOT kept: unsupported flag width/frame growth; no byte match.
-// Original full body restored; radius staging, persistent zero and metadata homes remain.
-// Round 64 (lane 10; aligned = difflib, masked = registers and stack offsets ignored): value fix from retail's two slots: 0x26ccb0 and 0x2c3030 take the unexpanded
-// radius (E+0x2c, through EDI), 0x2c2740 and 0x2c2910 the expanded one (E+0x30, through XMM6/XMM7), which gives retail's `mov; mov; fld`: 420 -> 418 (kept as a value correction).
-// Not kept: the first corner result in the scan's flag (retail's one byte slot) 418; that with a second `edge = 0xffff` at the typed scan hit 380 plain (masked 62, 1752, frame 0x114): retail has
-// that `mov ebx, 0xffff`, but it stores the value edge already holds; on the 380 form z in a local 416 (1751). Further forms on the 380 body, none kept: side flipped
-// in place frame 0x10c, 436 (1715, masked 70); with an out-point pointer 457 (1725, masked 54); with both conversions nested 440 (1752, masked
-// 55, retail's tail copies; a helper's shape written out); z local 442 (masked 53); origin y through the query first 487 (masked 68); used long
-// 482; long candidate 431 (1758, exact aligned 210: entry zero EBX, count SI, y first as retail, but candidate/NONE registers differ); long end 484,
-// both long 476; count through its address, const reference or local copy 440 (same code); edge outside the loop, dword edge, order of the top
-// assignments, candidate while/decl forms, scan compare against type/next/step 440 (same code). Root left: our count CSE holds EBX through the
-// scan where retail's edge lives in EBX and count is read from memory; retail's dead `query+4` store shares the location's slot.
-// Round 125 (m3 lane 7, fast; positional/aligned/masked, base 418/275): `edge = 0xffff` again at the scan hit 380/276/62
-// (dead store, not kept); side flipped in place 419/222/58; both 419/224/58; long candidate 463/240/75; radius read
-// from the query at each use 491/259/72; location at each use 419; edge declared after type 418/224/58; target.z per
-// attempt 412/226/61; out-point pointer 439/226/49; plus named z 435/224/47; plus word NONE test 431/244/55; plus word
-// output index 431; 0x210a30 called 680 (1512 bytes), inline or forceinline declaration 680; with the others 694-699;
-// on the flip: edge first 419, type/link first 419, step last 418/222/57, source first 430, sector/origin last 419,
-// origin per field 418/224/60, both 418, start per field 419; all together 460.
-// Round 143 (m3 lane 5, fast = plain here): avoidance trace declared at the untyped branch scope
-// 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
-// copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
-// (same code); emitted type from the type local instead of the step 421 (1755 bytes).
-// Lane 18 r41 (fast; frame 0x114 against 0x10c: ours keeps edge in a stack slot where retail has it in EBX, and our
-// byte flags sit four bytes higher): loop-top declarations in retail's store order (edge, next, found, link, type,
-// then the step) 418; origin declared at function scope 418; output_index declared before the loop-top locals 418;
-// the outer loop as `for (...; index < count; index = next)` 418; the typed branch storing link before type 418.
-// Corrected two-radius graph: native first/second trace and whole-source
-// receiver subsets 1/2/4/3/5/6/7, 418/418/429/418/429/429/429; native
-// positioned-point receiver 418. All restored; no frame/zero/home recovery.
-// Original radius values, native call roles and complete body retained.
-// B397: Correct original-radius live interval with long type/link/successor subsets,
-// then all with zero-extended selected type 423/418/476/409/475/476/475/475. NOT kept: 409
-// needs both width changes; either alone regresses/ties, and native link stores stay
-// word-sized. Original storage restored; frame 0x114/0x10c and zero homes remain.
-// Round 404: Trace start/target/both shared setters 426/378/370; direct-start stores 418, with target
-// setter 378; const start 418/378; attempt-owned start 412. NOT kept: target setter adds an in-loop z
-// store; retail initializes z before the loop. Existing planar target setter alone/with start setter
-// 427/435. Original endpoints/body restored; frame/zero/count homes remain.
-// P308: On the retained two-radius lifetime, existing final difference/length/start-setter
-// subsets 1/2/3/4/5/6/7 score 437/418/436/426/429/426/428; complete self-dot 428.
-// NOT kept: ties/regressions; original point values, both radii, helpers and full body restored.
-// P310: Joined forward-scan/reverse-candidate cursor, while-for/for-for/while-while/for-while:
-// short 438/621/438/438; long 456/649/456/456. NOT kept: all regress; original separate
-// scan/candidate ordinals, both radius values, geometry and complete body restored.
-// M351: Immutable original/expanded radius and data binding, all seven subsets, then all
-// with fixed source/current/selected/output receiver bindings: 418 each. Original body restored;
-// frame 0x114 versus 0x10c, persistent zero and metadata homes remain.
-// DH330: On the original-radius graph, array center pointer/reference 490/490; separate
-// corners with copy/pointer/reference center 418/490/490; direct trace-target output
-// alone/separate corners/center pointer 439/439/520. Original workspaces and body restored.
-// DH338: Existing normalizer early-zero/positive-first/zero-result/magnitude-result
-// 418/418/441/418; each with the planar setter 434. Setter forms raise the other
-// normalizer user 68 to 98/91; all restored, frame/radius/zero/metadata homes remain.
-// F370: Actual outer input/output/both cursors 448/516/487; input span advance 439;
-// output publication advance without/with input cursor 558/558; input for-latch
-// without/with output cursor 448/487. NOT kept: all regress; output cursors also
-// regress the checked caller. Original ordinal addressing and full body restored.
-// P315: Retained two-radius/pointer graph, existing complete data getter with all entry ordinal/emitted-count/fallback-result zero-lifetime subsets: 418/401/401/401/430/401/401/438.
-// P315: NOT kept: no byte match or supported gain; original full body restored.
-// P315: NOT kept: 401 places loop-zero stores above native availability/count guards; frame 0x114 and count BX remain.
-// P317: Joint unconditional corner success/rejection accumulators bool/byte/short/long
-// 426/426/406/435/473/473/452/452. NOT kept: no match; short success 406 grows to 1754 bytes and
-// uses a wider result than native tests. Original two results and complete body restored.
-// DH345: Native component-array displacement loops in direct/converted/both phases,
-// long then dword, complete short/word: 428/418/429/428/418/429/451/451. No gain;
-// original scalar producers, both radii, signed traversal and complete body restored.
-// F372: Existing two-use location address at entry/data/multi-step/traversal/step/
-// selected-step/corner-pair/pre-endpoint phases: 470/431/463/470/465/416/414/418.
-// NOT kept: two-/four-point leads below gate; original address phase and full body restored.
-// F379: Actual emission/continuation departure-limit outcomes, bool/byte/short/long,
-// positive/complementary 456/456/456/456/456/456/456/456. NOT kept: regressions; original
-// whole body restored, frame 0x114 versus 0x10c and zero/radius/metadata homes remain.
-// P325: Existing normalizer mutable/readonly squared-length results crossed with
-// magnitude/inverse entry declaration lifetimes all tie 418 (eight forms); every user stays calibrated.
-// NOT kept: no byte match for the one-use call-result intermediate. Original complete helper
-// and body restored; frame 0x114/0x10c and zero/count/metadata homes remain.
-// P328: Complete final squared-distance expression/compound/separate/partial reductions,
-// point then vector displacement: 418/418/418/418/418/418/418/418. Original body restored;
-// frame 0x114/0x10c, radius/zero/count and metadata/trace homes remain.
-// Round 586: Two-corner side-table traversal, short/word/long/dword ordinal with
-// indexed/body-advanced corner output: 491/491/484/484/491/491/484/484. NOT kept: nonexact
-// loop/result-array residence; original direct calls, radii and complete body restored.
-// J255: Scan-result scope ending before corner results, second-trace admission scope,
-// and complete Boolean role names, subsets 1/2/4/3/5/6/7 then alternate complete names:
-// 439/418/418/439/439/418/439/439. NOT kept: ties/regressions; scan scope also grows
-// to 1754 bytes. Original full body restored; frame 0x114/0x10c and radius/zero/count homes remain.
-// P335: Actual corner/tangent/trace eight-byte alignment, seven subsets and complete
-// graph with direction alignment: 652/652/655/652/652/652/652/652. NOT kept: prologue/extent
-// diverge and three exact providers regress. Original objects, alignment and complete body restored.
-// P342: Standard record copies at fallback/singleton, forward/backward/lifetime single sites then paired
-// forward/backward: 403/423/429/429/427/425/428/440. NOT kept: fallback forward reaches 403 and native
-// length but outlines its copy, keeps frame 0x114 and loses exact caller; all algorithms lose that
-// caller. Native copy-then-count commit 418. Original full body restored; frame 0x114/0x10c and
-// radius/zero/count/metadata homes remain.
-// P344: Actual current/selected/output array-element lvalues on the corrected two-radius graph, seven
-// subsets then actual source subobject: 418/418/418/418/418/418/418/418. NOT kept: no byte match;
-// original complete body restored. Native frame, radius/zero/count and metadata/trace homes remain.
-// M3 lane 8 r135 (fast; raw/register-masked/stack-masked aligned, base 352/265/105 at 418): tuple phases through a no-op chain 418
-// x3 (no effect here; the difference is integer homes). Diagnostics, removed: count read volatile at the outer test 399
-// (355/267/106), scan 489, both 456; with the second edge store (380, 352/262/103) 453/458; one real extra use, at the loop
-// top, of next/type/link 419, step/points 421, edge 464 (2 and 4 uses 464: edge never leaves its stack slot), found/copied
-// 477, index/result 484, count 483 (336/236/114: the only one that moves roles toward retail), source 436, sector/data 492,
-// query 493, used 519. No form tried recovers the 0x10c frame.
-// Round 74 (m3 lane 11, fast and plain): the emitted point through the existing real_point3d_set 400 (kept: retail
-// stores x, y and z as floats through one point pointer). The 8 extra frame bytes are two homes: ours keeps edge and
-// other_side in stack slots where retail keeps them in EBX and BL (retail shares distance's slot with endpoint). On
-// 400: the distance block reading the output point through a `s_type_c3b527 const *` 478 (1765 bytes, masked 90: gives
-// retail's zero-extended index test, the reads through ESI and the untailmerged link stores, but swaps ESI/EDI
-// throughout); `!side` passed and flipped in place 434 (1715); the second edge store at the scan hit 433 (diagnostic);
-// endpoint declared after next_step 463; the start fallback written in both arms of an if/else (retail has two
-// copies) 452.
-// T63: Sector/avoidance/conversion inline call contracts, seven subsets and all with
-// target inline metadata: eight 400. NOT kept: no equality or gain; every original
-// body, declaration and call restored. Frame 0x114/0x10c and zero/edge/count homes remain.
-// P361: Existing point-setter return retained at all later point reads through mutable/readonly/fixed pointers, references and outer pointer declarations:
-// 400/400/400/400/400/400/400/400. NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
-// Frame 0x114/0x10c, edge/orientation residence, zero/count and metadata homes remain.
-// P374: Inclusive final-ordinal outer/scan/terminal consumers, seven long-bound subsets
-// then complete short bound: 499/516/484/521/485/502/460/467. NOT kept: all regress; original
-// whole body restored; native frame, persistent zero/count and edge/orientation homes remain.
-// P376: Scan-end scope before reverse candidate, short/long for/while, original/ended avoidance-output scope:
-// 400/456/400/456/400/456/400/456. NOT kept: ties/regressions; frame 0x114 versus 0x10c persists.
-// Original signed scans and whole body restored; zero/count/edge/orientation homes remain.
-// P378: Output-capacity ownership of complete conversion/distance continuation, positive/equality/
-// terminal/complementary gates with short/long emitted ordinals: 400/495/400/495/400/495/400/495.
-// NOT kept: ties/regressions; frame 0x114 versus 0x10c and edge/orientation spills remain.
-// T69: Opposite-orientation value before center selection in bool/byte/short/long
-// 435/454/401/402; after center selection before the first tangent 456/455/457/456.
-// NOT kept: all regress; original phases/storage and full body restored. Frame/edge/count homes remain.
-// P380: Actual corner-attempt completion owns shared fallback admission, positive/complementary
-// bool/byte/short/long outcomes with a successful attempt break.
-// Scores 400/400/400/400/400/400/400/400. NOT kept: all tie 400 at 1752/1746; no exact flag-result form
-// or native frame recovery.
-// Original complete body restored.
-// P383: Complete complementary candidate-missing outcomes in bool/char/signed-
-// char/byte/short/word/long/dword: 400/400/400/400/471/471/460/460. NOT kept: no native frame/edge/count-
-// home equality; original forward scan, reverse avoidance scan and whole body restored.
-// T71: Current output-setter graph edge/selection/output lifetime regions, seven subsets and
-// complete role names: 481/481/478/400/481/481/478/478. NOT kept: ties/regressions and no
-// native frame repair; original full body restored.
-// P392: Complete bitwise corner-query admission, both original results retained, success/failure in
-// bool/byte/short/long: 477/477/477/477/488/488/502/499. NOT kept: no native frame/edge/orientation
-// equality; one-use outcomes require a match. Original two-query admission and whole body restored.
-// MiniMax R (11-11): no new form, no lower score (400); a permuter run over this body (556 tries in 1210 s)
-// reached 386 on the reduced image and on the full image, but its best rewrite swaps the order of the sector
-// and node-index arguments of the trace call and of the two point arguments of the tangent call, and it
-// writes the link index through a volatile byte, so it changes what the function computes and is not kept;
-// the part of that rewrite that keeps the behaviour (the declaration order inside the loop, the reversed
-// comparison operands and the inverted type test) compiles to the same bytes as the body below, so the score
-// stays at 400 with the same 1752 bytes.
-// MiniMax R (11-11): no new form, no lower score (400); the prologue differs: retail pushes only esi and edi
-// and keeps the loop's zero in EBX and the count in SI, while ours pushes ebx and esi and keeps the zero in
-// EDX and the count in BX; retail reads the radius from the stack slot [esp+0x2c] and stores the expanded
-// radius at [esp+0x34] where ours reads [esp+0x30] and stores at [esp+0x44]; our locals sit at 0x10-0x58
-// where retail's sit at 0x6c-0x84, so the frame is 0x114 against retail's 0x10c and the two loops still
-// choose different registers; 1752 bytes against retail's 1746.
-// MiniMax S (11-09): no new form, no lower score; the frame is still eight bytes larger than retail's
-// (0x114 against 0x10c) and the first locals sit at higher offsets, so every stack slot and the
-// register choices in the two loops still differ; no form tried recovers retail's frame.
-// M3 lane 8 r144 (fast; control 400, frame 0x114): retail returns with `ret 0x18` as ours, so the six stack arguments
-// agree. The output element taken with a post-increment of the emitted count 400 (same code); the previous point chosen by
-// an if/else in place of the conditional expression 400 (same code); edge declared at the top of the scan arm 481 (1769
-// bytes); the next step's pointer declared inside the type test 400 (same code); the previous point's test as `next != 0`
-// 401; the forward scan as a for with the end declared outside 636 (1911 bytes, frame 0x124); the emitted type from the
-// local 403 (1755); the trace target initialised whole 400 (same code). Body restored.
-// P401: Forward scan ordinal word/dword/unsigned-int64 with short reverse candidate:
-// 488/501/535; with signed-int64 reverse candidate 591/572/664; signed-int64 forward
-// with short/int64 reverse 535/664. NOT kept: wider/unsigned scan interference grows
-// the body and misses native frame/edge homes; original signed scans and full body restored.
-// Round 85 (m3 lane 10, all plain with 0x270930 and 0x2c2a70, which stay matched; positional/register-masked aligned, base 400/58): edge as a `word` 462/63
-// (1759 bytes); `++used` after the type/link stores 400/61; `unknown02` copied before the output index 400/59; `*complete` cleared before the count is
-// stored 464/70 (1753); the typed branch setting type and link before next 400/57. No form moves count out of BX or edge into EBX; frame 0x114 stays.
-// Round 66 (m3 lane 2, fast; 0x270930 and 0x2c2a70 stay matched): retail's EBX is the zero only up to the loop, then edge
-// (`mov ebx, 0xffff`); ours gives EBX to the NONE constant and EDI to the step pointer, retail EDI to index. Named step
-// pointers for the fallback's points[next - 1] and points[next] reads 426 (1761 bytes); the step's fields read through
-// points[index] at each use 473 (1758 bytes); the scan's trace declared before the candidate loop, the two trace results
-// before the attempt loop, the delta block's start/end beside delta: 400 each (same code, frame 0x114 unchanged).
-// Diagnostic, not kept: the distance test as a call to 0x210a30 with src/unknown_20fe20.cpp's /Ob1 dropped 657 (1554 bytes):
-// the call still stays out of line (and 0x270930 moves to 5), so that file's /Ob1 is not what keeps it out.
-// Round 68 (m3 lane 2, fast; 0x270930, 0x2c2a70 matched): retail's EBX holds in turn the entry zero, edge, side/other_side and used,
-// ESI holds NONE as a register constant in the loop and count stays in memory (`cmp di, [ebp+0xc]`); ours reloads count into BX at
-// the loop bottom and keeps it through the scan. The emit's type and link stored unconditionally from the locals 415 (1751 bytes); as
-// two conditional expressions 521 (1795); the else arm as `out->type = out->link_index = NONE;` 400 (same code); the corner block's
-// tests joined (`edge != 0xffff && next_step->type == NONE`) 399; the delta test's operands swapped 400 (same code).
-// M3 lane 9 r109 (fast with 0x270930 and 0x2c2a70, base 400): the data fetched through the existing getter 0x1fa7f0 in place of its
-// body written out 400 (same code, kept). Retail stores a query+4 pointer it never reads (the trace an inlined helper's parameter
-// leaves), so helper boundaries (forceinline, one caller, kept only with a match): the forward scan and reverse candidate search as one helper returning found with next/edge
-// out-parameters 482 (1769 bytes; `static inline` stays a call, 718 at 1492), returning edge with next/found out-parameters 482
-// (edge's 0xffff moves into the scan, index to BX); the corner block (both corner queries, side, both attempts) as a helper with
-// origin/sector in-out pointers 400 (same code); the emit as a helper 400 (same code). Re-measured: `!side` to the second tangent
-// call with `side = !side` in the attempt for's increment 434 (1715 bytes, frame 0x10c: the attempt loop is then retail's, other
-// side in BL and location in EDI); on it the first conversion in 0x210850's nested shape 426 (1725 bytes, masked aligned 108 against
-// 94). The scan is what is left there: retail compares count from memory and keeps edge in EBX, ours keeps count in BX.
-// M3 lane 11 r89 (fast with 0x270930 and 0x2c2a70, same code as the full check; base 400, aligned 350, stack+register masked 97):
-// other_side declared at the top of the attempt body, ahead of the center choice and the first tangent call, 435 (1746 bytes,
-// retail's length, but frame still 0x114 and aligned 388, masked 94). Same code: other_side declared at the corner block and
-// assigned in the attempt body; the trace start through the existing real_point3d_set; end declared, then assigned. Code differs,
-// 400 each: the last-candidate flag as `candidate + 1 == count`; edge stored after next/found in the candidate loop; found set
-// before next at the scan hit; type/link declared ahead of next/edge/found. Retail's second `mov ebx, 0xffff` at
-// the scan hit (0x2c219e) reads as an inlined helper's edge out-parameter; the listed helper forms (482) did not give it.
-// M3 lane 13 r81 (fast with 0x270930 and 0x2c2a70, which stay matched; aligned exact/fully masked, base 335/57): the masked
-// diff is register and slot choice only (retail: edge in EBX and a second `mov ebx, 0xffff` where the scan finds a typed
-// step, count compared from [ebp+0xc], NONE in SI; ours: count in BX, edge at a stack slot). Tried: a named
-// `short last = count - 1` for the last-candidate test and the copy of the last step 469 (1765 bytes); the corner test as
-// `left && right` 401; type and link without initializers, set to NONE in the untyped arm 476 (1762 bytes); the corner as
-// `side ? corners[0] : corners[1]` 473 (1710 bytes); the other side passed as `!side` with `side = !side` at the end of the
-// attempt body 434 (1715 bytes, frame 0x10c; the listed for-increment form's code), plus the named last index 455 (1743 bytes).
-// m3 lane 4 r191 (fast with 0x270930/0x2c2a70; aligned/masked 349/95): if/else arms swapped (match-only forms): the typed
-// and untyped step arms 458 (1746 B), the fallback's `next == 0 || next == index` first 400 (2 lines differ), the emit's
-// `type == NONE` first 400 (aligned 361), the distance block's `!=` arm first 441, the corner choice as
-// `if (!side) corners[1]` 405.
-// P437: Fixed actual reverse distance/location/left/right query results, predecessor/endpoint
-// receivers, opposite orientation and signed count input: 400 each. NOT kept: frame 0x114 versus
-// 0x10c and edge/orientation/count homes unchanged; original complete body and helpers restored.
-// M3 lane 1 r99 (fast with 0x270930 and 0x2c2a70, both MATCH throughout; base 400 at 1752 bytes, frame 0x114). Reading: retail
-// holds no local in a register across the loop; EBX is the entry zero, then edge from the loop top to the corner calls, then the
-// side, then used. Ours caches count in BX from the loop bottom through the scan (retail reads [ebp+0xc] at each compare), so the
-// zero goes to EDX, edge to a stack slot and the step pointer to EDI. Retail's side is one value flipped in place between the two
-// tangent calls (`test bl, bl; sete bl`), with a copy in a stack byte for the first call. The second tangent call taking the side
-// flipped in place (`side = !side;` ahead of it, no other-side local) 440 (1727 bytes, frame 0x10c); that with `edge = 0xffff`
-// again at the scan hit (retail's second `mov ebx, 0xffff`) 369 (1740 bytes, frame 0x10c, first difference +0x14; not kept: the
-// store repeats the value edge holds, and the flip alone raises the score); the second store alone 433; the step, its edge and
-// the found flag set through one inline setter at the scan hit and at a candidate's success 432 (the setter gives that store too),
-// with the in-place flip 410; edge set at each choice with no loop-top initialiser, with the flip, 471; an other-side local kept
-// across the attempts (started as the side, flipped before the second tangent, copied back) 438, with the second edge store 424;
-// the origin read y then x on the 369 form 467. Diagnostics: count declared volatile 474, with the second edge store 420, with
-// that and the side passed as `!side` and flipped at the loop end 433 (frame 0x10c): keeping count out of BX alone does not give
-// EBX to edge. Body unchanged at 400.
-// P466: Next-orientation commit at producer/second tangent/candidate/target X/target Y/
-// first trace: 440/441/441/441/441/441; early producer with first-tangent commit
-// 441/443. NOT kept: frame remains 0x114 and all regress; original side ownership,
-// both radii, calls and full body restored. Edge/count homes remain.
-// T107: First tangent orientation retained while persistent side advances before the
-// first call, bool/byte/short/long before center 452/465/466/469; before first tangent
-// 442/449/446/448. NOT kept: no native frame/extent/home equality; original body restored.
-// M3 lane 14 r94 (fast, file all MATCH but 0x2c0c40/0x2c1d90/0x2c0d60 as before; base 400, aligned 350, fully masked 103): no new
-// form run. Every lead from the listing (edge in EBX with its second 0xffff store at the scan hit, the other-side flag in BL,
-// the count read from [ebp+0xc] with NONE in ESI, the source radius out of EBX) is already listed above with its score.
-// P506: Actual corner-pair swap/iterator/reverse/rotate/range/ordinary/reverse-copy/rotate-copy
-// ordering: 461/461/450/445/481/436/459/458 reduced (control 400). NOT kept: six recover frame
-// 0x10c but miss native conditional-copy shape and score; extra-pair forms grow to 0x11c. Original
-// body restored.
-// M3 lane 15 r86 (fast with the file and 0x270930, all as before): the delta block's three statements in z, y, x order 400
-// (different code: z then takes XMM0 as in retail, but its square is still taken in a copy; register-masked 258 -> 272);
-// the delta as three real locals declared x, y, z or z, y, x 400 (same code). Body unchanged.
-// M3 lane 8 r169 (fast with 0x270930 and 0x2c2a70, matched throughout): retail's distance block has the existing 0x210a30's
-// shape (source fallback copied in two places, the output's NONE/failure copies shared, one z, y, x tail sum). The block as
-// `function_210a30(source, &out->point) > 400.0f` with `inline` on 0x210a30's /Ob1 definition 536 (1668 B: it expands here,
-// EBX becomes the entry zero as in retail, but the 0x210850 calls inside stay out of line, and the matched caller 0x1f45c0
-// expands it too and is lost, 250); both conversions in 0x210850's nested shape 456 (1762 B); origin copied from
-// `query->source.point` 400 (same code); a success flag with `break` in place of the goto 400; the side flipped in place with
-// `edge` declared in the scan arm 457 (1744 B). Body unchanged.
-// M3 lane 1 r107 (fast with 0x270930/0x2c2a70, matched throughout; control 400): the distance test's sum of squares in all six
-// term orders 400 (identical code: VC canonicalises it; retail squares z in place in XMM0 and copies x and y); the delta block
-// through the existing vector3d_from_points3d with the written-out sum 400 (other code), with length_sq3f as well 400 (kept: the
-// two existing helpers replace their written-out bodies, plain-confirmed, the file's other functions unchanged); on it a named
-// squared distance 400, start/end declared with delta 400.
-// b7F (11-17) walk against retail, fast build on r830 (control 400): every block compared statement by statement, no
-// behaviour difference found. Checked: entry (0x2c206c-0x2c20ad: 0x1fa7f0 inlined, radius = float of source + 0.05
-// double), the count <= 1 copy (0x2c26ff), the scan and candidate loop (0x2c217d-0x2c229c: direction, 1e-4 and 0 tests,
-// all 14 arguments of 0x26ccb0 in order, stop_at_goal on the last point), the edge/next tests (0x2c22b4-0x2c22da), the
-// two corner calls (left into corners[0] first, 0x2c2302/0x2c2326; `right && left` order, 0x2c232b-0x2c2339), previous
-// and endpoint (0x2c233f-0x2c2368), the attempt loop (side, other side, expanded radius in both tangent calls, the
-// 0x26c4e0 pair, sector from the first trace, output index from the next step; 0x2c23b8-0x2c24ef), emit
-// (0x2c253f-0x2c25b3), the 400.0 test (0x2c269d) and the tail (0x2c26e2); constants 0.05 (double), 1e-4, 0.0, 1.0,
-// 400.0 as in source. Left, none behavioural: retail's sum is (z*z + y*y) + x*x (0x2c268a-0x2c2699), ours compiles (x*x
-// + y*y) + z*z (six term orders give one code); the second `mov ebx, 0xffff` (0x2c219e: `edge = 0xffff` in the scan
-// 433, with the initialiser dropped 417) and the dead store of query+4 (0x2c22ed, 0x2c22f7) stay unreproduced;
-// 0x2c262d-0x2c2643 is 0x210850's inlined body, but a call to it stays out of line here (both conversions 514, 1680 B;
-// the end alone 474; the source alone 467), so the body stays written out.
-// M3 lane 8 r180 (fast, control 400; all restored): the emit reading the current step through points[index] with the step
-// pointer only at the top 473 (1758 B); the step pointer declared at the emit only 473 (1758 B); both corner queries
-// through a force-inline helper whose unused first argument is query+4 (retail's dead store) 452 (the store is not
-// produced); that helper reading the pathfinding pointer at +0x88 from its argument 400 (same code, folded); the
-// avoidance trace record at the loop-body scope 400 (same code). Diagnostics: `edge = 0xffff` at the scan hit 433 (the
-// second store appears, the edge stays in a slot); count's address taken, or count read through a pointer to it, 400.
-// Attempt-number orientation 431, Boolean difference 456, two-side loop 450,
-// two-side loop with in-place flip 461, retry inversion 449. Edge after the
-// forward scan 476, with the flipping loop 470. Separate fallback increment 400.
-// NOT kept: alternate orientation forms recover frame 0x10c and still regress.
-// M3 lane 8 r184 (fast with 0x270930/0x2c2a70/0x2c3030/0x2c2740/0x2c2910, all matched; control 400): the step bound by a
-// const reference 400 (same code); the typed scan as a `for (end = index; end < count; ++end)` loop 636 (1911 B); the
-// emitted type and link as two ternaries 521 (1795 B); type and link stored before next in the typed branch 400 (same
-// code); the emit's point written field by field instead of real_point3d_set 436 (1761 B). Body unchanged.
-// Forward result after condition or break 475/475, bound as presence 482,
-// next sentinel after forward scan 478, step pointer with short ordinal 419,
-// pointer range 520, next as forward cursor 502, next sentinel across both
-// phases 461. NOT kept: 419 reaches retail length with the larger frame and
-// the selected edge still in a slot.
-// M3 lane 15 r101 (fast; control 400, aligned 275): the copied last step as `points[end - 1]` (one fewer count use, to free
-// BX) 545 (1811 B); `dword edge` 400 (same code); the trace location passed as `(long)&query->location` at both 0x26c4e0
-// calls with no local 400 (same code); the data lookup ahead of the two radius locals 491 (1768 B); `found` declared ahead of
-// `edge` 400 (same code). Body unchanged.
-// Named sector-trace output for the first, second or both traces 400 each;
-// second trace scoped to the unblocked arm 400. Typed source/target/both
-// trace endpoints 441/441/469. Shared candidate step for direction and sector 400.
-// The aligned frame still reserves 0x114, and the count and edge retain their old homes.
-// Orientation flipped in place between tangents 440; edge initialized at the
-// reverse scan 476; both 418; intersection into trace target 458; target
-// constructed per attempt 445; positioned-point fallback, preceding or both
-// arms 400/400; fixed limit by equality 400.
-// NOT kept: the combined form restores 0x10c and the opening radius home
-// but scores 418 at 1737/1746 bytes.
-// Native point pointer/reference 400/400; native source record with point pointer/reference 400/400.
-// Shared source/emitted/both coordinate indices 400/488/488; stored type at emission 403;
-// shared terminal input ordinal 469. The 0x10c frame and selected edge register still differ.
-// M3 lane 10 r123 (fast with 0x2c3030 and 0x26ccb0, MATCH throughout; control 400, aligned 350): retail keeps the count
-// argument in a register only at the head and compares the loops against its stack home, and keeps the edge in EBX; ours
-// keeps the count in BX through the scan loops and the edge in a slot. A `short last = count - 1;` local for the candidate
-// test and the copied last point 469 (1765 B); the forward scan as a `for (end = index; end < count; ++end)` loop 636
-// (1911 B); the edge declared in the scan arm 481 (1769 B); the found flag declared there 481 (1769 B); both there 478.
-// Aligned frame 0x114 and the count in BX remain. Short/long exclusive reverse bound 457/436.
-// With a candidate step address 457/436. Reused short/long forward ordinal 470/481,
-// with a candidate step address 470/481. The selected edge still spills.
-// M3 lane 10 r125 (fast with 0x2c3030/0x26ccb0, both MATCH; control 400, aligned 350): the second `edge = 0xffff` at the
-// scan hit re-measured 433 (1765 B: count still in BX through the scan, edge in its slot); the emit's z, unknown02 and type
-// read through points[index] (step pointer only in the typed branch) 473 (1758 B); the typed branch through points[index]
-// and the step pointer formed at the emit 473; the step pointer declared `const *const` 400 (same code); the attempt
-// counter as long 399 (1751 B); the copied last point as points[end - 1] 545 (1811 B). Retail keeps index in EDI and the
-// step pointer in a slot at the loop top where ours keeps the step pointer in EDI and count in EBX. Body unchanged.
-// Reuse scan success for the left corner with named/direct right 400/400,
-// then combine with Boolean AND 477. Reuse it for right 400, join after both calls 400,
-// or clear the saved left result on right failure 400. Right AND left 477,
-// or clear the saved right result on left failure 401. NOT kept: ties or regressions.
-// The aligned 0x114 frame and edge/count homes remain.
-// M3 lane 7 r188 (fast, control 400, aligned 350, register-masked 119): every read of the current step through
-// points[index] with no step pointer at all 473 (1758 B, masked 124); the next step through points[next] with no pointer
-// 400 (same code); the trace start through real_point3d_set 400 (same code); the origin copied member by member 442
-// (1768 B); the loop-top declarations in retail's store order (edge, next, found, link, type, step), with the edge first or
-// the step last 400 each (only the store order moves, masked 116-118). Reading: retail's tail has the existing 0x210a30's
-// body inline (same-index test first, `mulss xmm0, xmm0` on z), and round 169 saw the entry zero move to EBX when it
-// expands here; our build keeps 0x210a30 out of line unless its definition is marked inline, which loses 0x1f45c0:
-// BLOCKED-BY 0x210a30.
-// M3 lane 16 r154 (fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): `copied_last` declared
-// first of the block's locals 400 (same code); the first conversion of the distance block in 0x210850's nested shape
-// 452 (1765 B); the outer loop as a `for` advancing `index = next` in its header, `next` declared ahead of it 400 (same
-// code); the outer loop as `do { } while (index < count)` (it always runs once: count > 1) 467 (1735 B); the edge
-// declared and set to 0xffff inside the untyped arm 481 (1769 B). Body unchanged.
-// M3 lane 4 r233 (h2m fast; aligned/slot/register-masked counts for the control 275/178/56): the forward scan as
-// `while (end < count && points[end].type == NONE) ++end;` then `if (end < count)` 475 (1765 B); `candidate + 1 == count` 400
-// (same code); no data as an early return at the top 457 (1747 B, 285/188/67); the `count <= 1` arm first 467 (1754 B);
-// `short type = step->type;` at the loop top with no store in the typed branch 456 at 1746 B (304/183/57).
-// Round 499: terminal address at path/search scope, one-past address at path/search scope, forward scan with the
-// terminal/one-past address, candidate and terminal pointers, and terminal status from scan end.
-// Fast scores in order 492/486/499/488/480/439/486/543.
-// NOT kept: All eight retain the 0x114 frame and raise the score. The one-past forward bound is closest at 439 and
-// 1744 bytes. All four matched controls stay exact.
-// The extra two frame words and the count, edge and opposite-orientation homes remain unresolved.
-// M3 lane 11 r139 (h2m fast with 0x270930 and 0x2c2a70, both MATCH throughout; aligned unmatched [exact/stack-masked/
-// register-masked], control 400 [275/178/56]): the side flipped in place ahead of the second tangent call re-measured 440
-// (1727 B, frame 0x10c) [223/160/52]; that with `edge = 0xffff` again at the scan hit re-measured 369 (1740 B, first
-// difference +0x14) [225/160/52], still not kept (the store repeats the value the edge holds, though retail has that store
-// at 0x2c219e). On the 369 form: the first conversion in the nested two-copy shape 424 (1762 B) [229/168/60]; the output
-// index read ahead of the origin in both fallback arms 383, between the origin and the sector 382, ahead of the origin in
-// the first arm only 370; the step pointer declared ahead of the loop 369 (same code), and without the second store 440
-// (same code as the flip alone). Reading on the 369 form: the frame, the attempt loop and the emit agree with retail but
-// for registers; retail's scan keeps the index in EDI, NONE in ESI and the scan cursor in EAX and reads the count from
-// [ebp+0xc], where ours keeps the count in BX, the cursor in ESI and the step pointer in EDI; retail's emit keeps the
-// output element in EAX, its point in ESI and the emitted count in EBX; the tail is 0x210a30's inlined body (BLOCKED-BY
-// 0x210a30, as above). Body unchanged.
-// M3 lane 8 r214 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400, aligned/masked
-// 350/256): the edge left uninitialised at the loop top and set to 0xffff at the scan hit (retail stores it there,
-// 0x2c219e, as well as at the loop top) 417 (1765 B); that with the side flipped in place ahead of the second tangent
-// call (no other_side local) 389 (1755 B, frame 0x114; the initialiser moved into the hit arm, so steering: not kept);
-// the side negated in the second tangent call's argument and flipped at the attempt loop's end 434 (1715 B, frame 0x10c
-// as retail, first difference +0x24, aligned/masked 299/199: closer in shape, shorter); that with the edge set only at
-// the hit 418 (1743 B, frame 0x114), with the repeated hit store and the top initialiser 426 (1728 B, frame 0x10c).
-// M3 lane 3 r292 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): diagnostic,
-// reverted at once: `count` read through a volatile view at its four loop uses 474 (1762 B): count leaves BX but the
-// points parameter takes EBX and the edge still sits in a slot, so count is not the edge's only competitor. Forms: the
-// emit's z and +0x02 reads through `points[index]` instead of the step pointer 473 (1758 B); the origin copied from
-// `query->source.point` (retail reads y through the query base) 400 (same code); `used` as a long 495 (1783 B). Body
-// unchanged.
-// M3 lane 2 r130 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70; control 400): the end scan as `for (end =
-// index; end < count; ++end)` 636 (1911 B); a named `short last_index = count - 1;` for the candidate test and the copied
-// last point 469 (1765 B); the scan as `while (end < count && points[end].type == NONE) ++end;` then one `if (end < count)`
-// 475 (1765 B); `found` declared inside the scan branch 481 (1769 B); the circle centre as `corners[side ? 0 : 1]` 484
-// (1700 B). Retail's count stays in SI only at the head and is read from [ebp+0xc] at every loop compare, leaving EBX to
-// the zero, the edge and then the output count.
-// M3 lane 2 r141 (h2m fast with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400): re-measured the side
-// flipped in place 440 (1727 B) and with `edge = 0xffff` at the scan hit 369 (1740 B, frame 0x10c; the hit store is
-// redundant, match-only). New: the candidate's distance test as `distance <= 0.0f` 433; the copied last step as
-// `result[used] = ...; ++used;` 400 (same code); the pathfinding pointer named once for both corner queries 461; a named
-// candidate step pointer for its point and node 400 (same code); `target.z = 0.0f` declared ahead of `start` 398 (its
-// zero store moves between start's x and y as retail's; -2, not kept). Retail's tail is 0x210850's own code (the
-// zero-extended index and `cmp ax, 0xffff` of its retail body) inlined twice through 0x210a30, both in an /Ob1 file:
-// BLOCKED-BY 0x210a30 and 0x210850. Body unchanged.
-// M3 lane 6 r237 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400, aligned/masked 275/56
-// by a difflib count): the corner trace's start point stored member by member 400; the radius sum's leaf in one, two and
-// three redundant parenthesis pairs (an allocation-phase test) 400/400/400 (same code each); re-measured the copied last
-// step as `points[end - 1]` 545 (1811 B). The outer loop as `for (; index < count; index = next)` does not compile here
-// (`next` is the body's local). Retail's tail is two inlined copies of 0x210850 (`xor eax, eax; mov ax, [esi + 0xc];
-// cmp ax, 0xffff`, the first sharing the equality test's AX load) and one `(z*z + y*y) + x*x` sum. Body unchanged.
-// M3 lane 3 r305 (H2M_FAST with 0x270930, 0x2c3030, 0x26ccb0 and 0x2c2a70, all MATCH; control 400). Frame reading: the
-// eight extra bytes are two 4-byte homes retail does without here: the second side flag (`other_side`) has its own home
-// (`sete byte [..]`, retail `sete bl` in the register the first flag used), and the corner endpoint pointer cannot share
-// the candidate distance's home because the attempt counter takes that home first (equal-size homes pack by reference
-// count; retail shares distance and endpoint). The head's rotation (retail's zero in EBX and count in SI, ours EDX and
-// BX) spans 22 register webs from +0x66. No single forced register pick lowers the count (60 tried). Forms: the second
-// side as `!side` at the call with `side = !side;` at the loop end 434 (1715 B); the endpoint pointer declared ahead of
-// the previous pointer 459 (1754 B); the start point built ahead of the 0x2c2a70 call 453 (1755 B); the edge declared
-// first in the loop body 400, after type and link 400 (same code each). Body unchanged.
-// P657: Native positioned tangent/trace endpoint 436; both tangent addresses from the selected step 400;
-// complementary orientation flipped between tangents 446; direct remaining-attempt count 399.
-// Length/endpoint/retry/opposite-side names 400/400/400/400; start z first 398; target z between
-// start x/y with start z last 399. NOT kept: the complementary side restores frame 0x10c and the
-// source-radius home, but raises the score and moves the extent away from retail. The other
-// forms retain frame 0x114, count in BX and the spilled edge, with at most two points gained.
-// B517: advance the side before both tangents 410, carry the endpoint side 443 or name the origin
-// side 446, swap both sides on retry 457, early trace rejection with advance 410 or endpoint side 443,
-// named reached sector with the origin side 446, and center setter with endpoint side 420.
-// NOT kept: the endpoint-side forms without a separate origin side recover 0x10c but shorten the body and raise the score.
-// M3 lane 15 r144 (plain-confirmed; screens with 0x270930, 0x2c3030, 0x26ccb0, 0x2c2a70, 0x2c2740 and 0x2c2910 in the image, all
-// MATCH; control 400). Reading of the allocator's ranking on main's body: the step pointer is coloured first (210) and holds EDI
-// for the whole body; the scan cursor (96) takes ESI through its copy relation with the candidate index (164, coloured earlier),
-// so NONE's ESI stops at the loop top and the scan compares with -1; the count takes EBX from the loop bottom through the scan
-// and the edge's early range (a constant default with no use before the candidate loop) is not worth a register. Retail: step
-// pointer in ECX with a stack home, index EDI, NONE in ESI through the scan, scan cursor EAX, edge EBX from the loop top, count
-// read from its parameter home. Forced single rankings and picks (diagnostics, never source; about 150 tried) do not lower main's
-// 400: edge ranked up 441 (frame 0x10c), index top 445, points in EDX 432, the scan cursor in EAX 431, the candidate ranked down
-// 431, the step ranked last 504; on the side-flip form the scan cursor in EAX or the candidate ranked 13 lower gives 367. KEPT,
-// 368 (1740 B, frame 0x10c, first difference +0x24): the side flipped in place ahead of the second tangent call (`side = !side;`,
-// no other-side local; alone 440) with a named pointer to the output element's point for its seven uses in the emit and the
-// distance block (`s_type_c3b527 *out_point = &out->point;`; retail keeps it in ESI, `lea esi, [eax + 0xc]`; alone 432). On the
-// kept body: the second `edge = 0xffff` at the scan hit 406; the pointer declared ahead of the node store 368 (same code); `!side`
-// passed to the second tangent call with the flip at the end of the attempt 415; the emitted type from the `type` local 405;
-// `target.z = 0.0f` declared ahead of `start` 365 (a declaration move, match-only, not kept); the pathfinding pointer named once
-// for both corner queries 413; a `long` attempt counter 369; the previous point as `&next_step[-1].point.point` 407; `candidate
-// + 1 == count` 369; the edge and next-step tests joined 407. Left: retail's ECX step pointer with its home (ours EDI), the edge
-// in EBX from the loop top (ours a stack cell until the candidate loop), NONE in ESI (ours EBX), the entry zero in EBX (ours
-// EDX), the flipped side pushed from BL with its home written at the end of the attempt (ours stores it at the flip and pushes
-// the home), the unread store of query + 4 ahead of the first corner query, and the distance tail (BLOCKED-BY 0x210a30 and
-// 0x210850 as above).
+/* smooths a path: from each step it takes the furthest later step the source reaches in a straight line, or a
+   point round the corner that blocks it. Retail evidence for the forms below: the corner query's second
+   parameter is never read (0x2c3030 has six stack arguments), yet the caller forms query + 4 for it once and
+   keeps it across the first query (0x2c22ed, 0x2c22f7); the edge is stored again where the scan finds a typed
+   step (0x2c219e); the step's pointer is formed at the loop top and only read back from its stack home at the
+   emit (0x2c2120, 0x2c255b), so the loop top reads the step through the array; the two corners are separate
+   8-byte homes (0x2c2302, 0x2c2326); and the distance test is 0x210a30's body with 0x210850's inside it, which
+   retail expands here (two point copies per conversion, one shared sum, 0x2c25b9-0x2c269d). */
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
 {
     real source_radius = query->source.radius;
-    real radius = (real)(source_radius + 0.05);
+    real radius = source_radius + 0.05;
     s_pathfinding_data *data = (s_pathfinding_data *)function_1fa7f0();
     if (data)
     {
         if (count > 1)
         {
             s_type_c3b527 const *source = (s_type_c3b527 *)&query->source.point;
-            point2f origin = *(point2f *)&source->point;
-            long sector = points[0].node_index;
             short index = 0;
             short used = 0;
             bool copied_last = false;
+            point2f origin = *(point2f *)&source->point;
+            long sector = points[0].node_index;
             while (index < count)
             {
-                s_path_step_view const *step = &points[index];
-                short next = NONE;
                 long edge = 0xffff;
+                short next = NONE;
                 bool found = false;
-                short type = NONE;
                 short link = NONE;
+                short type = NONE;
                 short output_index;
-                if (step->type != NONE)
+                s_path_step_view const *step = &points[index];
+                if (points[index].type != NONE)
                 {
                     next = index;
-                    type = step->type;
-                    link = step->link_index;
+                    link = points[index].link_index;
+                    type = points[index].type;
                 }
                 else
                 {
@@ -2622,6 +1887,7 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                         if (points[end].type != NONE)
                         {
                             next = end;
+                            edge = 0xffff;
                             found = true;
                             break;
                         }
@@ -2653,33 +1919,33 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                         s_path_step_view const *next_step = &points[next];
                         if (next_step->type == NONE)
                         {
-                            point2f corners[2];
-                            bool left = function_2c3030((s_pathfinding_data *)query->pathfinding,
-                                &origin, source_radius, edge, true, &corners[0]);
-                            bool right = function_2c3030((s_pathfinding_data *)query->pathfinding,
-                                &origin, source_radius, edge, false, &corners[1]);
+                            point2f left_corner, right_corner;
+                            bool left = function_2c3030((s_pathfinding_data *)query->pathfinding, &query->source.unknown04,
+                                &origin, source_radius, edge, true, &left_corner);
+                            bool right = function_2c3030((s_pathfinding_data *)query->pathfinding, &query->source.unknown04,
+                                &origin, source_radius, edge, false, &right_corner);
                             if (right && left)
                             {
                                 point2f const *previous = next > 0 ? (point2f *)&points[next - 1].point.point :
                                     (point2f *)&source->point;
                                 point2f const *endpoint = (point2f *)&next_step->point.point;
-                                bool side = function_2c2a70(previous, endpoint, &corners[0], &corners[1], &origin);
-                                point3f start = { origin.x, origin.y, 0.0f };
+                                bool side = function_2c2a70(previous, endpoint, &left_corner, &right_corner, &origin);
+                                short attempt = 0;
                                 point3f target;
                                 target.z = 0.0f;
+                                point3f start = { origin.x, origin.y, 0.0f };
                                 long location = (long)&query->location;
-                                for (short attempt = 0; attempt < 2; ++attempt)
+                                for (; attempt < 2; ++attempt)
                                 {
                                     point2f center;
                                     if (side)
-                                        center = corners[0];
+                                        center = left_corner;
                                     else
-                                        center = corners[1];
+                                        center = right_corner;
                                     point2f tangents[2], candidate;
                                     function_2c2740(&origin, &center, radius, side, &tangents[0]);
-                                    side = !side;
-                                    function_2c2740(endpoint, &center, radius, side, &tangents[1]);
-                                    function_2c2910(&center, tangents, &origin, radius, &candidate);
+                                    function_2c2740(endpoint, &center, radius, !side, &tangents[1]);
+                                    function_2c2910(tangents, &center, &origin, radius, &candidate);
                                     target.x = candidate.x;
                                     target.y = candidate.y;
                                     s_path_trace_result first, second;
@@ -2694,6 +1960,7 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                                         output_index = next_step->point.output_index;
                                         goto emit;
                                     }
+                                    side = !side;
                                 }
                             }
                         }
@@ -2702,8 +1969,8 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                 if (next != 0 && next != index)
                 {
                     origin = *(point2f *)&points[next - 1].point.point;
-                    sector = points[next - 1].node_index;
                     output_index = points[next - 1].point.output_index;
+                    sector = points[next - 1].node_index;
                 }
                 else
                 {
@@ -2713,13 +1980,12 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                     next = index + 1;
                 }
             emit:
-                s_path_step_view *out = &result[used];
+                s_path_step_view *out = &result[used++];
                 out->node_index = sector;
                 s_type_c3b527 *out_point = &out->point;
                 real_point3d_set(&out_point->point, origin.x, origin.y, step->point.point.z);
-                out_point->output_index = output_index;
+                out->point.output_index = output_index;
                 out->unknown02 = step->unknown02;
-                ++used;
                 if (type != NONE)
                 {
                     out->type = step->type;
@@ -2732,21 +1998,40 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                 }
                 if (used >= 4)
                     break;
-                vector3f delta;
+                real distance_squared;
                 if (source->output_index == out_point->output_index)
                 {
+                    vector3f delta;
                     vector3d_from_points3d(&source->point, &out_point->point, &delta);
+                    distance_squared = (delta.j * delta.j + delta.k * delta.k) + delta.i * delta.i;
                 }
                 else
                 {
-                    point3f start, end;
-                    if (source->output_index == NONE || !function_2104b0(source->output_index, &source->point, &start))
+                    vector3f delta;
+                    point3f start;
+                    point3f end;
+                    if (source->output_index != NONE)
+                    {
+                        if (!function_2104b0(source->output_index, &source->point, &start))
+                            start = source->point;
+                    }
+                    else
+                    {
                         start = source->point;
-                    if (out_point->output_index == NONE || !function_2104b0(out_point->output_index, &out_point->point, &end))
+                    }
+                    if (out_point->output_index != NONE)
+                    {
+                        if (!function_2104b0(out_point->output_index, &out_point->point, &end))
+                            end = out_point->point;
+                    }
+                    else
+                    {
                         end = out_point->point;
+                    }
                     vector3d_from_points3d(&start, &end, &delta);
+                    distance_squared = (delta.j * delta.j + delta.k * delta.k) + delta.i * delta.i;
                 }
-                if (length_sq3f(&delta) > 400.0f)
+                if (distance_squared > 400.0f)
                     break;
                 index = next;
             }

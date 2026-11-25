@@ -2888,9 +2888,52 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Direct completion on rejection of the actor, paired target, single target or selector request 429 each.
 // Both target requests, actor and selector requests, all four requests, or separate guard exits 429 each.
 // NOT kept: the dispatch still reaches the late success block, with the original 20-byte excess.
+// M3 lane GA r1 (fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429, aligned 165, masked 135; 0x258a00/0x258cf0/0x25a130
+// MATCH throughout; 28 trials, all restored): on main's 429 base (actor EBX, state EDI), tail flags/flags2 locals 431; direct
+// vector3f_assign from actor->unknown4d8 + tail flags/flags2 536; dropping case 13 + direct return 1 in cases 2/12/20 (no goto) 498
+// (masked 118); dropping case 13 + case 20 conditional clears + case 7/8 conditional flag + case 5 swapped arms + cases 9/11 actor-first +
+// iterator data/index/datum_index + ? 1 : 0 at +0x465 + second publish flag-first (keeping main's case 2/4/18 and goto local_31) 452
+// (2416 B, aligned 148, masked 90); + tail flags/flags2 454; + direct vector3f_assign 452; + case 20 first arm via `{ local_30 = 1;
+// goto local_31; }` 454 (2424 B, aligned 140, masked 82: keeps actor EBX / state EDI and matches retail's prologue, case 1, tail,
+// cases 7/8, 0, 5, 9, 10, 12, 11, 21, 14, case 20 return-1 epilogue and second publish, leaving only case 2/4's 20-byte length excess).
+// Adding case 18 held targets (614), case 4 dot3f (583), or case 2 aggregate copy on that base still exchanges actor/state even with
+// scalar local_6/local_20/local_22/+0x468/+0x470 copies and direct position.x/y/z in case 20's loop (614-658). On the 2380 B
+// retail-shaped lead (control 632, aligned 205, masked 66, actor EDI / state EBX): tail flags/flags2 locals drop score 632 -> 549
+// (2380 B, masked 70), and restoring `short local_30; goto local_31;` reaches 520 (2384 B, aligned 194, masked 63, retail's 32-bit
+// mov eax, 1 / xor eax, eax epilogues); case 2 destination-pointer scalar copy 627; + tail actor scalars 642; + tail flags/flags2 620;
+// direct vector3f_assign combo 651; request early return 1 in cases 6/18/21/14 632 (same code); case 12/20 direct return 1 639;
+// + direct position.x/y/z in case 20 642; + case 6 split global OR 604; without case 4 dot3f 649.
 // State flags, facing timer and direction through the native state and existing
 // facing declarations, in seven subsets and with both facing fields from their view,
 // 429 each. NOT kept: the dispatch span and late completion block are unchanged.
+// M3 lane 16 r187 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; lane 5 r233's retail-shaped lead
+// rebuilt 631 at 2380 B, with the own-parameter volatile read 249; body unchanged). Ranking read on the lead: once the
+// datum has EBP the allocator ranks the state's piece 196 and the actor's 158. The state's four request blocks carry 138
+// of that, because every block that jumps straight into the countdown tail also counts one entry per constant that is
+// used both ahead of the tail and inside it (0, 4, 8 and 0x10 here: case 2's mode 4, the case 7/8 and case 12 masks and
+// the tail's masks), so their candidate counts are 4 higher than the blocks' own; the actor is live and unused there and
+// loses by the same counts. Forms on the lead, each 631 with the same code and the same ranking (196 / 164): the request
+// flag set as a byte bit-field assignment; its test and set both through the bit-field; every flag test and set of the
+// tail and case 7/8 through byte bit-fields; all of them together (on main 429 each, same code). The two flag bytes as
+// one 16-bit flags word (tail, case 7/8 and the request cases; a view in the record type) 326 at 2408 B with the actor in
+// EBX and the state in EDI (state 175, actor 183: the tail's masks are then 0x400, 0x800 and 0x1000 and no longer shared
+// with the earlier 4, 8 and 0x10), with case 12 through the word as well 351 (2412 B); as bit-fields in a 16-bit
+// container 326 / 351 (same code as the masks); on main 522 (2448 B) and 509 (2436 B). Not kept: the word form loads
+// `mov cx, [edi + 2]; test ch, 4` where retail loads the byte at +3, and the request cases hold 0x2000 in a register (a
+// type picked by score; patch build/r187/lead-259430-wordflags-326.patch in the m3-lane16 worktree). Diagnostics (wrong
+// code, removed): the tail's 0x10 test on another bit lowers the state to 177, the tail without a -1 compare 195, case
+// 7/8 and case 12 on other bits 172, while the actor's piece stays at 158 to 166: two of the three shared mask constants
+// have to go before the actor is ranked first.
+// GB2 (fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429; body unchanged): on the retail-shaped body
+// (case 13 dropped, case 20 else as `b0 == NONE || d1`, case 2 aggregate copy, case 4 dot3f, case 18 held targets,
+// case 7/8 ternary, case 5 swapped, case 9/11 actor-first, iterator order, flag-first publish, `? 1 : 0` +0x465):
+// early exit on actor+7 640 (2372 B, masked 78), case 2 without `local_5` 640, both 640, early `local_3`+actor+7 640,
+// direct `return 1`/`0` without `local_5` 557 (masked 88), request early-break/early-ret 640/640/640, case 20 main-arm
+// inline return-1 + dot3f 632 (2380 B, masked 70), plus case 6 second OR via global 610 (2396 B, masked 66), plus
+// `s_cs_order const *command` 519 (2384 B, masked 79), diagnostic `#pragma inline_depth(2)` 632 — every one keeps
+// actor EDI / state EBX (+0x9). On main's actor-EBX base: early actor+7 + no `local_5` 431, plus case 13/20/4 579
+// (swapped), plus case 13/20/2-agg 620 (swapped), main + case 13 dropped + case 20 inline return-1 + else arm +
+// case 5/7/8 swaps 404 (2416 B, actor EBX, masked 92; match-only swaps), without the swaps 510 (2428 B). NOT kept.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -1,3 +1,4 @@
+#include "object_tag_definitions.h"
 #include "unknown_11c920.h"
 #include "unknown_1cec30.h"
 #include "unknown_1eb550.h"
@@ -748,6 +749,17 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // step limit named once 858 (4236 B); the tick rate named in both limit arms 828 (4268 B, aligned 365 / 88: positional
 // only, the length moves from 4 short to 9 long, and retail multiplies by the rate from memory at each use, so not
 // kept). Body unchanged.
+// Typed object model field 838, also with typed runtime object and/or named linked indices 838.
+// Shared tag table base with each of those forms 844. The 0x1d8 frame and late EBX save remain.
+// Kept the typed object model field alone. Plain comparison 838 at 4255 bytes.
+// M3 lane 1 r167 (h2m fast, single address; control 838, aligned 333, masked 81; full check where noted). The removal
+// through the existing remove_at (the array declared with the growable-array members, the loop head reading the
+// component's field) re-measured: 780 at 4264 B (masked 64), and the full check still loses matched 0x54590 (two
+// loads swapped at +0xff) and 0xc2d00, so reverted. The same 780 code with the header untouched: the head reading the
+// field and the removal through a reference bound there (`s_havok_array08 &list = *arg_0->unknown94;`, four uses) 780
+// (lead, not kept: it is lane 11 r141's list local moved to the removal under another spelling); r141's pointer form
+// re-measured 780; the head's list pointer declared `*const` 838 (same code); the reference form with the object
+// type in a long local for both mask tests 838 (4263 B). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -759,8 +771,8 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
  if (arg_0->unknown94 && local_0)
  {
   byte *local_4 = (byte *)havok_object_get(arg_0->object_index);
-  byte *local_5 = g_4e3b44[*(long *)local_4 & 0xffff].bytes;
-  byte *local_6 = g_4e3b44[*(long *)(local_5 + 0x38) & 0xffff].bytes;
+  const s_object_definition *definition = (const s_object_definition *)g_4e3b44[*(long *)local_4 & 0xffff].bytes;
+  byte *local_6 = g_4e3b44[definition->model.tag_index & 0xffff].bytes;
   byte *local_7 = g_4e3b44[*(long *)(local_6 + 0x24) & 0xffff].bytes;
   for (long local_8 = 0; local_8 < arg_0->unknown94->size; ++local_8)
   {

@@ -1043,6 +1043,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // with the start index seeded before the classifier 264/224, and with both changes 242/216.
 // NOT kept: the aggregate copy moves the frame away from retail. The early start index variants
 // that reach frame 0x14 shorten the body to 762 bytes. Every early start variant changes the caller.
+// Duplicate span as short, published before/after the copy with the nested breaks
+// 144/146, and with the single exit 231/231. Long span with breaks 144/161,
+// and with the single exit 230/230. NOT kept: the breaks keep frame 0x18.
+// The single exit recovers 0x14 but shortens the body and loses the matched caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1671,6 +1675,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Forms: the previous side started true and cleared under `if (!(previous_distance >= 0.f))` 132; started false and set 130;
 // as `previous_distance >= 0.f ? true : false` 129 and `!(previous_distance < 0.f)` 129 (same code each); one `inside` at
 // function scope set at entry and copied into the previous side 200.
+// M3 lane 5 r245 (h2m fast with 0x239e50, 0x239d50 and 0x239b80; control 129, sequence-aligned 85 rows exact, 20 with
+// registers and stack offsets masked; body unchanged), each looking for a natural extra use of the count between the
+// entry and the loop's zero-trip test: the previous point's distance read through `points[count - 1]` 268 (896 B); the
+// alias copy reading from `output` 205; `sizeof(point2f) * count` 129 (same code); the previous distance's second
+// product written `plane->n.i * previous->x` as in the loop 129 (same code); `points + count - 1` 129 (same code).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

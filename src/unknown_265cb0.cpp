@@ -264,7 +264,9 @@ short function_263ed0(long actor_index, s_perception_origin_view const *origin, 
 
 struct s_distance_rates_view
 {
-	byte unknown00[8];
+	byte flags;
+	byte unknown01[3];
+	real distance_limit;
 	real near_distance;
 	real far_distance;
 	real maximum_distance;
@@ -1116,6 +1118,14 @@ real function_30bf0(vector3f *vector);
 // The initial result remains four bytes high and the clip output still shares the seat-count slot.
 // Setting the secondary tier then promoting it scores 136 with long, short, unsigned long and int.
 // Starting with the near tier then demoting it scores 138 with all four. The original tier test is restored.
+// Common radius rejection write: nested positive branches and nested negative comparison/branches
+// 225/229/225; joined positive comparison/branches and joined negative comparison/branches
+// 225/225/229/225; three radius states 229. NOT kept: all shrink the frame to 0x34c and raise the score.
+// The first result store and clip-fraction spill still occupy different slots.
+// M3 lane 1 r167 (h2m fast with 0x263740, 0x26d370 and 0x263d70, all MATCH; control 84, aligned 55, masked 17). Kept:
+// the settings read through this file's `s_distance_rates_view` (its flags byte and the range at +4 named) 84 (same
+// code). Tried on it: the posture switch with `default: break;` 84; the clipped point brace-initialised 84; `side, up`
+// declared ahead of the seat loop 84; `a, b` declared ahead of the seat loop 84 (all the same code).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1123,10 +1133,10 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 	if (mode == 0 || mode == 1)
 	{
 		s_actor_view *actor = actor_get(actor_index);
-		byte *settings = (byte *)actor_get_character_situation_entry(actor_index);
+		s_distance_rates_view *settings = (s_distance_rates_view *)actor_get_character_situation_entry(actor_index);
 		if (settings)
 		{
-			real range = *(real *)(settings + 4);
+			real range = settings->distance_limit;
 			vector3f delta;
 			delta.i = point->x - origin->x;
 			delta.j = point->y - origin->y;
@@ -1159,7 +1169,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 			if (range * range > distance_squared)
 			{
 				real scale = 1.0f;
-				if (!(*settings & 1))
+				if (!(settings->flags & 1))
 				{
 					switch (posture)
 					{
@@ -3175,6 +3185,16 @@ real function_2683f0(long actor_index, long node_index, short type)
 // (aligned 105); the facing dot computed right after the direction's normalize 350 (2863 B), just ahead of the distance
 // test 711 (2847 B). Symbol numbering is per function: 300 unused externs ahead of the function 158, a 300-local
 // function ahead of it 158 (same code, the head stays `[eax + ecx + 0x58]`). Body unchanged.
+// M3 lane 1 r167 (h2m fast with 0x26be00, 0x26be30, 0x25d690, 0x25d740, 0x25d810, all MATCH; control 158, aligned 71,
+// registers masked 29). Retail tests `established` with a `jne` to the bonus block and lays the far-and-slow test out
+// as the fall-through, both reaching one shared `score > 0` test. Forms: inside the outer test `if (!established) { if
+// (!(far && slow)) positive = score > 0; } else { bonus; positive = score > 0; }` 153 at 2885 B (masked 19: retail's
+// block order, but the far path keeps its own copy of the `score > 0` test, the 5 extra bytes; the gain is partly that
+// copy realigning rows behind the dot block, which is two rows short); the same with no outer test (`visible &&` in the
+// far condition) 167 (2864 B); the far case zeroing the score with one `positive = score > 0` after the if/else 224
+// (2880 B, masked 20); the first form with the reset arm first (`if (slot == NONE) {...} else {...}`) 159; `if
+// (established) {bonus; positive = ...} else if (!(far && slow)) positive = ...` 219 (2880 B). Re-measured the note's
+// joined form, `if ((visible || established) && (established || !(far && slow)))`, 224 (masked 20). Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
