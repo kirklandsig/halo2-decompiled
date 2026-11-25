@@ -2270,9 +2270,10 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 				do
 				{
 					// Retain this row's time address before the impulse can replace it.
-					float output_impulse = *result;
+					unsigned long output_impulse_bits;
+					memcpy(&output_impulse_bits, result, sizeof(output_impulse_bits));
 					float const *output_time = inverse_time_pointer;
-					*(float *)destination = output_impulse;
+					memcpy(destination, &output_impulse_bits, sizeof(output_impulse_bits));
 					// Retain stride after the impulse, before the error can replace it.
 					long output_stride = state.writing.stride;
 					*(float *)(destination + 4) = terms[0].m128_f32[3] * *output_time;
@@ -2289,9 +2290,10 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 				do
 				{
 					// Capture anew each row, retaining the address through its outputs.
-					float output_impulse = *result;
+					unsigned long output_impulse_bits;
+					memcpy(&output_impulse_bits, result, sizeof(output_impulse_bits));
 					float const *output_time = inverse_time_pointer;
-					*(float *)destination = output_impulse;
+					memcpy(destination, &output_impulse_bits, sizeof(output_impulse_bits));
 					// Capture between the two outputs, including overlapping stack homes.
 					long output_stride = state.writing.stride;
 					*(float *)(destination + 4) = terms[1].m128_f32[3] * *output_time;
