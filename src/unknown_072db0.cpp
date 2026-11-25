@@ -2404,6 +2404,11 @@ bool function_1900a5(long index);
 // with zero first, timestamp first, initialized or separate arms: read gate
 // 641/641/633/641, write gate 643/643/642/643. NOT kept: the 633 form sets and
 // then tests a flag at the read gate, and the first difference remains +0x1a.
+// The logon compare and properties-based cursor remain. Assigning the actual
+// admission result after the copies, with one condition, guest check first,
+// sentinel last, or three separate tests scores 643/736/753/792. Carrying the
+// same flag from the source validity gives 643/736/753/792 in the same order.
+// NOT kept: the combined test ties and the split forms lengthen the body.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -929,6 +929,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // accumulated square 247/288, direct root 282/293, named products 256/297,
 // shared planar magnitude 252/293. NOT kept: every form raises the score.
 // The early SSE sum and unity register still differ.
+// The initial SSE square and x87 sum still trade order. Whole forward copy,
+// component copy, direct weighted pair, and weighted initializer followed by
+// translation score 338/112/112/112. Const weighted point, weighted scalars,
+// weighted point with component stores, and a heading destination copy score
+// 218/217/218/283. NOT kept: the best forms still diverge at +0x69 and score higher.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2033,6 +2038,11 @@ long function_10f5f0(long object_index);
 // conditional second store in rise/fall/both 561/561/561. Unconditional second
 // store in rise/fall/both 583/578/569. Updated flag word 560, or 565 with both
 // unconditional stores. NOT kept: one-point gain, and the flag still uses a mask.
+// The bounds and velocity homes still keep the frame at 0x1990. Names before
+// state, names then velocity after state, velocity then names after state,
+// bounds then names before state, or names then bounds before state all score
+// 561. Bounds-velocity-names and velocity-names-bounds before state, and
+// bounds-names-velocity after state also score 561. All keep separate homes.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -6404,6 +6414,12 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // bounds for speed/turn/steering 765/758/758, speed-turn/speed-steering/turn-steering
 // 761/766/761, all pairs 758. With the entry definition 1020. NOT kept: the
 // one-point gains lengthen the body, and the entry definition merges the lookups.
+// The entry definition and zero/result registers still differ. A typed layout
+// at the original reads for all limits, directional limits, or kind and engine
+// scores 759 each. The typed layout with a separate entry definition for kind,
+// engine, both, or both plus angular ceiling scores 982 each. Acquiring that
+// entry through the existing accessor scores 941. NOT kept: the entry forms
+// merge later lookups and shorten the body.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

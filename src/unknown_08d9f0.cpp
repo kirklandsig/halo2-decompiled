@@ -279,6 +279,12 @@ void function_8dd70(void);
 // handler's gateway and the gateway's handler are written through the existing gateway and handler
 // locals instead: 226 at 894 bytes (the link local alone 243).
 // The empty entry frame, stacked link-success byte and outlined calls still differ.
+// The four-byte entry frame and the link byte are still the first gap. Carrying
+// the entry decision through link, observer, or sessions scores 235/228/225.
+// Carrying it through link and observer, link and sessions, observer and sessions,
+// or all three scores 227/232/233/224. Link and trim scores 244.
+// NOT kept: the 224 form restores the frame and length but gains two, with the
+// entry load and expanded registration calls still different.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {
