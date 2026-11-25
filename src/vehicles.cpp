@@ -904,6 +904,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // The first SSE square still follows the x87 sum and unity still takes XMM2. Separate scalar/point outputs:
 // scaled arm first 219/219, raw arm first 225/225, raw initializer 301/301, component selection 171/171.
 // NOT kept: each form increases the score and length.
+// The early SSE planar sum and unity register still differ.
+// shared planar magnitude 112; typed planar magnitude 112.
+// fast planar normalizer 222; shared axial dots 107.
+// shared lateral dots 107; shared axial and lateral dots 107.
+// shared planar crosses 243; shared cross and dot pairs 243.
+// NOT kept: the dot forms tie. The cross forms change the frame and shorten the function.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1978,6 +1984,12 @@ long function_10f5f0(long object_index);
 // or nonpositive start at the end 633/633/613/594. With division before publication
 // 648/648/633/611. The rolled loops retain the 0xa8 stride but add the loaded
 // value into another register and shorten the body. The 0x1990 frame persists.
+// The bounds, velocity and request stack homes and the flag-result byte stores still differ.
+// shared real bounds and velocity workspace 561; shared real bounds velocity and request workspace 561.
+// shared workspace with separate integration velocity 566; shared workspace with separate boundary velocity 561.
+// shared workspace with separate falling velocity 561; shared workspace with cleared requests 568.
+// shared two-vector workspace 561; shared real workspace with vector lvalue 561.
+// NOT kept: the fully shared forms recover frame 0x1984 and advance the first difference to +0x54, but score 561. The cleared requests form adds four bytes. The explicit storage overlap requires a byte match.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3891,6 +3903,12 @@ real g_47ff30 = 2.5f;
 // last/all with forward first/lateral first 696/725/700/733/729. NOT kept: the
 // lateral-interleaved forms recover frame 0xfc but shorten the body and regress.
 // The acceleration spill and both velocity homes still differ.
+// The acceleration spill and both velocity output homes still differ.
+// shared world-force scale and additions 719; shared torque scale and difference 672.
+// both shared output producers 715; two bank scales and shared sum 695.
+// world-force operations with mass reloads 717; torque operations with mass reloads 711.
+// both output producers with mass reloads 722; bank operations with mass reloads 686.
+// NOT kept: the four mass-reload forms recover the 0xfc frame but raise the score. The acceleration spill remains at +0x20 rather than +0x34.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

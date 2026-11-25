@@ -2800,6 +2800,12 @@ struct s_unit_event
 // Byte displacement for the typed datum lookups 511; with the slot helper 419, retained pool 459,
 // or shared vehicle datum 511. Helper/pool 419, helper/vehicle 419, pool/vehicle 459, all 419.
 // NOT kept: the one-point gain leaves the exchanged region and permutation registers.
+// The region ordinal and permutation record still exchange EBX and EBP.
+// first drop flag snapshot 420; second drop flag snapshot 420.
+// independent drop flag snapshots 420; deferred destruction admission 391.
+// selected destruction result 499; positive preservation result 409.
+// shared vehicle flag setters 420; shared setters and deferred destruction admission 391.
+// NOT kept: the 391 form emits a combined mask and a dynamic stack argument. Retail tests two flag bits separately and pushes literal mode values.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5678,6 +5684,12 @@ struct s_damage_object_creation
 // shared test and store bit 205, with word setters 205. With masked node bits 232, or with
 // word setters and masked node bits 224. NOT kept: the extra mask moves the count and ordinal
 // away from the retail allocation. The exact-length form changes the frame and raises the score.
+// The count and primary mask registers still differ, as does the node-loop padding.
+// primary mask shifted to the selected bit 203; secondary mask shifted to the selected bit 201.
+// both masks shifted to the selected bit 184; both selected bits with shared word setters 184.
+// attached-node mask shifted to the selected bit 206; piece-search mask shifted to the selected bit 169.
+// both node masks shifted to the selected bit 204; selected bits through both phases 220.
+// NOT kept: the right-shift test encodings differ from retail and raise the score. Both 808-byte forms change the entry registers.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
