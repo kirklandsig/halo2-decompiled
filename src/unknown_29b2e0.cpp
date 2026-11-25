@@ -941,6 +941,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // planar with spatial or fallback 356/356; spatial with fallback 128; all three 356;
 // all three through memmove 402. NOT kept: 128 only gains two; planar copy changes the
 // first normalization. The opening J/depth store order and later rotation differences remain.
+// With planar first, selected target, selected current, two selected pitches, or selected current
+// in the difference: 296/237/251/251. Both angles before signs with selection or updates 312/148.
+// Assign signed target first and subtract selected or updated current 311/312.
+// NOT kept: all regress, including the 148 form with retail length and the J/depth store pair.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

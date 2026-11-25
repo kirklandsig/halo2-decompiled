@@ -994,6 +994,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Two-group table ordinal walk and mismatch scan, word/mask 174/172 each;
 // standard linear search 163/161; sorted search 191/193. NOT kept: all grow
 // the body and regress. Fallback EDX masking and split element addresses remain.
+// Packed group memcpy word/mask 165/135, memmove 185/188, byte comparisons 180/183;
+// packed handle memcpy word/mask 117/152.
+// Fallback EDX masking and the split element addresses remain. NOT kept: the handle copy ties and the other packed acquisition forms regress.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
