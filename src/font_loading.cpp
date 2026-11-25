@@ -1063,6 +1063,10 @@ static inline word font_character_pixel(long alpha, long color)
 // Word halves with wide OR, wide high half with word result, separate color and literal consumers,
 // or color after the optional store: 95/95/106/192. With per-arm length: 90/90/91/183.
 // NOT kept: the word forms reach retail length only with the shared length, and all forms raise the score.
+// The packed count join and separate literal loads still differ. Signed high-byte
+// add/OR, narrowed at the complete pixel or at the high contribution, each 45.
+// Each with per-arm length reaches 30. NOT kept: the per-arm forms still differ,
+// and the signed conversion leaves a 508-byte body with different literal loads.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

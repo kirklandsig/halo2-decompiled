@@ -2400,6 +2400,10 @@ bool function_1900a5(long index);
 // Each with a shared input receiver 726/726/726. Existing connection predicate with typed properties
 // or with both typed copies and shared receiver 743/727. NOT kept: the typed copies tie and the
 // predicate restores the decrement but raises the score.
+// The logon comparison and properties-based cursor still differ. Cooldown result
+// with zero first, timestamp first, initialized or separate arms: read gate
+// 641/641/633/641, write gate 643/643/642/643. NOT kept: the 633 form sets and
+// then tests a flag at the read gate, and the first difference remains +0x1a.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

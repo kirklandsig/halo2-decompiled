@@ -2029,6 +2029,10 @@ long function_10f5f0(long object_index);
 // reach 557 each and branch-produced requests score 562, all at 2264 bytes.
 // NOT kept: sharing reaches frame 0x1984 and first +0x54, but requires a byte match.
 // The four-point gain is below the retention threshold and the predicate byte still differs.
+// The 0x1990 frame and flag-result bytes still differ. Computed boost with
+// conditional second store in rise/fall/both 561/561/561. Unconditional second
+// store in rise/fall/both 583/578/569. Updated flag word 560, or 565 with both
+// unconditional stores. NOT kept: one-point gain, and the flag still uses a mask.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -5275,6 +5279,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // default, signed range or default range rotation 141/133/138/147. If/else angle with
 // the same rotation tests 130/126/133/132. NOT kept: even the 806-byte forms raise the
 // score, and the first projection operand and trig homes still differ.
+// The dot operand, cross loads and trig homes still differ. Separate first,
+// final or both left outputs score 183/161/212 through the staged cross and
+// 183/161/214 through the direct cross. Both with indexed projection 214/216.
+// NOT kept: the separate left outputs enlarge the frame and the body.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6392,6 +6400,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Retail comparison-stream case order in four dispatch spans, three adjacent pairs,
 // and the whole switch: eight at 759. The 0x18 frame agrees; the entry definition
 // and zero/result registers still differ.
+// The entry definition and zero/result registers still differ. Adjacent real
+// bounds for speed/turn/steering 765/758/758, speed-turn/speed-steering/turn-steering
+// 761/766/761, all pairs 758. With the entry definition 1020. NOT kept: the
+// one-point gains lengthen the body, and the entry definition merges the lookups.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
