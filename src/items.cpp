@@ -1041,6 +1041,9 @@ struct s_item_collision_bsp
 // last angular store with the spin draw/both/both plus sequential scale
 // 186/250/244. NOT kept: 186 at 1362 bytes gains four, and the instanced
 // plane allocations still differ.
+// Both signed plane queries agree. The left weight and contact-point homes differ.
+// Weight-seeded left, up, forward, left/up and all plane products 191/192/190/193/193.
+// Complete scalar rows with seeded left, left/up or left-basis products 191/193/191.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1469,6 +1472,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // alignment/projection/both, and all with SSE reciprocal: 249/250/290/234/275/278/314/302.
 // NOT kept: the intrinsic forms align the frame to sixteen bytes,
 // lengthen the body and change matched calls in the reduced image.
+// The scaled axis still spills on the 0xc0 frame.
+// Component-array reads for scaled axis, facing, marker up, marker forward,
+// paired alignment, paired projection or all rotation operands 130 each.
+// All component arrays with a separate alignment sum 178.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
