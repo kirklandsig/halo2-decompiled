@@ -722,6 +722,10 @@
 // Perspective store order for side/up/both/both with early fourth-component clear 536/536/536/535.
 // Both complete unscaled rows before the half reciprocal, divisors paired or per row, with opening
 // or retail store order 536/536/536/536. NOT kept: the one-point change leaves the 0x54 frame.
+// The rounded waves still share a slot in the 0x54 frame. Attenuate the existing
+// components in place at quarter/half/both 536/536/536. Join the mode store without
+// or with quarter/half/both attenuation 593/593/593/593. Name each attenuated product
+// at its clamp 537. NOT kept: the extent stays 2622 bytes and the frame does not change.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1021,15 +1025,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
-static inline void color4f_interpolate(color4f const *a, color4f const *b, real t, color4f *out)
-{
-    out->alpha = (b->alpha - a->alpha) * t + a->alpha;
-    out->red = (b->red - a->red) * t + a->red;
-    out->green = (b->green - a->green) * t + a->green;
-    out->blue = (b->blue - a->blue) * t + a->blue;
-}
-
-// score 215 (was 285): earlier 351, 233 and 250; frame 0xa8 versus retail 0xac (retail's u_step and V end sit in 8-byte spill slots at +0xa4/+0xac); half-width/first-edge XMM colouring and packer channel homes differ.
+// score 285 (was 285): earlier 351, 233 and 250; frame 0xa8 versus retail 0xac (retail's u_step and V end sit in 8-byte spill slots at +0xa4/+0xac); half-width/first-edge XMM colouring and packer channel homes differ.
 // MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
 // definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
 // slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
@@ -1685,7 +1681,10 @@ static inline void color4f_interpolate(color4f const *a, color4f const *b, real 
 // via a two-use `dword pixel` in retail's `vertex[0]` then `outer` order reaches 219; writing case 0's edges in natural x, y, z
 // order reaches 214 at 2596 B (all four natural x, y, z spellings — first-then-second, second-then-first, paired, chained x/y —
 // tie 214 at 2596 B). Kept at review without the offset change: case 1/2's two offset locals stay (a computed value written
-// at each of its two uses in place of a local is kept only with a byte match): 215 at 2596 B, plain check. Not kept: case 4 neighbor declared at top of else 341 (342 with pixel, 338/339 on 223, 337 on 219, 238
+// at each of its two uses in place of a local is kept only with a byte match): 215 at 2596 B, plain check. HELD at the
+// batch 346 gate (coordinator 2026-11-25): the 215 form alone flips matched 0xc2d00 (src/unknown_0bffa0.cpp, score 2 at
+// +0x12e, the /GL layout coin flip) in a split build, so the code stays as before (285) and the form is a lead until it can
+// land without that loss. Not kept: case 4 neighbor declared at top of else 341 (342 with pixel, 338/339 on 223, 337 on 219, 238
 // with inline case 1/2 on 285), case 4 vector3d_from_points3d + vector3f_add_scaled 563, case 4 vector3f_scale offset vector
 // 451 (449 with nbr+pixel, 223 on 219), case 4 normal before scale 328, source.uv point2f + definition.uv_scale vector2f 643 /
 // def only 634, state valid arm first 552, both case 1/2 and 4 scaled 444, case 0 pos ptr 482, typed tint fields 442, case 1/2
@@ -1737,7 +1736,11 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
             if (state->flags & 0x10)
                 state_width *= point->scale;
             width = state_width;
-            color4f_interpolate(&state->lower, &state->upper, scale, &color);
+            real *lower = (real *)&state->lower;
+            real *upper = (real *)&state->upper;
+            real *out = (real *)&color;
+            for (long i = 0; i < 4; ++i)
+                out[i] = (upper[i] - lower[i]) * scale + lower[i];
             if (point->flags & 2)
             {
                 s_ribbon_state *next = &definition->states[point->state + 1];
@@ -1745,10 +1748,14 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                 real next_width = next->width;
                 if (next->flags & 0x10)
                     next_width *= point->scale;
-                color4f next_color;
-                color4f_interpolate(&next->lower, &next->upper, scale, &next_color);
+                real next_color[4];
+                lower = (real *)&next->lower;
+                upper = (real *)&next->upper;
+                for (long j = 0; j < 4; ++j)
+                    next_color[j] = (upper[j] - lower[j]) * scale + lower[j];
                 width = (next_width - state_width) * transition + state_width;
-                color4f_interpolate(&color, &next_color, transition, &color);
+                for (long k = 0; k < 4; ++k)
+                    out[k] += (next_color[k] - out[k]) * transition;
             }
         }
         long object_index = source->object_index;
@@ -1773,7 +1780,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         switch (definition->mode)
         {
         case 0:
-            first.x = point->position.x; first.y = point->position.y; first.z = point->position.z + half_width;
+            first.z = point->position.z + half_width; first.x = point->position.x; first.y = point->position.y;
             second.x = point->position.x; second.y = point->position.y; second.z = point->position.z - half_width;
             if (input->normal)
             {
@@ -1857,9 +1864,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         outer->position.z = second.z;
         color.alpha *= function_42c50(&point->position, &normal, *(short *)(input->shader + 0x2c), (byte *)definition);
         color.alpha = PIN(color.alpha, 0.0f, 1.0f);
-        dword pixel = ribbon_pixel(&color);
-        vertex[0].color = pixel;
-        outer->color = pixel;
+        vertex[0].color = outer->color = ribbon_pixel(&color);
         vertex += 2;
         u += u_step;
         previous = point;
