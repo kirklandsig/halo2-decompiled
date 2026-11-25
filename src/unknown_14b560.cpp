@@ -1062,6 +1062,32 @@ bool function_e4050(long object_index);
 // unit is coloured after the datum and the unit object with EAX held by the step object. New forms: on that walk the
 // walk variable, the lookup, then the NONE root 171; the walk variable and the root ahead of the lookup 82 (433 B); the
 // step object named from the root 171; the unit declared bare and assigned before its test 171.
+// M3 lane 6 r242 (H2M_FAST with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all MATCH; control 43, aligned 25; body
+// unchanged). LEAD at 1, not kept: build/r242/lead-0x14df40-1.patch, 431 B, first difference +0x87, in the reduced image and
+// in the full image (the permuter's baseline builds). The form: no `unit` local, every use reading `player->unit_index` as
+// matched 0x14deb0 beside it does (the player test, the lookup, the 0xe4050 argument, the three exits), and the walk as
+// `long current = player->unit_index;`, the `unit_object` lookup, `long root_index = NONE;`, `while (current != NONE)
+// { root_index = current; current = parent of root_index; }`. Not kept because the gain needs the walk variable declared
+// ahead of the lookup: lookup, walk variable, root 171; lookup, root, walk variable 171; root, walk variable, lookup 114
+// (433 B); root, lookup, walk variable 171; walk variable, root, lookup 114. Why it works: the tested value then has three
+// references (its load, its test, the 0xe4050 argument) and ranks below the datum and the unit object, so it is left EBX
+// and the iterator index stays in the frame; the walk variable's own read of the field stays a load ahead of the lookup,
+// which keeps the walk's entry test on the copy even as a plain `long`.
+// Left at 1: retail copies the lookup's index from the tested value's register (`mov edx, ebx`), this build from the walk
+// variable (`mov edx, ecx`); the two reads of the field in that block are merged with each other here. On the lead: the
+// lookup's argument cast to `dword` 1, the walk variable's initialiser cast through `dword` 1 (same code each); a `dword`
+// walk variable 171; the lookup or the walk variable through a `long const &` bound to the field 171 each; the lookup
+// through the iterator's datum 171; the lookup on the walk variable 99; the lookup on a `unit` local kept for the test and
+// the 0xe4050 argument 171 (both reads then become copies of the tested value and it takes EAX), with the 0xe4050 argument
+// from the field 171, with the player test on the field 171; the walk variable copied from that `unit` local 108 (the entry
+// test folds), `dword` 171; `dword unit` for the test with the field reads 1 (same code). The permuter on the lead (81
+// tries, 900 s): nothing below 1. No forced allocator decision moves the row (60 tried); it is not a register choice.
+// Steps before the lead, on the NONE-root walk with a `dword` walk variable copied from `unit`: root, walk variable, lookup
+// or walk variable, root, lookup 81 (433 B: retail's structure, registers apart), the other three orders 171 (405 B);
+// `dword unit` with a `long` walk variable the same; the walk variable read from the field with the lookup on `unit` 171.
+// Diagnostic, restored at once: with 0xbaf80's pin lifted in the screen only, the real function called after the lookup
+// 171, ahead of it 113 (439 B), on the `unit` local 109: the open-coded walk is closer than the expanded call. Still
+// BLOCKED-BY 0xbaf80 for any form that calls it.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2675,6 +2701,13 @@ static __forceinline long player_round_ticks(real value)
 // the last two weapon lookups in the other order 709 (2747 B); `idle = 0; rest = 0;` as two statements 703; the attack
 // target preset NONE and set from the input on the 0xbae20 test 699 (2740 B; lane 16's form, a gain of four). Still
 // BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
+// M3 lane 6 r242 (H2M_FAST with 0x151b80 (5), 0x151aa0 (43), 0x151940, 0x14f2e0 and 0x14e970; control 703, aligned 451, 170
+// with registers and stack offsets masked, 34 calls against retail's 33; body unchanged). Looking for a natural statement shape
+// that gives the 0x80 site the one extra estimate level the repeated-test lead needs: the two `actions & 2` requests as two
+// top-level `if ((actions & 2) && f())` statements 703; the `actions & 4` request nested 703; the 0x80 site nested (`if (actions
+// & 0x80) { if (f() || g()) ... }`) 703; all three 703; the 0x80 site as `bool dropped = f(); if (!dropped) dropped = g(); if
+// (dropped) ...` 703 (all the same code, 34 calls: the first 0x151b80 call and 0xccd20 still expand). Still BLOCKED-BY
+// 0xe68c0's file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
