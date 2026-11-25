@@ -2380,6 +2380,11 @@ struct s_unit_motion
 // NOT kept: the accumulator takes XMM4 and returns with ret 4. It inlines
 // into 0xc7840 and loses 0x1e5af0 and 0x1faf80 in the preview. The current
 // velocity arrives on the stack and the two output paths remain split.
+// Single output block with exhausted-time exits 86, with a running velocity 69.
+// With a final completion assignment 108/69, phase-local durations 86/69,
+// direct time or original first-phase inputs on the running-velocity path 69/69.
+// NOT kept: every running-velocity form inlines into the caller and loses
+// both matched transitive callers. The stack velocity load and ret 8 remain.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -5686,6 +5691,21 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // up with the ordinary cross, staged second cross or branch selection 194 each;
 // select both new axes 196. NOT kept: the live aim reads through the unit where
 // retail copies it and grows the body to 781 bytes. Separate up grows the frame to 0x5c.
+// Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
+// Separate queried up with branch publication 218/218, or publication after its correction 211/211.
+// NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
+// The 0x50 frame remains. The first cross still loads up.i before the forward copy and the last row
+// consumes the forward scale. NOT kept: staged k with leading pair copy grows to 773 bytes and stages a
+// one-use component. The 767-byte forms raise the score. staged k with leading pair copy 99; staged i
+// with trailing pair copy 183; staged i/j with k copy 172; staged j/k with i copy 182; native array copy
+// k/j/i 173; aggregate aim copy 226; separate yaw trig results 169; aggregate direction publication 213.
+// Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
+// Separate queried up with branch publication 218/218, or publication after its correction 211/211.
+// NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
+// Read aim in the first cross with copy before/between 210/208, in the second with
+// copy before 203, or in both with copy before/between/after 213/213/211.
+// Staged first-cross helper with first-live/between or both-live/after 208/211.
+// NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5895,6 +5915,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // before bound tests 66.
 // NOT kept: in-place rate scales gain four at retail length. The angular clamp registers
 // and reused coefficient still differ.
+// Angular bounds from actor/default value selection 210, actor candidates with fallback 208,
+// or explicit test outcomes 209. Separate final rate bounds selected, branched or initialized
+// from rate candidates 133 each. Both joins as selected results 213, or as candidates 200.
+// NOT kept: all grow and score higher. Clamp registers and coefficient reuse still differ.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -8799,6 +8823,11 @@ real function_50650(real cosine);
 // Paired outputs 591, idle-arm defaults 544, late reciprocal with
 // original/separate speed outputs 498/505. NOT kept: all forms tie or
 // regress. The frame and speed slots still differ.
+// Framed directions through shared basis dots, setter, or both 491/491/491.
+// Return by value 628, with shared dots 627. Pass by value 669, with setter
+// 669, and pass/return by value 703. NOT kept: the shared operations tie.
+// Returned values raise the score, and by-value inputs also lose the two
+// matched transitive callers. The frame and step arguments still differ.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -9089,6 +9118,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Object-header or object accessor for the grenade owner alone or with the
 // initial lookup, each with or without a named grenade handle, 62 in all
 // eight forms. The owner load order and call setup still differ.
+// Sampled player/object, player/object/team, player alone or object alone
+// before publishing the owner, player first or object first: 62/58 in each pair.
+// NOT kept: the object-first forms fix the first owner block through +0x14b
+// at 1602 bytes, but four points is below the threshold and the one-use
+// samples require a match. The damage flag, later call setup and shake remain.
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9566,7 +9600,7 @@ struct s_unit_melee_collision
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 484 (was 493): The frame remains 0x180 against 0x17c. The unit and both fan ordinals still use different homes.
+// score 447 (was 484): The frame remains 0x180 against 0x17c. The unit and both fan ordinals still use different homes.
 // Earlier detail: The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
 // MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the
@@ -9738,6 +9772,19 @@ struct s_unit_melee_collision
 // 492/533, scalar row products 493, aggregate row vector 489 and a whole-ray assignment 489.
 // NOT kept: the 0x17c forms shorten to 2205 bytes. Row products held across the inner
 // loop grow the frame to 0x184 and the body to at least 2240 bytes.
+// The range snapshot still gives a 0x180 frame and the unit still spills through the fan. With per-
+// product range, the following forms recover 0x17c but shorten the function and raise the score.
+// interval melee selector 535; single collision type read 527; direct fallback before self damage 520;
+// single final parent handle 531; single final parent and seat 531; half-open signed fan 531; named
+// trace and surface slots 531; separate clamp stores 531.
+// The 0x180 frame and fan ordinal homes still differ. The existing player-index
+// query inlines the second checked lookup and its fallback.
+// indexed ray with cached range 485, indexed ray with per-component range 533.
+// indexed transverse sum 533, indexed ray with direct unit aim 521.
+// existing player-index query 447, query with indexed live range 536.
+// shared across scale 532, shared up scale 532.
+// shared transverse stages 533, three shared vector operations 480.
+// NOT kept: live-range forms recover 0x17c but shorten the body. The other ray forms tie or regress.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
@@ -9959,8 +10006,7 @@ impact:
 
 				if (object && object->unknown13c != NONE)
 				{
-					object = (s_unit *)function_badc0(unit_index, 3);
-					long player_index = object ? object->unknown13c : NONE;
+					long player_index = unit_get_player_index(unit_index);
 					long controller = *(short *)((byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
 
 					if (controller != NONE)

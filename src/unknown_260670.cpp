@@ -399,6 +399,17 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // workspace names 440; sorted array scoped to selection 440; path records after the empty-count return 440; in-range
 // continue 440; finite comparison before invalidation 480; default reference as two members 780; chosen reference as
 // two member assignments 577. The sorted evaluator still expands and the owner lookup remains a call. Body restored.
+// M3 lane 16 r187 (h2m fast with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30 and 0x13e2d0, all MATCH each run; control 440 at
+// 3097 B, aligned 293, register-and-slot-masked 136; lane 7 r224's five-piece lead rebuilt 418 at 3050 B, aligned 211 /
+// 116; body unchanged). Frame view: the loop counter's cell (the sorted loop's `i` with three short-lived temporaries,
+// 13 references) has a density between the two flag bytes' (4 and 3 references), which is what keeps them a dword
+// apart; retail's cell also holds the expanded owner lookup's result and sorts ahead of both. The owner lookup written
+// in place (0x262a30's two statements, with a copy of its file-local table helper; a helper body by hand, diagnostic)
+// on main 645 (3175 B), on the lead 519 (3144 B): the link then expands 0x13e2d0 as well, exactly as with `inline` on
+// 0x262a30's definition, where retail keeps it a call, so the in-place form is no way round the held inline. The owner
+// store as an if/else (retail stores in each arm through a reloaded pointer) on main 639 (3102 B), on the lead 443
+// (3055 B, aligned 209 / 113), on the lead with the in-place lookup 535 (3158 B, aligned 208 / 96). Still BLOCKED-BY
+// 0x262a30, and the expansion would also need 0x13e2d0 to stay a call at that site.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

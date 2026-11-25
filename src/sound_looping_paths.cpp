@@ -149,6 +149,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // score 837 (was 846): The entry zero uses EBP instead of ESI,
 // and the target count, primary source and query arrays receive different homes. The retail query keeps its
 // full-width count through the walk and reloads a sound entry before testing its tag.
+// M3 lane GB r3 (fast with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730, 0x18dc90; control 837, 3327/3327 B, +0x2, all 8 companions MATCH; 43 trials, body unchanged): on main's 837 base: consistent 2-caller loop_path_fade_time (0x18bb80 idiom) + fade data_iterator_next_inlined 940 (3274 B, al 612, mask 499; keeping fade loop 936; direct g_4e0348 both loops 885; definition ptr both loops 940), + single-ptr loop_path_start 963 (alone 867), + 0x2195f0 linear shape 924 (alone 857 at 3327 B; scaled-only 851), all three 914 (mask 374), + approach_126660 961, + word* flags 961, + direct g_4ed28c 938, + reused iterator 937, + override order & scale local 961 (3242 B, mask 324); s_levels 3-real copy 923; s_decibels override += 838; flag_bits if-form 837 (same code), bitfield assigns 855. On counted-list + const-ref lead (+0x27, frame 0x4e0, 851 at 3302 B, al 332, mask 156): consistent 2-caller loop_path_fade_time 854 (al 326, mask 142: matches both fade-time address forms); separate fade iterator 833 (3327 B); s_levels copy 888; s_decibels 851; direct g_4ed28c 851; bg predicate / word_flags_set 851; no query flags local 855; !(fabs(-range) < 0.0001f) + distance local 856 (mask 139: removes fxch); existing slot pre-inc 835 (3327 B); flag_bits if-form 831 (3327 B, al 338, mask 151); flag_bits assigns 852 (al 300, mask 132: drops mov ebp, 0x200 hoist, moves pool out of EDX to EBP, puts NONE in EBX across target loop and hoists g_4e0348 into EBX for fade scan, matching 52 consecutive target-allocation/start instructions).
 // MiniMax E (11-19): score 846 (was 846): no new form, no lower score. Read from the listing again: retail zeroes
 // ESI at the entry and keeps the primary at frame+0x18 while our body zeroes EBP and keeps the primary at frame+0x24,
 // retail's four query arrays start at frame+0xdc with the gains first and ours start at frame+0xe0 with the clusters
@@ -975,10 +976,31 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // With full-width query and choice counts: 937/934. Overlaid on the query gain buffer:
 // 877/900 with short counts and 937/934 with full-width counts.
 // NOT kept: the records recover the 0x4e0 frame, but the entry zero and target home still differ.
+// M3 lane GA r1 (fast with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730 and 0x18dc90;
+// control 837, aligned 1015, masked 417; 0x18bb80 MATCH throughout; all restored): on main's 837 base, reading g_4ed28c directly
+// (no pool local) 843; + CF decibel helpers and fade_time pointer 874 (aligned 693); real scale = g_4670fc in flags & 8 904;
+// + long source + def pointer in second scan 912; single sound pointer in loop_path_start 867 (3299 B). On the count-first
+// records lead (0x4e0 frame, ESI zero): base 914 (3253 B, aligned 432, masked 177); direct g_4ed28c 914; nested query ifs 914;
+// fade_time pointer + def pointer + first-scan source local 926 (aligned 427, masked 172); used[2] before existing 926;
+// bitfield union on flags 920 (aligned 408, pool moves to EDI); real scale = g_4670fc in flags & 8 918 (aligned 419, masked 166:
+// matches retail's movaps xmm0, xmm7 scaling schedule); flags local + long source in second scan 918 (aligned 395, masked 147:
+// second scan matches movsx + cmp -1); flags local before duplicate scan 910 (aligned 386, masked 147: query loop index i and
+// duplicate scan pointer now take retail's EDI and spill at [esp+0x14]); build def pointer + word mask clear 919 (masked 142);
+// adding a g_4686c4 writer (0x11c1b0) to --fast stops BL hoisting and puts NONE in EBX alongside pool in EDI (matches loop_path_start's
+// bx stores); diagnostic with g_44a0b4 floor reloads via const-ref pin on flags-before-dup + 2nd-scan source: 818 at retail's 3327 B
+// (aligned 273, masked 141; saved in build/ga1/18ae80_t20_cf_reloads_flagsdup_2ndsrc.log), and + single sound pointer in loop_path_start
+// 856 (3290 B, aligned 260, masked 135: matches both loop_path_start flag/gain stores). Left on that lead: g_44a0b4's 14 reloads
+// (extern two-real object in another file), query sound EBP / tag ECX swap, and first-scan movsx + word mask 0xfdff.
 // Override attenuation as field or linear factor before the indexed walk 881/838,
 // under the positive extent 875/887, with a live-count cursor 892/893, or with a
 // fixed populated range 890/850. NOT kept: all raise the score and retain the
 // 0x4dc frame; the existing-count, target-count and query-buffer homes still differ.
+// The 0x4dc frame, EBP entry zero and target and query homes persist. Attenuation and flag snapshots
+// keep retail length but raise the score. The conversion count and target cursor forms shorten the body.
+// pre-walk attenuation 839; pre-walk attenuation with long query count 911; post-selection flags
+// snapshot 838; shared flags and pre-walk attenuation 838; converted count published once 953; target
+// end pointer 949; primary from both cluster outcomes 932; completed target append and primary result
+// 930.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

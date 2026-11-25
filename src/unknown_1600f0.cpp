@@ -1789,6 +1789,14 @@ PRIVATE inline long score_string_list_1608e0()
 // earlier foreground / foreground and caption rectangle 679/679. Height, scores and
 // row-total names in two orders 679/679. Entry row and caption declarations, with or
 // without separate title declaration, 679/679. Frame, viewer and origin homes still differ.
+// Separate caption presence for score/time/both 710/682/710; signed-word widths
+// alone or with score/time/both 679/710/688/709. Both with time width subtracted first
+// 709. Frame, viewer and origin homes still differ.
+// M3 lane AO r1 (fast; control 679): the player row's team byte as a plain `char` copy in place of the reference 725
+// (2844 B); the player place as `short` 685; the team row's team as `short` 693 (2888 B); x as `long` 703 (2856 B); the
+// width folded into x's expression 679, the row count named once for the total and the height 679 (same code each); the
+// header's place and name rectangles with right and bottom summed from the row position 714 (2856 B), the place
+// rectangle alone 679 (same code). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

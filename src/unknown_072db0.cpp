@@ -2365,10 +2365,31 @@ bool function_1900a5(long index);
 // unavailable reset before promotion 658 or vacancy 658, team-first eligibility 646,
 // nested vacancy 643, available vacancy first 649. NOT kept: the equal scores leave the
 // cursor at properties and the other forms raise the score.
+// M3 lane GA r1 (fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, all MATCH; control 643 at 2862 B, aligned 699 / masked
+// 297). New structural cause: `g_50c460..g_50fd14` belong inside `s_search_value_globals g_509450` (at +0x3010..+0x70c4 of
+// the existing 0x70f8-byte struct). Moving them into `g_509450` restores retail's aliasing in the completion loop (reloading
+// `record->properties`, `record->count` and `g_50c470` each pass as retail does, and placing the team/failed byte at retail's
+// +0x13): alone 646 (2878 B, aligned **385**, masked **276**); with `last_write` local 652 (aligned 386), with `last_read` +
+// `last_write` 654 (aligned 385), with `property->type == 0 ? 0 : ...` and member-address identity ternary + `last_write` 667
+// (aligned 358), with named free space + `last_write` 650 (2862 B, aligned 384, masked 267), with `query_time_now` if/return
+// + space + completion + `last_write` 673 (2830 B, aligned 329, masked 236); with `switch (online_task_poll(...))` on read &
+// write polls + `failed = true` in else (lead, not kept: switch/flag) 677 (2830 B, aligned **298**, masked **216**; whole
+// completion loop and write section/poll/offline tail 0x753f2..0x755cd match retail); plus request `dl` flag 647 (2846 B,
+// aligned 315, masked **215**). Also tried on 643 base: `s_cache_property *properties` with literal 6 + `+= 6` ahead of fill
+// 704 (indexed or stepped in body); `query_time_now` if/return alone 695, with `last_write` 694; completion `type == 0` +
+// member ternary + `failed = true` in else 674 (same via `g_509454[group]`); both poll switches alone 700, with `query_time_now`
+// + `last_write` 683; request `dl` flag alone 639 (2878 B), with `last_write` 636 (2878 B, under keep bar and flag form).
+// Restored (body unchanged); `s_search_value_globals` lead saved in build/ga1/74aa0_t14_full_combo.log.
 // Valid record pointer as a conditional or guarded assignment 759/759, cleared after
 // binding 726, and chosen from a bound record 765. Valid identity pointer 758/758,
 // valid properties pointer 749, and bound record with identity gate 758.
 // NOT kept: the record result at retail length still changes the cursor and scores 726.
+// M3 lane GB r2 (20 trials, fast control 643 at 2862 B with 8 peers MATCH; plain confirmed 617 at 2862 B, all 40 other functions in this file plus 0x641a0, 0x8df50, 0x8dd70, 0x80940/aa0/bf0/d70, 0x1900a5, 0x192e60 MATCH, 0 address-target diffs):
+// Review (m3): NOT kept. The 617 needs two forms kept only with a byte match: the fill's stores in an order picked by score
+// (record->properties ahead of record->count, properties_used += 6 ahead of the loop) and query_time_now() rewritten as
+// if/return; with main's order and helper form the same body scores 704, the helper form alone 654, the struct alone 646.
+// Patch held (LANES/leads/held-74aa0-gb2-617.patch). The lane's 643 -> 617 form (aligned 631 -> 349, masked 680 -> 492): loose g_50c460..g_50fd14 folded into s_search_value_globals g_509450 (exact +0x3010..+0x70c4 offsets matching memset(&g_509450, 0, 0x70f8) in callers), query_time_now() as 0x75870's if-return form, two-use last_read/last_write and record_space/property_space locals, three-use properties pointer rolling the 6-property loop with properties_used += 6, type-5 duplicate continue, named completion owner/unknown10 fields, failed = true in the incomplete arm, and goto-free state < 0 || state > 1 polls.
+// Intermediate forms on g_509450 struct: struct alone 646; +clock 657; +completion (no type==0 swap) 634; +last_write 651; +last_read/last_write 651; +dup continue 648; +properties pointer 657; +ptr+dup 661; +ptr+space 654; +lw+dup 667; +lw+ptr+dup 676; +polls/space/ptr/dup/last_read/last_write 617 (kept). Rejected earlier forms: struct+clock+comp+polls 655; +last/space 693; +ptr 666; +ready flag & poll gotos 629; +logon >3 760; loose globals with comp+polls 696; struct+last+comp+space 660.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

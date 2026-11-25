@@ -1862,6 +1862,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Unit, biped or both references at their consumers 176 each. Movement, unit and movement,
 // or all three references 617 each. All three pointers at the consumers or beside the position
 // query 617/652. NOT kept: each increases the score and the movement views grow the frame to 0x100.
+// Material byte-address addition with integer or pointer storage: nested admission and selected address
+// 158 each, failure first and complete conditional result 659 each. NOT kept: the first forms tie and leave
+// the definition spill displaced; the complete assignments shorten the body by 32 bytes.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4669,6 +4672,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Movement pointer or reference, at entry or in the movement gate, with conditional or
 // branch-assigned threshold: 646 in all eight forms. NOT kept: all enlarge the existing
 // 0x7c reduced image and leave the frame there against retail's 0x78. Reduced control 598.
+// Stationary gates split at turn state, at object flags, at both, or with the animation exception first:
+// 602 each with a long exception, 645 each with a bool. NOT kept: long forms tie the reduced control,
+// and bool forms grow by four bytes. The full changed-byte and flight-threshold homes still differ.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6487,6 +6493,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // with ordinary/staged side, early input copies, or ordinary final cross
 // 333/333/342/333. The 0x3c frames and earlier differences lose retail's
 // 0x24 prefix. The complement spill and final forward load still differ.
+// Float CRT cosine or sine alone 93/93, with sine produced first 125/125, with a double angle 97/97.
+// Both float entries with sine first 175, or with a shared rounded angle 159. NOT kept: every form raises
+// the score and the paired forms shorten past retail. The first rotation still spills the cosine complement early.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -7564,6 +7573,11 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Definition, state and animation ID spill homes still cycle. Typed unit access for state, control flags,
 // and the late timing read scores 586 for all seven combinations. A named view for both entry reads
 // also scores 586. The original body and include list are restored.
+// A shared forward sample for both copies, by value 638 or through the
+// setter at the biped/output/both 660/663/667. Three scalar components for
+// both stores 636 with each of the four publication forms. Reduced control
+// 586. NOT kept: all regress, and the definition/state/animation homes and
+// inlined position completion still differ.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

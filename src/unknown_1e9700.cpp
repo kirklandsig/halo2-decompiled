@@ -392,6 +392,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // the enable test 99 (430 B), the team maximum so 96 (430 B), both 101 (428 B), both with the increment through the
 // statistics address and the row formed after it 105 (430 B, first +0x16), the player one with that increment 103.
 // Body unchanged (76).
+// Existing player statistics record for consecutive/recent/timestamp in all seven subsets 85 each.
+// Typed increment before binding the row 85. NOT kept: all reach 434 bytes but exchange the opening player and kind registers.
+// The later enable reload and previous maximum home still differ.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

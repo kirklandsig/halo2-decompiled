@@ -718,6 +718,10 @@
 // both point setters with opposite cross between updates 646.
 // Shared scale then vector sum on mixed wave, short wave, both, or both with overlapping crosses 698/561/664/649.
 // The same four starting from the staged first cross 698/561/664/649. NOT kept: those with the 0x60 frame grow the body without separating the wave slots.
+// Retail's frame still holds separate rounded waves and the first cross products.
+// Perspective store order for side/up/both/both with early fourth-component clear 536/536/536/535.
+// Both complete unscaled rows before the half reciprocal, divisors paired or per row, with opening
+// or retail store order 536/536/536/536. NOT kept: the one-point change leaves the 0x54 frame.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1648,6 +1652,22 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // stores 285 (same code); the two edge points as six reals 285 (same code); the four u / v stores moved down to the position
 // stores 373; the next index read ahead of the previous-point update 498 (2600 B). Re-measured: the object index read from the
 // source at its three uses 374 (2588 B); the tint as three statements 447 (2584 B).
+// M3 lane 3 r307 (H2M_FAST with 0x42c50, 0x42b20, 0x43720 and 0x43740, all MATCH each run; control 285 at 2596 B, frame
+// 0xa0). Retail's cell map again: its three top homes are 8 bytes each with only the low dword used, written once and
+// read once with single-precision moves: the negated u step (-0x18 from the entry ESP), the V end (-0x10) and, in case
+// 0, the copy of the point's y kept across the normalize call (-0x08). This build's frame view has all three as 4-byte
+// objects (the two named locals and a scalar piece of `first`), 2 references each. The loop end adds in retail's order
+// already (the step loaded, the u added from its home). Looking for what makes an 8-byte home with 4-byte accesses:
+// the u step declared double 629 (frame 0xac, but the scale and negation go through the x87 stack); the half width as
+// `width * 0.5` with a double literal 576 (frame 0xa8, an x87 multiply); the negation as `0.0 - u_step` 626 (frame
+// 0xa8); the V end as `(real)((double)v_width + v)` 628 (frame 0xa0); case 0's first.z as `(real)((double)z +
+// half_width)` 408 (frame 0xac, 2600 B, an x87 add); the V end as a double local set from the float sum and read back
+// as real 521 (frame 0xa8: the sum goes through x87 and is stored as a dword into the 8-byte home, so a double local
+// read only as real does keep an 8-byte home with a 4-byte store); the V end and the negated step copied into double
+// locals after the float arithmetic 587 / 511 / both 565 (frames 0xa8 / 0xac / 0xa4, x87 transfers). Re-measured on
+// this base: the V end formed at the outer vertex's store, either operand order, 287 / 287 (frame 0xa0); the negation
+// at the advance as `u += -u_step`, `u -= u_step` or `u = -u_step + u` 603 each (frame 0xa8, 2596 B: the negation
+// stays in the loop); those with the V sum at the store 602 each.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

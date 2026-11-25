@@ -1863,11 +1863,40 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 36 MATCH) the same three values; both together the same; 0x193250 returning 0x193300 from each of its two cases
 // instead 868 (2848 B) with 0x193250 lost (56 B for 100). So the choices do not follow the callees' spelling, and the
 // opening lookup still needs one more two-way test in front of it that emits no code.
+// M3 lane GA r1 (fast with 0x73530, 0x63220, 0x192e60, 0x193300, 0x1932c0, 0x1931a0, 0x193250, 0x631f0; control 871 at
+// 2780 B, aligned 1016 / masked 616, 0x73530 MATCH; body unchanged). Tested 11 untried combinations of the single-exit /
+// 0x63220 / long-histogram / result-first helpers: all 5 file-local helpers in result-first form on base 919 (2724 B,
+// aligned 795, masked 399, 0x73530 MATCH); that + `if (!balance_teams_by_count) result = false;` + 3-way add_mask minimum
+// 924 (2724 B, aligned 792, masked 399, 0x73530 MATCH); single-exit + 0x63220 + `long histogram[16]` memset 913 (2868 B,
+// aligned 887, 0x73530 8); same with `word histogram[16]` 957 (2920 B, 0x73530 8); same + all 5 result-first + balance
+// `if` 891 (2868 B, aligned 791, masked 397, 0x73530 8) and with word histogram 897 (0x73530 8); that + excess early
+// `{ result = false; return result; }` + 3-way add_mask minimum 935 (2892 B, aligned **788**, masked **390**, 0x73530 8);
+// single early return after `else if (type == 5)` + 0x63220 + long histogram 880 (2836 B, aligned 819, 0x73530 8); opening
+// `{ result = false; return result; }` + type-5 + `if (result)` + 0x63220 + long histogram 1141 (2480 B, 0x63220 stays a
+// call, 0x73530 MATCH); positive nested 5-term `&&` admission + 0x63220 + long histogram 1157 (2464 B, 0x63220 a call,
+// 0x73530 MATCH); single-exit + 0x63220 + long histogram with summary read before variant_index/variant 914 (0x73530 8).
+// Confirms every form that inlines both the opening 0x192e60 and 0x63220 spills session off EAX and breaks 0x73530 (8).
 // Round 469: cached machine-scan count with conditional false store/Boolean AND/logical
 // update 871/878/858. Pointer range with the same updates 883/879/863. Cursor advanced
 // at the comparison with conditional false store or Boolean AND 883/880. NOT kept: 858
 // loses 0x73530. The 863 range and repeated result stores differ from retail's countdown
 // and conditional false store. Frame 0xd0 versus 0xb4 and lookup expansion remain.
+// M3 lane 16 r187 (h2m fast with 0x73530, 0x63220 and 0x192e60; control 871 at 2780 B; lane 3 r304's guarded lead rebuilt
+// 858 at 2828 B; body unchanged). Every matched caller of 0x192e60 on main (0x73530, 0x741f0, 0x90880 and the others)
+// keeps its top-level lookup out of line only inside an inline-depth 0 region, so retail never expands the lookup at
+// an entry-level site and expands it only inside the hotter player loop; this build expands it at every site that
+// runs once. On the lead's exit structure (the chain clearing the result, one exit test after it, one after the type-5
+// scan, the loop through 0x63220): the plain opening 945 (2900 B, 0x73530 8, re-measured); the index computed by a
+// written-out `live ? value49c8 : NONE` 947; as a NONE default overridden under the liveness test (0x73530's own
+// spelling) 945; the lookup written in both arms of the liveness test (`if (live) { index = value49c8; variant =
+// lookup(index); } else { index = NONE; variant = lookup(index); }`) 850 at retail's 2828 B with 0x73530 MATCH: each
+// arm's call then runs at half the entry's rate, neither is expanded and the two calls merge back into retail's single
+// call after the join. Not kept: two arms that differ only in the index are a steering form (patch
+// build/r187/lead-7e210-850-two-arm.patch in the m3-lane16 worktree). Callee side, with the plain opening: 0x1934f0
+// declared without its noinline 945 (same code everywhere); 0x192e60 with two returns 1043 (0x192e60 itself 60 B for
+// 68, 0x63220 150 B for 94); 0x192e60 with the validity chain written in its own body 945 (0x192e60 14).
+// M3 lane GB r2 (13 trials, fast control 871 at 2780 B, aligned 1306 / masked 1026, 0x73530 and 7 callees MATCH throughout; body restored):
+// Result-first switch helpers (0x193440/0x193400 shape) 905 (2752 B, aligned 1159); all 5 result-first helpers + ratings_party_limited(variant) in add_mask + 3-way add minimum 899 (2744 B, aligned 1141, masked 917); 3-way add minimum + ratings_party_limited alone 872 (2784 B); inverted add_mask branches 872 (2784 B); switch add_mask 894 (2748 B); merged team-type if 908 (2752 B); merged team if + if (!balance_teams_by_count) result = false 910 (2748 B); adding_group before out->maximum + ternary first = first == NONE ? count : first 877 (2780 B); single rating read + pre-loaded group first_rating 890 (2764 B); { result = false; return result; } at opening and excess exits + if (!balance) 917 (2732 B); local group_mask accumulator + early adding_group 888 (2768 B); combined retail-shaped lower half 885 (2724 B, aligned 1129, masked 935); combined + scoped machine_ids + memset long histogram[16] 955 (2676 B, aligned 1109, masked 916). All retail-shaped lower-half forms cut aligned/masked diffs while shortening the already-short body (top 0x192e60 still expands and 0x193300/0x631f0 stay calls).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
