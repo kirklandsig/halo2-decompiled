@@ -1077,6 +1077,10 @@ static inline bool teams_enabled_19e1c0()
 // Separate text buffers in every token arm from the first write or the outer arm, with shared
 // or role-specific names: 390 each with the qualified result and 691 each with ordinary result.
 // The ordinary result restores 0x204 but still merges the name-copy tails.
+// Initial result clipped from capacity or token length. Zero at optional-arm
+// entry or on rejection, with engine success publication or miss-length
+// selection: 663/659/490/626/664/659/490/626. NOT kept: count rises, and the 0x204
+// form merges name tails. Token preload and EBP capacity still differ.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

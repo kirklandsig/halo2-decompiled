@@ -1083,6 +1083,20 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Current-cluster predicate shared after provider, before provider, within the palette arm, or
 // across weighted winners: short slot 733/741/739/717, signed byte 729/740/735/713.
 // First difference moves into accumulator setup. Retail repeats the cluster comparisons.
+// Existing tag block with direct members or one block pointer, direct or saved previous index:
+// short slot 607/607/607/606, signed-byte slot 700/700/700/699. NOT kept: the best count falls by one,
+// and the provider result, native palette compare and shared lookup test still differ.
+// M3 lane GA r11 (fast with 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0, all MATCH across 42 trials;
+// control 607 at 3832/3817 B, mk=169; body unchanged): clean `arg_3->field_6c = local_2;` before reciprocal 604 (-3,
+// under keep bar); clean `fog_accumulate` (from 0x131030) / `efb3` weight-first / `efb5` 4-scalar alone 703/705/708;
+// all four combined on main's short slot (no mixing, no new helper) 688 at retail's exact 3817/3817 B (mk 169->47:
+// recovers `cursor=EBP`, `cluster_index=EDI`, `local_13=ESI`, `zero=XMM7` and all three `function_12efb2` schedules);
+// with inline publications + short/per-use slot 701/703 (mk=35). Match-only probing on GB7's lookup-helper form:
+// `static inline` else-only lookup restores `xor ebx, ebx` at 3817 B (`L00` 704, mk=20); using `cluster_index == arg_0`
+// in the palette weighted test (`L07`) drops cursor priority by 1 use and breaks the 3-way GP rotation, snapping all
+// 4 callee-saved registers to retail (`cursor=EBP`, `cluster_index=EDI`, `local_13=ESI`, `record=EBX`, `zero=XMM7`) at
+// 555 (mk=13), but spills `cluster_index` 4 B across `tag` (`frame=0x4824`, `+0x1`, 3824 B) and mixes local/field reads;
+// `static inline` full lookup + tag/fallback/palette block variations (`C00..C11`) 678..739 (mk 17..27; clean `C11` 704).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

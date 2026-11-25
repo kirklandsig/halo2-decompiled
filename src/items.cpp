@@ -1036,6 +1036,14 @@ struct s_item_collision_bsp
 // Y/X/Z corrected coordinate locals with fields, setter or initializer 190 each.
 // Y/X/Z scaled normal components 194; paired distance contribution 190.
 // NOT kept: all retain 1366 bytes and leave the normal and contact homes displaced.
+// Shared unit-real draw for speed/spin/both 246/190/246. Sequential spin
+// scale with the spin draw or both draws 196/240. Third product at the
+// last angular store with the spin draw/both/both plus sequential scale
+// 186/250/244. NOT kept: 186 at 1362 bytes gains four, and the instanced
+// plane allocations still differ.
+// Both signed plane queries agree. The left weight and contact-point homes differ.
+// Weight-seeded left, up, forward, left/up and all plane products 191/192/190/193/193.
+// Complete scalar rows with seeded left, left/up or left-basis products 191/193/191.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1459,6 +1467,15 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // j/i/k order 206; staged cross 206; depth-seeded projection 206; complete alignment
 // local 193; shared doubled scalar after projection 206; independent cross with
 // normalized scalars 206. NOT kept: all retain frame 0xc0 and grow the rotation.
+// The 0xc0 frame and the scaled axis spill still differ.
+// Scalar SSE alignment/projection/both, rotation weights alone or with
+// alignment/projection/both, and all with SSE reciprocal: 249/250/290/234/275/278/314/302.
+// NOT kept: the intrinsic forms align the frame to sixteen bytes,
+// lengthen the body and change matched calls in the reduced image.
+// The scaled axis still spills on the 0xc0 frame.
+// Component-array reads for scaled axis, facing, marker up, marker forward,
+// paired alignment, paired projection or all rotation operands 130 each.
+// All component arrays with a separate alignment sum 178.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1587,6 +1604,12 @@ struct s_item_flags_view_10b850
     byte flag7 : 1;
 };
 // score 813 (was 824): Frame 0x154 versus 0x12c, entry Boolean byte stores and settle/bounce order still differ.
+// GA10 (17 fast trials, baseline 813 at 4096/4096 B, body unchanged): byte_flags_set 871 (fr=0x148); spin no-hoist / direct-mem +
+// cross3f_staged 858/880 (mk 763->718/697); item_dot i+j+k 813; vector3f_add_scaled + vector3d_from_points3d 890 (fr=0x148, exact
+// [edi]/[edi+4]/[edi+8] integration/ray); SSE >=0 flow abs 907 (fr=0x13c); TEST_FIELD_BIT flag14/flag4 + tail cross3f_staged 841;
+// combined clean forms 857-921 (fr=0x13c, al 927->672, mk 763->487, exact flow/0x168f40..0xb8d30 sequence); entry local bools 882
+// (still fold to shr/test); scoped ray 920/931 (fr=0x130, 4 B from 0x12c due to carrier spilling without the entry flag byte slot
+// and 0x16a040 staying noinline).
 // GB8 (36 fast trials, plain-confirmed 813 at 4096/4096 B, al 929->807, mk 622->589; 17 peers + 0x109a00 + 0x54590 MATCH):
 // KEPT semantic/retail fixes: swapped `function_109a00` args fixed to `(object_index, &carrier_delta, true, &local_c01284_3)`
 // (matches retail 0x10b901 and matched 0x109a00; alone 824), `switch (collision.type)` + `TEST_FIELD_BIT` bit-6 for `surface`
@@ -2044,6 +2067,15 @@ struct s_item_flags_view_10b850
 // flow query, selected by a conditional, a guarded default, or either branch order:
 // 824 each with separate vectors, 881 each with shared ray and flow storage. NOT kept:
 // the shared form shrinks the frame to 0x148 but shortens the body and raises the score.
+// Shared predicted coordinates for aggregate stores, paired stores, displacement
+// setter or both setters, then a staged step vector, step held in the ray with
+// component or helper subtraction, and named steps in paired stores: 891/886/891/891/839/858/857/909.
+// NOT kept: the smaller 0x148 frames fall short of 4096 bytes and raise the score.
+// The entry Boolean stores and retail frame 0x12c still differ.
+// The motion frame and entry Boolean byte stores still differ. Explicit real zero subtraction for slow speed,
+// impact threshold, lift, both flow steps, lateral magnitude, complete flow, shared ray with complete flow,
+// and shared ray with all subtractions: 855/842/813/813/878/878/891/871. NOT kept: the overlap forms shorten the frame to 0x144
+// but expand the body and raise the score.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

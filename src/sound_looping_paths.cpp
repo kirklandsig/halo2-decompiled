@@ -1044,6 +1044,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // read puts retail's extra code in the second scan's inside/portal selections, the PIN clamps and the primary's detail
 // lookup, not only the choice addressing); the scanned sound's tag named once for its test, the duplicate scan and the
 // store 838; the range test as `fabs(range)` (no negation) 865.
+// Active list with a terminal NONE slot, final or rolling marker for index/index, index/cursor,
+// cursor/index and cursor/cursor append/search: 851/863/845/876/855/855/848/862. NOT kept: cursor append and indexed
+// lookup restore the 0x4e0 frame but shorten the body. The other forms enlarge the frame, and
+// all depart from retail's counted walk. The entry zero and count/query homes still differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

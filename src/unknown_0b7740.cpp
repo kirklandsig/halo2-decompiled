@@ -1603,6 +1603,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // matrix lookup only 20 (same code each); only the mirrored default in an else arm (parent initialised at its
 // declaration) 290 (1404 B); only the parent default in an else arm 32 (1395 B); the flag passed to the 0xbdc40 call as
 // `parent_index != NONE && bit` with only the matrix under the test 42 (1395 B).
+// M3 lane 3 r310 (fast screen with 0xb8bd0, 0xbdc40, 0xbc820, 0xbd020, 0xbee60, 0xbfa40 and 0xbdb60, all MATCH; control 20
+// at 1399 B): the no-model index assigned inside its test 20; a parent-object local with the node read into a named
+// long after it, flag through object_get 44 (1390 B); one parent header pointer for both reads 41 (1392 B); the matrix
+// through object_header_get's object with the flag through object_get 20, the reverse 20 (same code each). Allocator
+// reading: the no-model index ranks 78 and takes ECX, the first free register at its turn (EAX and EDX hold the two
+// defaults), so the pool loaded at the current-object lookup is reloaded.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
