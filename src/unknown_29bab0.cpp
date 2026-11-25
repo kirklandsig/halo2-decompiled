@@ -956,6 +956,15 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Planar scale to a separate or in-place offset 706/714; one normal for dots and scale 720;
 // both crosses with a scaled offset 700. NOT kept: all keep the position at ESP+0x8c and
 // raise the score. The position and the path query outputs still occupy exchanged homes.
+// GA6 (21 trials on 462 base, fast calibrated 462 at 3504 B with 0x1f38c0/0x29b990 MATCH; body unchanged): closing dot3f(&local_7, &local_9)
+// 462 (aligned 147, masked 86); + dot3f(local_4, &local_1->velocity) 460 (with cross3f_staged 460, without local_28 465); clean mid
+// (dot79 + MIN(1.0f, ratio) both clamps + local_26 *= 0.5f + field_50 early) 475 (aligned 131, masked 62); + mode-2 early i/j 673
+// (3478 B, aligned 71, masked 34; without local_28 673 aligned 76); + byte local_21 with `local_21 = local_21 != 0;` matches retail's
+// `test al, al; setne al` at 0x29bf27 with frame 0x88 intact (670 alone at 3509 B; 670 on the clean-mid+mode-2 base at 3483 B, aligned
+// 71, masked 32); `byte side` in else arm on that base 674; `(bool)(!local_22 ? !local_21 : (byte)local_21)` 472; vector2d_from_points2d
+// 665 (3499 B); separate perp vector2f on clean base 545 (3501 B); side-select scalar/arm forms on clean base: symmetric cx/cy both arms
+// 699 (3512 B, frame 0x8c, local_8 moves below local_14, masked 37), negated offset 724, if-assigned local_24 + scalar cx/cy 715,
+// diagnostic asymmetric y-in-arms 719/735 (739 on clean base, aligned 80, masked 31; scalar cy 702/700 at 3499 B, frame 0x90).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -1923,6 +1923,18 @@ void function_2294a0(
 // pointer like B's 485; `position.x *= inverse_count;` 485. LEAD (not kept, the component fetched again only to move
 // loads): the two rigid-body-A velocity calls given `havok_component_get(impact->component_a)` 351 at 2050 B, aligned
 // 121: with fewer uses in that block the component loses EBX and much of the body becomes retail's.
+// Not kept (coordinator review 2026-11-25, Gemini lane GA round 5): 228 at retail's 1981 B (first difference +0x248;
+// all 27 matched impacts.cpp peers MATCH) from existing helpers only: the midpoint as vector3d_from_points3d +
+// real_point3d_set (retail's 0x70 frame and EBX = &impact->position come back), the constraint position sum through
+// vector3f_add, the average through vector3f_scale (dropping the one-use inverse_count), the relative velocity
+// computed into velocity_a through vector3d_from_points3d (dropping the relative_velocity copy and its else arm) and
+// its tangent part as dot3f + vector3f_scale + vector3d_from_points3d, and rigid_bodies[i] for .data[i]; without the
+// two velocity forms 234 at 1994 B. On main the whole-image check then loses the matched 0x185be0 (2, +0x21c) and
+// 0xc2d00 (2, +0x12e), so it waits for a form that keeps them. The lane's 76 added statement order (unknown44 and
+// unknown40 zeroed between the normal and the position), a local keep predicate, scoped locals for the two dead
+// point-velocity calls and a new three-caller vector3f_sub (kept only with a byte match); its match-only leads: a new
+// one-caller helper for the point along a line plus a one-use pointer to the first rigid body, 2 at 1981 B (only
+// position.x + constraint->position.x at +0x43e), the position sum as a three-element loop 8 at 1982 B.
 // @retail 0x228770
 void function_228770(
 	long impact_index,

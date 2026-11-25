@@ -4734,6 +4734,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // beside retail's changed byte at +0x11. Explicit mode-3 result, true default, mode-6 default,
 // and joint bypass result 587/642/633/653. With bool special 653/635/645/620 (reduced control 601).
 // NOT kept: the 587 form adds length and still shifts the result byte; all bool forms grow the frame.
+// Not kept (coordinator review 2026-11-25, Gemini lane GA round 5): 554 at retail's 2712 bytes from three forms kept
+// only with a byte match together: a and b declared ahead of the count test, the stationary limit stored as 0.99f
+// and then overwritten when bit 3 is clear, and the count test as an unsigned division by the transform's size in
+// place of the >> 5 (it reads differently for a negative count). Leads: the node-transform block and frame agree.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

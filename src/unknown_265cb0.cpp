@@ -1130,6 +1130,13 @@ real function_30bf0(vector3f *vector);
 // threshold storage for actor secondary or primary 200/200; for seat secondary, primary or both 84/84/84;
 // for both queries' secondary, primary or both 188/188/215. The actor-only forms move the frame to 0x354.
 // The seat-only forms leave the frame at 0x350 and reproduce the opening code.
+// M3 lane GA r6 (19 trials, fast with 0x263740/0x26d370/0x25c9d0/0x263d70, all MATCH; control 84 at 1310 B, aligned 19 / masked 42; body unchanged):
+// `real range` declared outside `if (settings)` 84; `short result = 0` 84; `vector3f_assign` for initial delta 154 (1308 B);
+// `real_point3d_set` for clipped point 148 (1308 B); `mode >= 0 && mode <= 1` 100; early `return 0` out-of-range guards 222 (1296 B);
+// `vector3f const &world_up = *g_4687b0` 90 (1308 B); second `if (!facing) { defaults } else { copies }` 84; plain `while (i < count)` seat loop 84;
+// shared `actor_up` pointer for `plane.n` and `0x263740` 132 (1308 B); `if (result == 0 && primary*primary > distance_squared)` 90 (1308 B),
+// with nested `if (mode == 0)` 90 (1308 B); duplicating tier check into both `if (facing)` arms 164 (1343 B, `result` at `[esp+8]`).
+// Lead: splitting `mode == 0` so `else if (primary*primary > distance_squared) result = 1;` appears in both arms (tail-merged by MSVC) gives 86 (1310 B, +0x27, aligned 11 / masked 34), moving `result` to retail's `[esp+8]` across all five sites and placing `facing_secondary`/`facing_primary` adjacent in retail's order (+0x20/+0x24), though `amount` still pairs with `seat_counter` (+0x14) shifting `motion` off +0x24; on it `switch (mode)` 140, `else if (mode == 1)` 151, secondary copied first 86, b-max first 85, `vector3f_add_scaled` clipped point 92 (masked 31).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
