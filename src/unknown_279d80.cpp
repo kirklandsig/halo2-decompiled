@@ -2248,6 +2248,12 @@ void function_27dd10(void)
 // `byte` 286 (0x281b60 280, every sibling lost), as `short` 341 (375), the empty-group arm ending in `continue` with
 // the group arm unnested 2 (same code), the flags read by index `arg_6[arg_5 >> 3]` 444 (410), the empty-group arm's
 // index step after the output step 2 (0x288570 10, 0x289580 9 lost). All restored.
+// M3 lane 8 r236 (H2M_FAST with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2). The one untried idea, a use of the flags inside the counter block: in function_288572 the output step and
+// the flags shift written in each arm of the bit test (so the shift sits behind the counter step until the tails are
+// merged) 153 (0x281b60 199, 0x285750 75, 0x288570 101, 0x289580 78, 0x28aaa0 82); only the shift in each arm, the output
+// step after the test, 153 (199, 75, 310, 270, 82). The loop is the same shape, but the flags then outrank the count
+// for their register and every home moves, so the tail is not reached that way. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2549,6 +2555,9 @@ void function_2818e0(void)
 // three 2; 0x27e6b0 defined ahead of 0x27dff0 in the file 2. All restored.
 // M3 lane 8 r235: the forms and the scheduler reading above 0x27dff0's marker (same pass helper): flags as `byte` 280,
 // as `short` 375, the early `continue` 2, the indexed flags read 410, the empty-group index step moved 2. All restored.
+// M3 lane 8 r236 (H2M_FAST with 0x27dff0 and the six matched walk users; control 2): in function_288572 the output step
+// and the flags shift written in each arm of the bit test 199 (0x27dff0 153, 0x285750 75, 0x288570 101, 0x289580 78,
+// 0x28aaa0 82); only the shift in each arm 199 (153, 75, 310, 270, 82). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
