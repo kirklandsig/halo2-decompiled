@@ -1088,6 +1088,12 @@ bool function_e4050(long object_index);
 // Diagnostic, restored at once: with 0xbaf80's pin lifted in the screen only, the real function called after the lookup
 // 171, ahead of it 113 (439 B), on the `unit` local 109: the open-coded walk is closer than the expanded call. Still
 // BLOCKED-BY 0xbaf80 for any form that calls it.
+// M3 lane 11 r167: a byte MATCH, not kept. It needs a new file-local one-caller helper that fetches the unit's object
+// through player->unit_index (placed ahead of `long current = player->unit_index;`), so the lookup's read of the
+// unit index stays a load of its own apart from the walk's read of the same field; the walk then starts from
+// `current` with the root NONE, no unit local, and every use reads the field, as matched 0x14deb0 does. A new
+// one-caller helper written to steer the code is reverted even with a match. Without the helper the same order
+// scores 109; a dword cast or a read through the iterator's datum does not keep the two reads apart either.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2708,6 +2714,23 @@ static __forceinline long player_round_ticks(real value)
 // & 0x80) { if (f() || g()) ... }`) 703; all three 703; the 0x80 site as `bool dropped = f(); if (!dropped) dropped = g(); if
 // (dropped) ...` 703 (all the same code, 34 calls: the first 0x151b80 call and 0xccd20 still expand). Still BLOCKED-BY
 // 0xe68c0's file flags, 0x151b80 and 0xccd20.
+// M3 lane 11 r167 (fast screens with 0x151b80, 0x151aa0, 0x151940, 0x14f2e0 and 0x14e970; control 703 at 2742 B, 34 calls;
+// difflib-aligned exact/register-masked counts 708/268 at the control). The equal length is a coincidence: a frame past
+// 0x7f turns the stack offsets into 4-byte displacements (the 0x16 request in its own block re-measured 806 at 2844 B,
+// the same 34 calls, frame 0x6c), so retail's 2740 B are its 0x74 frame without the two expansions. 0xccd20 is still
+// expanded in round 218's 775 form (33 calls there only because its body's own call replaces it). Diagnostic, restored
+// at once: the last site as `function_e68c0(0x16, unit_index)` with that function's file built without /Ob1 806 at
+// 2844 B: it then expands at the last site only (its own request home) and stays a call at the three seat and ready
+// sites, as in retail, while 0x151b80 and 0xccd20 still expand (so their expansion is not an inline budget that retail's
+// own expansions use up). Trials: the 0x60 block entered on `(buttons & 0x20) || (buttons & 0x40)` 711 at 2748 B
+// (retail's `mov edi, edx; and edi, 0x20; jne; test dl, 0x40` exactly; aligned 695/255); that with `dword melee =
+// buttons & 0x20` for the entry and the else arm 711 (719/253); player_current_weapon's result preset to NONE and set
+// under `slot != NONE` 708 at 2726 B (the same code as the header getter form); the attack target preset NONE with the
+// lunge count as `(short)(lunge + 1)` 700 (a gain of 3); both with the two-test entry 707 at 2746 B (masked 247). Leads
+// (they need the repeated 0x80 test, kept only with a match): each request in its own block and the decay read at each
+// use 710 at 2702 B, frame 0x74, 33 calls (masked 242); with the two-test entry and the target and lunge forms as well
+// 691 at 2742 B, frame 0x6c (masked 214). A plain `inline` wrapper for the 0x151aa0/0x151b80 pair taking the flag 703
+// (the same code). Still BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
