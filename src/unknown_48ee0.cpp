@@ -518,6 +518,23 @@ extern real g_4c9798[36];
 // which needs the cursor back on EAX twice: one more integer temporary ahead of the flags word and one more ahead of
 // the size-limit bits, or neither the tag word nor the flags word taken from the cursor. Named locals fold away before
 // the scratch registers are handed out, so none of the six forms adds one.
+// Stage both rounding operands before either call, width-first or height-first,
+// with direct alignment, separate height alignment, delayed width alignment, or
+// both delayed, 174 each. NOT kept: the EDX load and size/aspect homes agree with
+// the opening body.
+// Initial direction captured once 378 or per row 399; whole scaled/negated/both row values 185/183/190;
+// scale/negate/both helper results before publication 323/321/323. The row values retain the 0x28 frame. The EDX
+// flag load and held rounding reloads remain.
+// M3 lane 12 r187 (H2M_FAST with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174, aligned unmatched rows [exact,
+// stack masked, registers masked] 70/55/36; body unchanged; still BLOCKED-BY 0x48e70, whose file is on this round's
+// avoid list). Same code, 174 each: the aspect's root, the cone's tangent, the size's root, all three, the border's
+// width and the maximum written without their `(real)` casts; the extent's sum with the cone term first. Reading of the
+// flags register: the tag word's temporary takes EAX from the scratch cycle and leaves its cursor on ECX, which the
+// state holds, so the flags word gets EDX; retail's flags word in EAX means its tag word did not come from that cycle,
+// as a switch selector does not. The tag test as a one-case switch (on the short, or on a `(long)` cast of it) 336
+// (1491 B) [73/58/37]: the flags word is then in EAX as retail's, but the tag is coloured ECX and the state EDI (it
+// arrives in EAX), where retail has the state in ECX and the tag in EDI from the entry. Next, once 0x48e70 is
+// `inline`: the switch with a form that ranks the tag above the state for the saved register.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

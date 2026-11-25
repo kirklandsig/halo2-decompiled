@@ -982,6 +982,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // time scaled after draw 120/127/193/135.
 // NOT kept: 122 and 120 both move the single-use interval read ahead of
 // the seed update. The 120 form also leaves the 0x1c frame.
+// The random sample and sine still share a word in the 0x1c frame. Limit the rotated global
+// into the spent axis or separate result, with vector/field publication 197/193 and 197/198.
+// Rotate a snapshot, then limit into the global, in place, or into the spent axis with vector/field
+// publication 168/199/202/215. NOT kept: the direct-global output ties the opening extent and
+// raises the score. Other destinations add copies, and none recovers the 0x20 frame.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1272,6 +1277,20 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // from the cache offset or typed cache member, respectively: ternary 280/280, NULL before
 // lookup 273/273, success arm first 280/280, absent arm first 280/280. NOT kept: seven-point
 // gain is below the threshold. Record spill and draw-state expansion still differ. Body restored.
+// M3 lane 3 r307 (H2M_FAST, control 280; aligned counts from a sequence diff in brackets, control [36]): the lighting
+// pointer NULL first and set under the test re-measured 273 [31] (seven points); with the object index named ahead of
+// the lookup as well 259 [18]: every instruction ahead of the two expansions is then retail's, the 0x4b2d0 call
+// included (retail keeps that index in ESI, a variable's register; a one-use local, so match-only). On that form with
+// `inline` on the definitions of 0x1ccb0 and 0x1cd90 (diagnostic for the BLOCKED-BY 0x1ccb0 expansions; the held form)
+// the function is 6 at retail's 1361 bytes: all that differs is the order in which the three signed normal products
+// are reloaded after the make-space call, and with it their homes (retail k, j, i in xmm0..xmm2 at +0x18/+0x1c/+0x20;
+// ours i, k, j). That diagnostic costs 0x22a664 its match (42) and moves 0x47930 244 -> 341 and 0x46ea0 576 -> 561;
+// 0x19f680 and the three helpers stay matched. On the 6 form, 6 each: a redundant paren pair on one, two or all three
+// normal products, on one, two or all three tangent products, the products as `sign*x`, the products in named locals
+// declared k, j, i. The named locals declared i, j, k 11; a scaled vector local 23; the existing vector3f_scale 68
+// (1360 bytes). The frame view: the three homes have two references each and take their slots in the order the
+// reloads are placed, which follows the allocator's numbering of the three product candidates (i, k, j here); forcing
+// their priorities changes nothing, and 24 forced single decisions came no closer.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

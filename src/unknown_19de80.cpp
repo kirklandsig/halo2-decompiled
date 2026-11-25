@@ -1023,6 +1023,9 @@ static inline bool teams_enabled_19e1c0()
 // top (diagnostic); `do {} while (false);` at the top; that statement after or ahead of the copy call in each of the
 // four name arms; `remaining` read through a `long const &` bound to it; through a one-member aggregate local
 // initialised from it; through a `long` copy read by const reference. Body unchanged.
+// Direct format exits, unconditional name/fallback copy with per-arm/common bounds 552/488;
+// name-only copy with per-arm/common bounds 513/513; ordinary result with the same four forms 605/561/547/548.
+// NOT kept: all shorten the body and still miss the entry token load.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

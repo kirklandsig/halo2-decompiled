@@ -2171,6 +2171,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `else if` condition in place of `valid = true` 83. Diagnostics: a handle test ahead of the write 137 (933 B: a memory
 // compare, the zero shared by three pushes); on the write-local form the count through a named pointer read back after
 // the wait 114, the count as a member of a local record 114 (same code each). Body unchanged.
+// Effective count at close test 178; conditional short-write predicate 188; conditional count assignment after wait 196;
+// effective count with nested live-handle guard 178; conditional completion bool 165; record-sized effective count 178;
+// conditional short write with record handle 188; with named size-match predicate 188. NOT kept: all reserve 0x1140
+// and fail to recover retail's separate output homes.
+// M3 lane AO r1 (fast; control 33). Round 53's goto with the set-in-test header read rebuilt 8 with the stored checksum
+// bound by reference ahead of the `if (valid)`, 5 with it inside (lane 9 r132's form; only the write's flags zero in EAX
+// ahead of the handle load left). On that 5 form, all match-only: `done` declared once at function scope 5, first in the
+// loop body 5; `remove_later` declared ahead of the slot table 5; the flags built from `false` 5 (same code each); the
+// slot table brace-initialised in place of the memset 248 (917 B); the type loop's test as one `valid_types[type] &&
+// CompareFileTime(...) == 0` 60 (934 B, a branchy bool). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -4359,11 +4359,42 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // (4840 B: retail stores the false flag at the entry); case 0 as `allow_negative = allow_small = true;` 941 (same code).
 // On base B (re-measured 5) forced scheduler heights and ready times in the shift's region (98 of 1978) and picks,
 // ranks, cuts and flags (40) leave the shift (5).
+// M3 lane 13 r155 (H2M_FAST; fast, plain over the file's 57 functions and a full build agree on the kept form; "aligned"
+// = rows differing after alignment). Review: the 4 form is NOT kept (the shifted local written out at both stores is a computed value at each use instead
+// of a two-use local, kept only with a match); the structure is kept with the local (9, same code as the old body). The
+// 4 form, 9 -> 4: no result variable and no failure label; the valid-range test encloses
+// the body (`if (high > low) { ... return true; } return false;`, the three inner failures `return false;`), and the
+// stage-one input shift written at both stores with no shifted local. Why: the allocator ranked allow_negative 47 over the
+// input selector 45; the entry block counted 14 integer values (seven parameters, the constants 0, 1 and 3, the three
+// flags and the result's `false`), and without the result it counts 13, which makes it a tie that the later-created
+// selector wins; the small flag then keeps CL with an AL copy and the shift is retail's `mov eax, ebx; shl eax`. The same
+// structure with the shifted local kept 9 (same code as the old body, shift in EBX). Steps to it, each without the
+// shifted local unless given: the old body 939 (aligned 15); no result with `return true; failure: return false;` 818
+// (aligned 14: selector block retail's, the failure exit laid out in mode zero's first gap); that with `bool result;` set
+// at both exits 818 (same code); `return false;` at every failure site of the flat body 1105 (4812 B, aligned 36); the
+// result initialised at the first failure test 1131 (aligned 28, three variants: it becomes a real AL value); the kept
+// structure with `goto failure` at the three inner sites and a label 4 (same code as the kept form). On the kept form the
+// two reload pairs follow the numbers given to the pieces of the span and of the 1.0f constant when both are split at the
+// depth-bias call (span piece 115, constant piece 96; lane 8 r205's span copy plus `offset` after `maximum` 113 against
+// 114, still constant first, 4). No pair change (4 unless given): the six head declarations in seven other orders 5, 11,
+// 7, 6, 4, 11, 4; `inverse_span` declared bare first or last among them; `width`, `exponent`, `depth`, `extra_texture`,
+// the five fixed-point locals, one shared `gain`, one shared upper/lower pair or the two colours declared bare at the
+// top (nine forms); the span named ahead of the reciprocal (three bases 4, 5, 4); the centre named in the center arm;
+// `-(inverse_span * low)`; the distance scaling by division; `256.0f * high`; `inverse_span = maximum` ahead of the width 6;
+// the offset clamped in place 12; a named 65536 constant; `inverse_span`, `width` or a shared `gain` initialised at the
+// head (dead initialisers, seven forms 4 or 5); `maximum`, `inverse_span` or the span copy renamed to sort first or last
+// (six forms: names do not enter the numbering); a second variable for the clamped span 35, assigned in an else arm 1118
+// (4812 B). On lane 8's base with the result: the three assignments of each switch case in the orders small/maximum/
+// negative and small/negative/maximum 941 (same code), the three orders with negative ahead of small 1141 (4840 B).
+// Permuter (600 s, 55 tries on the kept form): best 4. Also on the kept form: the scaled low bound in a local of
+// its own instead of the parameter 4 (same code: it takes the parameter's home), the high bound so 1116 (4832 B), both
+// 1130 (4832 B); every combination of five forms (`offset` after `maximum`, lane 8's span copy, one shared `gain`, one
+// shared upper/lower pair, the low-bound local; 31 builds) 4 or 5, aligned 4 each: only the first two change anything
+// and neither order of the pair's two pieces changes.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
 {
-    bool result = false;
     real offset = 0.0f;
     bool small = false;
     byte allow_small = false;
@@ -4387,16 +4418,17 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     low = (real)(long)floor(low * 65536.0f) * (1.0f / 65536.0f);
     high = (real)(long)floor(high * 65536.0f) * (1.0f / 65536.0f);
-    if (!(high > low)) goto failure;
+    if (high > low)
+    {
     real inverse_span = 1.0f / (high - low);
     if (inverse_span > maximum)
     {
         real width = 1.0f / maximum;
         inverse_span = maximum;
-        if (small) goto failure;
+        if (small) return false;
         if (center) low = (low + high) * 0.5f - width * 0.5f;
         else if (shift) low = high - width;
-        else if (!clip) goto failure;
+        else if (!clip) return false;
     }
     if (low < 0.0f)
     {
@@ -4410,7 +4442,7 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
                 if (!(unclamped_offset > 1.0f)) offset = unclamped_offset;
             }
         }
-        else if (!shift || !clip) goto failure;
+        else if (!shift || !clip) return false;
         low = 0.0f;
     }
     if (!skip_state)
@@ -4647,9 +4679,9 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         }
         *depth_out = depth;
     }
-    result = true;
-failure:
-    return result;
+    return true;
+    }
+    return false;
 }
 
 dword g_4b8424;

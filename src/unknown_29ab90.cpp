@@ -651,6 +651,42 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // 236, masked 71); each product written weight first 286 (same code); each row's history product ahead of the sum
 // product 286 (same code); the complement written out in each row with no local 286 (aligned 233, masked 71: same
 // length, two rows move). Site 1 still BLOCKED-BY 0x2b400. Body unchanged.
+// In round 641, the object/settings spills and working-vector order stayed at the opening 0x64 frame. Shared squared
+// length in the magnitude 286; aggregate correction 286, aggregate direction sum 286, both 286; shared in-place sum
+// in the correction 286; scale-first planar helper at the second site 286, second and third 286, first and second 286.
+// The body was restored. Site 1 still has the other planar normalization path.
+// M3 lane 2 r148 (screens with 0x29b2e0, 0x2922b0, 0x1f9760, 0x1f9e70, 0x1f5f30, 0x30bf0, 0x1e5450, 0x26c180, 0xb9dd0, 0x2b400,
+// 0x11ce20, 0x1caa40, 0x26be90, 0x26bfa0, 0xb8d30, 0xb9ef0, 0x170d70 and 0x11cc90 in the image: with the last two listed the
+// reduced image builds 0x29b2e0 at 1707 B and this body at 286, 1865 B, first difference +0x42, as the full build does;
+// aligned 184, 41 with registers and offsets masked; body unchanged). Two readings of retail not in the notes above. (1) The
+// correction vector is built in the output vector: its first component is stored to the output's own cell after the speed
+// clamp, the x87 square-root term is added to that cell in place, and the two zero products stay in registers. (2) The speed
+// scale field is read ahead of the third planar step and held across the 0x1f9e70 call. Retail's cells, counted by
+// reference: settings 6, magnitude 4, object 2; the two planar vectors 13 each; then a 12-byte cell shared by the entry
+// magnitude's copy and the third planar vector; output 19, working direction 18, constant copy 7, saved direction 4,
+// position 3; the 0x2922b0 minimum sits in the second argument's home and its limit in the eighth's. Forms: the correction
+// written into local_5's members with no local_22 286 (aligned 185: its first component is still read from local_30's
+// home); with the difference taken from that member 286 (same code); the scale field written ahead of the call in the
+// product 286 (same code as now); the first component as `local_30 * 1.0f` 286 (same code); the correction as
+// vector3f_scale of a constant `{ 1, 0, 0 }` into local_22 326 (1843 B, re-measured), into local_5 with the sums and the
+// x87 term on local_5 318 (1843 B, aligned 159 [45]: local_4 and local_5 take retail's cells and the store, `fadd` and
+// `fstp` rows on the output's first cell are retail's), on that the sums in place 318 (same code), the sum's operands
+// exchanged 313 (1845 B, aligned 155 [39]), the sum through vector3f_add 331, the weight named for the three history
+// products 318 (1844 B). Diagnostic, not keepable as written (a same-file copy of the matched planar normalize of
+// src/unknown_0a76b0.cpp, which keeps its length in one local): site 1 through it 306 (1863 B, first difference +0x54,
+// aligned 156 [36], re-measured); with the third site through it, the third planar vector as the planar idiom on local_27
+// and the scale field read into a local ahead of the third step 302 (1868 B, +0xbb, aligned 117 [21]); those with the
+// constant-axis correction into local_5 308 (1846 B, +0x15b, aligned 90 [25]: every stack cell of the function is then
+// retail's); with the sum's operands exchanged 307 (aligned 85 [20]); with the weight named after the complement 306
+// (1849 B, aligned 85 [18]; LEAD, build/r148/lead-0x29ab90-306.patch). Without the early scale read the same forms give
+// 326 (1834 B, +0x54) and without the constant-axis correction 309 (1856 B), so no subset of keepable parts lowers the
+// count. On the lead: one, two or three redundant pairs in the turn dot 306 or 307 (aligned 84 or 85), the dot's products
+// exchanged 306, the first two planar vectors as the planar idiom 306 (same code each), the history term through
+// vector3f_scale 299 (1850 B, aligned 105). Left on the lead (14 bytes short): site 1's second scale row (retail loads the
+// component and multiplies by the scale, as the lead's third site already does), the turn dot's operand order, the
+// settings pointer reloaded after the 0x1f9e70 call (the lead keeps it in ESI), and the blend, where retail holds the
+// weight in XMM6 for the three history products and reads the field again for the complement. Site 1 still BLOCKED-BY
+// 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

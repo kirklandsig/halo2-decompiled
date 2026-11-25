@@ -254,6 +254,20 @@ void function_8dd70(void);
 // Round 86 (plain, with 0x8dd70's address reads in place): inline gateway and handler initialize helpers 249 (910 bytes); bool stage
 // flags link/link+observer/link+sessions/all/observer/observer+sessions 264/267/260/263/262/258. Address reads of the other three
 // pointers too 301/263/263 alone, 312/311/283 in pairs, 330 all (fast). All restored. Without the address reads this form scored 221 (892 bytes).
+// M3 lane 1 r166 (h2m fast with 0x8dd70, MATCH; control 245). Retail calls every one of the ten callees here (0x662f0
+// and the nine registrations, 57 to 1078 bytes, each with this function as its only caller), so this function looks
+// built with inlining off. Diagnostic (a compiler setting, not kept): the body inside `#pragma inline_depth(0)` 328
+// (779 B), every call retail's, in retail's order; the 113 missing bytes are the pointer reloads (one `mov eax, esi` for
+// the nine registrations where retail reloads 0x510564 before each). Forms: the 0x5a0 clear ahead of the link call 237
+// (906 B; retail clears after the call, not kept); the observer result assigned straight to the readiness 240 (906 B,
+// a gain of 5, under the bar); the sessions as `&g_510574[1]` 245, the session chain ending `&& true` 245, the
+// 0x4d8f08 clear as `= 0` 245 (each the same code).
+// The entry frame, configuration and registration expansions, and connection-pointer reloads still
+// differ. NOT kept: the manager receiver forms increase score and length, the native list clears gain
+// six, and the sentinel chains tie. one gateway observation for search and manager 258; shared manager
+// session base 264; shared gateway and manager session base 263; named manager session roles 264; three
+// native session-list clears 239; chained session-list clear 239; chained search sentinels 245; chained
+// completion sentinels 245.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {

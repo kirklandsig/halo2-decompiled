@@ -1606,6 +1606,33 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 // 2997 B (aligned 72, frame 0xd0 = retail; left: 0x2284c0 takes the impact in EAX, retail ECX, BLOCKED-BY 0x2284c0,
 // contributor code; the effect fill's colour constant in EAX with a re-zero, retail ECX; the continuing arm's spilled
 // entry value; two byte homes swapped); the effect fills through the unused inline twin above 1424 (not expanded).
+// M3 lane 3 r307 (H2M_FAST; aligned counts from a sequence diff in brackets, the 586 body [406]): retail builds both
+// material arguments as by-value temporaries in two stack slots that its two calls use the other way round and that
+// the later `size` pair and the component pointer reuse. Passing `c_type_47f957(impact->material_a)` copies gives that
+// frame without the overlay local: 620 at 2997 B [72]. The fill helper's NONE and zero stores interleaved as retail's
+// third fill stores them (0x2298d6: two NONE stores, three zero stores, three NONE stores, three zero stores), with the
+// colours after the second NONE group, make all five fills retail's, the colour constant in ECX and the block fill's
+// zero kept in EAX: 489 at 2987 B [36]. NOT KEPT (review): the colours' place is a statement order picked by score, kept only
+// with a byte match, and the copies alone rise to 620; both are in build/r307/held-2294a0-order.patch. The colours' place was screened: first, they re-zero EAX in
+// every fill (2997 B); after every zero store they take EAX 519 [72]; after the first three zero stores 502 [54];
+// after the two NONE and three zero stores 491 [44]; after the second NONE group 489 [36], the only placement of
+// eight that gives all five fills.
+// The seven bytes still missing are one local: retail reads the previous continuous type once, keeps it in a stack
+// byte (+0xe, reused later for the effects flag) and reads it back after the two has-sounds calls. A `char
+// previous_type` local alone folds back into the field (489, same code).
+// LEAD, not kept (build/r307/held-2294a0.patch): with that local, one of the two pending stores made through a pointer
+// local (`char *pending_ticks = &impact->unknown20; *pending_ticks = 0;`, or the same for the pending type) gives 62
+// at retail's 2994 B [26], byte homes included: a store through a pointer local ends the compiler's cached read of the
+// field, so the local keeps its own home. A one-use pointer to a field is kept only with a byte match, which the callee
+// below rules out. Other forms for that store: the pending type through one pointer or one reference at all four uses
+// 481 (2982 B); the four bytes read as an array or as two type/ticks pairs 489/489; either pending byte as a
+// bit-field 489/489; the has-sounds helper defined after this function 489; `inline` on its definition 489; its
+// result written through a pointer to its own local (diagnostic) [75] at 3015 B.
+// The effect location's flags word stored ahead of the normal copy 487 (retail's entry order; two points, not kept).
+// Left on the 62 form: BLOCKED-BY 0x2284c0 (contributor code, 81): it takes the impact in EAX where retail has ECX,
+// which also moves the store order ahead of both calls here (the allocator ranks its impact parameter 104 against 80
+// for its four lookup temporaries; ranked below them it scores 34); `!continuing` read into DL ahead of the push;
+// one address formed a step early before the orientation call.
 // @retail 0x2294a0
 void function_2294a0(
 	long impact_index,
@@ -1884,6 +1911,12 @@ void function_2294a0(
 // (and with it the component's own home, frame 0x70) needs the address kept as a value. Forms, all folded back into
 // `[edi + 0x68]`: the component through the pool data bound to a const reference 490; a position pointer local at all
 // eleven uses 484; that pointer bound as `point3f *const &` 485; a `point3f &` local 484; pool reference + pointer 489.
+// Shared separation with point setter, scaled add, half-separation helper, in-place half-separation, or staged half offsets 231/485/379/454/456.
+// Averaged-position setter, both setters, and staged midpoint with x-z-y squared dot 509/242/236.
+// In-place full separation, indexed additions, separate midpoint, or in-place separation with setter 485/396/383/232.
+// Staged midpoint with one position pointer, displacement first, both, or precomputed coordinates 485/231/485/485.
+// Staged midpoint with shared scaler before copy, direct scale, rejection continuation, or continuation with scaler and copy 231/242/231/231.
+// NOT kept: the best setter form recovers the 0x70 frame and EBX position base but grows to 1988 bytes and groups the last two coordinate calculations before the first store.
 // @retail 0x228770
 void function_228770(
 	long impact_index,

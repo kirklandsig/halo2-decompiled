@@ -979,6 +979,18 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // The dispatch span still needs the in-place EDX fallback with the directory in EDI. Signed group slot from the unsigned
 // ordinal, word/masked fallback: sign-bit bias 157/135, sign contribution 160/136, signed-half selection 131/136,
 // full-width sign extension 117/152. The original group and fallback expressions are restored.
+// The fallback mask and unfused stage/pass loads still differ. Low-half projection into dword/word:
+// subtract masked high half 132/117, xor high half 152/117, shift pair 152/117, complemented mask 141/117.
+// NOT kept: the narrow forms tie, and the wide forms add operations or displace the directory.
+// M3 lane 13 r155 (H2M_FAST with 0x2243c0 and 0x224d90, both MATCH; control 117; lane 16 r152's reference chain rebuilt
+// at 8, first +0x9e, the same eight lines). Reading of the eight lines as scratch picks: after the pass tag's load ours
+// takes EDX for the pass definition, EAX for its +0x20 read, ECX for the material tag and EDX for the material
+// definition; retail takes EAX, EAX, EDX and gives the material definition the table's EDI, which needs EDX still
+// counted busy at the pass definition's load and ECX at the material tag's. On the chain, match-only: the pass and
+// material lookups through a file-local accessor taking the tag index by `long const &` (to keep the index in its own
+// temporary) 8; the pass lookup alone 8; the material lookup alone 8; the pass lookup given the element's +4 field in
+// place, no pass-tag local, 8; all four lookups (fallback, definition, pass, material) through it 8 (the same code each:
+// a by-reference index is forwarded and frees its register at the load as a by-value one does). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

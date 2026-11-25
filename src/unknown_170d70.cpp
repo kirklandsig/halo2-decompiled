@@ -461,6 +461,8 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // basis addresses at the group update 94. NOT kept: the 89 form reaches retail
 // length and changes the polynomial. Naming the squared length shortens the
 // basis tail, and the adjacent addresses keep its first difference at +0x34b.
+// Named deadline with exchanged multiplication reads in k, i, j, ki, kj, ij or kij scores 94 each.
+// Staging the kij dot after both length tests scores 92. All reach +0x34b at 1396 bytes.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1638,6 +1640,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // axis-angle helper: sine and cosine ahead of the squares 364, ahead of the squares with the complement before them
 // 364, the squares in k, j, i order 368, cosine ahead of sine 361 (each with a 4-byte larger frame); the diagonals as
 // `c * (1 - square) + square` 337 (the same code: the product order is canonical).
+// Builder inline or automatic 761/761, automatic transform 337, both automatic 761
+// (reduced control 337). Symmetric pairs before diagonals 359, negative or positive
+// partners first 368/373, late second and third squares 375. NOT kept: the builder
+// needs forced expansion in this image, and the coefficient forms change the frame.
 // Transform row accumulators 390; partial sums 346; terms formed one row at a time 356; all terms before output 453; partial and final terms before output 395.
 // Bounded alignment 337; separate reciprocal arms 352; named squared deviation 337. Reduced control 337.
 // NOT kept: the tied forms leave the opening unity register and two squares spilled. The staged row terms increase the frame.
@@ -1829,188 +1835,13 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 37 (was 37): The 0x610 frame agrees. Pool commit and state testing follow point publication, and the clipped stride and final recount still differ (r237: a 2 lead, below).
-// Earlier at 37 (was 45). the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
-// The reservation publishes the pointer before the pool count and state test. The stride spill,
-// cap reload, corner loads, and recount registers still differ.
-// The 0x610 frame agrees. The visited-branch span first differs at +0x36. Retail commits the
-// used count and tests polygon state before publishing the point pointer. It then spills the scaled step before
-// loading the clipped-vertex cursor. The trials test the native pool members and the order in which the two
-// projection cursors are produced and consumed. Four forms change the remaining stride or recount on the
-// earlier match-only foundation.
-// Earlier at 37 (was 45): the view-bounds copy in the inside arm is written to result->bounds directly, so the memcpy
-// destination load moves up into that copy as in retail. Still differs: result->points is stored before the pool
-// count (retail stores the count, tests the state, then publishes the pointer), the x87 clamp keeps a copy of the
-// distance where retail reloads it, the corners read result->bounds off EBP where retail reads them off the bounds
-// pointer, the loop preheader spills step*8 after the clipped pointer's lea, and the recount colours points/count
-// ECX/ESI where retail has ESI/ECX.
-// Earlier at 96 (was 123): the pool count and state test precede pointer publication in retail. The stride spill, x87 clamp reload and bounds expansion still differ.
-// Earlier: logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
-// 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
-// copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
-// minimum, the state 3 inside clamp (0.015625 as a double) and the memcpy of the view's points, the four 1/256 inflate
-// steps and the corner order, the view[0x84] cull and the pool recount agree; no behaviour difference found. What
-// still differs: retail stores pool->count and tests result->state before it stores result->points, the count and
-// field_0 (ours stores points first); `mov [esp+0x1c], ecx` (step * 8) comes after the `lea edx` in ours; the clamp
-// (retail: fld const, fld distance, compare, pop both, reload the winner; ours keeps a copy: one extra fld), which
-// shifts everything after it by one line; the inflate (retail adds/subs the constant in xmm0 one box field at a time,
-// ours interleaves them) and the register of the final count recompute. Tried: `++pointer` before `index += step`
-// (123 -> 96, kept); every order of the four stores points/pool count/count/field_0 (124-131); points through a
-// local pointer after the pool count store (128); `distance <= c ? distance : c` (124), `c < distance` (same code),
-// if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
-// Permuter (25 min on r622): best 58, from temporaries plus a memcpy size read through a char (a behaviour change);
-// not kept.
-// Round 575: pool publication and state-test scheduling still differ. NOT kept: state predicate before
-// metadata 101; shared reverse predicate 121; forward source index 988; signed byte direction 98;
-// double clamp result 96; direct bounds member 161; typed inside view 117; point-value corners 212.
-// The pool increment and state-test schedule, stride reload, x87 clamp, and bounds expansion still differ.
-// NOT kept: capturing the state moves the projection branches. The explicit float clamp grows the body.
-// Tried state snapshot after reservation 172, returned byte for traversal 180, scoped bounds alias 96, named point stride 96,
-// signed remaining-count loop 934, explicit float clamp outcomes 117, explicit minimum selection 96, library box copy 96,
-// explicit double clamp outcomes 96, direct cache pool members 188.
-// Tried clipped vertex reference 96; shared depth 109; whole projected point 184; destination element reference
-// 96; distance published after advance 96; late distance with destination reference 96; late distance with whole
-// projected point 184; early signed distance 125.
-// NOT kept: The references and delayed publication fold to the opening code. Whole-point assignment grows the
-// frame, and the depth forms raise the score.
-// Tried negated ordered clamp 96, named clamp test 96, float clamp snapshot 83, clipped pointer range 197,
-// start from direction 119, clip-local buffer 96, population-local buffers 96, count-first recount 96,
-// traversal scoped to the positive count 111. NOT kept: the float snapshot grows to 882 bytes and spills.
-// Cache entry by index 296, cache entry reference 96, point arena bound at population entry 96,
-// reservation from the advanced count 115, pool commit before the state predicate 101, countdown
-// scoped to positive counts 96, named first slot in the recount 96, bounds pointer 96.
-// The advanced-count form reaches retail length but changes the reservation arithmetic and raises the score.
-// State field reference 99; typed source cluster pair, flags, or both 96 each;
-// shared ordered inside cap or per-vertex minimum 96 each; clipped-count for loop 96;
-// clipped-count while loop 932. NOT kept: the while loop unrolls, and the other forms
-// leave the pool commit, stride spill and x87 cap sequence unresolved.
-// Visited-word reference 245, array base 96, explicit bit read/update 96, visited coordinates
-// before entry lookup 147, arena reference 115, real cap result 117, named expanded edges 96,
-// edge values shared with corners 103. NOT kept: the word reference shrinks the frame and the
-// other forms leave or worsen the reservation, cap reload and edge-store gaps.
-// Actual pool subobject 96; pool object reference 96; retained count field 96; shared visited-bit
-// accessors 96; projected point setter 96; corner setter 109; nested cull guard 96; named capacity 96.
-// The pool and cull forms keep the opening code. The corner setter grows to 878 bytes. The pool
-// commit/state order, stride spill and x87 compare-and-reload still differ.
-// Round 639 forms: native count field 96, direct increment after pointer publication 177, source flags
-// before bounds 120, clipped count with classification 117, source and clip metadata before reservation
-// 120, bounds before source metadata 130, stride in loop update 96, explicit direction assignment 96.
-// NOT kept: the best forms tie and the pool publication, stride spill and x87 clamp remain.
-// Capacity rejection inside the miss path 233, last reservable index 232, count from the
-// reserved pointer 200, reserved pointer through all point writes and recount 196, default
-// forward index 172, nonnegative count 184, guarded postdecrement 96, ascending counter with
-// separate source cursor 968. NOT kept: the postdecrement ties, the ascending counter unrolls,
-// and the reservation forms do not recover retail's count and state-test order.
-// At 45 in a full build with stand-in SDK headers (from 96): the four corners read result->bounds by name instead
-// of through the `bounds` reference the inflate writes through, so the inflated bounds are copied back out of memory
-// as retail does (0x173796 on).
-// M3 lane 3 r286 (single-address fast, control 45): the corners through `bounds` 96 (the inflate interleaves and x0 is
-// forwarded); the inflate through result->bounds with the corners through `bounds` 49, both through result->bounds 96;
-// the corners through a second `box2f const &` to result->bounds 36 (corner block exact), through a pointer to `bounds`
-// 96; the inside arm's bounds copy as `result->bounds = ...` 37 (kept, plain 37). Lead, match-only (each step a steering
-// form): the second reference plus the direct copy 28; plus the reservation as 0x172840's `point2f *allocated =
-// &pool->points[pool->count]; pool->count += 64; result->points = allocated;` 24 (store and state-test order exact; the
-// count stored first with `used` kept 41, `allocated` after the count update with `used` 33); plus the clamp's compare
-// read through `real const &distance = result->distance` 9 at 865 B (x87 block exact; the arm through it instead 9).
-// On the 24 lead the clamp as `<`, as `0.015625 > d ? d : 0.015625`, as `<=`, through an inline double minimum: 24 each.
-// On the 9 lead (left: step*8 spilled after the clipped pointer's lea, recount ECX/ESI): the recount as
-// `&result->points[result->count] - pool->points` 15 (867 B), count first 9, count in a long or short local 9, the
-// difference named 9, through a forceinline (pool, points, count) helper 9, points or count through a forceinline
-// accessor 9 each, the count stored first then `+=` the difference 36 (retail's ESI/ECX, one extra store); remaining
-// declared before the pointer 9, the pointer declared first 9, in the for-init 9; `index += step` first 121; step
-// declared first 187; an ascending `i` loop over `&clipped[i]` 990 (unrolls); a guarded do-while 72; permuter 102
-// tries in 900 s, best 9.
-// Arena count and first point 33, published point field 47, separate old and new counts 42.
-// With reserved points, expanded bounds reference and cap reference, positive latch 932,
-// end-bounded source cursor 196, step before index 166, explicit per-point minimum 12,
-// shared cull view 9. NOT kept: 33 gains four. The 9 and 12 forms use one-use bindings
-// and still exchange recount registers and the stride spill with the clipped cursor load.
-// Pool count committed from the saved arena index 42; native count commit with staged slot 60;
-// cap comparison field reference alone 22. With staged reservation and cap and corner references:
-// scoped clipped cursor 9; named offset from two endpoint locals 9; shared arena base 56;
-// state byte scoped to the active arm 9; separate published count and point-offset locals 9.
-// NOT kept: the reference and staged slot forms require an exact match. The nine-point
-// forms retain the late stride spill and reverse the recount registers.
-// Native pool reservation and recount 189; byte stride before/within the count guard 158/173; source advance at
-// the last depth read 127. With the separate bounds and distance bindings and staged reservation: byte stride
-// 156, depth-read advance 125, native arena recount 190, destination stride in the loop update 9. NOT kept: the
-// 9 form still reverses the stride spill and cursor load, and exchanges the recount registers. The bindings
-// require an exact match.
-// On the staged reservation with corner and cap bindings: shared forward winding 167;
-// cursor advance at vertex binding 183; cursor and step names 9; index, step and countdown names 9;
-// complete recount as long or pointer difference 9/9; count-first end index 9; vertex binding and
-// native recount 183. NOT kept: the 9-point forms still spill the stride after loading the cursor,
-// exchange the recount registers and require an exact match for the reservation and bindings.
-// M3 lane 13 r139 (fast; control 37): the second-reference, staged-reservation and cap-reference lead rebuilt 9 (865 B);
-// on it the cull test through a named view pointer 9, the recount's points in a named pointer 9, the recount count-first
-// with a long cast 9, the recount through a const pointer to the result 9 (all the same code); dead initialised locals 1..7
-// 9 each (diagnostic: the stride store order and the recount registers do not follow the phase).
-// M3 lane 3 r290 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). On the lead: the recount through a
-// `point2f const *points` local 9, count first 9, `&pool->points[0]` 9; the guard on `count` with `remaining` scoped to the
-// for 9; the step as `state != 1 ? 1 : -1` 9; `for (remaining = count; remaining > 0; --remaining)` 932 (unrolls);
-// `while (remaining-- > 0)` 9; the inverse computed ahead of the destination point 9; the vertex through a per-iteration
-// `point3f const *vertex` 9. Reading: retail 0x172840 gives the same recount's points the first free scratch register,
-// so here (EAX pool, EDX cache) retail's points take ESI and the count ECX; ours the reverse. Also on the lead: the
-// recount as `(points + count) - pool->points` 15 (867 B) and as `count + points - pool->points` 15 (867 B): the count is
-// then loaded first into ECX and the points take ESI as retail, but the shift folds into `shl ecx, 3; lea`; as `count -
-// (pool->points - points)` 35 (867 B); through the cache's own count and points fields 190 (857 B; no shared base);
-// `long used = count; used += points - pool->points;` 9, `long used = count + (...)` 9, `(long)count + (...)` 9 (all
-// propagated to the lead's code); `(void)result->count;` ahead of it 9; the recount in a forceinline (pool, polygon)
-// helper 9; the cull test through a `byte const *view` local 9.
-// Reserved points used for corners 139, inside copy 69, or both 110; cache array publication
-// 186. With staged reservation and cap/corner bindings: reserved-pointer recount 45, native
-// arena origin 190, signed byte-offset recount 9, and advance destination index at the depth
-// minimum 18. NOT kept: the 9 and 18 forms require exact equality on the staged shapes.
-// The scaled stride spill and the recount registers still differ.
-// M3 lane 12 r172 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). On the lead: the recount through a
-// forced-inline trim helper with (pool, count, points), (count, points, pool) or (pool, points, count) parameters 9 each
-// (the helper folds to the same tree); the clipped count itself as the down-counter 9; `inside` at function scope 9; the
-// cursor declared ahead of the index and step 9; the pool view at the block top 9; an ascending vertex index with a
-// per-iteration vertex pointer 990 (1471 B, unrolled).
-// signed word clip result 226; unsigned word clip result 226; published count for countdown 166; signed
-// word countdown 41; unsigned word countdown 41; typed inside copy extent 115; typed inside view with a
-// shared extent 134; published countdown and count-first recount 166.
-// NOT kept: The two 16-bit countdowns give 41 at 864 bytes. The published-count forms reach retail
-// length and advance the first difference to +0x105 but shift the loop's working registers and score
-// 166. The typed inside copy forms shorten the body and raise the score. The pointer still publishes
-// ahead of the arena commit and state test in the opening source.
-// Staged reservation and cap with a positive-count scope 24, zero-default index 167, forward-default stride 162,
-// and paired reverse selection 167. Signed-short clip count 226 or staged 224. Shared viewport count 115. Unused
-// reservation trim 190. NOT kept: the 24 form needs an exact match for its reservation and cap binding. The
-// pool/state order, stride spill and recount remain.
-// M3 lane 5 r237 (H2M_FAST, control 37; round 286's 9 lead rebuilt, 9 at 865 B). Lead 2 (match-only, 865 B): on the 9
-// lead the recount's count read through `long const &used = result->count;` with `pool->count = (result->points -
-// pool->points) + used;` 2 (recount exact: points ESI, count ECX); `long used = result->count; long &total = used; total
-// += ...; pool->count = total;` 2; `total = difference; total += count` through the reference 10; a `short const &` 9.
-// Left on the 2 lead: only `mov [esp + 0x1c], ecx` (step * 8) after the clipped cursor's lea where retail stores it
-// first. On the 2 lead: step as `long const &` to its selection 2, the index start through a `long const &` 2, `long
-// const &stride = step` in the update 2, the cursor start through a `point3f const *const &` 152, the countdown from a
-// `long const &` to the clip count 2, `remaining` declared ahead of index and step 2, `&result->points[index]` 2, index
-// and step in one if/else on the state 166; the guarded loop as `do { ... } while (--remaining)` 65 (869 B), as a do-while
-// with `--remaining` in the body 65 (869 B), as `while (remaining != 0)` 2; permuter 74 tries in 600 s, best 2.
-// M3 lane 15 r138 (H2M_FAST; round 237's 2 lead rebuilt, 2 at 865 B; left: the stride spill `mov [esp + 0x1c], ecx`
-// after the cursor's `lea edx, [esp + 0x328]` in the loop preheader, where retail stores it first). On the 2 lead: the
-// cursor declared ahead of index and step 2; the cursor declared right after the clip call 2; `&clipped[0]` 2;
-// `remaining` ahead of the cursor 2; the inverse computed ahead of the destination point 2; the guard on `count` with
-// `remaining` kept 2; `index += step` ahead of `++cursor` 121 (863 B); permuter (seed 13821, anneal, 600 s) 69 tries,
-// best 2.
-// Round 114: The typed pool used for capacity and reservation 37, pool count increment before the point expression 42.
-// With the staged reservation, separate bound and cap reads, and the long count reference: signed winding arithmetic
-// 158, forward defaults 167, step after point selection 40, cursor in the loop increment 121, short step 166, and
-// unsigned destination index 2. NOT kept: the 2 form still spills the stride after loading the cursor and binds the
-// published count through a temporary. On the opening body, closest-distance result 40, projected scalars reused
-// for the bounds 194, and one viewport receiver after projection 128.
-// With the staged reservation, cap and corner bindings and widened recount: stride-selected start 166,
-// indexed clipped source 119, source end pointer 220, count-derived destination 176, negated forward
-// step 27, source cursor in loop header 121, source advance at the depth read 125, shared reverse
-// predicate with count plus step 188. NOT kept: the 27 form is 868 bytes, farther from retail's 865,
-// and the reservation and reference bindings require exact equality.
-// Reservation from a named end: prior start index, inline start index, pointer subtraction, or early end pointer, 48 each.
-// The same four with corner and clamp references score 25 at 865 bytes. NOT kept: they require the reference forms, and the address and state test still follow the count commit.
-// On the staged reservation and widened recount, int stride 2, int index and stride 2, enum stride 2,
-// reverse-default stride 161, winding setup under the positive count 17, signed or unsigned destination
-// endpoint 201 each, and endpoint from the signed stride 197. NOT kept: the 2 forms still load the clipped
-// cursor before spilling the stride and require the staged reservation and reference bindings for an exact match.
+// Matches (m3 lane 14 r154, on rounds 286 and 237's lead). Each part is needed; the count beside it is this body
+// without it: the clipped vertices indexed by an ascending index beside the down-counter (with a walking source
+// pointer its address is set up ahead of the destination stride's spill, 2); the reservation staged through
+// `allocated` (retail commits the pool count and tests the state before it publishes the pointer; 4); the cap's
+// compare read through a reference to the distance (retail reloads the winner; 15); the corners read through a
+// second reference to the bounds (retail copies the inflated bounds back out of memory; 9); the recount's count
+// widened through `long const &` (retail's points in ESI and count in ECX; 156).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -2034,24 +1865,25 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 			box2f &bounds = result->bounds;
 			bounds = *g_4687dc;
 			s_point_pool_173520 *pool = (s_point_pool_173520 *)&cache->point_count;
-			long used = pool->count;
-			result->points = pool->points + used;
-			pool->count = used + 64;
+			point2f *allocated = &pool->points[pool->count];
+			pool->count += 64;
+			result->points = allocated;
 			result->count = (short)count;
 			result->field_0 = *(long const *)((byte const *)polygon + 0x18);
 			if (result->state)
 			{
 				long index = result->state == 1 ? count - 1 : 0;
 				long step = result->state == 1 ? -1 : 1;
-				point3f const *local_cb4759 = clipped;
+				long vertex_index = 0;
 				long remaining = count;
 				if (remaining > 0)
 				for (; remaining != 0; --remaining)
 				{
+					point3f const *vertex = &clipped[vertex_index];
 					point2f *point = result->points + index;
-					real inverse = -1.0f / local_cb4759->z;
-					point->x = local_cb4759->x * inverse;
-					point->y = local_cb4759->y * inverse;
+					real inverse = -1.0f / vertex->z;
+					point->x = vertex->x * inverse;
+					point->y = vertex->y * inverse;
 					if (bounds.x0 > point->x)
 						bounds.x0 = point->x;
 					if (point->x > bounds.x1)
@@ -2060,16 +1892,17 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 						bounds.y0 = point->y;
 					if (point->y > bounds.y1)
 						bounds.y1 = point->y;
-					real distance = 0.0f - local_cb4759->z;
+					real distance = 0.0f - vertex->z;
 					result->distance = result->distance > distance ? distance : result->distance;
-					++local_cb4759;
+					++vertex_index;
 					index += step;
 				}
 				if (result->state == 3)
 				{
 					if (inside)
 					{
-						result->distance = (real)(result->distance > 0.015625 ? 0.015625 : result->distance);
+						real const &distance = result->distance;
+						result->distance = (real)(distance > 0.015625 ? 0.015625 : result->distance);
 						result->bounds = *(box2f *)(cache->view + 0xa0);
 						result->count = *(short *)(cache->view + 0x198);
 						memcpy(result->points, cache->view + 0x19c, *(long *)(cache->view + 0x198) * sizeof(point2f));
@@ -2080,21 +1913,23 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 						bounds.x1 += 0.00390625f;
 						bounds.y0 -= 0.00390625f;
 						bounds.y1 += 0.00390625f;
+						box2f const &inflated = result->bounds;
 						point2f *corners = result->points;
-						corners[0].x = result->bounds.x0;
-						corners[0].y = result->bounds.y0;
-						corners[1].x = result->bounds.x1;
-						corners[1].y = result->bounds.y0;
-						corners[2].x = result->bounds.x1;
-						corners[2].y = result->bounds.y1;
-						corners[3].x = result->bounds.x0;
-						corners[3].y = result->bounds.y1;
+						corners[0].x = inflated.x0;
+						corners[0].y = inflated.y0;
+						corners[1].x = inflated.x1;
+						corners[1].y = inflated.y0;
+						corners[2].x = inflated.x1;
+						corners[2].y = inflated.y1;
+						corners[3].x = inflated.x0;
+						corners[3].y = inflated.y1;
 						result->count = 4;
 					}
 				}
 				if (cache->view[0x84] && result->distance > *(real *)(cache->view + 0x88))
 					result->state = 0;
-				pool->count = (result->points - pool->points) + result->count;
+				long const &used = result->count;
+				pool->count = (result->points - pool->points) + used;
 			}
 			cache->visited[word_index] |= bit;
 		}
@@ -2131,6 +1966,10 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
+// Matches (m3 lane 14 r154, on round 160's store-order lead): the new entry's key, link, portal and cluster are
+// stored in the record's field order (retail loads the key ahead of the link; in the order link, key, cluster,
+// portal: 55 at 870 B), and the recount's count is widened through `long const &` as in 0x173520 (retail's points in
+// EDX and count in ECX; read directly: 17, with the stores, the copy's set-up and the recount pair out of order).
 // score 55 (was 134): The 0x30 frame and flag homes agree. The link and key scratch registers, signed cluster publication and sentinel encoding still differ.
 // Earlier at 55 (was 134).
 // Earlier at 134 (was 134). The result and capacity byte homes, signed cluster spill and sentinel publication still differ.
@@ -2280,12 +2119,6 @@ struct s_pool_view_172840
 // 134 each. With independent failure stores and signed cluster publication: 55 each.
 // NOT kept: The 55 forms restore the flag and traversal homes but grow to 870 bytes,
 // publish the key late and retain the five-byte sentinel load.
-// With signed list publication: native short cluster store 152, queue failure or
-// success return 241 each, queue result AND 250, pool then grouped projection/queue
-// result 78, geometry chain then queue 72, positive capacity return 255, and
-// direct pool-derived result 261.
-// NOT kept: the 72 form recovers the flag homes, but shares a geometry false
-// store that retail emits twice. The 78 form groups projection with queue handling.
 // M3 lane 13 r131 (fast, then plain with the file's 33 functions; base 134): KEPT the three failure tests as independent
 // `if`s (retail's tail is three separate test/store sequences: pool, projection, queue) with the other cluster chosen by
 // one ternary into a `long` (retail widens it once, spills the dword and reloads it for the list call): 55 (870 B); every
@@ -2394,6 +2227,10 @@ struct s_pool_view_172840
 // bit-array pointer named ahead of the stores 33; the distance store ahead of the rectangle copy 53; the two sentinel
 // stores swapped 19; the recount count-first through `&storage->points[0]` 17 (same code); the queue test written
 // `== unknown00` with the arms swapped 22.
+// Count-first recount and native successful or rollback point difference 55/55/55.
+// Clipped base or count live across the bit copy 128/126, shared arena origin 275,
+// immutable wide cluster 55, shared short list index 150. The key and predecessor
+// allocation and long sentinel remain in the tying forms.
 // Reserved pointer for recount 149, bounds 155, or both 148. Saved point start for commit 142 or both outcomes 255.
 // Shared post-clip offset 235; recount through clip record 256; explicit inherited-bit assignment 55.
 // NOT kept: retaining the reservation enlarges the frame, and the tied assignment still leaves the long sentinel.
@@ -2455,10 +2292,10 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 					(s_polygon_clip_173380 *)&entry->rect, (s_polygon_clip_173380 *)&next->rect))
 				{
 					long other_cluster = polygon->field_6 == (short)cluster_index ? polygon->field_8 : polygon->field_6;
-					next->next = (short)index;
 					next->key = key;
-					next->value08 = (short)other_cluster;
+					next->next = (short)index;
 					next->unknown06 = (short)portal_index;
+					next->value08 = (short)other_cluster;
 					next->unknown28 = NONE;
 					next->unknown0a = NONE;
 					next->rect = *(s_rect4 *)g_4687dc;
@@ -2466,7 +2303,8 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 					dword *portal_bits = (dword *)next->unknown2c;
 					memcpy(portal_bits, entry->unknown2c, sizeof(next->unknown2c));
 					portal_bits[word_index] |= bit;
-					storage->used = ((point2f *)next->data - storage->points) + next->count;
+					long const &count = next->count;
+					storage->used = ((point2f *)next->data - storage->points) + count;
 					function_11f5f0((box2f *)&next->rect, (point2f *)next->data, next->count);
 					function_173b00(lists, (short)other_cluster, (short)new_index);
 					if ((queue->index + 1) % 256 != queue->unknown00)
@@ -2813,6 +2651,31 @@ struct s_camera_reference_171830
 // Full-ray result, as bool or byte: clear on the combined or split narrow paths 286/286, assign
 // from the plane test 291, and clear on valid reference then restore after exclusion 281.
 // NOT kept: every form grows to 1238 bytes and moves the first difference ahead of the lookup span.
+// M3 lane 14 r154 (reduced image with 0x170fd0, 0x171d00 and 0x16ebf0, both callers' neighbours MATCH at every run;
+// control 155, aligned 36). Reading of the operand orders: the two sides of a product are sorted by rank, the higher
+// first, and on equal ranks the right-hand side goes first. A load through a parameter at offset 0 ranks by the
+// parameter's number counted from the last one (offset 1, distance 2, up 3, forward 4, point 5), a load at +4 or +8 by
+// two compiler temporaries two apart whose numbers move with every grouping pair around a float product, and a named
+// local ranks below every such load but those at the lowest level.
+// LEAD 9 at 1219 B (aligned 4; build/r154/lead-0x171830-9.patch; not kept: the named distance is a one-use local and
+// the grouping pairs only steer, so both need a byte match): round 299's named-distance lead with the three sample-row
+// products grouped, `target.x = (displacement->i * sign) + center.x;`; the three side-offset rows grouped instead 9
+// (same code). On it the plane block, the cross product, both loops and the tail are retail's; left is the centre's
+// first product, ours forward->i loaded and multiplied by the depth, retail the depth copied and multiplied by
+// forward->i in memory. That row needs the depth to rank above forward->i while forward->i stays above up->k (the
+// cross product's third row), and the depth as a named local ranks below every parameter's load; no order of the five
+// parameters changes that (forward has to stay ahead of up for the caller's set-up). Diagnostic, not source: four
+// unread parameters behind forward give the centre exactly (112; the plane's i product and one cross row then tie
+// the other way).
+// Forms (score [aligned rows]): the lead re-measured 117 [25]; grouping pairs on the refinement rows 118 [29]; on one
+// or two sample rows 118 [29] / 118 [29]; the rear vector copied from forward and scaled in place 327 at 1250 B (326 on
+// the control); the centre's products written forward first on the lead with three pairs 9 (same code). With 0, 1, 2
+// and 3 sample-row pairs: the centre through the existing scale helper with the negation written out, with the
+// existing negate helper in place, into a second vector, or with the existing sum helper as well, on the lead
+// 267/268/268/159 each ([53] [57] [57] [32]; sum helper [55] [59] [59] [34]): the three loads then come first and the
+// zero moves ahead of the flag branch again. The flagged arm with the helper call in the test (no named distance)
+// 281/285/288/288 [36-61], with those four centres 282/286/289/289 each; the flagged arm with the dot written out
+// 155/263/264/264 [36-61] (no pairs: the control's code), with those four centres 158/266/267/267 each.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
