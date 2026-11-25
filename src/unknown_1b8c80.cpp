@@ -1073,6 +1073,12 @@ extern "C" void _ReadWriteBarrier(void);
 // lookup, without/with the barrier 77 (229 B) / 71 (226 B): the lookup after the arms' stores is not merged with the
 // first. Allocator search on the no-barrier body (24 forced register picks and rankings): none changes the entry, the
 // slot is no candidate in the entry block at all, so the load's place is decided before allocation.
+// M3 lane 13 r157 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): allocator view: the slot is a register value
+// over the NONE block and the flags arm only, so its load is placed before allocation; 40 forced scheduling choices in the
+// entry block give 6 each. No barrier: `(void)slot;` after the lookup 44 (208 B), `(void)list;` 44; the flags and point
+// through a view of the slot's data block formed first 50 (210 B: the slot then loads in the entry block into ECX, but the
+// pool pointer takes EDX, the data base ESI and the 0x26c load is hoisted into EDX ahead of the add), formed after the
+// lookup 49 (210 B), between a named pool data read and the written-out lookup 50.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
