@@ -3609,6 +3609,13 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // direct expressions 95; both rotation, scale or bias parts named, in all seven subsets, 321 each. NOT
 // kept: the direct form moves the first difference back to +0x50f, and the named stages shorten the body to
 // 1914 bytes.
+// Gemini lane GB r10 (2026-11-25, 18 source trials + 1 diagnostic, fast control 54 at 2022/2022 B, al=27, mk=22, 480/480 insns; 0x144f0/0x1cc30/0x2a2f0 MATCH):
+// Diagnostic (reverted): `/G7` in `@flags` under LTCG 54 (identical code, so `/G7` does not widen `fmul->fstp` from 3 to 4 insns).
+// Source trials: 4-corner `for` over static `cx/cy` or `point2f` or inside quad helper 334 each (1927 B); 2-pass `for` loop 544 (1762 B);
+// 4-vertex `for` loop 509 (1890 B); macro `TEXTURE_CORNER_ROTATE` 54 (same code); `x*cosine + (-y)*sine` 486 (1784 B);
+// product parens stmt 1 only 54 (same code), both stmts 244 (1988 B), stmt 2 first/second product 234/210 (1996/2014 B);
+// asymmetric `scale*`, `0.5f*`, `1.0f+` on stmt 1 or stmt 2 54 each (same code); `*coordinates++` 320 (1914 B);
+// `const real one/half` 54 (same code); earlier `#pragma inline_depth(0)` 542 (1724 B). Body unchanged.
 // Rotate into the output pair, then use component loops for all scale/bias steps,
 // scale only, bias and half-scale, scale and bias, half-scale only, separate scale
 // and bias/half-scale loops, separate scale/bias and half-scale loops, or three loops:
