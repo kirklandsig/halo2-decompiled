@@ -3695,6 +3695,11 @@ struct s_ammo_conversion_entry
 // Accumulator after debit for the remaining reserve 236.
 // NOT kept: offer ties and the other forms raise the score. Destination and search register
 // homes still differ, and the debit-only and post-debit forms also grow.
+// Immutable capacity carried to a mutable offer 225. Separate capacity and selected offer 192.
+// Immutable tag/object pointers, conversion bound/entries/key, named ordinals and named conversion
+// offer 190 each. Existing reserve query with loaded first or unloaded first 190/190, with a
+// separate capacity 192. NOT kept: the immutable-capacity handoff grows to frame 0x24, the
+// separate offers raise the score, and the rest tie. The destination and conversion-search homes differ.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {

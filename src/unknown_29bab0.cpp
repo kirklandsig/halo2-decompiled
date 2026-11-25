@@ -984,6 +984,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // `byte same` in 4th else arm keeping `bool local_21` 665 (3499 B, +0x60: recovers retail's exact 8-bit `test al, al; setne al` at 0x29bf27 without a cast);
 // norm `(i*i+k*k)+j*j` 747 (3499 B), `.n[0..2]` 750 (3499 B, mk 105 vs 117); drop `local_28` alone 467, + dot orders 469, + MIN(1.0f, ratio) + early field_50 468;
 // 0x29ab90's steering formula 655 (3500 B); combined retail structure + `byte same` + `dot3f(&local_7, &local_9)` 670 (3483/3499 B, 841/844 insns, mk 64 vs 117: leaves only the 16-byte side-point y-in-arms block as missing length).
+// 12-byte workspace names for the heading/defaults/request, location/query/target, matched point types
+// with distinct names, immutable request magnitude, and vector/planar request names: 462 each.
+// Immutable translated point 668; point setter 473; shared default-vector pointer 664; in-place
+// translation of the position or displacement copy 719/737; completed planar request copy 588;
+// both planar points immutable 668. NOT kept: the naming forms tie, and the other forms
+// raise the score. The position output still needs ESP+0x80 with the query output at +0x8c.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
