@@ -5932,6 +5932,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // seeded rate displacements 57, both pairs 61, in-place angular/rate scaling at their tests
 // 169/173, full-turn constant shared with angle wrapping 175.
 // The clamp registers and shared angular coefficient still differ. NOT kept: the rate pair gains one, and the other offset forms tie or regress.
+// Bounds record initialized together or through its members 58/58. Angular products, rate products,
+// or both stage pairs in a bounds record 58/58/58. Signed lower endpoint 196, with signed comparisons
+// 212, signed bounds record 212. NOT kept: the records preserve the wrong XMM allocation, and the
+// signed forms grow the body. The angular limit and coefficient still occupy separate registers.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -9813,6 +9817,10 @@ struct s_unit_melee_collision
 // handle live 534, damage owner initializer cached 447, damage owner initializer live 534.
 // NOT kept: The range-at-use forms either shorten the body or retain the displaced frame, and no form
 // beats the opening score.
+// Short row ordinal with cached/live range 538/514, short column 520/524. One self-damage
+// origin for both consumers with cached/live range 447/534. Distinct surface and damage
+// workspace names with cached/live range 447/534. NOT kept: ordinal widths enlarge the frame,
+// and the other live forms reach 0x17c but shorten the body. The unit and fan spill homes still differ.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

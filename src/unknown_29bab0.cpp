@@ -952,6 +952,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // both arms 751, helper both arms 731 / ternary 721, direct local_26 both arms 593); inline bool flip helper 665; combined clean
 // structure with mode-2 early i/j + MIN(1.0f, ratio) + field_50 early + no local_28 + blend helpers 673-675 (3475-3478 B,
 // aligned 112, reg+esp-masked 43: all 53 mode-2/scale instructions match byte for byte), without mode-2 early 466-493.
+// Incoming/radial/both planar cross tests 669/703/703; planar normal in both dots 665.
+// Planar scale to a separate or in-place offset 706/714; one normal for dots and scale 720;
+// both crosses with a scaled offset 700. NOT kept: all keep the position at ESP+0x8c and
+// raise the score. The position and the path query outputs still occupy exchanged homes.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

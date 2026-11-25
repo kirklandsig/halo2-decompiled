@@ -1010,6 +1010,11 @@ struct s_item_collision_bsp
 // coefficients first 198.
 // NOT kept: The integer draw providers tie the baseline. Both planar products grow the body and raise
 // the score.
+// Existing planar scale in the axial, fallback or both branches 190/190/190; axial aggregate
+// and in-place scale 288. Joined scale with separate/direct axis 294/270, joined separate
+// planar output 294, branch-local separate planar output 266. NOT kept: the branch helpers
+// tie, and the joined or separate-output forms shrink the frame and raise the score.
+// The rotated normal registers and pending x87 spin factor still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1411,6 +1416,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // 203.
 // NOT kept: The planar cross producers lengthen the body and increase the score. The output workspace
 // recovers the 0xb4 frame with a higher score.
+// Root as all three cross weights with ordinary/staged axis 170/170, or with the output
+// workspace and setter 170/170. Separate ordinary/staged rotation cross scaled first or at
+// use 257/218 for each helper. NOT kept: both output workspace forms attain 0xb4 and 848
+// bytes but increase the score. The scaled-axis registers and alignment order still differ.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
