@@ -1073,6 +1073,27 @@ struct s_collision_result_buffer_1697c0
 // row's first product 304 (levels 3/4/2; around the k row's sine product the same levels), around the dot's first product
 // 300 (3/6/4), both 301 (masked 59), around all three dot products 296 (the lead's code; 0x297d30 143). Live scratch
 // stores ahead of the loop (diagnostic) 371/392. Body unchanged.
+// Scaled vector published via assignment, setter, memcpy or memmove 666/337/666/648;
+// early rejection with the same four transfers 666/337/666/648.
+// The startup zero register, axis j preload and transfer-word reuse remain. NOT kept: all staged normalizations change the frame and increase the score.
+// M3 lane GB r4 (fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23 unless noted), 0x24590, 0x2980d0, 0x297a50; control
+// 270, al=185, mask=114; 40 trials): early-return actor_looking_normalize3d (`if (fabs(magnitude) < 0.0001f) return 0.f;`)
+// on the 270 base 271 (fr=0xa8, 1430 B, al=103, mask=72), + best_direction before best_fraction 271 (al=99, mask=67), +
+// collision.unknown24=NONE before vector3f_scale ray 273 (al=97, mask=61), + inline fraction 267 (mask=103, -3 not kept),
+// + pitch_axis fields i,j,k 271 / k,j,i 317 / candidate fields 294 / candidate vector3f_assign 315 / proj-last rows 275
+// (0x297d30 31). Lead (saved build/gb4/296e60-vassign-norm-early-best-none.cpp): early-return normalizer +
+// vector3f_assign(&pitch_axis, ...) + best_direction before best_fraction + collision.unknown24=NONE before ray: 292
+// (fr=0xb0, 1441 B, mask=46 vs baseline 114, 0x297660 MATCH, 0x297d30 23; no match-only forms): matches 299/345 insns in
+// masked opcode/operand order (0..112 prologue/pitch-normalize j*scale/draws/pitch-dot start, 169..280 full yaw rotation/
+// collision/loop tail/clear k,j,i magnitude, 283..345 best normalize and exits), leaving only 2 extra pitch-rotation spills
+// ([esp+0x40]/[esp+0x54], +8 B frame because candidate.j stays live past fstp instead of dying into v.j*axis.i) and 1 clear
+// i-scale operand flip. On that lead: without NONE-before-ray 292 (mask=52), without best-before-frac 295 (mask=57, same with
+// inline perpendicular2d), header normalize3d 300 (mask=82), single-exit normalizer 343, fallback through vector3f_assign 350
+// (without early return 343, mask=61) or fields 334 (fr=0xa8, al=121), candidate through vector3f_assign 285 (1423 B, mask=67),
+// clear/axis/candidate declaration moves 292 (same code), inline fraction 293 (mask=84), rotate_in_place (cosine, sine) param
+// order 292 (270 on base), axis-first crosses / cross j,k,i / proj-first rows / named versine 292 (mask=46–52), dot k,j,i 293.
+// Also on base: cross3f local_up 425, cross3f in rotate_in_place 329 (312 on lead; 0x297d30 58), norm fabs>=0.0001f 328,
+// dropping __forceinline on actor_looking_rotate 270 (0x297d30 468). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

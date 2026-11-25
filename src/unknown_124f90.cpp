@@ -5048,6 +5048,10 @@ struct s_128ca0
 // Invalid controller link as inactive byte: separate active-first/inactive-first arms 208/212,
 // byte initialized from the link 131, joined selected byte 203. Complement test on effect/link/both
 // 138/129/140, with link-derived inactive byte 151. NOT kept: all raise the score.
+// The pin scratch pairs and controller sentinel still differ. Completed guard 48, absent
+// successor first 83, both 83, with pending guard 83. Return on absent/valid successor
+// 83/48, with completed and pending guards 83/48. NOT kept: the absent-first forms
+// shorten to 1053 bytes and raise the score. The native shifted pending read remains.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
