@@ -987,6 +987,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Rotate a snapshot, then limit into the global, in place, or into the spent axis with vector/field
 // publication 168/199/202/215. NOT kept: the direct-global output ties the opening extent and
 // raises the score. Other destinations add copies, and none recovers the 0x20 frame.
+// The 0x1c frame still shares the random sample and sine word. Bounded sample as unsigned short/signed long,
+// converted at fraction/after oscillation/inside angle 199/199 at each point; drawn before the clock product
+// 213/213. NOT kept: both widths remove the retail unsigned correction, keep the short frame and raise the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

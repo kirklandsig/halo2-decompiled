@@ -1917,6 +1917,12 @@ void function_2294a0(
 // Staged midpoint with one position pointer, displacement first, both, or precomputed coordinates 485/231/485/485.
 // Staged midpoint with shared scaler before copy, direct scale, rejection continuation, or continuation with scaler and copy 231/242/231/231.
 // NOT kept: the best setter form recovers the 0x70 frame and EBX position base but grows to 1988 bytes and groups the last two coordinate calculations before the first store.
+// M3 lane 3 r308 (H2M_FAST with 0x2281a0, MATCH throughout; aligned = difflib rows, control 199). Retail has the
+// component in EBP again at the velocity calls (`push ebp`) after spilling it at entry. The transform helper returning
+// its output pointer 485 (same code), that pointer kept for the averaging block 485 (folds back); rigid body A through a
+// pointer like B's 485; `position.x *= inverse_count;` 485. LEAD (not kept, the component fetched again only to move
+// loads): the two rigid-body-A velocity calls given `havok_component_get(impact->component_a)` 351 at 2050 B, aligned
+// 121: with fewer uses in that block the component loses EBX and much of the body becomes retail's.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
