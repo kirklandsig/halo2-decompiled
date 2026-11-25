@@ -2021,7 +2021,8 @@ result+=2;
 					// Observe each target before multiplying by the current step scale.
 					float captured_target_a = (float const &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
 					scalar_work.pair_b = captured_target_a * load_friction_scale(step) - projection_pool.spin_first * load_velocity_scale(step);
-					float captured_target_b = (float const &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
+					// Retain the second target in the native scalar path through its product.
+					double captured_target_b = (float const &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
 					// Both products precede the limit publication, including aliased scales.
 					double target_product = captured_target_b * load_friction_scale(step);
 					double velocity_product = projection_pool.spin_second * load_velocity_scale(step);
