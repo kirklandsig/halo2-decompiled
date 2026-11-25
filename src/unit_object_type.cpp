@@ -5699,6 +5699,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
 // Separate queried up with branch publication 218/218, or publication after its correction 211/211.
 // NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
+// Lateral intermediate declared with the queried axes, first, or after the
+// aim copy 169/169/169; first declaration with staged cross 169. Direct
+// rotation member 169; rotation reference, three axis references or
+// rotation reference with paired angles 191/191/191. NOT kept: the
+// references grow the body. The first cross still preloads up.i.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

@@ -1794,6 +1794,9 @@ PRIVATE inline long score_string_list_1608e0()
 // width folded into x's expression 679, the row count named once for the total and the height 679 (same code each); the
 // header's place and name rectangles with right and bottom summed from the row position 714 (2856 B), the place
 // rectangle alone 679 (same code). Body unchanged.
+// Panel time, score and alternate-score field references singly, in pairs,
+// or all together 679 each; pointers to all three fields 679. NOT kept:
+// the field bindings leave frame 0x798, viewer EDI and the origin homes unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

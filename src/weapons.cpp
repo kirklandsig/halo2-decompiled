@@ -3661,6 +3661,11 @@ struct s_ammo_conversion_entry
 // shared source tag key and scoped magazine 234, full-magazine continue with scoped magazine 226.
 // transfer-gate continue with scoped magazine 226, source pointer assigned by the selected arms 242.
 // NOT kept: every form raises the score. The conditional source pointer changes the save prefix but shortens the body to 698 bytes.
+// Shared tag key by value or field reference 190/190. Keyed scan with hit-owned
+// cap 205, hit-owned offer 197, joined comparison 202 or delayed table read 202.
+// Positive acquisition with hit-owned cap 212; named key and ordinal with
+// hit-owned offer 197. NOT kept: the key binds as before, and the scan rewrites
+// raise the score. The 0x20 frame and destination/scan register difference remain.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
