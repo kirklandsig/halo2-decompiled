@@ -405,6 +405,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Existing player statistics record for consecutive/recent/timestamp in all seven subsets 85 each.
 // Typed increment before binding the row 85. NOT kept: all reach 434 bytes but exchange the opening player and kind registers.
 // The later enable reload and previous maximum home still differ.
+// M3 lane 15 r146 (H2M_FAST with 0x1ea770, 0x1e9ce0, 0x1e9df0, all MATCH each run; control 76 at 432 B). Still
+// BLOCKED-BY 0x196960/0x1968b0 (their /Ob1 file is another lane's this round). Lane 1 r149's 70 form (the enable read at
+// each use, long limits, a counter pointer and the nested conditional store) re-measured 70 (427 B); the increment
+// through the statistics address with the row formed after it, on main's bool body with long limits 83 (434 B), on the
+// 70 form 79 (429 B); on the 70 form the counter pointer ahead of the limits 70, the store clamping a `value` copy 70
+// (same code each), the index test nested inside the enable test after the limits 106 (425 B).
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

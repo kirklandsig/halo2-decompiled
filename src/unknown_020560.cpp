@@ -1523,6 +1523,28 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the top of the sample branch 418 (same code); the samples local declared ahead of scan 1 and used there too 623 (2071 B);
 // scan 2's offset built through the existing vector3f_assign 418, the delta through it 418 (same code each). A forced-
 // decision search (14 links) gives at best 409 (one pick), the frame staying 16 bytes short.
+// Opposite result using the count as sentinel 420/438, the nearest ordinal as
+// sentinel 418/443, a one-based ordinal 281/407, or the distance improvement
+// 427/426 (late/early anchor). NOT kept: the one-based form changes the retail
+// NONE test and ordinal, and all forms retain frame 0x1c without the X spill.
+// The second scan still needs the 0x2c frame and the candidate X store. Short-circuit projection and retained
+// displacement norm 646, with the squared-length helper 646 or a second dot 646; cutoff on rejection 590;
+// conditional winner and cutoff updates 646; named squares 646, named projection products 646; nearest skip
+// and named projection 646. NOT kept: the reused displacement shortens the loop and drops the needed home.
+// The second scan still lacks its candidate-X store and second induction address. Shared nearest and fallback
+// direction with component stores, setter, entry default or initialized value 418/419/593/389. Earlier anchor
+// with component stores or setter 439/439, also with a scoped opposite search 439/439. NOT kept: the 389
+// form reaches retail length and frame 0x28, but adds a second fallback vector and copy absent in retail.
+// The second scan still lacks the 0x2c frame and its distinct offset X spill.
+// Anchor X before two- coordinate subtraction with the cached sample array 433, anchor X before two-
+// coordinate subtraction with live entries in the opposite scan 555, anchor X after two-coordinate
+// subtraction with the cached sample array 433, anchor X after two-coordinate subtraction with live
+// entries in the opposite scan 555, complete anchor setter from X and pair with the cached sample array
+// 579, complete anchor setter from X and pair with live entries in the opposite scan 578, complete
+// anchor initializer from X and pair with the cached sample array 433, complete anchor initializer from
+// X and pair with live entries in the opposite scan 555.
+// NOT kept: The cached-entry forms retain 0x1c. Live entries reach 0x20 and one family reaches 2122
+// bytes, with higher scores.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
