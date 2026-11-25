@@ -2246,10 +2246,10 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 
 				// Keep each stride read in retail order and retain the coefficient
 				// address through both outputs, which may overlap the input buffers.
-				float first_impulse = result[0];
-				long const &stride_source = state.writing.stride;
-				long first_stride = stride_source;
-				*(float *)destination = first_impulse;
+				unsigned long first_impulse_bits;
+				memcpy(&first_impulse_bits, result, sizeof(first_impulse_bits));
+				long first_stride = state.writing.stride;
+				memcpy(destination, &first_impulse_bits, sizeof(first_impulse_bits));
 				float const &inverse_time = capture_writeback_time(step);
 				*(float *)(destination + 4) = row[0].linear.m128_f32[3] * inverse_time;
 				destination += first_stride;

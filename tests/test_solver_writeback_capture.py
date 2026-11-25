@@ -173,6 +173,51 @@ def test_paired_writeback_captures_step_after_first_output(solver_images, precis
 
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_paired_writeback_preserves_impulse_bits_with_partial_overlap(
+        solver_images, precision):
+    patterns = [0, 0x80000000, 1, 0x80000001, 0x7f800001,
+                0xff800001, 0x7fc12345, 0xffc56789]
+    for rounding in range(4):
+        for bits in patterns:
+            for output in [FRICTION_RESULTS, IMPULSES + 1, IMPULSES - 3]:
+                data = solver_case(3, 0)
+                put(data, STEP, '7fi', 0, 0, 0, 0, 2, 0, 0, 0)
+                put(data, OPS + 8, 'I', output)
+                put(data, OPS + 20, 'I', 8)
+                put(data, OPS + 24, '3I', 3 | 8 << 8 | 5 << 16, 0, 0x400)
+                put(data, TERMS + 12, 'f', 1.25)
+                put(data, TERMS + 60, 'f', -2)
+                put(data, IMPULSES, '2I', bits, 0x7f800123)
+                # Only writeback runs. Impulses retain their raw payloads,
+                # including signaling NaNs; coefficients use numeric x87.
+                # The second impulse is read after both first-result writes.
+                expected_heap = bytearray(data)
+                put(expected_heap, output, 'I', bits)
+                put(expected_heap, output + 4, 'I', 0x40200000)
+                second = struct.unpack_from('<I', expected_heap,
+                                            IMPULSES + 4 - HEAP)[0]
+                put(expected_heap, output + 8, 'I', second)
+                put(expected_heap, output + 12, 'I', 0xc0800000)
+                expected_output = (bits, 0x40200000, second, 0xc0800000)
+                retail, compiled, symbols = solver_images
+                snapshots = []
+                for machine, entry, gate in (
+                        (retail, 0x31c940, 0x480c60),
+                        (compiled, address(symbols, 'solve_operations_31c940'),
+                         address(symbols, 'g_480c60'))):
+                    machine.mem_write(gate, b'\x01')
+                    snapshot = execute(machine, entry, data,
+                                       [STEP, OPS, HEAP, IMPULSES],
+                                       precision=precision | (rounding << 10))
+                    observed = words(machine, output, 4)
+                    assert observed == expected_output, (precision, rounding,
+                                                         bits, output)
+                    assert snapshot == (bytes(expected_heap), 1)
+                    snapshots.append((snapshot, observed))
+                assert snapshots[0] == snapshots[1]
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_angular_error_reloads_step_between_rows(solver_images, precision):
     data = solver_case(12, 2)
     replacement_step = STEP + 0x100
