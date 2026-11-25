@@ -601,6 +601,56 @@ void __stdcall function_508d0(void *payload_data)
 // function without `__stdcall` 626 (same code); the byte flag as the last parameter 625; diagnostics: the noise array
 // without its alignment 713 (2488 B), the level counter not volatile 652. The flag stays a stack load in every form.
 // Body unchanged.
+// M3 lane 5 r245 (h2m fast with 0x508d0 and 0x13bb90 listed, the full-build proxy; control 626). The frame and the
+// flag are not blocked by 0x508d0. Causes found, each read off retail's bytes:
+// (1) Frame: the named double for the weight makes this function's callers keep 8-byte stack parity, so it does not
+// realign and the align declaration only forces an EBP frame. With `real weight = (real)pow(...)` and no align
+// declaration it realigns as retail does (`and esp, -8`) and the weight loop is retail's x87 code: 698 (2477 B,
+// frame 0x148c); the real weight with the align declaration kept 624; no align declaration alone 713.
+// (2) Phase factors: retail multiplies by 1.0 held in xmm3, by 0.0 from memory and subtracts `square * 1.0`, which
+// literals never give (three literal spellings fold to the same code); a local 3x3 coefficient table gives retail's
+// block and its frame size 0x1474 (as three statements or as a loop over the table).
+// (3) The curve evaluations are retail's out-of-line 0x13bb90 expanded in place: calling that existing function at
+// the three sites (LTCG expands it) gives retail's re-derived curve addresses, where the private inline keeps one
+// pointer. (4) The random draws are the existing 0x259d0 range draw with -1 and 1 (retail's `fmul; fadd st, st;
+// fsub 1.0`). (5) Retail divides the stride by two twice (0x51997, 0x51a73) and keeps four separate cursors in the
+// midpoint loop: `stride / 2` written at each use gives both, a named half-stride local gives neither.
+// (6) The three interpolation points are one `real window[2][3]` (retail's homes are x[3] at +0x50 and y[3] at
+// +0x5c, the right point's two cells never written), copied member by member. (7) The right index is a conditional
+// `MIN(i + stride / 2, count - 1)` (retail's `cmp; cmovg` on the sum) and the index test a clamp compared with the
+// index (`PIN(index, 0, count - 1) != index`). (8) The seed offset is `level * 3` (retail starts its counter after
+// the zero-trip test). (9) The final loop names the horizontal sum beside the vertical one and takes its three
+// position steps through the existing vector3f_add_scaled. (10) The flag travels in CL once the definition pointer
+// is coloured ahead of it at the entry (EAX cannot carry an argument past the stack probe): that follows from the
+// forms above, no convention change is needed. Whole-array memset fills, straight stores to the noise cells and a
+// plain (not volatile) level counter complete it.
+// LEAD, not kept: all of the above 321 at retail's 2384 B with the window's right point set ahead of the loop and
+// the weights declared end, middle, start (first difference +0x77), or 328 with the left point set ahead of the
+// loop and the weights declared middle, end, start (retail's sum order and inner loop, first difference +0x34);
+// build/r245/lead-0x516d0-321.patch and -328.patch in the m3-lane5 worktree. Not kept because form (5) needs a byte
+// match under the review rules and the same body with a named half-stride local scores 639 (667 with form 9), above
+// main. Left on the 328 form: the 1.0 constant is coloured after the right point (rank 288 against 304; retail
+// colours it first, so it takes xmm3 and the right point xmm4/xmm5), the level seed's sum is built in EDX where
+// retail builds it in EAX and forms EDX with `lea`, an EAX/EDX exchange in the interpolation set-up, and five
+// integer homes in another order.
+// Scores on the way (each added to the one before unless said): memset fills, FLOOR(e - 2, 0), straight stores,
+// the range draw and the PIN test on the realigned body 636; the coefficient table 662; a plain level counter 665;
+// per-axis loops over a two-member view of the noise cell (seeded fills / midpoint / interpolation / all) 580 / 659
+// / 665 / 594 (the seeded fills leave retail's code); `i = stride / 2` with the half local kept in the body 667;
+// `stride / 2` in the midpoint loop only 641; no half local 702; the inverse stride ahead of the midpoint loop 701;
+// member-by-member pair copies 624; the three curve evaluations through 0x13bb90 635; the MIN right index 439; the
+// seed offset as `level * 3` 355 (four operand orders of the seed sum the same code); a window carried in three pair
+// locals with the left taken at the loop top 378; the 2x3 window 361; blend spellings (weights array, per-axis
+// loop, parentheses, term orders) 361 to 411; the named horizontal sum with the scaled-add helper 402; weights
+// declared end, middle, start 321; the left point set ahead of the loop 411, with the other five weight orders 328
+// / 328 / 394 / 394 / 358; five spellings of the bias remap 319 to 330 (no structural change). Entry forms on the
+// way: a second early use of the flag (diagnostic) 561 with the flag in DL; the exponent read first and clamped
+// under the test 633; `short exponent` read first 628 (flag in CL); a pointer or reference to the exponent field,
+// a one-caller exponent inline, a switch on the flag and the flag typed byte or long 602 to 624 (stack flag).
+// On the 328 form: a separately carried previous point feeding the left cells 359 (the frame grows), as an aggregate
+// copy 278 at 2384 B but further from retail's rows; the range test as an if block 328 (same code); the fraction and
+// its complement ahead of the range test 424; no named complement 327; the middle weight's product in three other
+// orders 328 / 332 / 328.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

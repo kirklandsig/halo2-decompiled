@@ -1020,6 +1020,23 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // `present_teams | old_team_mask` uncast 63, present declared first 63, present declared last 63, the old mask read
 // from `globals->team_mask` 139 (368 B), `present_teams = playing_teams = 0` chained 63 (plain) / 23 (volatile, same
 // code); 0..7 dead locals (diagnostic) 63 / 23 each (no operand-order phase).
+// M3 lane 8 r236 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23; all on a plain, non-volatile present, 63 at
+// 384 B). Reading of the change block's OR: retail computes it into the saved mask's register (`or ecx, [present]`), so
+// present has one reference there and never gets a register (retail even loads it into a scratch register only for the
+// compare). Here the OR's two operands are the saved mask and a 16-bit copy of present that the compiler creates when it
+// narrows the OR for the word store; that copy is always the newer symbol, so it sorts first, becomes the OR's
+// destination and gives present three references in that block (present ranks 15 against the pool pointer's 11; with
+// one reference it would rank below zero). Every spelling keeps that order (same code, 63, unless stated): the store as
+// `old_team_mask | present_teams`, as `(word)(old_team_mask | present_teams)`, as `present_teams | old_team_mask`, in
+// place (`old_team_mask |= present_teams;` then stored), into present (`present_teams |= old_team_mask;` then stored),
+// into a dword local; through a file-local inline (teams, mask) or (mask, teams) helper returning the word, with the
+// cast inside the helper or on the whole OR (its mask parameter folds back into the saved mask); the saved mask read
+// through an inline getter of the field, with or without a named local inside it; present's low word in a named word
+// local declared at the top or in the change block; the saved mask as a one-member word record with get/set members,
+// with direct member access, or copied whole from the field 59 each; the saved mask as `short` with `(word)` casts at
+// both uses. Diagnostic (a second read of the field after the loop as the OR's mask operand, restored): present then
+// stays in memory through the loop with the pool in EDI and the globals in EBP as retail (130 at 374 B, the entry
+// read folds away), which is the cause confirmed. Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
