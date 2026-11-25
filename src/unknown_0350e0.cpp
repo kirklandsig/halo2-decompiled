@@ -555,6 +555,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // initialised longs at the top 334/334/334/342/342/342/342; the axis loads stay j, k, i (absolute addresses, so no
 // pointer-numbering effect), only their registers move. Retail re-reads the axis for the cross terms because its in-place
 // sine products overwrite i and k. Body unchanged.
+// The 0x90 frame agrees; the first axis reads and square spills still differ.
+// Squared and sine-scaled axis, paired or separate passes, shared input, and square pass with scaler 351/345/348/345.
+// Completed diagonal and sine axis in the same four forms 345/339/350/339.
+// NOT kept: all raise the score. The separate exact-length forms still change the opening frame.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5117,6 +5121,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // dwords and one 12-byte home shared by the previous camera position and each element's old position; ours adds four
 // 8-byte projection results (the by-value returns stay in memory) and gives `old` its own slot (it interferes with the
 // first projection result, which shares the previous position's slot). Body unchanged.
+// The 0x60 frame, independent stored-velocity reads and projection output homes remain.
+// One reused projected point with returned results, direct/delta updates and plain/signed first Y 510/510/539/532.
+// The same four forms with the existing projection helper writing its output 549/549/549/549.
+// NOT kept: returned forms grow. Output forms shrink the frame but finish 64 bytes short and raise the score.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
