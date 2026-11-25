@@ -4118,6 +4118,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // 61 but the element address is formed again), the stop call reading `g_4e6378[voice_index].sound_index` 83. Only
 // blocks outside the loop move a rank by one point: the index is live, unreferenced, across the loop preheader, which
 // holds seven candidates (hoisted constants and the sound-system global); one fewer there is the tie it needs.
+// M3 lane 3 r307 (H2M_FAST, control 8): the pool candidate's ledger on this body is 26 for its uses (entry 6, loop
+// top 4, latch 16), 2 for the entry load and five reload blocks of 4: the callback block, the stop-7 block, case 0's
+// tail, the join after the voice block and the join after the owner test and switch. A sixth block would make the
+// cost 0 (retail's latch); early exits do not make one, 8 each with the same code: the owner test as an early
+// `continue` inside a plain else, case 0 ending in `continue`, `continue` after the stop-7 call, `continue` after the
+// callback, the start test inverted into an early `continue`.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

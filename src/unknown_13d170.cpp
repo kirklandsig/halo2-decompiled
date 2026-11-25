@@ -1052,6 +1052,10 @@ struct s_physical_block_iterator
 // old validity carried across early update 207; logical or compound Boolean validity 280/281;
 // conditional field publication 355. NOT kept: the tied forms retain the policy layout, and the
 // logical validity and field publication forms reach retail length with a different frame probe.
+// Move the timestamp policy before the other cases with a single expression, tie override,
+// named earlier/equal tests or explicit rejection: 240/240/294/240. Move the callback
+// policy before the others with the same timestamp forms: 207/240/289/291.
+// NOT kept: dispatch still differs, and most forms shorten the scan.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

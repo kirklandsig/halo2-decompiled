@@ -486,6 +486,35 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // In round 641, the frame and search register assignments stayed off retail. Const lookup channel 356; skip inactive
 // channels 356; pointer walk and index on hit 460; short search ordinal 436; nested lookup tests 356; shared clock
 // helper 356; observer and lookup names 356; budget and send-result names 356. The body and lookup were restored.
+// M3 lane 2 r148 (screens with 0x75910, 0x76520, 0x765c0, 0x77940, 0x89030, 0x88fd0 and 0x89000 in the image, all MATCH each
+// run; control 356 at 1374 B, aligned 195, 98 with registers and offsets masked; body unchanged). New reading: retail's whole
+// entry (NONE in ESI, zero in EBX, `this` in EDI, the index in EBP, the result's `xor al, al`, the two NONE stores from ESI and
+// then the channel base into ESI) comes out when the channel pointer is declared after the two NONE locals on the has-host flag
+// form (the base is then formed after NONE's last store, so both take ESI). Parts: F = has-host flag started false and set in
+// the call's arm (match-only), V = snapshot and reset through the 64-bit view, R = zero-rate exit as `return local_2;`, N =
+// payload floor under one sign test, P = the pointer after the NONE locals (a declaration move, match-only). FVN 424 (1340 B),
+// FV 420 (1344 B), FN 394 (1370 B), VN 433 (1326 B), FVNP 402 (1338 B, aligned 163 [70]: the first 37 rows are retail's but for
+// the 0x30 frame and the 0xa8 in the base), FVRNP 347 (1369 B), FP 404 (1376 B), P alone 406 (1371 B). On FVN every field through
+// an element view with no pointer local 405 (1353 B, aligned 116 [48]: frame 0x34, but NONE/index in EBP/ESI and the base formed
+// at the first field read). On FVNP that view plus a pointer to the 64-bit counter declared after the NONE locals and used at its
+// sites 389 (1344 B, aligned 149 [42]: every row up to the has-host call is retail's, `lea esi, [eax + edi]` included, with the
+// frame at 0x30 because the has-host flag takes CL and its byte is reused for local_14, where retail reads it from memory at
+// each use). On that form: the pacing test as `!(local_17 > 0 && 1 / local_22 > local_17)` 389 (aligned 145); the
+// reliable-bytes failure as nested tests with `local_2 = false` in each failing arm 394 (1341 B); the second pick's flag read
+// from the field 389 (same code); the first threshold as `if (local_23 < local_13) goto done;` (or a named bool, same code)
+// with the second as `if (local_6 < 48) goto done;`, the pacing test and the nested failure arms 336 (1343 B, aligned 137
+// [45]; LEAD, build/r148/lead-0x75fc0-336.patch, not kept: F and P are match-only); on the lead the second threshold with an
+// explicit `local_2 = false;` 352 (1341 B), the first threshold kept as now with that 383 (1346 B), the named bool alone 399
+// (1336 B), the snapshot as a copy into the existing counter view 336 (same code), the reset as the composition 380 (1354 B).
+// Diagnostics only (the second threshold without a store while the first still assigns local_2 returns another value): 374 and,
+// with the pacing test and failure arms, 368, both at 1369 B. The lead without F: with P 432 (1329 B), without P 433; with F
+// and no P 367 (1345 B); with F, P and no view 417 (1369 B); with R 379 (1355 B). Left on the lead: the counter's low word is
+// kept in EBP from the snapshot to the elapsed count (retail reads the global again there and gives EBP to local_18), the
+// has-host flag in CL, retail's `setge; test` at the first threshold, its two unmerged `false` stores and the zero-rate test
+// placed ahead of the shared exit; 26 bytes short. The channel's first flag read from its field at every use, measured with the
+// three getters in the image, 429 (1388 B: each use still reloads). Diagnostics, restored at once: `inline` on the three getters'
+// definitions expands all three here (494, 1442 B); an undefined call after the window getter 486 (on the lead 384) spills the
+// float registers retail keeps across that call, so retail has the getters' register and memory summaries as this build does.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

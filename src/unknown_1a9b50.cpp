@@ -1615,6 +1615,13 @@ static __forceinline long real_to_long(real value);
 // branch or handle no metadata first 415/415; checked index with read-only metadata
 // 382. Usable prop index selected first, missing index arm first, or exhaustive pointer
 // assignment from the selected index 382/496/473. NOT kept: the tying forms still send rejection to the late exit.
+// M3 lane 3 r307 (H2M_FAST with 0x25d740, MATCH each run; control 382 at 1904 B, aligned 155 by a sequence diff): the
+// facing read off the view at every use with no pointer 517 (1945 B, aligned 218); the velocity through an AI object
+// pointer at each use 486 (1924 B, aligned 223); both 531 (1960 B, aligned 219), all re-measures of listed forms on
+// this base with the aligned count added: none is closer structurally either. The exits respelled on the nested body:
+// the rejection as `return false;` with the result returned after the body 508; `return true;` at the end of the body
+// and `return false;` after it 508; `return local_2;` at the end of the body and `return false;` after it 508 (each
+// 1904 B with 0x25d740 expanded, the listed 508 code). Still BLOCKED-BY 0x25d740's expansion at this site.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

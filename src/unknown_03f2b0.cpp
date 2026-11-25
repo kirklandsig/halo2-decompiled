@@ -1621,6 +1621,19 @@ struct s_133f70;
 // or a copy, copies of force and override, `distance * 1.0f`, a cast) all keep ECX after the force push. The distance is
 // an expression temporary taken after the level-pointer lea (EAX, the rotation moving on to ECX); retail's EAX needs that
 // lea to leave the rotation alone (a preferred register) or the load to be made while ECX and EDX are still live.
+// M3 lane 6 r242 (H2M_FAST with the r128 caller/callee list; control 93, aligned 50, register-masked 21; body unchanged; lane 4
+// r259's lockstep lead re-measured 92 at 1310 B, aligned 46, register-masked 10). From the distance load on, this build is one
+// scratch-rotation step ahead of retail in every row (level address EAX, distance ECX, entry count EDX, level EAX, view table
+// ECX; retail EAX, EAX, ECX, EAX, EDX), so the one register at the distance load carries most of the register rows. Run under
+// the whole-program screen, where force and the override arrive in ECX and EDX (lane 4's spellings of this call were
+// compile-only): `bool forced = force; long level_override = override;` passed on 93, both arguments written with casts 93,
+// the distance through a named copy 93, the call through a forceinline forwarding wrapper (diagnostic) 93, forceinline
+// identity accessors around both register arguments, around either one (diagnostic) 93 each: all the same code (a value
+// that already sits in a register asks for no temporary, so an accessor around it does not move the rotation).
+// In this build the level address is the first scratch request (EAX, with ECX and EDX busy) and the distance the second, made
+// after the force push, the flag address and the override push, when nothing is busy (ECX). Retail's EAX needs the distance
+// loaded right behind the level push: while both register parameters are still unpushed, or as a reuse of the register the
+// level address has just left (as consecutive address arguments of one call reuse theirs in this function).
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

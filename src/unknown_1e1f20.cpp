@@ -1185,6 +1185,8 @@ void swarm_leader_detach(long actor_index);
 // the owner looked up after the entry pointer 355 (1028 B); the `current` store after the 0x258600 call 297; the memory
 // walk in a force-inlined helper 297; the slot loop (handler local) in a force-inlined helper, with or without the
 // `current` store 297 / 297. Body unchanged (59).
+// With the separate definition flag, slot-owner bound/type/both/callback/bound and callback/type and callback/all 4/4/4/4/4/8/4.
+// Slot-owner view acquired first 4. NOT kept: the match-only forms still form the slot address before the handler test.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

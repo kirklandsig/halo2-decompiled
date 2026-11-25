@@ -1064,6 +1064,15 @@ extern "C" void _ReadWriteBarrier(void);
 // looked up through a `long const &` to the index parameter 44; the slot read through a `s_slot *const &` to the
 // parameter 44; the state read through a `s_slot_4c *const &` to the state local 44. With the barrier: the actor looked up
 // through a `long const &` to the index parameter 6 (same code).
+// M3 lane 13 r155 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, no barrier 44 at 208 B): the flags test as a
+// one-bit bit-field member of a view of the slot (`byte point_target : 1` at 0x22), with the barrier 6 (same code),
+// without it 44, without it and the actor first 44; no barrier with the state through a file-local inline accessor
+// taking the slot by reference (`slot_view_4c(*slot)`) 44; no barrier with the pool's data named, then the state, then
+// the actor as `&actors[index & 0xffff]` 44; no barrier with the state read out of a two-pointer shared-storage local
+// declared after the actor 44 (all the no-barrier code); the final 0x450 store through its own `actor_get(actor_index)`
+// lookup, without/with the barrier 77 (229 B) / 71 (226 B): the lookup after the arms' stores is not merged with the
+// first. Allocator search on the no-barrier body (24 forced register picks and rankings): none changes the entry, the
+// slot is no candidate in the entry block at all, so the load's place is decided before allocation.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

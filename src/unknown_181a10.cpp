@@ -1286,6 +1286,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // real_point3d_set: one home), with the hit through it too and aggregate publication 334; a kind-24 shape local for the
 // data read and the material call with aggregate publication 359 (1261 B), that with `short material` at the top of the
 // body 359; the material at the top with aggregate publication 330 (1227 B). Body unchanged.
+// M3 lane AO r1 (fast; control 238): the instance plane's normal through vector_products.h's vector3f_rotate_into_axes
+// on the instance rotation, in place 427 (1130 B), into a separate vector then copied back 420 (1138 B: the shared
+// helper is then not expanded the way retail's rows are); the key's upper bound named once (`long last = count - 1`)
+// 238 (same code); `valid` declared after the two indices 238 (same code); the distance computed ahead of the origin and
+// hit copies 305 (1245 B); one `shape` local for the second node's shape in the kind test, the data read and both
+// material calls 362 (1206 B); the found flag stored last in the result block 255 (1251 B); the key clamp as `limited =
+// key` with an if/else-if 238 (same code). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
