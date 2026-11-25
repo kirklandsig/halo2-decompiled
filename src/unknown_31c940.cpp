@@ -1336,24 +1336,26 @@ static __forceinline void residual_pair_vectors_31c940(__m128 (&bank)[7],
 	// Reuse each input only after its final multiplication.
 
 	bank[3] = a->angular;
-	bank[1] = row[0].a;
-	bank[2] = b->linear;
 	bank[5] = row[0].b;
+	bank[2] = b->linear;
+	bank[1] = row[0].a;
 	bank[0] = bank[3];
 	bank[0] = _mm_mul_ps(bank[0], bank[1]);
 	bank[1] = row[1].a;
 	bank[3] = _mm_mul_ps(bank[3], bank[1]);
 	bank[1] = a->linear;
 	bank[1] = _mm_sub_ps(bank[1], bank[2]);
+	bank[6] = bank[1];
 	bank[2] = b->angular;
 	bank[4] = bank[2];
-	bank[6] = bank[1];
 	bank[4] = _mm_mul_ps(bank[4], bank[5]);
+	bank[0] = _mm_add_ps(bank[0], bank[4]);
 	bank[5] = row[1].b;
 	bank[2] = _mm_mul_ps(bank[2], bank[5]);
 	bank[5] = row[0].linear;
+	bank[6] = _mm_mul_ps(bank[6], bank[5]);
 	bank[3] = _mm_add_ps(bank[3], bank[2]);
-	bank[0] = _mm_add_ps(bank[0], bank[4]);
+	bank[0] = _mm_add_ps(bank[0], bank[6]);
 	bank[4] = row[1].linear;
 	bank[1] = _mm_mul_ps(bank[1], bank[4]);
 	bank[3] = _mm_add_ps(bank[3], bank[1]);
@@ -1362,13 +1364,11 @@ static __forceinline void residual_pair_vectors_31c940(__m128 (&bank)[7],
 	bank[2] = _mm_shuffle_ps(bank[3], bank[3], 0xaa);
 	bank[3] = bank[2];
 	bank[3] = _mm_add_ss(bank[3], bank[1]);
-	second = bank[3];
-	bank[6] = _mm_mul_ps(bank[6], bank[5]);
-	bank[0] = _mm_add_ps(bank[0], bank[6]);
-	bank[1] = _mm_shuffle_ps(bank[0], bank[0], 0x55);
 	bank[2] = bank[0];
+	bank[1] = _mm_shuffle_ps(bank[0], bank[0], 0x55);
 	bank[1] = _mm_add_ss(bank[1], bank[0]);
 	bank[2] = _mm_shuffle_ps(bank[2], bank[2], 0xaa);
+	second = bank[3];
 	bank[2] = _mm_add_ss(bank[2], bank[1]);
 	first = bank[2];
 }
