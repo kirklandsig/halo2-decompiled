@@ -1794,6 +1794,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Existing in-place vector scaler for primary/secondary/both/ambient/primary and ambient/
 // secondary and ambient/all colors 534/529/524/529/534/529/524; all with constant returns 565.
 // NOT kept: 524 gains five and grows two bytes. Constant returns recover the frame only.
+// M3 lane 8 r237 (h2m fast with 0xd4080 378 and 0x3db00 MATCH throughout; control 529). Frame packer reading: the result
+// byte (two references) takes record's dead argument home first, so the length gets a cell of its own (the extra frame
+// word); retail keeps the result in AL with constant exits and homes the length in record's slot. Retail also computes
+// scale0's falloff (1 - (0.1 length + 0.6)) ahead of the second luminance and keeps it in lightmap's dead slot. Forms: the
+// falloff as scale0's first factor with the second luminance written as the call's argument 529, the falloff first with
+// the luminance statement kept 529, the luminance as the argument with the falloff second 529 (identical code each: the
+// order is the scheduler's); the square right after direction1's negate with the lightmap pin ahead of the base pin 547;
+// the lightmap pin ahead of the base pin alone 560 (2193 B). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
