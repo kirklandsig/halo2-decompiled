@@ -568,6 +568,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 341 (1765 B, 338/338 insns, frame 0x8c); with 4 named trig locals ahead of builders 350 (1814 B, frame 0x90, +0x10,
 // mask 291: reproduces retail's pass-1 double-spill rotation schedule; accum and sq-first same 350), matrix3x3 locals
 // 336 (1780 B), row loop over `&g_467104.forward` 347 (1801 B, mask 298). Body unchanged.
+// Three named diagonal complements at the squares, after the squares, after the cross
+// coefficients, or at each diagonal 334 each. With the early sine products 371/371/386/386.
+// NOT kept: the complements alone tie, and the sine-product forms move the first difference
+// to the frame and grow to 1812 or 1819 bytes. The opening square and sine homes still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -3058,6 +3062,16 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Forms: forward through dot3f(&delta, &g_4b9dac) 281; delta through vector3d_from_points3d with dot3f(&g_4b9dac, &delta)
 // 280; delta i, j, k with the dot written i, j, k delta first 280; the camera sums written global first in the j term 281;
 // the projection written j, i, k 281 (same code each). Body unchanged.
+// The camera displacement registers and early attenuation default still differ.
+// Named forward products grouped or interleaved with the deltas, with early/late tint.
+// Opening Z/X/Y delta order 500/500/500/500. X/Y/Z order 500/500/498/500.
+// NOT kept: length stays 2286 and all scores rise. The generated dot still combines
+// the products in a different order from retail.
+// Staged axis projection into the reflection vector 506/515, named projected scalars 487/518,
+// in-place doubling of the projected displacement 365/515, and displacement scalars through
+// the setter 281/503, with the attenuation default at its original point or with the tint.
+// NOT kept: in-place doubling reaches the 2285-byte extent at a higher score. The camera
+// displacement registers and the early attenuation store still differ.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4916,6 +4930,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // reloads, normalize+max scales and size if/else match retail), float k,i,j speed test 585 (fr 0x3c), same-pointer
 // velocity add 589 (fr 0x3c), point2f output helper 561 (fr 0x34, mask 263); real-param 259d0 + float k,i,j speed test on
 // main 520 (al 390, 0x36b50 247). Body unchanged.
+// One camera/element/advanced point with the source camera reads: components 535, setter
+// 540, point value 485, scaled add 535. With stored camera reads 512/512/523/512.
+// NOT kept: the 485 form gains one with a larger 0x64 frame. The forms that shrink the
+// frame shorten and regress. Independent velocity reads and projection homes still differ.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

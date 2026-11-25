@@ -1897,6 +1897,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 68, 0x63220 150 B for 94); 0x192e60 with the validity chain written in its own body 945 (0x192e60 14).
 // M3 lane GB r2 (13 trials, fast control 871 at 2780 B, aligned 1306 / masked 1026, 0x73530 and 7 callees MATCH throughout; body restored):
 // Result-first switch helpers (0x193440/0x193400 shape) 905 (2752 B, aligned 1159); all 5 result-first helpers + ratings_party_limited(variant) in add_mask + 3-way add minimum 899 (2744 B, aligned 1141, masked 917); 3-way add minimum + ratings_party_limited alone 872 (2784 B); inverted add_mask branches 872 (2784 B); switch add_mask 894 (2748 B); merged team-type if 908 (2752 B); merged team if + if (!balance_teams_by_count) result = false 910 (2748 B); adding_group before out->maximum + ternary first = first == NONE ? count : first 877 (2780 B); single rating read + pre-loaded group first_rating 890 (2764 B); { result = false; return result; } at opening and excess exits + if (!balance) 917 (2732 B); local group_mask accumulator + early adding_group 888 (2768 B); combined retail-shaped lower half 885 (2724 B, aligned 1129, masked 935); combined + scoped machine_ids + memset long histogram[16] 955 (2676 B, aligned 1109, masked 916). All retail-shaped lower-half forms cut aligned/masked diffs while shortening the already-short body (top 0x192e60 still expands and 0x193300/0x631f0 stay calls).
+// The output pointer is loaded early and the opening variant lookup still expands. Using the clear result
+// in the player, group, both participant, or party phases scores 872/902/891/926 with word cells and
+// 905/925/917/954 with dword cells. Player, group and combined participant dword forms reach the 0xb4 frame
+// but shorten the body. Player and combined forms change the matched caller.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

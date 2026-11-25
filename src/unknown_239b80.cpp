@@ -1059,6 +1059,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // search over priorities and colour picks finds nothing below 217; only splitting the hull count's range at the candidate
 // scan (150-155 in that search) gives retail's EBX hull count with the count read from its home, so the split point is
 // the cause.
+// Duplicate search before compaction, with paired indices, outer cursor, stopped cursors, or saved span
+// 222/221/215/251 for short ordinals and 266/279/276/278 for long. NOT kept: all increase
+// the score and change the matched caller. The widened pass bound and departure home still differ.
+// The separate pass-bound spill and the reported departure home still differ.
+// Separate departure and closure arms with dword/bool state 233/230,
+// index first and shared coordinate test 278/284, single coordinate result 278/275,
+// and index first with distinct state continuations 293/279.
+// NOT kept: the separate arms recover 0x14 and 784 bytes but raise the score.
+// The other forms shorten the body and five change the matched caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

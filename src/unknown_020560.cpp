@@ -1523,6 +1523,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the top of the sample branch 418 (same code); the samples local declared ahead of scan 1 and used there too 623 (2071 B);
 // scan 2's offset built through the existing vector3f_assign 418, the delta through it 418 (same code each). A forced-
 // decision search (14 links) gives at best 409 (one pick), the frame staying 16 bytes short.
+// Opposite result using the count as sentinel 420/438, the nearest ordinal as
+// sentinel 418/443, a one-based ordinal 281/407, or the distance improvement
+// 427/426 (late/early anchor). NOT kept: the one-based form changes the retail
+// NONE test and ordinal, and all forms retain frame 0x1c without the X spill.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

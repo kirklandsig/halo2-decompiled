@@ -985,6 +985,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 659/520/660, all 652, shared normalization workspace 662.
 // NOT kept: upper-axis selection gains two points. All axes reach 2886 bytes at 652.
 // The entry clearance byte stays at ESP+0x13. The in-place basis producers are restored.
+// Separate the leading side or up response magnitude, or share response magnitude by sweep
+// end or rotation axis: 519 each with the opening inactive exit, 648 each with the late exit.
+// NOT kept: the 0x108 frame agrees, but the success byte stays below the retail home and
+// the alternate response workspaces shorten the former body or raise the score.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

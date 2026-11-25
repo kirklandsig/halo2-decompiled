@@ -2934,6 +2934,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI / state EBX (+0x9). On main's actor-EBX base: early actor+7 + no `local_5` 431, plus case 13/20/4 579
 // (swapped), plus case 13/20/2-agg 620 (swapped), main + case 13 dropped + case 20 inline return-1 + else arm +
 // case 5/7/8 swaps 404 (2416 B, actor EBX, masked 92; match-only swaps), without the swaps 510 (2428 B). NOT kept.
+// The dispatch bounds branch still reaches the late completion block. Direct completion for playback 471,
+// animation readiness 401, object animation state 478, playback plus readiness 491, playback plus object
+// state 491, readiness plus object state 462, all three 500, all three plus shared case 13/default 597. NOT
+// kept: the 401 form adds a separate 16-bit success return where retail sends readiness to the shared SETE
+// and leaves the bounds target late.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

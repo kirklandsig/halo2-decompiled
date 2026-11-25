@@ -1017,6 +1017,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 0xba1d0 outputs declared local_5 first 1346 (same code); in the first loop `local_10` ahead of `local_9` 1346 (same
 // code, element pointer still biased +0xe4 where retail has +0xe0), `local_8` ahead of `local_7` 1347; the magnitude
 // helper as `sqrt(dot3f(v, v))` 1624 (5990 B, the direct-read code).
+// Remove magnitude snapshots for projected/residual/alternate velocity 1375/1379/1396,
+// pairwise 1421/1458/1402, all three with normalizer assignment or memcpy 1518/1518.
+// NOT kept: the frame shrinks as far as 0x5a8, but the body shortens and the score rises.
+// The retail 0x58c frame and earlier component and velocity homes remain different.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

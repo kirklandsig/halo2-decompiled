@@ -1109,6 +1109,11 @@ void function_245400(s_source_245400 const *source, long index,
 // matrix_transform_vector 129 at 783 B (lead, not kept: needs the edge statement after the decode; with it at this body's
 // place 200, plus `< 0` sides 226 at 766 B, plus the k, j, i dot 190; this body with only the edge statement moved 205); a
 // vector version of the file's point-transform helper 110 (783 B; on this body 163). Body unchanged.
+// On the widened-code frame with the shared rotation, surface table entry, advanced cursor,
+// and surface reference 152 each. Indexed surface reads 155. Start ordinal before its table,
+// both ordinals around or ahead of the table, and each ordinal at its lookup 152 each.
+// NOT kept: the 152 forms retain the surface address in ECX and grow to 790 bytes.
+// Indexed surface reads grow to 789 and change the matched caller.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

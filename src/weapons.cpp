@@ -3690,6 +3690,11 @@ struct s_ammo_conversion_entry
 // Declared kind at each use 212; all declared fields with one kind read or per-use reads 190/212.
 // Both source counts shared with the limits or carried into the debit stores 211/221.
 // NOT kept: one kind read ties; per-use reads grow and the count snapshots change the frame and raise the score.
+// Existing reserve accumulator for the same-definition offer, capacity and unloaded debit
+// 190/197/217. Offer/capacity 197, offer/debit 244, capacity/debit 202, all three 223.
+// Accumulator after debit for the remaining reserve 236.
+// NOT kept: offer ties and the other forms raise the score. Destination and search register
+// homes still differ, and the debit-only and post-debit forms also grow.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4723,6 +4728,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Typed runtime barrel, barrel tag, thermal tag and ramp tag fields 1412/1412/1417/1412.
 // Typed barrel and tag together, both weapon tag phases, runtime weapon, all fields 1412/1416/1412/1416.
 // NOT kept: ties and regressions at retail length; every form retains frame 0x34.
+// Explicit count refresh at the magazine, trigger, or barrel loop latch 1412 each.
+// Magazine/trigger, magazine/barrel, trigger/barrel and all three 1412 each.
+// Magazine while loop with the count refreshed after advancing the ordinal 1412.
+// NOT kept: the latch reads remain, but the 0x34 frame, EBX/EDI and the dual spill persist.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5431,6 +5440,11 @@ struct s_weapon_projectile_creation
 // Muzzle center or clipped point reused for the world point 1136/1136, both with getter result 1134/1134.
 // World point transformed in place and copied 1155.
 // NOT kept: the first form gains one. Sharing a point reaches frame 0x1e98 but shortens the body; retail keeps distinct clipping and synchronization points.
+// Shared setters for clip-to-origin, marker-to-origin, request position and request direction
+// 1140/1125/1139/1157. Both origins 1136, both request fields 1122,
+// clip and request position 1128, all four 1151.
+// NOT kept: the request pair retains retail length but the 0x1ea4 probe and distinct
+// point homes persist. The other transfers also raise the score.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

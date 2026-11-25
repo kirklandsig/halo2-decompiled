@@ -1076,6 +1076,10 @@ struct s_collision_result_buffer_1697c0
 // Scaled vector published via assignment, setter, memcpy or memmove 666/337/666/648;
 // early rejection with the same four transfers 666/337/666/648.
 // The startup zero register, axis j preload and transfer-word reuse remain. NOT kept: all staged normalizations change the frame and increase the score.
+// Nested-sum inline normalizer at axis/clear sample/best hit 292/335/335, axis-clear/
+// axis-best/clear-best 338/338/340, all 340, axis through setter 311.
+// NOT kept: all lengthen and regress. The axis-only form retains frame 0xa8,
+// and the others grow it to 0xb0. The original zero, j product and transfer homes remain.
 // M3 lane GB r4 (fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23 unless noted), 0x24590, 0x2980d0, 0x297a50; control
 // 270, al=185, mask=114; 40 trials): early-return actor_looking_normalize3d (`if (fabs(magnitude) < 0.0001f) return 0.f;`)
 // on the 270 base 271 (fr=0xa8, 1430 B, al=103, mask=72), + best_direction before best_fraction 271 (al=99, mask=67), +

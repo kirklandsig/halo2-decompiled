@@ -2396,6 +2396,14 @@ bool function_1900a5(long index);
 // if/return; with main's order and helper form the same body scores 704, the helper form alone 654, the struct alone 646.
 // Patch held (LANES/leads/held-74aa0-gb2-617.patch). The lane's 643 -> 617 form (aligned 631 -> 349, masked 680 -> 492): loose g_50c460..g_50fd14 folded into s_search_value_globals g_509450 (exact +0x3010..+0x70c4 offsets matching memset(&g_509450, 0, 0x70f8) in callers), query_time_now() as 0x75870's if-return form, two-use last_read/last_write and record_space/property_space locals, three-use properties pointer rolling the 6-property loop with properties_used += 6, type-5 duplicate continue, named completion owner/unknown10 fields, failed = true in the incomplete arm, and goto-free state < 0 || state > 1 polls.
 // Intermediate forms on g_509450 struct: struct alone 646; +clock 657; +completion (no type==0 swap) 634; +last_write 651; +last_read/last_write 651; +dup continue 648; +properties pointer 657; +ptr+dup 661; +ptr+space 654; +lw+dup 667; +lw+ptr+dup 676; +polls/space/ptr/dup/last_read/last_write 617 (kept). Rejected earlier forms: struct+clock+comp+polls 655; +last/space 693; +ptr 666; +ready flag & poll gotos 629; +logon >3 760; loose globals with comp+polls 696; struct+last+comp+space 660.
+// The cursor stays based on properties. Typed properties, typed XUID assignment, or both 643/643/643.
+// Each with a shared input receiver 726/726/726. Existing connection predicate with typed properties
+// or with both typed copies and shared receiver 743/727. NOT kept: the typed copies tie and the
+// predicate restores the decrement but raises the score.
+// The logon comparison and properties-based cursor still differ. Cooldown result
+// with zero first, timestamp first, initialized or separate arms: read gate
+// 641/641/633/641, write gate 643/643/642/643. NOT kept: the 633 form sets and
+// then tests a flag at the read gate, and the first difference remains +0x1a.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
