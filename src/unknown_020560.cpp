@@ -1523,6 +1523,42 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the top of the sample branch 418 (same code); the samples local declared ahead of scan 1 and used there too 623 (2071 B);
 // scan 2's offset built through the existing vector3f_assign 418, the delta through it 418 (same code each). A forced-
 // decision search (14 links) gives at best 409 (one pick), the frame staying 16 bytes short.
+// M3 lane GA r7 (fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418 at 2094 B, fr 0x1c, al 137, masked 197; 22
+// real trials). New structural findings: (1) nested `if (opposite != NONE) { second = &samples[opposite]; if (second)
+// fraction = ...; }` matches retail's exact double-`je` tail block (eliminating `xor ebx, ebx; test ebx, ebx`): 440 (2088 B,
+// al 137, masked 181), with `closest_distance` before `nearest` 438 (al 136, masked 179). (2) Existing `scaled_difference3f`
+// (vector_products.h) for `delta` naturally delays delta.i without a one-caller wrapper, recovering retail's `delta` k/i/j
+// loads, single delta.k spill, `other_distance` in the source arg slot, and `offset.i` store before `jb`: on `samples` 443
+// (2111 B, fr 0x24, nearest stays in EDI), with `first` ahead + nested second 438 (2112 B, fr 0x28, masked 178, nearest in
+// EDI), + second diff + length_sq3f 440 (2112 B, fr 0x28, masked 179: also retail's (k+j)+i sum with nearest in EDI), +
+// `closest_distance` before `nearest` 442 (fr 0x24); on `source->entries[i]` + `first` ahead 582 (2140 B, +0x9, exact fr
+// 0x2c with both scan-2 pointers and spilled pass counter, but nearest drops off EDI), with ternary second 582, with
+// `samples` outside scan 2 582, with second diff + dot3f(&d,&d) 584 (fr 0x2c), mixed entries/samples 702/693. Also tried:
+// `dot3f(&offset, &offset)` on samples 646, on entries 635, reversed dot + self-dot + nested second 655; `first` after
+// `samples` 439, + delta k/i/j 463, + offset j/k/i 436 (2128 B, fr 0x28, masked 184); `opposite` before `samples` 596;
+// `fraction` ternary 439; `sample` ptr in scan 2 439; `vector3f_add_scaled` for delta 418 (same code). Body unchanged.
+// Opposite result using the count as sentinel 420/438, the nearest ordinal as
+// sentinel 418/443, a one-based ordinal 281/407, or the distance improvement
+// 427/426 (late/early anchor). NOT kept: the one-based form changes the retail
+// NONE test and ordinal, and all forms retain frame 0x1c without the X spill.
+// The second scan still needs the 0x2c frame and the candidate X store. Short-circuit projection and retained
+// displacement norm 646, with the squared-length helper 646 or a second dot 646; cutoff on rejection 590;
+// conditional winner and cutoff updates 646; named squares 646, named projection products 646; nearest skip
+// and named projection 646. NOT kept: the reused displacement shortens the loop and drops the needed home.
+// The second scan still lacks its candidate-X store and second induction address. Shared nearest and fallback
+// direction with component stores, setter, entry default or initialized value 418/419/593/389. Earlier anchor
+// with component stores or setter 439/439, also with a scoped opposite search 439/439. NOT kept: the 389
+// form reaches retail length and frame 0x28, but adds a second fallback vector and copy absent in retail.
+// The second scan still lacks the 0x2c frame and its distinct offset X spill.
+// Anchor X before two- coordinate subtraction with the cached sample array 433, anchor X before two-
+// coordinate subtraction with live entries in the opposite scan 555, anchor X after two-coordinate
+// subtraction with the cached sample array 433, anchor X after two-coordinate subtraction with live
+// entries in the opposite scan 555, complete anchor setter from X and pair with the cached sample array
+// 579, complete anchor setter from X and pair with live entries in the opposite scan 578, complete
+// anchor initializer from X and pair with the cached sample array 433, complete anchor initializer from
+// X and pair with live entries in the opposite scan 555.
+// NOT kept: The cached-entry forms retain 0x1c. Live entries reach 0x20 and one family reaches 2122
+// bytes, with higher scores.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

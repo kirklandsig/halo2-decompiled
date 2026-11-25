@@ -1187,6 +1187,14 @@ void swarm_leader_detach(long actor_index);
 // `current` store 297 / 297. Body unchanged (59).
 // With the separate definition flag, slot-owner bound/type/both/callback/bound and callback/type and callback/all 4/4/4/4/4/8/4.
 // Slot-owner view acquired first 4. NOT kept: the match-only forms still form the slot address before the handler test.
+// M3 lane 16 r189 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at 980 B;
+// with the handler named and `handler->stop` tested and called 297 at 996 B). The allocator's ranking on the named form:
+// the slot loop's test block holds six values (five on the 4 form), so the actor ranks 18 (14) and is coloured ahead of
+// the memory walk's stepped pointer (15, created later than the actor), and the scaled actor offset then takes EBX for the
+// head and the walk. One more value referenced in the walk's test block or in its latch block would put the walk pointer
+// first. On the named form: the walk's last store through the body's `memory` pointer 304 (998 B); the walk's test
+// through a named pointer 297 (same code); the joint index read once into a named short for both stores 281 (980 B, the
+// head still flipped); the walk index typed long 494 (1172 B). Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {
