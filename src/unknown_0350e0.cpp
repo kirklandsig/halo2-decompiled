@@ -568,6 +568,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 341 (1765 B, 338/338 insns, frame 0x8c); with 4 named trig locals ahead of builders 350 (1814 B, frame 0x90, +0x10,
 // mask 291: reproduces retail's pass-1 double-spill rotation schedule; accum and sq-first same 350), matrix3x3 locals
 // 336 (1780 B), row loop over `&g_467104.forward` 347 (1801 B, mask 298). Body unchanged.
+// Opposite-sign coefficient triplets: shared sum/direct difference 348,
+// aggregate pairs 348, shared sine scaler 345, scaled difference 348,
+// diagonals first 356, in-place difference 349, shared sine scaler with scaled
+// or in-place difference 346/347. NOT kept: all displace the 0x90 frame.
+// Two forms reach retail length, with the axis and square registers still different.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4672,6 +4677,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // admission tests together, eager creation pair, eager duplicate key tests, eager duplicate
 // eligibility, and both removal predicates: 373/408/421/429/369/409/399/417.
 // NOT kept: all regress. The paired byte forms add a frame word or more code.
+// Shared suppression getter in the original or nested gate 375/375, with
+// sampled count in either gate 375/375, selected limit 375, early request 435,
+// prefix initialized after the clamp 342, or named gate result 375.
+// NOT kept: the inlined gate leaves the prefix and state exchanged. The closest
+// extent is 1326 bytes with frame 0x2c.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -5176,6 +5186,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // reloads, normalize+max scales and size if/else match retail), float k,i,j speed test 585 (fr 0x3c), same-pointer
 // velocity add 589 (fr 0x3c), point2f output helper 561 (fr 0x34, mask 263); real-param 259d0 + float k,i,j speed test on
 // main 520 (al 390, 0x36b50 247). Body unchanged.
+// Scalar projection by point, direct row/accumulator/row pointer/sampled scale
+// 530/530/543/491; by corresponding ordinate 500/500/517/507.
+// NOT kept: scalar projection reduces the frame to 0x3c–0x48. All forms raise
+// the score, and the independent velocity reads and native frame remain unresolved.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

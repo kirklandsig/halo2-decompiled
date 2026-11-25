@@ -1100,6 +1100,11 @@ void function_245400(s_source_245400 const *source, long index,
 // 224/209/211/210, source words 224/209/221/210.
 // NOT kept: all raise the score and the two code words still lack retail's separate homes.
 // The original decode and both plane lookups are restored.
+// On the selected-point form, a sampled direction scale, in-place scaler
+// return, sampled scale with scaler return, and separate scaled direction
+// score 139/139/139/214. Both transforms under one guard give the same scores.
+// NOT kept: the in-place forms recover frame 0x2c and the entry through the
+// material comparison, with 787 bytes against retail's 783.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
