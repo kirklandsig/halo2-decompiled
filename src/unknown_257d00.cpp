@@ -2934,6 +2934,48 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI / state EBX (+0x9). On main's actor-EBX base: early actor+7 + no `local_5` 431, plus case 13/20/4 579
 // (swapped), plus case 13/20/2-agg 620 (swapped), main + case 13 dropped + case 20 inline return-1 + else arm +
 // case 5/7/8 swaps 404 (2416 B, actor EBX, masked 92; match-only swaps), without the swaps 510 (2428 B). NOT kept.
+// The dispatch bounds branch still reaches the late completion block. Direct completion for playback 471,
+// animation readiness 401, object animation state 478, playback plus readiness 491, playback plus object
+// state 491, readiness plus object state 462, all three 500, all three plus shared case 13/default 597. NOT
+// kept: the 401 form adds a separate 16-bit success return where retail sends readiness to the shared SETE
+// and leaves the bounds target late.
+// The default still jumps to the late completion block. Update only for nonzero countdown, case 0/cases
+// 7–8/both 453/532/509; conjoin each countdown result with the inherited completion, case 0/cases
+// 7–8/both 510/511/613; guard the conditional timer and write only on pending 512, with case 0 the
+// same 485. NOT kept: all increase the score and none brings the success exit to the timer cases.
+// M3 lane GA r6 (12 trials, fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429, peers MATCH; body unchanged):
+// on the clean retail-shaped base (no volatile, no case-5 swap): base 580 (2380 B, aligned 180, masked 45, actor/state swapped);
+// nested request `if`s in cases 6/21 580 (same code); tail direct `return 0`/`return 1` keeping `local_5` 640 (2372 B, masked 192);
+// restoring `vector3f_assign` (through pointer or direct reads) 627/627 (2412 B, still swapped); case 2 `memcpy` 580 (same code);
+// keeping case 2 aggregate copy without case 4 dot3f and case 18 held targets 605 (2412 B, still swapped); caching `local_2->field_3`
+// in tail locals 594 (2384 B, masked 48); case 6 split global OR + case 20 main-arm shared exit + `b0 == NONE || d1` 546
+// (2396/2396 B, aligned 166, masked 32, still swapped); case 20 y/x/z subtraction + `b0 == NONE || d1` 602 (2376 B, masked 48).
+// On main's actor-EBX base (keeping case 13 and cases 2/4/18): case 20 conditional clear + `b0 == NONE || d1` 526 (2436 B, EBX, masked 71),
+// with main-arm shared exit 540 (2444 B, EBX, masked 69).
+// GB6 (fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429, 2416/2396 B, al=172, mk=123; 24 trials, restored):
+// isolating the 404 form (case 13 dropped + case 20 inline goto return-1 + else `b0==NONE||d1` + case 7/8 ternary + case 5
+// swapped) 408 (al=153, mk=87), case 7/8 only 502, case 5 only 503; + minor retail forms (cases 9/11 field-first, iter
+// index/datum_index, `? 1 : 0` +0x465, flag-first publish) 404 (al=143, mk=82: 129 straight insns match retail across cases
+// 7/8..11); + direct return 1/0 (no goto) 421/423 (2412/2416 B, short `mov ax, 1`/`xor ax, ax`); + natural if/else in case 5
+// or both case 5/7/8 556/621 (exchanged, two stores bump state weight); without case 20 goto 444 (2408 B), old case 20 else
+// 479; + direct `vector3f_assign` (no `turn_facing` local) 413; + case 20 `z,y,x` inline dist_sq 391 (al=133, mk=76; + iter
+// order 392, mk=74; diagnostic/hand-inlined); + case 6 typed `s_slot_4c` bitfield/split OR 404/404 (on main 429), split via
+// global 512 (2428 B); + case 21 `arg_2->flags3` 404 (same code); adding case 4 direct/kji/dot3f (583), case 18 held refs
+// (619, matches case 18 + case 20 init), or case 2 aggregate copy (629) all exchange actor/state (+0x9). NOT kept (404/391
+// depend on match-only case 5/7/8 swaps).
+// GB9 (fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429 at 2416/2396 B, aligned 330, masked 127; 16 compiled trials, body unchanged):
+// `bool local_3` on main 429 (same code), on the 2380 B retail-shaped lead 632 (masked 70, actor EDI/state EBX), on the 404 actor-EBX form 404 (2416 B, aligned 299, masked 84);
+// case 6 bitfield split on main 429, lead 632, 404 form 404 (still folds into `0x69`); case 6 direct global writes on lead 632 (masked 122);
+// `arg_2` unioned directly without `local_2` cast on lead 632, plus direct `return 1`/`0` (no goto) 548 (2380 B, masked 67);
+// tail goto + `bool local_3` on lead 632, on 404 form 404; tail nested flag ifs on lead 632; case 12 flipped `case 2` test on lead 630 (masked 85);
+// case 4 inline `k/j/i` dot on lead 519 (2384 B, masked 62); `s_cs_order const *command` in request cases on lead 519 (2384 B, masked 62);
+// case 20 loop inline `dy/dx/dz` squared distance on lead 632 (masked 66). State still outranks actor (+0x9) on the 2380/2384 B lead; 404 depends on match-only swaps, so body stays at 429.
+// M3 lane 1 r168 (fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; 0x110ab0 differs at 164 as in the
+// full check): case 13 through the shared exit (`local_30 = 1;` and the goto) 477 (2404 B); case 4 reading the facing
+// from local_2->field_c with no copy 611 (2400 B, first difference +0x9); case 7/8's condition written inline (no
+// local_9) 479 (2404 B); case 6's stores written through the global with no local_8 428 (one point, under the bar: the
+// two flag ORs still merge into one `or byte [eax + 0x22], 0x69`); cases 6 and 18 both through the global 428 (same).
+// Body unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

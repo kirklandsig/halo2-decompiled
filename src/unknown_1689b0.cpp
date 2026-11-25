@@ -2385,6 +2385,18 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // three locals alike, 555/553/555/555, 554/555/557/557, 553/555/557/557 at six and seven. No cell drops: the ranks of
 // this body's loads move only between two states with the local count and one step with the pairs, so the leftover
 // here is the frame cell and the loop forms of the earlier leads, not a rank phase. Body unchanged.
+// Lane AO r3 (fast with 0xc2d00/0x17a380/0x2469b0, all MATCH; control 551 at 2877 B): the projection through
+// vector_products.h's vector3f_add_scaled 604 (2906 B); the candidate through it 582 (2892 B); both 597 (2899 B); the
+// opposite radius as `-radius` 551 (same code); the cap as `point_count <= 8 ? point_count : 8` 551 (same code); the
+// opposite ray scaled by `0.0f - radius` with no local 552 (2879 B); both sums accumulated through vector3f_add 571 (2889
+// B); both averages through vector3f_scale 551 (same code). Reading: retail's four count/radius homes pair as count +0x88
+// with radius +0x94 (one arm) and radius +0x8c with count +0x90 (the other), nested, where ours keeps both radii below
+// both counts. Body unchanged.
+// The acceptance counts and clearance homes differ. Retail loads the normal's j coefficient twice before projection.
+// Plane/normal address 560/561, normal vector snapshot 764, and single j coefficient shared across the two stages 581.
+// Shared projection offset with scalar coefficients/normal vector/normal address/plane address 543/760/611/601;
+// normal snapshot and shared scaled addition 760. NOT kept: the 543 form merges the coefficient reads, moves the
+// prism cursor from plane.j to plane.k and still squares radius before the nonempty prism branch.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

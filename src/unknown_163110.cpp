@@ -1399,6 +1399,24 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // but the element pointer sits at +0 where retail's sits at +8); all 30 orders of those statements 8-11. Left for a
 // match: one more symbol ahead of `plane`, the shared distance helper's denominator summed by rank (0x1648d0 needs j,
 // k, i from the same text), the candidate's x load one level lower in the clip distance, and `total` in EAX.
+// M3 lane GA r9 (fast with 0x1648d0, 0x320b0, 0x168b40, 0xbc070 and 13 file peers, all MATCH; control 52; 70 trials):
+// projection tail without `output` copy (`total = 0` before `segment`, `point3f *out = cursor;` with `out++` at k-loop
+// bottom, `cursor += 2; culled = false; total += 2;` or `out; cul; tot; cur`): 45 (gain 7, under the 8-point bar for >30;
+// restores `total` in EAX, retail's alignment jmp, `total/segment/segment_count` store order and `n.j * p0.y`; 0x1648d0
+// MATCH; NOT kept); other statement orders 45-47, `out++` before bounds 67, indexed `projected_points[total]` 62;
+// `total` first alone 49; uninitialized `i`/`segment` at top 52/50, initialized `total=0`/`cursor` before pass 343-475;
+// `plane3f plane0, plane1` split (replacing `planes[2]`) 186-188 (first +0x22f: shifts plane rank past 1/6/0); local
+// plane-init helper 233; changing shared `ray_plane_distance_1648d0`'s `dot` from 3 `+=` statements to `dot3f` (either
+// order), `dot3f` for both sums, or any flat 3-term sum (`i+j+k`/`i+k+j`/`j+k+i`) drops 0x1652e0 to 31 (fixing all of
+// delta, intersection and `n.j * p0.y` with `i,k,j` sum order up to the plane-rank swap) while keeping 0x1648d0's `j,k,i`
+// sum order, but breaks matched 0x1648d0 (186 at 1855 B: removing the `+=` statements drops `[direction+4]`'s rank below
+// `plane->normal.j` and `distance`); `dot` with `plane_distance_to_point` 35 (0x1648d0 186); right-grouped `j + (k + i)`
+// recovers `[direction+4]` in 0x1648d0 (27, only sum order `(k+i)+j`) and scores 29 here; 2-stmt `i` then `j+k` 25
+// (0x1648d0 200); `dot3f` for `offset` only 56 (0x1648d0 16); `return`/ternary/`distance=0` in rpd 230-251; rpd param
+// reorders 31 (0x1648d0 186); 3 term locals in rpd 31 (0x1648d0 188). Body unchanged.
+// Classification with named x/y, x/z or y/z subtotals 55/68/62; x/y or x/z subtotal with a separate
+// accumulation 55/70; named component products 185; signed classification bytes 52; separate branch
+// stores 755. The three unrolled copies still need retail's product schedule; the signed-byte form ties.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

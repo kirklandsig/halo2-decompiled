@@ -1008,6 +1008,41 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // through approach_126660 914; the fade's pins with both flag setters 867 (3301 B); the used bit with the audible setter
 // alone 926 (3304 B); that with the fade's pins 925 (3305 B); the audible setter alone 863 (3304 B, masked 253). The
 // setters give retail's two byte operations but shorten the body (retail's word read for the audible flag stays).
+// Active-list append cursor with a computed count 889/912, indexed end
+// 845/912, cursor search 858/926, or counted append and cursor search
+// 817/926 (short/full-width query). NOT kept: indexed forms reach 0x4e0 but
+// regress. The 817 form loses gain-buffer reuse (frame 0x5dc) and shortens.
+// Separate started/matched/both handles 839/860/851; continue on failed start/missing
+// handle 837/837; separate match/start arms 861, with failed-start continue 838;
+// separate started handle with continue 821. NOT kept: the 821 form removes retail's
+// post-allocation handle test and leaves the 0x4dc frame. Its parts alone tie or regress.
+// The 0x4dc frame and query-array homes still differ. Counted member append for choices, targets and
+// existing indices individually 944/976/936, pairs 933/930/995, all 921, and all with a dword query count
+// 930. NOT kept: the forms with an existing-index member append lose gain-buffer reuse and enlarge the
+// frame to 0x5e0–0x5e8.
+// Shared gain buffer reused as a count-prefixed active list, store/increment first, for short/short
+// query and choice 876/877, short/long 936/946, full/short 899/901, full/long 937/937. NOT kept:
+// the 0x4e0 frame returns, but the count and query homes differ and all scores rise.
+// Query-only array scope, shared query ordinal, direct provider count, or both:
+// 837/840/911/911. Early choice count or enclosing choice storage in that scope:
+// 837/837. Early long choice count alone or with direct count/shared ordinal:
+// 938/948. NOT kept: the 0x4dc frame persists and long choice counts shorten the body.
+// Lane AO r3 (fast with 0x18bb80 and ten callees, control 837 at 3327 B): the targets array declared after the two
+// counts 837, the primary declared ahead of the target count 837, the choices declared ahead of the query arrays 837,
+// the query count declared ahead of the arrays 837 (same code each: declaration order moves no home); the duplicate scan
+// as a plain loop with `break` 966 (3272 B); the fraction as an if/else 837 (same code); each target filled as
+// `targets[target_count].field` with the count stepped last 940 (3289 B); the muted flag as `!g_509420` 837. Reading:
+// retail walks the query with the long count read from its home, keeps the choice count in ESI with a copy at frame
+// +0x24, and spills the loop index at frame +0x4 where ours puts the short query count. Body unchanged.
+// Exact-end bounds for query, duplicate, repair, conversion, both target walks, active lookup,
+// both query walks, or all choice and target walks: 837/905/837/837/837/837/837/905.
+// The 0x4dc frame and count homes persist. Retail uses a relational duplicate bound.
+// M3 lane 13 r158 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 837 at 3327 B; frame 0x4dc against
+// retail's 0x4e0 on today's main): the fade time named once for its test and divisor 845; the sound-definition list read
+// ahead of `inside` 924 (3289 B), at the block top 921; both counts long re-measured 1018 (3214 B: an opcode-aligned
+// read puts retail's extra code in the second scan's inside/portal selections, the PIN clamps and the primary's detail
+// lookup, not only the choice addressing); the scanned sound's tag named once for its test, the duplicate scan and the
+// store 838; the range test as `fabs(range)` (no negation) 865.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

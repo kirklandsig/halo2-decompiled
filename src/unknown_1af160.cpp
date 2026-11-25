@@ -359,6 +359,21 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // (same code); the bool output initialised false 201 (979 B); the equal arm's `local_5 = false;` ahead of the clear 12
 // (same code); the clear and the result store as one chained assignment 12 (same code); the equal arm's inner test
 // positive with the result store first 29; re-measured: the not-equal arm first with the equal arm as else-if arms 187.
+// M3 lane 7 r228 (fast with 0x1e1f20, MATCH; control 12). Retail's own cells carry the same tied counts (actor and
+// offset temporary 4 each, node and bool output 2 each, counted through the pushes), so retail's order comes from the
+// slot list, not from a count. Replaying the frame sort on this slot list, both ties flip only when the offset
+// temporary's cell is made after the bool output's, the node's cell is made among the first six, or an aggregate or a
+// one-byte cell is made among the dword cells; packing by size and then count reaches none of these from a declaration.
+// Forms: the 0x1e5280 flag declared inside `if (local_24)` 19 (its true store moves after the call); the flag computed
+// directly (`!(range > limit)`, then the distance test) 56 (979 B); the result flag declared at the found test 62; the
+// five output clears written as constant stores with the marker flag declared at its test 51 (979 B); the 0x1f4a20
+// success arm storing field_b before field_a 14.
+// M3 lane 2 r151 (fast screen with 0x1e1f20, MATCH; control 12; 0x1af160 alone in the reduced image measures 210). Left:
+// two tied pairs of dword homes, the actor against the offset temporary/0x262b40 result (+0x24/+0x28) and the node against
+// the bool output (+0x30/+0x34), each the other way round from retail. Forms: the equal arm's inner test positive with the
+// clear first 29; the 0x261280 result declared bare and assigned on its own line 12; both 0x1f4a20 flags declared ahead of
+// the 0x262b40 call 12 (same code each); the rounded delay stored into its own long instead of the long output 25; the
+// 0x2626b0 guard testing the 0x1f4a20 result first 15.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

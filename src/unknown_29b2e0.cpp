@@ -941,6 +941,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // planar with spatial or fallback 356/356; spatial with fallback 128; all three 356;
 // all three through memmove 402. NOT kept: 128 only gains two; planar copy changes the
 // first normalization. The opening J/depth store order and later rotation differences remain.
+// Planar-first with bounded-add on yaw/pitch/both 240/247/299; with one current-angle
+// read 208/230/304; with a distinct bounded result for yaw/pitch 200/222.
+// NOT kept: the single-axis forms recover the store pair but all regress. The yaw zero
+// placement and later rotation schedule remain.
 // With planar first, selected target, selected current, two selected pitches, or selected current
 // in the difference: 296/237/251/251. Both angles before signs with selection or updates 312/148.
 // Assign signed target first and subtract selected or updated current 311/312.

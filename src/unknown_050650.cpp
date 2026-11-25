@@ -1076,6 +1076,10 @@ struct s_collision_result_buffer_1697c0
 // Scaled vector published via assignment, setter, memcpy or memmove 666/337/666/648;
 // early rejection with the same four transfers 666/337/666/648.
 // The startup zero register, axis j preload and transfer-word reuse remain. NOT kept: all staged normalizations change the frame and increase the score.
+// Nested-sum inline normalizer at axis/clear sample/best hit 292/335/335, axis-clear/
+// axis-best/clear-best 338/338/340, all 340, axis through setter 311.
+// NOT kept: all lengthen and regress. The axis-only form retains frame 0xa8,
+// and the others grow it to 0xb0. The original zero, j product and transfer homes remain.
 // M3 lane GB r4 (fast with 0x2967b0, 0x297660 (MATCH), 0x297d30 (23 unless noted), 0x24590, 0x2980d0, 0x297a50; control
 // 270, al=185, mask=114; 40 trials): early-return actor_looking_normalize3d (`if (fabs(magnitude) < 0.0001f) return 0.f;`)
 // on the 270 base 271 (fr=0xa8, 1430 B, al=103, mask=72), + best_direction before best_fraction 271 (al=99, mask=67), +
@@ -2349,6 +2353,12 @@ struct s_actor_looking_structure_view
 // (diagnostic) 47, k still numbered ahead of j and i; the score as `dot3f(&directions[i], &forward)` or
 // `dot3f(&forward, &directions[i])` with 0-3 pairs on the clamp product 145/139/88/145 each. Left: a form where the
 // candidate's k alone ranks above the axis j.
+// M3 lane 13 r158 (h2m fast with 0x296e60, 0x297660, 0x2980d0 and 0x24590; control 23, 0x296e60 270 at 1431 B): lane 3 r277's
+// merged helper (sine, dot, cosine) re-measured 6 with 0x296e60 273 (1430 B; aligned 128 -> 135 there, a register swap of
+// its two scale products plus row orders), with the dot hand-written, `dot3f(axis, vector)` or `(1 - cos) * dot` the same
+// 6/273, dot first 6/282, versine named 6/273. On that lead: the angle named at the loop-body top 16; the up axis through a
+// `vector3f const *` local 175 (909 B); the cross terms in a vector3f local 49 (0x296e60 337); the projection after the
+// cross terms 162 (934 B; 0x296e60 276). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
