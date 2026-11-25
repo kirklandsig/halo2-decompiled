@@ -5770,6 +5770,10 @@ struct s_damage_object_creation
 // the code): the detach test as `section_mask_a | section_mask_b` gives the second mask a value in the entry block, the
 // bit then takes EDX as retail's does, but that value holds EDI and the count is spilled, 128 (811 B); retail's extra
 // entry-block value must be one that gets no register there (a constant or a parameter value like the first mask's).
+// Section membership by union equality for primary/secondary/both 199/197/202;
+// by bit-removal inequality 200/200/202; full intersection equality 200;
+// complement exclusion 203. The section count and primary mask still compete
+// for registers. NOT kept: the alternate tests lengthen the loop and raise the score.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

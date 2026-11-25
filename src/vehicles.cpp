@@ -5380,6 +5380,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // facing or the projection, and member or indexed removal: before 224/234, after
 // 215/225, each in both removal forms. NOT kept: the snapshots enlarge the frame to
 // 0x10 and the body to 822 or 832 bytes.
+// Shared scaled difference with the real scale, a named or returned projection,
+// and both dot argument orders: four at 134. The same choices with double
+// scale: four at 232. NOT kept: the real scale reschedules the forward preloads.
+// The double scale changes the prologue. The projection input and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6515,6 +6519,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // activity 767/783; upper-first bounds with sign or separate combined activity 767/774.
 // NOT kept: 751 restores the extent but tests raw positivity where retail tests the bounded
 // result. The entry definition and zero/result registers still differ.
+// Directional limits through the vehicle handle for steering/speed/turn
+// 767/819/786; steering and speed 827, steering and turn 777, speed and turn
+// 844, all 853, all with a separate entry definition 786. NOT kept: the
+// handle lookups enlarge the body and change the prologue. The zero and result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

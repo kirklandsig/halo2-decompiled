@@ -1134,6 +1134,10 @@ static inline long team_score_195ed0(long team)
 // with/without signed count sample 160/160, one-based comparison 187. Inclusive negative/upper/
 // both score boundaries 101/100/101, both with the native query on admission 191.
 // NOT kept: the ties leave the flag read early and the other forms grow the body or raise the score.
+// Signed-byte team/player/both rank ordinals 181/165/196, with matching signed
+// count snapshots 181/165/196. Separate unsigned bytes 198, shared signed byte 196.
+// NOT kept: narrow team ordinals compare to an immediate and add a byte spill
+// where retail uses BP. The early teams load and final score call still differ.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

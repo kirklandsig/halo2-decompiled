@@ -2200,6 +2200,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // reference declared ahead of the aiming springs and used for all six rate reads 208 (2193 B); the first-weapon test
 // without its null check 565 (2185 B: retail keeps the check); the user flags tested and set through the field (no flags
 // local) 172 (same code); the weapon loop's index declared in the for statement 172 (same code). Body unchanged.
+// Indexed aiming inputs with mutable or const unit pointer/reference, each with
+// or without one vector address shared by the first spring and later magnitude:
+// eight at 172. The unit and mode slots remain exchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
