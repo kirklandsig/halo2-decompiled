@@ -1130,6 +1130,10 @@ static inline long team_score_195ed0(long team)
 // inline/mixed/native 100/191/192; if/else-if/else stores with native else 192; nested >=0/<=0x7fff with native innermost 211;
 // statborg local with native value arm 191; team_count != 0 guard inline/mixed 161 (1210 B)/173 (1197 B). Diagnostics (reverted):
 // dropping /Ob1 on this TU (native/current) 192/100 (same code), #pragma inline_depth(1) 100. Body unchanged.
+// Configuration receiver from the existing entry's active member 100, word-sized team rank
+// with/without signed count sample 160/160, one-based comparison 187. Inclusive negative/upper/
+// both score boundaries 101/100/101, both with the native query on admission 191.
+// NOT kept: the ties leave the flag read early and the other forms grow the body or raise the score.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
