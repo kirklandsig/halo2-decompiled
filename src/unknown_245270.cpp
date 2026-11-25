@@ -1123,6 +1123,11 @@ void function_245400(s_source_245400 const *source, long index,
 // from code values 219/197/197/208, through record lvalues 204/204/204/206.
 // NOT kept: all recover frame 0x2c and regress. Code values and raw record
 // reads also raise the caller to 3 in the preview.
+// M3 lane 14 r156 (h2m fast with 0x245aa0, 0x245400, 0x244de0 and 0x245270; control 163): the edge vector formed between
+// the plane pointers and the sides 209; the two long codes declared right after the material reads, ahead of the
+// material test, 164 (790 B; 0x245aa0 6); the second plane pointer and the second side declared first 162 (one point,
+// not kept); the plane-index test as `((local_2 ^ local_3) & 0x7fff) != 0` 221 (767 B; 0x245aa0 6); the matrix scale
+// read once into a local for the test and the scale 163 (same code). Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -791,6 +791,12 @@ struct s_24e9c7_points
 // the same endpoint subsets captured at bitmap admission 125/125/125,
 // and chained default stores for upper/all endpoints 161/198.
 // NOT kept: bitmap-admission reads tie, and the producer forms grow the body.
+// The returned-height home and the early across-Y spill still differ.
+// Complete upper/lower/all corner expressions 157/164/229, aggregate 229.
+// Native draw quad with staged/full/aggregate corner updates 191/229/229,
+// and aggregate with native draw rectangle 243.
+// NOT kept: complete expressions shorten the frame and body; the typed
+// rectangle also changes the matched caller.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

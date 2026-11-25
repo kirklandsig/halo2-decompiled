@@ -5979,6 +5979,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // updated turn rate used by store and integration 43, shared sample cap 57.
 // NOT kept: the 43 form uses the opening rate-integration instructions and gains
 // in the unchanged inlined rotation. The clamp registers still differ.
+// M3 lane 1 r169 (h2m fast with 0x1ecf50, MATCH each run; control 58; the allocator reading needs 0x1ecf50's and 0x1e3370's files in the image):
+// retail's two clamp blocks are both "sums first, each scale at its own test" (pi/4 and the 4.244 scale share XMM3
+// because pi/4 dies before the scale loads), which is the listed both-pairs-in-place form (170, re-measured): there
+// the unit and direction pointers swap ESI/EDI and the clamps take XMM3/XMM4. A forced-ranking search on that form
+// finds one decision worth 115: the rate sum `d` ranked last 55 (forced, 3 under main). Forms: the updated angular
+// velocity named as `turn + rate` 58 and stored then integrated as `rate * v + angle` 58 (both the same code as the
+// listed velocity local); the actor test as one direct bool (`from_actor = index != NONE && query`, then `if
+// (!from_actor)` the default) 168 (812 B), with the velocity local 159; on the both-in-place form the rate block's
+// scaled limits as their own locals 170. Re-measured: a/b in place 168, c/d in place 61.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {

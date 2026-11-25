@@ -583,6 +583,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // first/second/both direct in-place turns 432/349/379, copied in-place rows 540,
 // and fresh per-row output 469. NOT kept: all move the 0x90 frame and grow
 // the body. The first-axis register and square spills still differ.
+// M3 lane 15 r147 (fast screen with 0x137ed0, MATCH each run; control 334): each pass's three rotated rows as one
+// matrix3x3 aggregate initialiser stored by aggregate assignment 408 (1839 B); the angles as `0.5f * step` and
+// `0.3f * step` 334 (same code); `inverse` computed ahead of the squares in the builder 332 (1782 B; two points, not
+// kept); the rotated rows' products written vector component first 334 (same code); the diagonals written
+// `xx + (1.0f - xx) * cosine` 334 (same code). Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4990,6 +4995,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // for the moved point 556. NOT kept: the signed difference increases the score and length;
 // the scaled-add shortens the body to 1964 bytes and raises the score. The frame, stored-velocity
 // reloads and projection homes remain different.
+// M3 lane 15 r147 (fast screen with 0x259d0, MATCH; control 486): the cycle flag alone read from the flags' low byte, as
+// retail's `mov al, byte ptr [state + 0x94]`, 485 (2035 B, retail's length; one point, not kept); the camera delta alone
+// read from the stored copy at view + 0x110 513 (2004 B), with the byte read 513; the reset flag as `(flags >> 1) & 1`
+// without `!= 0` 486 (same code), with both others 513. Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6124,6 +6133,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // scalar pointers 438/418, scalar references 438/418, typed point
 // receivers 1139/1136, returned planar points 493/493.
 // NOT kept: none recovers the radius/depth homes and extent.
+// M3 lane 15 r147 (fast screen with 0x1697c0, 0x141710 and 0x142570, all MATCH; control 231): the corner helper's x row
+// in 0x142570's up, left, forward order 231, the origin added first 231, both 231; the opacity and collision tests as
+// one negated early return 231; the radius renamed to sort ahead of the helper's scaled x, y and z 231 (all the same
+// code: the spill homes ignore names). Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

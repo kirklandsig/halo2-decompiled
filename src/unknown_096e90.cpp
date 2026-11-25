@@ -114,7 +114,6 @@ long c_vtable_450d1c::v1(long a1, long max_count, void *entries)
 }
 
 void simulation_write_entity_identifier(long identifier, s_bitstream *stream);
-void function_194710(s_bitstream *stream, bool discard);
 
 static __forceinline void sender_write_type(s_bitstream *stream, dword type)
 {
@@ -206,7 +205,7 @@ void c_vtable_450d1c::v3(s_node_450d1c *node, long a2, long a3, long key, s_bits
 			}
 			else
 			{
-				function_194710(stream, true);
+				stream->function_194710(true);
 				function_97242(link);
 			}
 		}

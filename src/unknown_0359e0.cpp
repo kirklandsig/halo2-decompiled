@@ -338,6 +338,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // short low mask 168; per-axis conditional high band and long low mask 165.
 // NOT kept: table-band forms grow the body and leave the early coordinate promotions.
 // The long low mask after high bands also loses both matched callers.
+// M3 lane 1 r169 (h2m fast with 0x136140 and 0x359e0, both MATCH except where noted; control 57): a forced-ranking search
+// on this body: x_bits given EDI 29, the y copy ranked above the x copy 47 (the allocator ranks them 65 vs 63: the y copy
+// is live through one more block, the else-if test, so it loses 2). Forms: the tail shifts reading the short parameters
+// 146 (313 B; 0x136140 125), only the y tail reading `y` 133 (304 B; 0x136140 28); the two bit words as `long` 57; the
+// six table reads through a named table pointer 57; the mask held in a `long` 61.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
