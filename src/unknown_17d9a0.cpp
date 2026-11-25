@@ -6,6 +6,7 @@
 #include "vector2f_products.h"
 #include "segment_sphere.h"
 #include "unknown_0259d0.h"
+#include "normalize3d.h"
 #include <float.h>
 #include "globals.h"
 #include "unknown_03bcb0.h"
@@ -486,739 +487,59 @@ PRIVATE __forceinline real decal_normal_angle_17fd20(vector3f const *a, vector3f
 		*(dword const *)&a->j == *(dword const *)&b->j &&
 		*(dword const *)&a->k == *(dword const *)&b->k)
 		return 0.0f;
-	real cosine = a->i * b->i + a->k * b->k + a->j * b->j;
+	real cosine = dot3f(a, b);
 	cosine = cosine < -1.0f ? -1.0f : cosine > 1.0f ? 1.0f : cosine;
 	return function_50650(cosine);
 }
 
-PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, vector3f const *left,
-	vector3f const *up, vector3f const *in, vector3f *out)
+PRIVATE __forceinline void decal_rotate_vector_17fd20(transform4x3f const *m,
+	vector3f const *v, vector3f *out)
 {
-	vector3f rotated;
-	rotated.i = up->i * in->k + left->i * in->j + forward->i * in->i;
-	rotated.j = up->j * in->k + left->j * in->j + forward->j * in->i;
-	rotated.k = up->k * in->k + left->k * in->j + forward->k * in->i;
-	*out = rotated;
+	real x = v->i, y = v->j, z = v->k;
+	real i = m->up.i * z;
+	i += m->left.i * y;
+	i += m->forward.i * x;
+	out->i = i;
+	real j = m->up.j * z;
+	j += m->left.j * y;
+	j += m->forward.j * x;
+	out->j = j;
+	real k = m->up.k * z;
+	k += m->left.k * y;
+	k += m->forward.k * x;
+	out->k = k;
 }
 
-// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
-// MiniMax C (11-20): no new form, no lower score (535): the tag still spills at frame+0xb4 where retail has +0x94, the zero
-// counter and the constant one still sit eight bytes below retail's, and the entry still takes the object pointer in EDX and
-// the table global in ECX the other way round, so every later home is one slot off.
-// M3 lane 6 r223 (plain each; the reduced image builds this function differently, 834; control 535): the first loop as
-// a do-while with its index declared at function scope 533 (frame 0x21e4: the tag then spills at retail's +0x94 and the
-// secondary count sits at retail's +0x54, but the face list moves to +0x1f0 and the count to +0x1c), with the index in
-// its own braces 533 (the same frame: the loop shape, not the index's scope, reshuffles the homes); the index advanced by
-// the loop (`faces[i]`, `i++` in the for) 548; one `short i` at function scope for the first loop and the group loop 563
-// (3631 B), with one `short j` for the three inner loops too 575; that shared index with the do-while 533 (frame 0x21dc,
-// homes as main's), with the shared `j` as well 715 (3599 B); the inner plane declared with the first plane 535 and the
-// quad declared at the top of the group pass 535 (same code each); counters renamed to sort first/last 535 (diagnostic:
-// names do not move these homes). Retail still advances the first loop's index between the pushes, ours after the call
-// (MSVC defers the postfix in the argument to the end of the call).
-// M3 lane 4 r230 (plain each; base 535, aligned 672, register/offset-masked 355). Retail keeps 1.0f (XMM0), 0.0f and the
-// three scaled axis components (XMM5-7) live from the normalize through the sign and the angle clamp: its equal-normals
-// path jumps past the reloads that follow the arccosine call, so the sign's cross product has only XMM1/XMM3/XMM4 and
-// reloads the selected normal per product. Forms aimed at that block's pressure: the quad normal named once as a
-// pointer for the cross and the angle 561 (3631 B, masked 345); the quad plane named once as a pointer for the two edge
-// distances, the cross and the angle 623 (frame 0x21d4, 3599 B, aligned 555, masked 354; the secondary count then takes
-// retail's +0x54); that pointer for the two edge distances only 566 (3631 B, aligned 680, masked 344); the selected
-// normal named as a pointer for the cross and the angle 535 (same code); both normals named 559 (3631 B). Body unchanged.
-// MiniMax E (11-19): score 535 (was 535): no new form, no lower score. Read from the listing again: the entry agrees
-// (the tag index from the stack into EAX, the table global into ECX, the tag's bytes into EBX, the output into EDI), so
-// the remaining offset is in the locals' homes and not in the call: the tag spills at frame+0xa8 against retail's
-// +0x88, the zero counter sits at frame+0x4c against retail's +0x54 and the one at frame+0x18 against retail's +0x20,
-// while the plane base at frame+0x1e8 and the 0x21dc frame agree. The first loop's count pointer therefore sits eight
-// bytes lower than retail's, which moves every later home that is placed next to it. The permuter over the function
-// tried a few forms of its own and kept none (535 unchanged).
-// MiniMax I (11-16): no new form, no lower score (535): the frame 0x21dc and the 3647-byte length agree and the first
-// difference is still the tag spill at +0x41; the later homes of the tag, the count and the plane still sit in other slots
-// than retail's, and the entry register roles are still the other way round (retail takes the object pointer in edx and
-// the table global in ecx), so every later home is one slot off.
-// MiniMax S (11-16): no new form, no lower score (535 plain, 834 on the reduced image): the frame 0x21dc and the
-// 3647-byte length agree and the first difference is still the tag spill at +0x41; the group pass as a flagged block
-// with its own remaining count is 534 and the first loop's face read into a one-use local is 524, but both rest on forms
-// the review drops, so the tag, count and plane homes stay where they are.
-// MiniMax A (11-14): no new form, no lower score (793 on the reduced image): the frame is 0x21d8 against retail's
-// 0x21dc, and the entry register roles differ - retail takes the object pointer in edx and the table global in ecx,
-// while this build reads the second argument into ecx and a global into edx - so every later home sits one slot off.
-// MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
-// the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.
-// w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
-// condition directions, callee arguments, loop shapes, rotation coefficients and bounds all agree). The angle helper's second
-// clamp is now the existing function_50650 (retail's inlined clamped arccosine) instead of its body written out: fast 795 -> 793,
-// 3672 bytes both, callers/callees unchanged; the full build is unconfirmed. normalize3d for the axis 812 (its dot3f sums i, j, k;
-// retail sums i, k, j) NOT kept. flags is read as a byte (retail 0x17fdd2, +0xc of the 16-byte entry) through the cast.
-// MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
-// selectors and the product memory sides are as the earlier rounds left them.
-// MiniMax A (11-13): no new form, no lower score (535 plain, 834 on the reduced image); the frame and the
-// length still agree, the tag still spills at +0xb4 against retail's +0x94, and the count, plane and
-// rotation homes still differ.
-// Earlier status line (merged, was a second score line): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
-// Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
-// Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
-// at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
-// Earlier: frame 0x21dc and retail length agree; definition spill +0xac versus +0x94, count/plane homes and rotation spills remain.
-// Plane/count homes, initial face-call scheduling and rotation spills remain.
-// Earlier aligned frame 0x21e4 versus 0x21dc, count/plane/axis homes and rotation scheduling remain.
-// The axis uses vector3d_from_points3d with length summed in retail's i, k, j order (written j, k, i), which stores all three components before the sum as retail
-// does; that frame is 0x21e4 against retail's 0x21dc (8 bytes more below the plane), 3631 bytes against
-// 3647. The definition/output registers agree with the pivot offset rotated in place, the mode read at
-// each use and the plane flip tested as bit 15. Retail increments the first loop's index before its
-// call; the count and plane spill slots sit in a different order; retail preloads the axis j/k
-// components for the scale; the rotation schedule differs after that. Round 30 (fast, on the kept
-// form): the scale through vector3f_scale 572; the offset rotated inside the matrix position through a
-// pointer 619; axis declared with the selected points 572; the sign through dot3f 632; min/max stored
-// before the end copy 571 (store order as retail, count unchanged). Before the keep: counts declared
-// face count first 587 (store order as retail); the subtraction helper on the `faces[i++]` loop 566,
-// with the j, k, i sum 560.
-// Round 12 (lane 10): retail computes the pivot offset straight into the matrix position (and
-// copies only the i/j components it still needs), rotates it there in place, writes the forward/left/up
-// rotations directly into the matrix and adds the start point last. The offset in the matrix position
-// with the rotate helper copying its input vector first, then the start added in place: 588 at 3647
-// bytes and frame 0x21dc (plain; slot order and the inner zero register XMM1/XMM2 then differ; our
-// aggregate copy goes through integer registers where retail forwards the float values). Direct
-// writes with the offset kept separate 763 (3455 bytes, frame 0x21ac); the input copied by component
-// 700, into scalar locals 776; min/max stored before the end copy 587 (same code). All restored.
-// Round 10 (lane 10): rotated position kept in its own vector 650 (frame 0x21ec); rotate helper
-// writing its output directly 894 (frame 0x21c4); offset in place alone 717, with the mode at each
-// use 762 (frame 0x21dc), plus the bit-15 flip 593, plus the counts declared after faces[0] 587
-// (kept; either order); the bit-15 flip alone 761; grouping plane in its own block 650 (same code);
-// count locals renamed 587 (slots unchanged); first loop as `while` with `faces[i++]` 574 (not kept:
-// a respelled loop); the axis through normalize3d 712, plus vector3d_from_points3d 667.
-// Round 8 (lane 10): counts set after faces[0] 716; float component equality 762 (ucomiss, but the
-// cosine products then follow retail's order); dword component equality without the copy 650 (kept);
-// short plane index 698 (test cx); mode read from the definition at each use 705 (registers, loop
-// entry jump and final call as retail, rest worse; retail does read it at each use); rotation in the
-// sine-axis/t*j*i/t*k shape 731 (x87 product as retail), its square and sine-product statement orders
-// 731-740; with the mode at each use 717; matrix local renamed a_/z_ 650/650 (slot unchanged).
-// Earlier: Self-aligned frame 0x2204 versus 0x21dc, definition/output carriers and angle equality homes remain.
-// Earlier: frame 0x2204 versus 0x21dc; definition/output carriers still differ.
-// Group word 866; remaining long 871; first input only 825; second only 878; unsigned plane 891; first plus group 774; first plus remaining 843.
-// From 774: group-first test 753; in-place offset 779; vector return 800; deferred angle copy 808; word edge indices 776.
-// Long emission index 763; tag-pointer rename/lifetime 774/774; group-first plus offset 786; plus long emission 747 (alignment worse).
-// frame 0x2204 versus 0x21dc; definition/output homes and angle equality differ.
-// Native initial face cursor 752; group-search cursor 785; candidate cursor 786;
-// native bounds-component access 753; angle-input memcpy 749; single cosine clamp 803.
-// Alias-free plane memcpy 798; rotated-result memcpy 796; both transfers 798; second angle-input
-// memcpy 872; all copy boundaries 872. Original body and all helpers restored; frame 0x2204 versus
-// 0x21dc and definition/output/equality homes remain.
-// Frame 0x2204/0x21dc, definition/output carriers and angle equality homes remain.
-// Earlier 753 (was 890): frame 0x2204 versus 0x21dc; definition/output carriers still differ.
-// Earlier 749 (was 753): frame 0x2204 versus 0x21dc; definition/output homes and angle equality differ.
-// Round 151: Alias-free pivot helper 753; native axis/offset 796/796; complete rotation row parts/products 788/798; fallback quad memcpy 796; native basis values 796; pivot helper plus row parts 764.
-// frame 0x2204 versus 0x21dc; definition/output homes and angle equality differ.
-// Without parameter-address aliases: reversed equality buffers 796; native plane result 925;
-// rotation pointer result 796; native rotation output reference 796; native angle input 796 (fast).
-// Original complete body and all helpers restored.
-// Alias-free projection-plane/source-matrix/both/orientation-bounds/plane-bounds/matrix-bounds/all/group-plane receivers 892/791/859/791/859/795/892/847 (fast).
-// Original complete body and helpers restored; frame 0x2204/0x21dc, definition/output and angle equality homes remain.
-// Alias-free single angle exit 796; word edge-side predicate 807; unsigned-word list ordinals 773;
-// native mesh reference 796; native rotation-basis references 796 (fast). Original body/helpers restored.
-// Alias-free angle input order 796; rotation output/input first 792/792; plane output first 796;
-// ordinary angle/rotation/plane inline 1168/796/796; all inline 1168. Original body/helpers restored.
-// Round 155: native element references (alias-free), then complete rotation-input value: decoded plane 796; mesh edge 796; decoded plane mesh edge 796; edge endpoints 796; decoded plane edge endpoints 796; mesh edge edge endpoints 796; decoded plane mesh edge edge endpoints 796; rotation input value 1034. All restored.
-// angle-products 781; axis-products 748.
-// sign-products 748; angle-axis-products 805.
-// angle-sign-products 804; axis-sign-products 770.
-// angle-axis-sign-products 795; diagonal-axis-squares 800.
-// Round 180 alias-free scalar names: selected distances, candidate distances, endpoint distances, axis,
-// rotation, angle cosine, all distances, all scalars; scores 796/796/796/796/796/796/796/796 (fast); all
-// restored.
-// Round 354, without inherited parameter-address aliases: promoted signed plane index 788;
-// mode field at every use 796; both 806; shared pivot-offset difference 753; promoted index plus
-// shared offset 716 (kept, plain); mode plus offset 783; all three 787; all with shared normalizer 775.
-// Retain the signed index promotion and existing offset helper; frame 0x2204 and entry carriers remain.
-// Earlier 572 from 587. Shared-axis graph: uninitialized group-scope first/candidate/selected plane declarations in
-// all seven nonempty subsets, then complete plane-role names, 572 each. All writes stay in place.
-// Round 222: complete rotation/sign/angle product operand exchanges in all seven
-// nonempty subsets 572 each; all exchanges with factor-first axis normalization 572.
-// All original products restored; frame remains 0x21e4 versus 0x21dc and rotation spills differ.
-// Round 204: complete rotation input with direct/native result 611/831; direct input plus pivot/axis scale/both 607/607/608; native axis scale 613; native input/result plus pivot/plus scale 760/761. Original whole body and helpers restored.
-// Round 234: complete basis squares/sine/both/cosine pairs/squares+pairs/sine+pairs/all
-// 726/582/601/618/564/631/598; all with count order 597. Squares+pairs kept (plain 564);
-// each repeated part has two uses, every row is uniform and all float trees are preserved.
-// Round 241: Actual emitted-face total short/word/long/dword at secondary pass entry and before initial
-// projection: 735/723/723/723/749/626/626/626. Original outstanding count, face indices and body
-// restored.
-// Round 243: Existing tag record with native signed mode, const/mutable 572/572; actual limit
-// flags byte/word/bool 572 each; tag plus each native flag declaration 572 each. All restored.
-// Round 172: shared grouping/selected plane with short/word/long/dword outstanding total,
-// original first-use lifetime 843/843/840/840; group-entry lifetime 843/843/840/840.
-// Original separate planes and total restored; definition/count/plane homes and rotation spills remain.
-// Round 166: On the exact-frame square/cosine-pair graph, tag/array-count/plane-endpoint lexical
-// roles in all seven subsets 564 each; the uninitialized tag declaration before both scratch
-// arrays 564. Original names, declarations and whole body restored; first tag/count/plane homes
-// still differ.
-// Round 253: native long initial/admission/selection/initial-admission/initial-selection/
-// admission-selection/all/all with emission induction 730/767/710/765/707/781/779/756.
-// Original signed short induction web, addressed counts and complete body restored.
-// Round 236: complete square lifetimes before angle/before sine/between sine-cosine, reversed
-// cosine-pair/square orders, early-square pair combinations and six-part names
-// 617/607/564/611/564/611/583/564; all restored.
-// Round 387: Negative/positive decoded-plane native setters, uniform per-use tag lookup and combinations 581/798/814/785/741/851/820/820; complete squared-axis sum included last. All restored.
-// Round 221: native basis/rotation/both/position/basis-position/rotation-position/all setters
-// 726/564/726/560/717/560/733; all plus axis setter 592. Four-point position gains rejected;
-// original basis, complete rotation copy, matrix position and body restored.
-// Round 262: actual distance/construction inline/noinline call summaries, separately
-// and all four pairs 758/564/564/564/758/758/564/564. Original declarations, private
-// helpers and body restored; definition/count/plane homes and rotation spills remain.
-// Round 178: complete-vector memcmp 771; with decoded-output-first copy 774;
-// result-first angle 770; both 776; with the complete rotation-result setter
-// 771/774/770/776. Original equality, plane and rotation producers restored.
-// Round 273: independent first/candidate/selected plane declarations at function entry,
-// seven subsets 564 each; all three plus the quad declaration at entry 564. Original
-// declarations and complete body restored; definition/count/plane homes still differ.
-// Round 38: Staged cross product, with cross lifetime local/group and sign expression/branches,
-// 559/559/559/559 fast at 3631 bytes, frame 0x21e4; each with common angle result 618
-// at 3632 bytes. Five-point best rejected; original cross call, angle helper and body restored.
-// Round 420: present-first-face region 564; missing-candidate continue 564; present-first-face region +
-// missing-candidate continue 564; ordered geometry rejection guards 564; present-first-face region +
-// ordered geometry rejection guards 564; missing-candidate continue + ordered geometry rejection guards
-// 564; present-first-face region + missing-candidate continue + ordered geometry rejection guards 564;
-// present-first-face region + missing-candidate continue + ordered geometry rejection guards + single
-// angle result 564. Original body restored.
-// Round 429: exact-frame count order 563 (one-point gain rejected); edge fields at use 694;
-// both 694; complete group-owned selection workspace 769; count/workspace 768; edge/workspace
-// and all three 790/790; all with ring anchor at use 707. Original body restored.
-// DL round 206: selected edge direction at acceptance 647; with early pivot offset 633;
-// with native point setter 648; early offset and point setter 682; those four with
-// the staged shared cross product 647/633/648/682. Frames shrink to 0x21d4/0x21cc;
-// original endpoints, pivot timing, helper operations and complete body restored.
-// Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
-// 704/594/727/669/726/660/742/755. Original complete executable source restored.
-// J218: Current exact-frame ordered-distance result/accepted endpoint setters/rotation-entry pivot, seven subsets, then native transform value: 639/596/675/576/671/688/756/724. Original complete body restored.
-// Round 489: plain normal negation / axis scaling / rotation component loops, seven
-// subsets 589/552/564/603/589/594/559; all with short component ordinals 1157.
-// Keep only the axis scaling loop, confirmed by plain check at 552; other producers restored.
-// On the retained axis loop: staged cross / face count first / both 552 each; all restored.
-// Round 452: Selected endpoints retained as word/long vertex indices, point pointers or edge-and-side
-// identity; native points after selection, then field reads at use: 718/698/675/742/639/665/759/692. Original
-// endpoint copies, helper boundaries and complete body restored; tag/count/plane homes and rotation spills
-// remain.
-// Round 454: Private plane/angle/rotation expansion-local and parameter role names in subsets
-// 1..7, then all with tag-role names, 552 each. Original helper names and complete executable
-// source restored; tag spill +0xb4 versus +0x94, count/plane homes and rotation spills remain.
-// Round 239: Both accepted endpoint copies before the disjoint selected-plane output, with endpoint
-// order, distance-store priority and pre-emission total decrement combinations, 683/683/683/683/785/785/786/786.
-// Original endpoint/plane/total order and whole body restored; tag/count/plane homes and rotation spills remain.
-// M288: Long/short edge side on long axis induction 677/637; dword induction
-// 677/637; short induction 664/668; byte induction 664/668. All on the retained
-// exact-frame axis-loop graph; original predicate, induction and complete body restored.
-// Round 513: Bounded first-face for-loop consumes its ordinal in the array argument;
-// short/word/long/int with original count order 539/609/741/741, face-count first
-// 539/608/741/741. Keep the signed-short original-order form, plain 539 at 3647 bytes;
-// face load now precedes count-pointer setup. Tag/count/plane homes and rotation spills remain.
-// Round 462: complete mode/radius/projection-plane input ownership, all seven subsets
-// 742/821/797/872/875/898/846; all with chained output counters 846. Original observations,
-// copies and body restored; exact frame, tag/count/plane homes and rotation spills remain.
-// Round 309: Scalar bitwise angle equality ikj/jik/jki/kij/kji 556/587/589/558/556;
-// operand-symmetric ijk/kji 555/557; mismatch-owned angle evaluation 552.
-// Original private angle gate, complete body and alias-safe rotation helper restored; tag/count/plane homes remain.
-// M293: Consumed grouping-plane, selection metadata, basis scalar phase scopes, seven subsets,
-// then all with initial face-count phase closed:
-// 552/552/552/552/552/552/552/552. Original complete executable source restored.
-// AC477: Two native sorted endpoint-distance homes, producer direction, exchange-slot scope and
-// coherent near/far names: eight forms 793 each (reduced control 795; full 539). Two-point leads
-// rejected; original distance graph, body and helpers restored. Tag/count/plane homes remain.
-// Round 326: Complete old-bound snapshots/result branches/upper-first publication,
-// subsets 1-7, then reversed observation order: fast 778/808/790/779/778/809/790/790
-// against unchanged fast 795. Bounds snapshots plain 574 at 3616/3647, versus
-// opening plain 539/3647; rejected. Original body and every helper restored;
-// tag/count/plane homes and rotation spills remain.
-// DH round 290: unconditional decoded plane owned by native value or destination,
-// scalar fields/plain vector loop, then each with common angle result:
-// 896/897/753/753/864/898/737/739. All regress; original decoders, angle gate and body restored.
-// Round 532: native axis/bound-pair/up-component cursors, seven subsets and all with short
-// orientation ordinal: fast 779/771/802/793/779/771/809/873 versus unchanged fast 795.
-// Minimal axis/bounds cursors plain 574/591 at 3631/3599 bytes versus full 539/3647; both rejected.
-// Original indexed component loops, complete body and all helpers restored; tag/count/plane homes remain.
-// Round 330: sequential outer/inner signed-short ordinal and candidate/selected-plane
-// storage subsets 1-7, then all with bound-first search, fast 771/780/781/762/822/807/774/770. Original body restored;
-// first grouping plane stays independent; tag/count/plane homes remain.
-// Plain confirmation: shared candidate/selected plane 754 at 3609 bytes; shared inner
-// ordinal 705 at 3599. Both regress against 539; original body and every helper restored.
-// Round 372: first-present-face searches ending with break, short/word/int/long, then separate
-// bounded scans: fast 779/803/776/776/810/792/780/780 versus control 795.
-// NOT kept: retail prologue/frame lost; original body restored, tag/count/plane homes remain.
-// P274: Complete vector-return rotation producer with native input/component loop/entry basis
-// declarations, eight calibrated forms 575/842/571/842/575/842/571/842 (control 539).
-// Original helper and body restored; tag/count/plane homes and rotation spills remain.
-// AC486: Outstanding total decremented at outer-group completion, short/long/word/dword
-// 771/793/771/804; total also owns phase admission 771/794/771/805 (fast).
-// Original total, decrement, admission and body restored; tag/count/plane homes remain.
-// Ordinary outer-group decrement 746 at 3647 bytes versus full 539: NOT kept; fast lead was not confirmed.
-// Round 490: Native initial/group-candidate/selection-emission ordinal role names,
-// seven subsets tie fast 795; complete names with entry-owned initial zero 787.
-// Minimal initial-zero ownership also 787 fast but 544 plain versus full 539: NOT kept.
-// Original body/helpers restored; tag/count/plane homes remain.
-// Y539: Complete decoder output reference/pointer return/reference return/value return,
-// forced then ordinary inline: fast 795/795/795/875/795/795/795/963 against control
-// 795 (full 539). Every peer score agrees with its preview. Original decoder, plane
-// homes and body restored; native value returns move extent away from retail.
-// m3 lane 11 r60 (plain): tag pointer and face count renamed (zz_/a_ prefixes, diagnostic) 539, same slots: names
-// do not order these homes; the decal type read once into a `short type` used at its five uses 741; the quad
-// declared at the group's top 539; the first plane declared at the group's top 539; both counts declared above
-// the face arrays 539 (all same code).
-// AC495: Existing shared plane decoder at first/candidate/selected sites, masks 1/2/4/3/5/6/7,
-// 539/723/539/723/539/723/723; all with existing axis normalizer 715. Complete provider
-// preview agrees with full 539. Original decoders, helper and complete body restored; tag/count/plane homes remain.
-// Lane 17 r39 (plain): the definition renamed 539; the first loop's face read into a one-use local with the
-// index incremented before the call 528 (retail's `inc esi` ahead of the pushes; NOT kept: one-use local, no
-// match); the two counts declared face first 539; the definition declared ahead of the arrays 539; the quad
-// declared at the top of the group pass 539; the first loop as a do/while 562 (3631 bytes). Body restored.
-// AC497: Complete decoded-plane/rotation-result/fallback-quad memmove boundaries,
-// subsets 1/2/4/3/5/6/7, then plane+rotation memmove with fallback memcpy:
-// 742/592/803/741/781/819/826/741. NOT kept: all regress or move frame/extent away
-// from retail; original copies, complete input-before-output helper and body restored.
-// Round 67 (m3 lane 10, plain; `--fast` builds this body differently, 795 on unchanged source): the outer do-while
-// as `while (remaining > 0)` 545 (3631 bytes); the first plane decoded after the face is taken 758; the quad
-// branch inverted (fallback copy first) 574; the first loop stepping `++i` with `faces[i]` 552; the angle test as
-// `angle <= maximum` 539 (same code).
-// AC520: Complete signed-distance boundaries, real/double, immediate/paired fabs and
-// ordering-result forms: 539/533/539/533/831/843/831/843. NOT kept: six-point leads
-// grow frame to 0x21e4; double forms lose the native prologue; original body/helpers restored.
-// AC522: Complete selected-edge acceptance bool/byte/short/long, then
-// complementary rejection 533/533/533/533/606/606/606/606. NOT kept: six-point lead below
-// gate and frame 0x21e4 versus 0x21dc; original complete body restored.
-// Y566: Float sine/cosine/inverse-cosine API families 1/2/4/3/5/6/7, then
-// float sine/cosine with a double angle: 539/539/562/539/582/582/570/840.
-// Original complete body and helpers restored; tag/count/plane homes and rotation
-// spills remain. Float inverse cosine shortens below retail; wide angle loses the prologue.
-// J250: Complete decoder/angle/alias-safe rotation formal-reference contracts,
-// seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
-// homes and rotation spills remain; original helpers and body restored. All rotation
-// inputs still precede the first output store. Shared-angle sum changes were not applied.
-// Y584: Axis normalizer numeric-length result, zero-default/branch-owned with
-// bool/byte/short/long epsilon admission: 548 each. NOT kept: frame 0x21e4
-// and extent 3631 lose retail 0x21dc/3647; original full body and helpers restored.
-// AC524: Complete bitwise normal identity bool/byte/short/long, then complementary
-// mismatch results, 535 each at 3647 bytes. NOT kept: four-point gain below eight;
-// original helper and complete body restored; tag/count/plane homes and rotation spills remain.
-// AC526: Complete normalized-axis admission bool/byte/short/long, then complementary
-// rejection results, 533 each at 3647 bytes. NOT kept: six-point lead below eight and
-// frame grows to 0x21e4; original body/helpers restored; tag/count/plane homes remain.
-// AC529: Complete forward-edge role, bool/byte/word/long direct then false-default publication:
-// 555/555/621/578/624/624/624/630. NOT kept: no equality or gain; native tag/count/plane/topology homes remain.
-// AC535: Complete candidate-plane grouping acceptance, positive then complementary
-// bool/byte/short/long: 529/529/529/529/531/531/531/531 at 3647 bytes. NOT kept:
-// frame grows to 0x21e4 versus native 0x21dc; original body/helpers restored.
-// F393: Existing decoder masked plane ordinal long/dword/int/word, then sign-bit decision bool/byte/short/long:
-// 539/539/539/574/736/736/736/574. NOT kept: no byte match; original complete body/helpers restored;
-// native tag/count/plane homes and rotation spills remain.
-// DH372: Partial angular/first-distance grouping decisions, bool/byte/short/long,
-// 529 each at 3647 bytes. NOT kept: one-use outcomes are unmatched and enlarge the
-// native 0x21dc frame to 0x21e4; original body/helpers restored, tag/count/plane homes remain.
-// Round 56 (m3 lane 15, plain; masked = aligned diff with stack offsets and registers masked, 360 here; --fast stays unfaithful, one-link harness 783, masked 378):
-// retail's rotation is 0x171d90's and 0x1546f0's shape. Squares before the trig values, pairs k-j, k-i, j-i, rows in forward/left/up order 671 (3615 B, masked 243);
-// `t * k` shared, rows in retail's visit order, position rotated in place 583 (3631 B, masked 254); pairs j-i, k-i, k-j, retail's visit order 679 (3632 B, masked 264);
-// 0x1546f0's statements, squares j, k, i, trig after 607 (3663 B, masked 303), squares i, j, k 607 (3663 B, masked 294); `t * k` shared, rows forward, left j/i/k, up k/i/j
-// 648 (3647 B, masked 270); matrix3x3 basis with accumulating rotate rows in place 646 (3647 B, masked 384). All but the first change the frame (+0x7), which moves every home; the first keeps it, 32 bytes short. Harness: accumulating rows
-// (`real i = up.i*k; i += left.i*j; ...`) as retail's spill pattern suggests, with or without an in==out copy, m397-423; 241 + 151 + 482 + 304 random basis forms best masked 258.
-// T57: Accepted endpoint coordinate-array transfers, long/short/dword/word ordinals,
-// paired then separate loops
-// 547/541/547/541/539/574/539/574. NOT kept: no exact or qualifying structural gain; original complete body restored.
-// T59: Native matrix3x3 rotation basis, original/group lifetime, original/complete input
-// capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
-// NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
-// lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
-// P351: Angle first/final clamp bound-comparison truths in bool/byte/short/long:
-// 566/566/566/566/611/611/611/611. NOT kept: no byte match; tag/count/plane homes and rotation spills remain.
-// Original complete body and existing helpers restored.
-// Y606: Outstanding total before signed phase admission, short/int/long/dword,
-// flags rejection then nested flags admission: 538/763/763/763/538/763/763/763.
-// NOT kept: one-point native gain; wider totals lose native frame/extent. Original body restored.
-// F396: Complete normal-identity reduction, Boolean AND and full-word XOR/OR, long/int/short/word ordinals: 780/780/803/803/715/715/742/742.
-// NOT kept: no byte equality; native short-circuit identity, tag/count/plane homes and rotation spills remain. Original complete body and helpers restored.
-// DH379: Two-consumer distance limit after angle/after plane/before candidate/at group,
-// mutable and immutable: 539/539/726/726/792/792/791/791. NOT kept: native production ties,
-// earlier lifetimes regress; original observations, helpers and complete body restored.
-// DH383: Complete parallel near/far conditional/default/branch producers retain four original distances:
-// 614/614/646/645/540/614/634/634. NOT kept: no equality or gain; several lose native frame or extent.
-// Original four-value sort, tag/count/plane homes, all helpers and entire body restored.
-// DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
-// then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
-// recovery; original scalar counters, face publication, all helpers and complete body restored.
-// Round 108 (m3 lane 9, plain; masked = aligned with stack offsets and registers masked, baseline 496): `matrix.scale = 1.0f;`
-// before the position 535 (masked 469); `short remaining = secondary_count;` before the guard, tested there 539; the counts
-// declared face count first 535 (re-measure); `sign * decal_normal_angle_17fd20(...)` 535 (same code); the edge's min/max as two
-// ternaries 613 (re-measure of DH383's conditional producers, 614); the axis scaled `inverse * axis.i`, `axis.j * inverse`,
-// `axis.k * inverse` for the component loop 559; the edge side as `long reverse` 646 (3631 B).
-// Retail's offset rotation writes each partial sum to +0x10 and reloads it: a register-pressure spill, not a source form.
-// M3 lane 3 r225 (plain; base 535, aligned [exact, stack-masked, register-masked] [676, 501, 366]; the first ~400 instructions agree
-// once stack offsets and registers are masked, apart from the first loop's index increment and the secondary-count store): the axis
-// scale through vector3f_scale with the named inverse 559 (3631 bytes) [679, 471, 348]; with 1.0f / length written in the call 568
-// (3631) [674, 468, 341]; as three `*=` statements 559 (3631); the three diagonal terms as (1 - square) * cosine + square 535 (same
-// code); `remaining` declared under the flags test and tested before the do-while 534 (retail's store ahead of the jle, one point,
-// not kept). Lead: retail loads 1.0f into xmm0 before the reciprocal and reuses it for the sign, the clamp and every 1 - x of the
-// rotation (ours reloads the constant at each use), and it spills the k * k, j * sine and i * sine products (i * sine through x87),
-// so the rotation block's register pressure differs, not its statement order.
-// m3 lane 12 r106 (plain; fast gives 834 on the unchanged body here): start/end and the selected plane at function
-// scope 535 (same code); face_count declared before secondary_count 535 (retail's store order for the two counts,
-// slots unchanged); the first plane at function scope 535; the selected plane alone 535; start/end alone 535 (all
-// the same frame homes: scope and declaration order do not move a slot in this body).
-// MiniMax H (11-11): no new form, no lower score (535 plain, 834 on the reduced image): the frame is 0x21d8 against
-// retail's 0x21dc and the definition pointer, the count and the zeroed word still sit in other slots than retail's,
-// so every row after the first loop stays shifted.
-// MiniMax D (11-10): no new form, no lower score: the definition pointer, the count and the zeroed word
-// still sit in other frame slots than retail's (0x94, 0x20 and 0x54 against our 0xb4, 0x18 and 0x4c).
-// Round 187 (m3 lane 4, plain): the edge walk started from `first_edge` (edge_index copied from it) 535 (same code); the
-// angle limit named once ahead of the candidate loop 751 (3679 bytes); the endpoint vertices named as vertex pointers 535
-// (same code); the endpoint vertex indices named, the vertex array indexed at each use 691 (3615 bytes); the endpoint
-// addresses written in the distance calls and the two copies 664 (3631 bytes). Lead from that last form: the i term of
-// both inlined plane distances then loads the plane first (`fld [eax + 0x44]; fmul [ecx]`) as retail does; with the
-// point pointers ours loads the point first there.
-// M3 lane 10 r92 (plain, the file's other eight functions unchanged in each; fast 834 on unchanged source; base 535, aligned 672,
-// masked 355): nothing kept. The rotation's sine products named sine_i/j/k (re-measure of round 234's form) 569 (3663 bytes, masked
-// 384); `one_minus_cosine * axis.k` named once for both k pairs (retail spills that product at +0xec) 536 (3663 bytes, masked 328);
-// both 589 (3663 bytes); the sign as `-1.0f` set to 1.0f in an if 536 (masked 349); the squares computed k, i, j (retail's order)
-// 537; the rows in retail's visit order (forward i, j, left i, j, forward k, up k, i, left k, up j) 545.
-// m3 lane 14 r89 (plain; fast gives 834 here): `selected_plane` renamed `best_plane` 535 (the 16-byte plane homes
-// stay, ours +0x30/+0x60, retail +0x44/+0x34: names do not order this body's slots); the axis length and normalisation
-// through the existing normalize_inline (its sum order i, k, j is retail's) 650 (first difference +0x7); the four
-// rotations through the existing vector3f_rotate_into_axes with a matrix3x3 basis 573 (3615 B; its rows sum j, k, i
-// and i, j, k where retail's sum k, j, i as the private helper does); quad and matrix declared at the group's scope
-// 535 (same code); the bounds loop reading `matrix.up.n[k]` for the cast 535 (same code). Left: weight-ordered spill
-// homes (names and scopes do not move them) and the rotation block's schedule; rounds 10-12, 56, 92, 108, 187, 225,
-// T59 and DH383 above list its statement orders, named products, helpers and in-place forms, and no untried natural
-// form was found beyond these.
-// M3 lane 11 r99 (plain; the fast check gives 834 here): the group search's test as `i < secondary_count && !group_count` 766
-// (3628 B); the empty-slot `continue` as a nested `if (first_face != NONE) { ... }` 535 (same code); the edge side as
-// `face == edge->faces[1]` 536; the endpoint distance test as `db < da` 535; the candidate loop's empty-slot test as
-// `if (face == NONE) continue;` 535. Code is the same as retail's apart from frame homes and the XMM zero register (ours XMM1,
-// retail XMM2) in the group pass; mapped homes ours -> retail: group count 0xc -> 0x14, first face 0x1c -> 0x10, face count
-// 0x18 -> 0x20, first plane 0x30 -> 0x44, secondary count 0x4c -> 0x54, mesh field spill 0x50 -> 0x68, angle temporary 0x40
-// -> 0x6c, edge base 0xb8 -> 0x90, tag 0xb4 -> 0x94, outer index 0xbc -> 0x88; the candidate plane at 0x70 agrees. Body unchanged.
-// P469: Complete cosine-weight/sine-weight/squared-axis vector producers, seven
-// family subsets then all by plain component loops: 556/676/699/909/583/642/944/567.
-// NOT kept: vector residence/rounding misses native code or frame/extent; original
-// scalar parts, signed loops and complete input-before-output rotation restored.
-// P483: Accepted endpoint memcpy start/end/both, memmove start/end/both, then
-// both endpoints plus fallback quad with either library: 535/535/535/748/749/736/535/810. NOT kept:
-// tag/count/plane homes persist or frame/extent regresses; original whole body
-// and every private helper restored.
-// T104: Accepted-face selection/emission cursors, original-count then actual-end bounds,
-// separate/both/mixed phases: 667/535/682/660/539/679/671/671. NOT kept: no native
-// tag/count/plane-home recovery or equality; original indexed traversals and full body restored.
-// M3 lane 16 r118 (plain only: the fast image builds this function differently, 834 there): the edge scan's two plane distances
-// and the start/end copies through the vertex address expressions, no named a/b pointers, 664 (3631 B: every distance product then
-// takes retail's operand order, but the vertex addresses come from one base load where retail, like the named pointers, loads it
-// twice); only the distances through the address expressions 640 (3631 B); `faces[j]` read at each use instead of the `face` local
-// 533 (only change: the first distance's i term becomes retail's plane-first `fld [plane.i]; fmul [a.x]`; 2 points, not kept); that
-// with first_edge declared first 533 (same code); a symbol-count phase scan on that form, 1..7 placeholder locals, 536/535/570/699/
-// 702/568/533 (the phase moves homes and lengths here as well as operand orders). The second distance's i term and the stack
-// homes (group count +0xc against retail +0x14, face count +0x18/+0x20, secondary count +0x4c/+0x54) remain. `faces[j]` at each
-// use with the second distance and the end copy through the vertex address expression (no named `b`) 663 (3631 B).
-// P491: Float axis-root/paired endpoint-absolute/length-admission API families, seven
-// subsets then complete standard overloads: 529/574/529/565/570/565/539/535. NOT kept: no native tag/count/plane
-// home equality; six-point best enlarges frame to 0x21e4 and misses the keep margin.
-// Original APIs, alias-safe rotation and complete body restored.
-// P493: Complete diagonal square-complement and cosine-contribution parts,
-// ordinary/immutable at each producer or before basis publication:
-// 568/568/568/568/569/569/569/569. NOT kept: all regress and shorten away from
-// retail; tag/count/plane homes and rotation spills persist. Original body
-// and every existing helper restored; calibrated with the arccosine provider.
-// m3 lane 4 r199 (plain with the file's nine functions; the others stay at their baseline counts). Apart from the listed
-// first-loop increment (retail's `inc esi` among the pushes, lane 17 r39's one-use form 528), the code is retail's and only
-// the spill homes differ; lane 11 r99's map shows three of them in exactly reversed order (retail outer index 0x88, edge
-// base 0x90, tag 0x94; ours tag 0xb4, edge base 0xb8, outer index 0xbc) and first face/group count swapped (retail
-// 0x10/0x14, ours 0x1c/0xc). New: the angle helper's clamp through the existing PIN_126660 on the dot (the macro whose
-// re-evaluated argument matched 0x1e9ce0 this round) 560 (3631 B); the edge read through `mesh->edges[edge_index]` at
-// each use 673 (3615 B); `real tolerance = projection->radius * 0.05f;` for the two tests 746 (3679 B); the face-plane
-// helper reading `mesh->planes[index & 0x7fff]` at each use 783, copying the plane and negating it in place 770. Retail's
-// bounds loop is unrolled with unconditional stores, as the ternaries give.
-// M3 lane 15 r89 (plain; fast 834): the private rotate helper reading its input into three scalars and writing each row
-// straight to the output 628 (3551 B); that with the offset computed into the matrix position, rotated in place and the start
-// added with `+=` 672 (3535 B); the angle clamp as if/else-if statements 535 (same code); one `plane` pointer for both edge
-// distances 568 (3631 B); a matrix3x3 basis with all four rotations through the existing function_2477b1 577 (3616 B).
-// M3 lane 14 r100 (plain each; base 535): `face_count` declared before `secondary_count` 535 (the two opening stores then run
-// in retail's order, face count first; only their homes differ); on that, the first loop's face read into a one-use local
-// ahead of the call (`long face = faces[i++];`, lane 17 r39's form) 524 (the first loop is then retail's but for the homes:
-// `inc esi` among the pushes; one-use local, so match-only); `selected_plane` declared before `selected_face` 535;
-// `first_plane` declared at the group loop's top 535; `group_count` declared beside `remaining` and zeroed in the loop 535.
-// Declarations and scopes do not move the homes (tag 0xb4/retail 0x94, first plane 0x30/0x44, group count 0xc/0x14).
-// Also: the group pass as `if (flags) { short remaining = secondary_count; while (remaining > 0) {...} }` (no separate
-// count test) 534 (the `remaining` store then sits before the `jle` as retail's; the only change); the first loop as a
-// plain `for (...; i++)` with `faces[i]` 548; `definition` declared ahead of the two arrays 535.
-// P568: Standard bitwise range identity dword/long/word/byte 793/793/793/752;
-// explicit equality predicates 729/729/729/729. NOT kept: no native tag/count/plane
-// home or rotation-spill recovery; original helpers and input-before-output captures restored.
-// M3 lane 1 r112 (plain each, with the file's nine functions; masked aligned 194, ours 778 instructions against 787):
-// the normalize loop through vector3f_scale 568 (3631 B); the length and normalize through normalize3d (first plain
-// measure) 677 (3664 B, the frame changes); the loop as `inverse * i`, `j * inverse`, `k * inverse` statements 559
-// (3631 B, the scaling code unchanged); `sine_i`/`sine_j`/`sine_k` named, each used twice, 569 (3663 B); `short
-// remaining = secondary_count;` ahead of the group pass's flag test 539. Retail keeps the scaled axis in XMM5-7 for
-// the sign dot, computes the squares k, i, j first and forms `axis.i * sine` once on x87 for both of its uses.
-// M3 lane 3 r254 (plain with the file's nine functions): an aligned diff with stack offsets and registers masked leaves
-// 355 lines, nearly all in the normalize/sign/rotation block: retail keeps 1.0f in XMM0 from the reciprocal through the
-// sign (and again after the arccosine call through the four `1 - x` terms) where ours reloads it at each use, keeps the
-// scaled axis in XMM5-7 into the sign dot, forms `axis.i * sine` once on x87 from memory, and shares
-// `one_minus_cosine * axis.k` for the k*i and k*j terms where ours shares `one_minus_cosine * axis.i`. Forms: the axis
-// scaled by three component statements 559 (3631 B); the squares declared k, i, j 537 (masked 352); the nine rotation
-// terms built in a private inline helper (axis, sine, cosine in; forward/left/up out) 718 (3599 B, frame 0x21d4, masked
-// 268, rotation still reloads 1.0); `one_minus_cosine * axis.k` named once for both k terms 536 (3663 B, masked 328); the
-// definition typed as the decal definition with a short limits index at +2 read at each use 535 (same code).
-// M3 lane 7 r173 (plain each; base 535): the tag's spill reload is single (entry store, one reload), so its home follows
-// the allocator's spill order, which runs exactly reversed against retail's for tag/edge base/outer index. Forms: the
-// first plane and the collection loop in their own `{}` block 535 (same code); the loop indices as function-scope
-// `short i, j;` shared by every loop 575; `first_edge` read from the face and `edge_index` copied from it 535 (same
-// code); `remaining -= group_count;` after the group loop rather than inside its body 746; both distance tests with
-// the call on the left (`function_17d900(...) < projection->radius * 0.05f`) 535 (same code).
-// M3 lane 16 r131 (plain; base 535): the group pass behind an early return when the limits flag is clear or nothing is
-// pending 535 (same code); the two counts in one declaration, face count first 535 (same code); `first_face` renamed
-// `seed_face`, and `group_count` renamed `grouped_count` (the name-order lever for same-size cells) 535 each (homes
-// unchanged); the first loop as a `while` over a function-scope `next` index 535 (same code). Body unchanged.
-// M3 lane 1 r124 (plain each, with the file's nine functions; control 535, difflib-aligned 672, register/offset-masked
-// 496): the three cross terms grouped as retail multiplies them, `(one_minus_cosine * axis.j) * axis.i`, `(... * axis.k)
-// * axis.i`, `(... * axis.k) * axis.j` 536 (3663 B; aligned 574, masked 419); the nine rotation stores in retail's
-// pairwise order (forward.i; forward.j, left.i; left.j; forward.k, up.i; up.k; left.k, up.j) 545 alone (aligned 684);
-// both together 491 at 3647 B (aligned 667, masked 388; LEAD, kept only with a match: the order is picked against
-// retail; patch build/r124/lead-0x17fd20-491.patch); the grouping with the sine products named in row order 673. On 491:
-// the squares declared k, i, j 496 (masked 386);
-// `one_minus_cosine` declared after the squares 491 (same code); the sine products named once each and used twice,
-// declared before the stores 664, right after sine/cosine (k, j, i) 590 (both move the frame: first difference +0x7).
-// Left in the block: retail forms axis.k * sine and axis.j * sine straight after the sine, keeps 1.0f in XMM0 for
-// all four `1 - x` terms and, with all eight XMM registers then live, forms axis.i * sine on x87.
-// M3 lane 3 r263 (plain each; base 535, masked 498 of 787): retail forms axis.i * sine on x87 (`fld [axis.i]; fmul [sine]`) and
-// spills k*k and j*sine, a register-pressure shape. `real sine_i = axis.i * sine;` for its two uses 535 (same code); a pointer
-// to the limits entry for the flags test and the angle limit 718; the limits index read once into a `short` for its four uses
-// 741; the three axis rotations ahead of the offset's 527 (frame 0x21e4, masked 542: a positional drop and a reorder, not kept);
-// re-measured: face count declared first with `long face = faces[i++];` 524; the short-axis arm (`length = 0.0f`) written
-// first with the test un-negated 535 (same code).
-// M3 lane 4 r217 (plain each; base 535, aligned 442, register-masked 192, stack- and register-masked 194): the normalize as
-// `axis.n[component] /= length` with no inverse 533 (normalize code unchanged; two x87 products take retail's sides, one
-// symbol fewer), with `face_count` declared first and the group pass as `if (flags) { remaining; while (remaining > 0) }`
-// 532; three `/= length` statements 560 (3631 B); three `*= inverse` statements 559 (3631 B, the 1.0 still divided in place);
-// the limits index named once as a short local 741. Diagnostic, reverted: 1..7 unused initialised locals
-// 535/570/568/699/702/533/533, so no symbol count fits and the frame order is not a symbol-count state here.
-// M3 lane 11 r124 (plain each, with the file's nine functions, the others unchanged; base 535, aligned 672, masked 355). The frame
-// order follows from the normalize and sign block, not the other way round: the aggregates sit by reference density (face count,
-// axis, then retail's selected plane +0x34 ahead of the first plane +0x44, ours first plane +0x30 and selected plane +0x60), and
-// retail references the selected plane's normal three more times (18 against 15) because its sign cross product reloads it for
-// every product (0x180406-0x18043a; cross j spilled at +0x150). It has to: retail loads 1.0f into XMM0 ahead of the reciprocal and
-// keeps it for the sign, loads axis j and k into XMM6/XMM7 before the divide and scales them there (`mulss xmm6, xmm1`), scales i
-// from a copy of the reciprocal (`movaps xmm5, xmm1; mulss xmm5, [esp+0x24]`), and keeps all three scaled components in XMM5-7 for
-// the sign's dot, so only XMM1/XMM3/XMM4 are free for the cross. Ours divides 1.0f in place, scales every component from a copy of
-// the reciprocal, keeps the selected normal in three registers and loads the quad's normal instead. Forms: the axis normalised
-// through the existing normalize_inline (the helper this block writes out) 650 (frame 0x21e4, tag +0x94 as retail, face count
-// +0x1c, masked 357; the cross then loads the selected normal first and multiplies from the quad, as retail, but the reciprocal
-// still destroys 1.0f); the scaling as three member statements 559 (3631 B, tag +0x90, masked 339; same cross order); cross3f_staged
-// for the sign 535 (same score, tag +0x90, aligned 669, masked 351; a tie, not kept); the two endpoint copies member by member 604
-// (3663 B, tag +0xac, face count +0x1c, secondary count +0x60). Diagnostic, reverted at once: an inline asm no-op in the body 804
-// (frame 0x21e4, other entry convention), so retail's layout is not the inline-asm frame order.
-// M3 lane 15 r106 (plain each with 0x17d9a0/0x17ef10; base 535, aligned 672, stack-masked 497, stack- and register-masked
-// 355): the rotation in matched 0x1544e0's order (sine products in a `sine_axis` vector after the squares, forward.i, then
-// one_minus_cosine, cosine_j_i, left.i, forward.j, left.j, `cosine_k = one_minus_cosine * axis.k` named for cosine_k_i and
-// cosine_k_j, up.i, forward.k, up.k, up.j, left.k) 648 (frame 0x21e4, masked 340); with `sine_axis` filled k, j, i 629 (frame
-// 0x21e4; masked 251, the face and secondary counts take retail's +0x20/+0x54; LEAD); that with three scalar sine products
-// k, j, i 673 (3615 B, frame 0x21dc, masked 295); without the sine products named 528 (frame 0x21e4, masked 322; -7 from a
-// statement reorder, not kept); `sine_axis` and `cosine_k` with the rows in this body's order 567 (3663 B, frame 0x21ec,
-// masked 324). Retail loads 1.0 four times (ours eight): it keeps 1.0 in XMM0 from the reciprocal to the sign and across
-// the four `1 - x` terms. A compile-only dead-local scan over the rotation block moves it with period 8 (best 241 of 225
-// lines at K = 6, 7), so the block's schedule is not a symbol-count state. All restored.
-// Shared i-k-j angle/sign/axis-norm dots 715/568/691.
-// angle+sign/angle+norm/sign+norm 566/684/583.
-// all three, with ordinary or staged sign cross 601/593.
-// Written-differs at 535. NOT kept: All shared-dot forms raise the score. The angle and sign dots
-// together score 566 with the first difference still at +0x41. The sign and norm pair reaches 3647 bytes
-// at 583 but changes the frame. Both explicit providers stay exact. The opening helper and body are
-// restored.
-// M3 lane 2 r113 (plain each, with the file's eight other functions, all at their baseline counts; base 535, aligned/masked
-// 442/186): the tag pointer dropped and the limits index read through the tag table at each of its four uses 720 (3649 B;
-// the lookup is redone at every use, where retail spills one pointer and reloads it); that with face_count declared first
-// 720; the edge walk ending on `edge_index != mesh->faces[face].first_edge` (no first_edge local) 533 (2 points, not kept);
-// the selection test with the candidate's distances on the left 535, the sign test as `0.0f > dot` 535, the length test as
-// `0.0001f > fabs(length)` 535 (the last three the same code). The spill homes of the tag, edge base and outer index
-// (stored once, reloaded once or twice each) still come out in the opposite order to retail's.
-// Shared pending-face count with secondary count declared first or second,
-// using the secondary guard 533/533, flag then while 532/532, flag early exit 532/532,
-// or transfer before phase admission 537/537.
-// NOT kept: score gains are at most three and the definition spill stays at +0xb4.
-// M3 lane 13 r129 (plain each; base 535): the component scale as `inverse * axis.n[component]` 535; the length test as
-// `0.0f < length` 535; the angle as `sign * angle` 535 (all three the same code); the short-axis test as
-// `fabs(length) >= 0.0001f` 552; the sign as `real sign = 1.0f;` cleared to -1 by an `if (dot >= 0.0f)` 661 (first
-// difference +0x7). All restored.
-// The tag still spills at +0xb4 against retail's +0x94. Signed mode field through a typed
-// tag pointer or reference 535/535, with mode locals at the face calls, the limit tests,
-// or both 570/620/631 for either type.
-// Seed an empty primary worklist by append or indexed store and increment.
-// Existing collection loop 563/563; for-loop step after submission 576/576;
-// mandatory first pass with the step after submission 546/546 or with the
-// face read 533/533. NOT kept: 533 gains two at retail length and leaves
-// the definition and count homes displaced.
-// m3 lane 4 r238 (plain each, with 0x17d9a0, 0x17ee20, 0x17dd80, 0x17d900, 0x17ef10 at their baseline counts; the fast
-// image does not reproduce this function, 834; control 535, aligned / register-masked 442 / 297). The first face loop:
-// retail increments the index between the call's pushes (after the face read, before the type argument), ours after
-// the call. The face read into a named local ahead of the call (`long face = faces[i++];`) gives retail's increment
-// placement exactly: 524 at 3647 B [441 / 296] (match-only, a one-use element copy); with lane 1 r124's rotation lead
-// (grouped cross terms, pairwise stores) 480 [412 / 260]. The loop as a while with its own index 535 (same code), as a
-// for with `i++` in the header and `faces[i]` 548, its index declared outside a `for (; ...)` 535 (same code); as a
-// do-while (the first pass always runs) 533 (frame 0x21e4 for 0x21dc, aligned 401, masked 243: the tag home moves to
-// retail's +0x94 and the secondary count to retail's +0x54, the face count to +0x1c for retail's +0x20); the do-while
-// with the face local 537 (3631 B, aligned 402), that on the rotation lead 483 [411 / 258].
-// Separate face/plane arrays, face record, or encoded plane argument 566 each; retained face array 715,
-// plane array 752, both 749; traversal edge and vertex arrays 655, with both decode arrays 767.
-// NOT kept: the tag spill stays displaced or the aligned frame changes, and all scores rise.
-// Ordinary inline on plane decode, angle and rotation (all seven nonempty combinations) 535 each;
-// local definitions for all three 535. Tag and count homes remain displaced. Original declarations restored.
-// Physical mode field reference or pointer, through the tag byte pointer or tag entry, each
-// with primary or secondary count initialized first: eight at 779.
-// NOT kept: each materializes the field offset, keeps the old spill homes and shortens to 3630 bytes.
-// M3 lane 12 r165 (fast screen; the reduced image is faithful for this function once 0x50650 is listed, since the full
-// build expands that arccosine wrapper here: `0x17fd20 0x50650 0x17d9a0 0x17d900 0x17dd80 0x120850 0x22bbca` gives the
-// full check's 535 at 3647 B with no caveat, where the bare address gives 834 at 3582 B; control 535, aligned 433/442
-// unmatched instructions ours/retail, register- and offset-masked 185/194; body unchanged). Reading of the normalize:
-// retail loads 1.0f into XMM0 once and keeps it (reciprocal from a copy, then the sign's 1.0f store and both uses in the
-// angle clamp), scales j and k in registers loaded ahead of the divide (`mulss xmm6, xmm1`) and i from a copy of the
-// reciprocal, and keeps the three scaled components in XMM5-7 for the sign's dot; this build divides 1.0f in place,
-// multiplies each copy of the reciprocal by the component in memory and reloads 1.0f for the sign. Forms: the scaling as
-// three `*=` member statements re-measured 559 (3631 B, masked 174/188), written `axis.i = axis.i * inverse` 559 and with
-// the sign's dot axis-first 559 (same code each); the rotation block nested inside the scaling arm with the plain-quad
-// copy written in both failure arms (a diagnostic of whether the scaling arm must dominate the sign block for the 1.0f
-// to be shared) 550 (3647 B, masked 186/196), with member statements 575; the same nesting with the plain quad copied
-// up front and no else arms 596 / 594; `real sign = 1.0f;` declared ahead of the length with the sign test clearing it
-// to -1 559 (the 1.0f is still divided in place and loaded again), and that sign used as the reciprocal's numerator (a
-// diagnostic only) 577 (3631 B: still `divss` in place on the register that held it). In every form the constant is
-// rematerialised, so nothing here makes this build keep 1.0f across the cross product as retail does.
-// Nested positive angular and two distance tests, three groupings 535/535/535.
-// Named angular product in the combined test and the three nested forms 726 each.
-// Named reciprocal-distance result after the angular test 574.
-// NOT kept: the nested tests tie. The named limit grows the frame and restores no tag/count home.
-// Primary count reused after secondary admission, before its first test, or as the initial bound 533/532/532.
-// With a mandatory first collection loop 551/551/551; with the primary count declared before the secondary count 533/532.
-// The two- and three-point gains leave the definition at ESP+0xb4 and the addressed counts displaced.
-// M3 lane 2 r132 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535 at 3647 B):
-// the axis length through the existing magnitude3d 691 (3679 B; it sums i, j, k where retail sums i, k, j); the cross
-// product taken plane normal first with the sign test flipped 562 (3631 B); the matrix scale stored ahead of the four
-// rotations 662; the two distance limits as `0.05f * radius` 535 and the angle limit as `0.017453292f * maximum_angle`
-// 535 (same code each). Restored.
-// M3 lane 8 r220 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca, which reproduces the full
-// check's 535; 0x17d9a0 and 0x17d900 MATCH each time): the matrix position through the existing vector3f_add from the
-// rotated offset and the start 543; the sign as an if/else 535 (same code); the edge's reverse flag as a long 646 (3631
-// B); the edge's minimum and maximum as two conditionals 613; the angle written `sign * angle` 535 (same code). Body
-// unchanged.
-// M3 lane 12 r174 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535): in the
-// group block the start/end points declared ahead of the selected face, the selected plane declared first, the selected
-// face declared last, the axis declared with the selected-edge locals ahead of the face loop, the quad declared ahead of
-// the axis: 535 each (same code: the group block's declaration order moves no home). Body unchanged.
-// M3 lane 8 r221 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; 0x17d9a0 and 0x17d900
-// MATCH each time; control 535): a redundant `if (0 < group_count)` ahead of the final call loop 535 (same code); the
-// group search as a plain `for` ended by `break` after the group (no `!group_count` in the condition) 779 (first +0x0,
-// the prologue changes); the definition read through the tag table at each of its four uses (no `definition` local)
-// 720 (3649 B); `remaining -= group_count;` after the search loop 746; the sign through dot3f re-measured 699 (3615 B);
-// the short-axis arm first (`if (fabs(length) < 0.0001f) length = 0.0f; else ...`) 535 (same code). Body unchanged.
-// M3 lane 16 r177 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535, difflib-
-// aligned with stack offsets and registers masked 355): the axis scaled by three `*=` statements k, j, i 559 (3631 B,
-// masked 339); cosine declared ahead of sine 535 (masked 350, a schedule change only); `one_minus_cosine` declared
-// after the three squares 535 (same code); the nine rotation stores column by column (forward.i, left.i, up.i, ...)
-// 662 (first difference +0x7); the scaling loop index as a short 600 (3615 B). Body unchanged.
-// M3 lane 1 r154 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; all but 0x17dd80 MATCH each
-// run; control 535): the axis scaled through the existing vector3f_scale (no inverse local, no component loop) 568 (3631
-// B); the length and scaling through the existing normalize3d 677 (3664 B, first +0x7); the final call loop's counter as
-// long 540; the cosine taken before the sine 535; the edge search keeping the two endpoint pointers and copying them after
-// the loop 712 (3695 B). Retail's rotation of the offset in place stages each row's running sum through one stack cell
-// (+0x10, stored and reloaded after every product) and forms `axis.i * sine` on x87. Body unchanged.
-// M3 lane 11 r157 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535). The two
-// edge distances: retail loads the plane's i first in the i product of both (ours loads the point's x first); compile-only,
-// the nine combinations of plane_distance_to_point, dot3f(normal, point) - d and dot3f(point, normal) - d for the two give
-// retail's order for the first only with dot3f(point, normal) and never for the second; measured: both as dot3f(point,
-// normal) - d 559 (3631 B), the first only 533 (a mixed spelling: not kept). The rotation helper copying its input and
-// writing the output rows directly 586 (3663 B, first +0x7), the same with each row accumulated in the output 586 (retail
-// stages the in-place offset rotation's running sums through one stack cell; neither form gives it). The axis scaled by
-// three component statements in place of the component loop 559 (3631 B). Body unchanged.
-// m3 lane 4 r251 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535): the offset
-// vector declared ahead of the rotation rows 535, the endpoints ahead of the selected face 535, the first edge read first
-// with the walking index copied from it 535, the orientation bounds pair through a pointer to the pair 535 (same code
-// each); the remaining count lowered ahead of the group's call loop 746; re-measured: the edge extrema as ternaries 613,
-// the inner empty slot as `continue` 535 (same code).
-// M3 lane 15 r139 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; 0x17d9a0/0x17d900 MATCH
-// each run; control 535). Frame reading (ours -> retail): group count +0xc -> +0x14, face count/remaining +0x18 -> +0x20,
-// first face +0x1c -> +0x10, secondary count +0x4c -> +0x54, tag pointer +0xb4 -> +0x94, search index +0xbc -> +0x88.
-// Forms: `first_face` declared ahead of the search loop 535; the search index declared ahead of its loop 535; the two
-// counts declared ahead of the face arrays (assigned in place) 535; the tag pointer declared ahead of the arrays 535 (same
-// code each: scope and declaration order move no home); the seed face stored after the two counts 536. Body unchanged.
-// The tag spill and addressed count homes remain displaced. Secondary seed/candidate/both slots
-// through references 676/535/694 and through pointers 676/535/694.
-// Read back the queued seed for its distance test 763, with explicit first group count 746.
-// The candidate-only forms reproduce 535. The seed forms leave the spill displaced or change the prologue.
-// M3 lane 3 r304 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850 and 0x22bbca; control 535; body
-// unchanged). Frame reading: the frame is ordered by memory references per byte, and a new 4-byte object joins the newest
-// cell it does not interfere with. Retail's densest cell (+0x10, 16 references) holds the first face, the integer scratch
-// that follows it and nine references of float spill scratch from the rotation block; ours keeps the first face and its
-// scratch in one cell (7 references) and the float scratch (the cosine and the first distance, 9) in another, so ours has
-// one more 4-byte cell, its lowest local is at +0xc for retail's +0x10, and every cell above is displaced: the homes
-// follow from which values the rotation block spills, not from names or declaration order. Forms: the rotate helper's
-// rows through one reused accumulator 579 (3663 B, first +0x7); its rows summed forward, left, up 535 (same code); the
-// first plane declared ahead of the first face 535 (same code); the cosine taken ahead of the sine 535 (same code); the
-// first face declared ahead of its loop 535 (same code).
-// M3 lane 8 r234 (h2m fast with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850, 0x22bbca and 0x17ef10; control 535, aligned 672,
-// register- and offset-masked 355; body unchanged). HELD (needs the owner's OK: the builder it shares is the file-local helper of
-// the contributor's 0x1546f0): build/r234/held-0x17fd20.patch gives 20 here at 3647 B in the plain check (first difference +0x45a,
-// aligned 17) and 244 -> 240 on 0x1546f0, every other function of both files as on main. Retail's frame shows the source: one
-// 52-byte transform at +0x100 (forward.j/.k and left.i/.k stored inside it), a sine vector at +0x134, a vector of squares at
-// +0x140, the sign's cross at +0x14c, and a spilled row sum in the first face's cell. The held form: a forceinline builder
-// (transform, axis pointer, angle) with the squares and sine products in two vector locals and each `1 - c` product written as an
-// expression (a named t / tij / tk local ranks below the axis j/k pieces, which this compiler numbers late, so `t * j` comes out
-// component first; an expression outranks every leaf); the four rotations through the file's 0x17ef10 transform helper with the
-// offset computed into matrix.position, rotated in place and the start added with `+=`; `if (normalize3d(&axis) > 0.0f)` with no
-// length local and the sign's dot through dot3f(&cross, &axis) (matched 0xaa4d0 and 0xc0840 show retail's scale code, j and k loaded
-// ahead of the divide, and pass their vector only by address; one member read of the axis in the body renumbers its pieces);
-// face_count declared first; `while (remaining > 0)` under the flags test; the first loop's face in a local; the extrema's first
-// arm maximum first; the selected extrema stored ahead of the end point; the builder's up.k row last.
-// Steps (each on the one before): transform-shaped rotation in 0x1544e0's statement order with named t / tij / tk, offset in place
-// 652 (3663 B, aligned 375, masked 74); face_count first and the while form 650; the axis scaled by three member statements 388
-// (3647 B); the file's transform helper forward declared 388 (same code); the face local and the extrema stores 375; normalize3d
-// and dot3f 409 (masked 49); the expression-form builder 160 (first +0x118, masked 34); up.k last 22; the extrema's first arm 20.
-// Left at 20: up.k's code is scheduled after left.k (retail right after forward.k, as 0x1544e0's row order gives: 159, because
-// left.k is then numbered after up.k and row k sums left first; a product's rank is first operand + 2 x second and the matrix
-// pieces are numbered in the order they are first referenced); with forward.k and left.k (or every member) assigned 0 ahead of
-// the rows, a diagnostic, 8 (lead-0x17fd20-8-diagnostic.patch); what is then left is four rows of zero-offset loads through helper
-// pointers, whose rank group follows the pointer's symbol number modulo 8 (the first edge distance's i product, the angle's i product,
-// the axis reload order after the arccosine call, `i * sine` on x87); unused locals at four points, a diagnostic, 6.
-// Not the form (same steps, other spellings): the axis through normalize_inline 502 (3632 B; sums k, i, j), through vector3f_scale
-// 435 (3631 B), its length local kept with normalize3d 545 (3663 B); cross3f_staged 388 (same code); the four rotations as calls to
-// 0x142640 1260 (2975 B, not expanded here); the rotation statements in the body with no helper 784 (3519 B); the builder with
-// scalar squares 439, sine and cosine passed in 409 (same code), as caller locals 573, squares ahead of the trig values 831,
-// `(t * i) * j` 376, cosine first 36, rows in natural order 712 (named 614), `t` named with flat products 527, squares or sine
-// products filled k, j, i 20 (same code), last rows left.k / up.j with up.k before or after 428 / 426, up.j / up.k / left.k 281;
-// the rotation matrix read through a pointer local or the builder's returned pointer 159 (same code); the identity transform or
-// the three axis vectors copied in first 159 (same code), `= {0}` 593; memset of the matrix ahead of the builder: compiler hang.
-// A builder shared with matched 0x1544e0 loses that match (149-150 at 551 B); with 0x171d90, a 3x3 builder in that function's
-// own statement order keeps its 334 but gives 617 here, the transform-shaped one 374 there. Without the builder nothing gains
-// on main: the 0x17ef10 helper alone 667 (3535 B), with the offset kept 649, the while form alone 534, scale statements 559.
-// M3 lane 6 r242 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850, 0x22bbca and 0x17ef10; control 535, aligned 443;
-// body unchanged). HELD lead, build/r242/held-0x17fd20.patch (this file only): 4 at 3647 B in check.py --fast and in the plain
-// check (first difference +0x9e0, aligned 6), every other function of the file as on main. It is lane 8 r234's held form with
-// five changes, and it is still a new one-caller builder beside the contributor's 0x1546f0 one, so it needs the owner's OK:
-// (1) the builder as two levels, a (transform, axis, sine, cosine) one that sets the scale, calls a 3x3 (axes view, axis, sine,
-// cosine) builder and clears the position; the 3x3 one holds the squares and sine vectors and the rows in 0x1544e0's own
-// statement order (the members of a matrix filled one inline level down are numbered by offset, which is what lane 8's
-// 8-point diagnostic forced; `up.k` no longer has to be last); (2) `real sine = (real)sin(angle); real cosine = (real)cos(angle);`
-// in the body, as 0x1544e0 has them (the sine is then numbered ahead of the axis, which gives retail's `i * sine` on x87, the
-// k-then-j axis reload order after the arccosine call and the angle dot's i product); (3) the angle helper's dot through the
-// existing dot3f(a, b); (4) `short j;` and `long face;` declared once at the top of the group block for its three j loops and
-// two face reads (the zero-offset loads through pointers sort by the pointer's symbol number modulo 8, and every initialised
-// local of this function shifts the edge loop's `a`, the cross's second operand and the angle dot's second operand by one:
-// with (2) they need 4 or 5 more symbols or 3 or 4 fewer, and these two declarations are three fewer).
-// Steps on lane 8's 20 form: the nested 3x3 builder taking the angle 8 (first +0x45a), with `up.k` last 20, the scale store
-// after the call 8 (same code), the outer builder computing the trig for a (sine, cosine) 3x3 one 12; + dot3f in the angle
-// helper 6 (first +0x754); + caller sine/cosine locals 573 (the three late spots become retail's but the phase moves: the cross
-// keeps one temporary in the frame and the first edge distance flips), with the trig calls written as the arguments 10; that
-// with 1..7 unused initialised locals, a diagnostic, 573/573/573/4/4/6/8; + the block-level `j` and `face` 4, `j` alone 578,
-// with the sign folded into the angle expression as well 4.
-// Left at 4: row k of the in-place offset rotation adds forward before left (retail up, left, forward): the two copies the
-// helper keeps of the offset's x and y are numbered y first here, and the row's order needs x first.
-// Not the form, on the 4-point lead unless marked: the caller trig with a flat (sine, cosine) builder 594, and 148 at its best
-// phase; the rotate helper without its scale test, its rows spelled forward first, its copies as three statements, a `scale`
-// local in it, or its scale arms writing the copies: 4 each (same code); its copies declared y, x, z 798 (3535 B), z, y, x 782,
-// as one vector copy 721 (3679 B); the outer builder with the position stores first or the scale last, an axes pointer local in
-// it, or the output parameter last in both builders 4 (same code); a dummy parameter on the outer builder, a diagnostic, 18,
-// two 570 (3567 B), three 22; the 3x3 builder called from the body with the scale set beside it 313 (3615 B); a separate
-// offset vector rotated into the position 546 (3599 B), rotated in place and added in 520 (3631 B); the offset by three member
-// statements 18; a pointer local for the position 6 (one more symbol); the start added through the existing vector3f_add 33;
-// the scale store ahead of the offset 597; the face-plane helper as a face wrapper around a plane-index helper (same code:
-// helper symbols do not move the phase); the angle helper's bitwise compare through a small helper 614 (3663 B); the edge
-// distances as `dot3f(&plane.n, point) - plane.d` 577; the sign folded with the per-loop `j` and `face` 8, also without the
-// first loop's `face` local 17; unused locals inside the 3x3 builder 4 (same code).
+PRIVATE __forceinline void decal_matrix3x3_rotation_17fd20(matrix3x3 *m, vector3f const *axis, real sine, real cosine)
+{
+	vector3f squares;
+	squares.i = axis->i * axis->i;
+	squares.j = axis->j * axis->j;
+	squares.k = axis->k * axis->k;
+	vector3f sine_axis;
+	sine_axis.i = axis->i * sine;
+	sine_axis.j = axis->j * sine;
+	sine_axis.k = axis->k * sine;
+	m->forward.i = (1.0f - squares.i) * cosine + squares.i;
+	m->left.i = (1.0f - cosine) * axis->j * axis->i - sine_axis.k;
+	m->forward.j = (1.0f - cosine) * axis->j * axis->i + sine_axis.k;
+	m->left.j = (1.0f - squares.j) * cosine + squares.j;
+	m->up.i = (1.0f - cosine) * axis->k * axis->i + sine_axis.j;
+	m->forward.k = (1.0f - cosine) * axis->k * axis->i - sine_axis.j;
+	m->up.k = (1.0f - squares.k) * cosine + squares.k;
+	m->up.j = (1.0f - cosine) * axis->k * axis->j - sine_axis.i;
+	m->left.k = (1.0f - cosine) * axis->k * axis->j + sine_axis.i;
+}
+
+PRIVATE __forceinline void decal_transform_rotation_17fd20(transform4x3f *matrix, vector3f const *axis, real sine, real cosine)
+{
+	matrix->scale = 1.0f;
+	decal_matrix3x3_rotation_17fd20(&matrix->rotation, axis, sine, cosine);
+	matrix->position.z = 0.0f;
+	matrix->position.y = 0.0f;
+	matrix->position.x = 0.0f;
+}
+
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
@@ -1229,17 +550,18 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	output->polygon_count = 0;
 	output->vertex_count = 0;
 	faces[0] = placement->unknown50;
-	short secondary_count = 0;
 	short face_count = 1;
+	short secondary_count = 0;
 	for (short i = 0; i < face_count;)
 	{
-		function_17dd80(mesh, &projection->quad, output, faces[i++], true, projection->radius,
+		long face = faces[i++];
+		function_17dd80(mesh, &projection->quad, output, face, true, projection->radius,
 			*(short const *)(definition + 2), faces, &face_count, secondary, &secondary_count);
 	}
-	if ((byte)g_444a38[*(short const *)(definition + 2)].flags && secondary_count > 0)
+	if ((byte)g_444a38[*(short const *)(definition + 2)].flags)
 	{
 		short remaining = secondary_count;
-		do
+		while (remaining > 0)
 		{
 			short group_count = 0;
 			for (short i = 0; !group_count && i < secondary_count; ++i)
@@ -1247,13 +569,15 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 				long first_face = secondary[i];
 				if (first_face == NONE)
 					continue;
+				short j;
+				long face;
 				plane3f first_plane;
 				decal_face_plane_17fd20(mesh, first_face, &first_plane);
 				faces[group_count++] = first_face;
 				secondary[i] = NONE;
-				for (short j = i + 1; j < secondary_count; ++j)
+				for (j = i + 1; j < secondary_count; ++j)
 				{
-					long face = secondary[j];
+					face = secondary[j];
 					if (face != NONE)
 					{
 						plane3f plane;
@@ -1271,9 +595,9 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 				real selected_minimum, selected_maximum;
 				point3f start, end;
 				plane3f selected_plane;
-				for (short j = 0; j < group_count; ++j)
+				for (j = 0; j < group_count; ++j)
 				{
-					long face = faces[j];
+					face = faces[j];
 					long edge_index = mesh->faces[face].first_edge;
 					long first_edge = edge_index;
 					do
@@ -1287,8 +611,8 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 						real minimum, maximum;
 						if (da > db)
 						{
-							minimum = db;
 							maximum = da;
+							minimum = db;
 						}
 						else
 						{
@@ -1299,9 +623,9 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 						{
 							decal_face_plane_17fd20(mesh, face, &selected_plane);
 							start = *a;
-							end = *b;
 							selected_minimum = minimum;
 							selected_maximum = maximum;
+							end = *b;
 							selected_face = face;
 						}
 						edge_index = edge->next_edges[reverse];
@@ -1309,51 +633,26 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 				}
 				vector3f axis;
 				vector3d_from_points3d(&start, &end, &axis);
-				real length = (real)sqrt(axis.j * axis.j + axis.k * axis.k + axis.i * axis.i);
-				if (!(fabs(length) < 0.0001f))
-				{
-					real inverse = 1.0f / length;
-					for (long component = 0; component < 3; ++component)
-						axis.n[component] *= inverse;
-				}
-				else
-					length = 0.0f;
 				s_decal_quad_17d9a0 quad;
-				if (length > 0.0f)
+				if (normalize3d(&axis) > 0.0f)
 				{
 					vector3f cross;
 					cross3f(&selected_plane.n, &projection->quad.plane.n, &cross);
-					real sign = cross.i * axis.i + cross.k * axis.k + cross.j * axis.j < 0.0f ? 1.0f : -1.0f;
+					real sign = dot3f(&cross, &axis) < 0.0f ? 1.0f : -1.0f;
 					real angle = decal_normal_angle_17fd20(&selected_plane.n, &projection->quad.plane.n) * sign;
 					real sine = (real)sin(angle);
 					real cosine = (real)cos(angle);
-					real one_minus_cosine = 1.0f - cosine;
-					real square_i = axis.i * axis.i;
-					real square_j = axis.j * axis.j;
-					real square_k = axis.k * axis.k;
-					real cosine_j_i = one_minus_cosine * axis.j * axis.i;
-					real cosine_k_i = one_minus_cosine * axis.k * axis.i;
-					real cosine_k_j = one_minus_cosine * axis.k * axis.j;
-					vector3f forward, left, up;
-					forward.i = square_i + (1.0f - square_i) * cosine;
-					forward.j = cosine_j_i + axis.k * sine;
-					forward.k = cosine_k_i - axis.j * sine;
-					left.i = cosine_j_i - axis.k * sine;
-					left.j = square_j + (1.0f - square_j) * cosine;
-					left.k = cosine_k_j + axis.i * sine;
-					up.i = cosine_k_i + axis.j * sine;
-					up.j = cosine_k_j - axis.i * sine;
-					up.k = square_k + (1.0f - square_k) * cosine;
+					transform4x3f rotation;
+					decal_transform_rotation_17fd20(&rotation, &axis, sine, cosine);
 					transform4x3f matrix;
-					vector3f offset;
-					vector3d_from_points3d(&start, &projection->matrix.position, &offset);
-					decal_rotate_vector_17fd20(&forward, &left, &up, &offset, &offset);
-					decal_rotate_vector_17fd20(&forward, &left, &up, &projection->matrix.forward, &matrix.forward);
-					decal_rotate_vector_17fd20(&forward, &left, &up, &projection->matrix.left, &matrix.left);
-					decal_rotate_vector_17fd20(&forward, &left, &up, &projection->matrix.up, &matrix.up);
-					matrix.position.x = offset.i + start.x;
-					matrix.position.y = offset.j + start.y;
-					matrix.position.z = offset.k + start.z;
+					vector3d_from_points3d(&start, &projection->matrix.position, (vector3f *)&matrix.position);
+					decal_rotate_vector_17fd20(&rotation, (vector3f *)&matrix.position, (vector3f *)&matrix.position);
+					decal_rotate_vector_17fd20(&rotation, &projection->matrix.forward, &matrix.forward);
+					decal_rotate_vector_17fd20(&rotation, &projection->matrix.left, &matrix.left);
+					decal_rotate_vector_17fd20(&rotation, &projection->matrix.up, &matrix.up);
+					matrix.position.x += start.x;
+					matrix.position.y += start.y;
+					matrix.position.z += start.z;
 					matrix.scale = 1.0f;
 					function_17d9a0(&matrix, (real const *)&projection->bounds, &quad);
 					for (long k = 0; k < 3; ++k)
@@ -1365,14 +664,14 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 				}
 				else
 					quad = projection->quad;
-				for (short j = 0; j < group_count; ++j)
+				for (j = 0; j < group_count; ++j)
 				{
 					function_17dd80(mesh, &quad, output, faces[j], false, projection->radius,
 						*(short const *)(definition + 2), 0, 0, 0, 0);
 				}
 				remaining -= group_count;
 			}
-		} while (remaining > 0);
+		}
 	}
 }
 

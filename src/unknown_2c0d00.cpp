@@ -981,6 +981,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 925/925/925/925. Existing tag block as members/reference/positive members/positive reference
 // 925/919/925/919. NOT kept: both block references move the actor to EBX but grow to 3762 bytes
 // and retain the extra frame word.
+// The optional unit and classification flag still compete for a register, leaving a 0x2cb0 frame.
+// Keep center/query/both heights at the vertical tests 924/903/903, or both in reverse
+// declaration order 903. Named bounds with no height/center/query/both 923/913/877/877.
+// Plain query height 910, center with bounds 934, query with bounds 888.
+// NOT kept: both plain gains move farther from retail length and retain the extra frame word.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
