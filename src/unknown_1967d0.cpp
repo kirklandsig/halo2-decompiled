@@ -1121,6 +1121,9 @@ static inline long team_score_195ed0(long team)
 // native short score field 100, native mask and bit locals 100. Nested connectivity
 // guards 165, initial machine-admission result 141, shared local-address marker 136,
 // connectivity assigned by guard arm 141. The teams flag still leads the player copy.
+// Read the source team inside mode guard, after address publication, after copy or before copy:
+// 295/297/297/150 with either memcpy or typed assignment. NOT kept: all regress.
+// The teams flag still leads the copy and the final score query still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

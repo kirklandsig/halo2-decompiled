@@ -904,6 +904,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // The first SSE square still follows the x87 sum and unity still takes XMM2. Separate scalar/point outputs:
 // scaled arm first 219/219, raw arm first 225/225, raw initializer 301/301, component selection 171/171.
 // NOT kept: each form increases the score and length.
+// The early SSE planar sum and unity register still differ.
+// shared planar magnitude 112; typed planar magnitude 112.
+// fast planar normalizer 222; shared axial dots 107.
+// shared lateral dots 107; shared axial and lateral dots 107.
+// shared planar crosses 243; shared cross and dot pairs 243.
+// NOT kept: the dot forms tie. The cross forms change the frame and shorten the function.
 // GA2 (fast with 0xef4f0/0x2053c0 MATCH, control 107, aligned 115, masked 31): single-exit normalize2d returning real
 // with point2f_scale on all 4 sites 222 (1145 B, masked 24: matches movaps/faddp and reversing atan2 fxch), on 3 sites
 // 107 (value-first scale 107); perp+add_scaled helpers 111; in-place y-first blend 217 (1145 B, aligned 112, masked 28);
@@ -911,6 +917,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // xx+yy normalize with y-first blend 217 (aligned 112, masked 28); explicit forward normalize else 218; forward declared
 // first 107; xy normalize + rotate_2d helper 281; left after heading 129; blend helper 217; diag #pragma optimize("t") 107.
 // NOT kept: 1.0f stays in XMM2 (retail XMM3) and forward.y/x in XMM7/XMM4 (retail XMM0/XMM1) across all forms.
+// The SSE planar sum and unity still differ at +0x69. Steering/reversing/both perpendiculars
+// as one subtracted scalar 245/107/152, steering scalar at its angle 239; initialized steering/
+// reversing/both points 107/107/107, both projections using the components at their use 238.
+// NOT kept: the initialized points tie and omitting the steering copy changes the frame.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1985,6 +1995,12 @@ long function_10f5f0(long object_index);
 // or nonpositive start at the end 633/633/613/594. With division before publication
 // 648/648/633/611. The rolled loops retain the 0xa8 stride but add the loaded
 // value into another register and shorten the body. The 0x1990 frame persists.
+// The bounds, velocity and request stack homes and the flag-result byte stores still differ.
+// shared real bounds and velocity workspace 561; shared real bounds velocity and request workspace 561.
+// shared workspace with separate integration velocity 566; shared workspace with separate boundary velocity 561.
+// shared workspace with separate falling velocity 561; shared workspace with cleared requests 568.
+// shared two-vector workspace 561; shared real workspace with vector lvalue 561.
+// NOT kept: the fully shared forms recover frame 0x1984 and advance the first difference to +0x54, but score 561. The cleared requests form adds four bytes. The explicit storage overlap requires a byte match.
 // Lane GA round 2 (fast with 0xef4f0/0xf06c0; control 561 at 2264 B, frame 0x1990, aligned 424, masked 220):
 // kill-volume and falling-damage blocks in forceinline helpers (moving their linear_velocity locals out of
 // function scope) 561, with buffer[6] at branch top 561, at function top before state 561, plus bounds block
@@ -3909,6 +3925,12 @@ real g_47ff30 = 2.5f;
 // last/all with forward first/lateral first 696/725/700/733/729. NOT kept: the
 // lateral-interleaved forms recover frame 0xfc but shorten the body and regress.
 // The acceleration spill and both velocity homes still differ.
+// The acceleration spill and both velocity output homes still differ.
+// shared world-force scale and additions 719; shared torque scale and difference 672.
+// both shared output producers 715; two bank scales and shared sum 695.
+// world-force operations with mass reloads 717; torque operations with mass reloads 711.
+// both output producers with mass reloads 722; bank operations with mass reloads 686.
+// NOT kept: the four mass-reload forms recover the 0xfc frame but raise the score. The acceleration spill remains at +0x20 rather than +0x34.
 // Lane GA round 2 (fast with 0xefde0/0x2053c0/0x2056e0, 0x2053c0 and 0x2056e0 MATCH; control 672 at 3244 B,
 // frame 0x100, masked 506): matched 0x18c250's rotate-about-axis helper with SSE zero stores for transform.position
 // 683 (3244 B, 0x100), with transform initialized before rotate 704 (3255 B, frame 0xf8); mass field + vector3f_scale
@@ -5225,6 +5247,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // with a rotated up, forward or both row pointers before or after the copy
 // 118/121/121 in each placement. Mixed pointer/reference pairs 121 each.
 // NOT kept: the first difference moves to +0x82 in the j/k dot products.
+// Default-arm sine/cosine/both/both immutable before common up rotation
+// 126/124/128/128; with the indexed projection setter 128/126/130/130.
+// NOT kept: the two opening-projection pairs recover the prefix through +0x107
+// but score higher and shorten the body. Cross and trig homes still differ.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6334,6 +6360,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // clamp arms, forced default and three limits, lower arm, or upper arm
 // 772/948/772/777. The 0x18 frame agrees and the entry zero/result registers
 // and EBP definition still differ.
+// Retail comparison-stream case order in four dispatch spans, three adjacent pairs,
+// and the whole switch: eight at 759. The 0x18 frame agrees; the entry definition
+// and zero/result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7212,6 +7241,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // through the receiver or vehicle 959/978, root and pitch before the receiver 978,
 // named squared input through the receiver or vehicle 959/978. NOT kept: the pitch
 // forms tie or raise the score without recovering the 0xd8 frame or entry registers.
+// The 0xfc matrix frame and the vehicle handle and stride registers still differ.
+// current basis at multiply 1179, late current with separate relative matrix 1217.
+// current and relative scope 1217, late basis with reused rotation output 1209.
+// early transpose with separate relative matrix 1139, early transpose with reused rotation output 1085.
+// scoped basis with named rounded delay 1218, early transpose with named scaled delay 1139.
+// NOT kept: The current-basis forms reach frame 0xdc, leaving a four-byte gap to retail. All shorten the body and raise the score. Early transpose with reused output is the closest of these forms at 1085 and 5046 bytes.
 // Frame 0xfc versus 0xd8 persists. Transpose after current basis, desired
 // selection, driver tilt or bank with in-place product 1052/1086/1051/1041.
 // With separate scoped relative product 1139/1173/1155/1073. NOT kept:
@@ -7228,6 +7263,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // early transpose with separate relative matrix 1139, early transpose with reused rotation output 1085.
 // scoped basis with named rounded delay 1218, early transpose with named scaled delay 1139.
 // NOT kept: The current-basis forms reach frame 0xdc, leaving a four-byte gap to retail. All shorten the body and raise the score. Early transpose with reused output is the closest of these forms at 1085 and 5046 bytes.
+// Transpose returned by value after swaps of the value input or a copied reference
+// 1139/1139, or produced by axis from a pointer/reference 1205/1205. With a separate
+// relative product 1125/1125/1174/1174. NOT kept: each leaves frame 0xfc and grows past 5094 bytes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
