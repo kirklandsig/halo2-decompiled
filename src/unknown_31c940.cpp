@@ -873,33 +873,35 @@ static __forceinline void apply_second_normal_row_fallback_31c940(float impulse,
 }
 
 static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &step,
-	unsigned char *op, __m128 *terms, __m128 *&normal_axes, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
+	unsigned char *op, __m128 *terms, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
 	float *result, solver_scalar_work_31c940 &scalar_work, solver_scalar_arena_31c940 &projection_pool)
 {
+	// Input rows stay anchored to terms; an active update walks its own cursor.
+	__m128 *update_cursor;
 	solver_scoped_body_fields_31c940 const &body_b = b;
 	__m128 *&angular_b_pointer = scalar_work.angular_b;
 	__m128 *angular_b_address=&body_b.body->angular;
 	__m128 first_linear_axis = terms[0];
-	float target_a = normal_axes[-5].m128_f32[3];
+	float target_a = terms[0].m128_f32[3];
 	// Complete both SIMD projections before the coupled x87 errors.
 	__m128 first_projection=project_linear_axis(((solver_linear_row_31e7b0 *)terms),a,body_b,first_linear_axis);
 	// Projection inputs precede publication of the shared angular home.
 	angular_b_pointer=angular_b_address;
 	_mm_store_ss(&projection_pool.normal_second_projection_a,first_projection);
-	project_second_pair_second_row(((solver_linear_row_31e7b0 *)(normal_axes - 2)),
-	a, body_b.body->linear, *angular_b_pointer, normal_axes[-2], projection_pool.normal_second_projection_b);
+	project_second_pair_second_row(((solver_linear_row_31e7b0 *)terms)+1,
+	a, body_b.body->linear, *angular_b_pointer, terms[3], projection_pool.normal_second_projection_b);
 	solver_step_31c940 *parameters = step;
 	// Retail spills the first error and both coupled impulses to 32-bit storage.
 	scalar_work.pair_b = target_a * parameters->error_scale
 	- projection_pool.normal_second_projection_a * parameters->velocity_scale;
-	float error_b = normal_axes[-2].m128_f32[3] * parameters->error_scale
+	float error_b = terms[3].m128_f32[3] * parameters->error_scale
 	- projection_pool.normal_second_projection_b * parameters->velocity_scale;
-	float const &mass_a_source = normal_axes[-3].m128_f32[3];
+	float const &mass_a_source = terms[2].m128_f32[3];
 	float mass_a = mass_a_source;
 	scalar_work.pair_a = first_coupled_impulse_31c940(mass_a, (float const &)scalar_work.pair_b,
 	error_b, operation_float(op, 4));
 	// Capture the second mass before its coupled product.
-	float const &mass_b_source = normal_axes[0].m128_f32[3];
+	float const &mass_b_source = terms[5].m128_f32[3];
 	float mass_b = mass_b_source;
 	scalar_work.fallback_scalar = second_coupled_impulse_31c940(mass_b, error_b,
 	(float const &)scalar_work.pair_b, operation_float(op, 4));
@@ -908,10 +910,10 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	// Nonpositive and unordered first impulses take the single-row path.
 	bool positive_a=load_stored_impulse(scalar_work.pair_a)>0.0f;
 	if(!positive_a){
-		float candidate_b=error_b*normal_axes[-1].m128_f32[3];
+		float candidate_b=error_b*terms[4].m128_f32[3];
 		if(!(candidate_b<=0.0f)){
 			apply_second_normal_row_fallback_31c940(candidate_b,((solver_linear_row_31e7b0 *)terms)+1,
-			scalar_work.next_normal,normal_axes,a,b,angular_b_pointer,result+1,scalar_work.fallback_scalar);
+			scalar_work.next_normal,update_cursor,a,b,angular_b_pointer,result+1,scalar_work.fallback_scalar);
 			return;
 		}
 	}
@@ -921,12 +923,12 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 		((solver_linear_row_31e7b0 *)terms), a, linear_receiver, angular_b_pointer, scalar_work.inverse_b,scalar_work.next_normal,
 		first_linear_axis, result, projection_pool.normal_second_a_copy,scalar_work.fallback_scalar);
 		apply_second_pair_second_impulse(scalar_work.fallback_scalar,second_scalar,
-		scalar_work.next_normal,normal_axes,a,linear_receiver,angular_b_pointer,
+		scalar_work.next_normal,update_cursor,a,linear_receiver,angular_b_pointer,
 		scalar_work.inverse_b,result+1,projection_pool.normal_second_b_copy);
 
 		return;
 	}
-	float candidate_a=scalar_work.pair_b*normal_axes[-4].m128_f32[3];
+	float candidate_a=scalar_work.pair_b*terms[1].m128_f32[3];
 	if(candidate_a>0.0f)apply_second_pair_fallback(candidate_a,((solver_linear_row_31e7b0 *)terms),a,
 	angular_b_pointer,b.body->inverse_inertia,first_linear_axis,result,scalar_work.fallback_scalar);
 }
@@ -1574,7 +1576,7 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 					}
 					if (next_pair_kind != 3) continue;
 					{
-						solve_second_contact_pair(step, op, terms, normal_axes, a, scoped_b, result, scalar_work, projection_pool);
+						solve_second_contact_pair(step, op, terms, a, scoped_b, result, scalar_work, projection_pool);
 						next_pair_kind = *((signed char *)op + 8);
 						terms += 6;  result += 2; op += 8;
 
