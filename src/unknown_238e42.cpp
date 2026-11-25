@@ -1447,6 +1447,11 @@ bool __stdcall function_2399da(long controller_index)
 // permission test as `may_change || own_rank > member_rank && own_rank >= 2` 92, with `may_change` tested last 95,
 // with the `&&` pair in parentheses 90 (same code); the id test `!= 0ULL` 90 (same code); the copy block as an early
 // refusal `if (!have_member && !may_change)` then `if (!have_member)` copy 114 (433 B). Re-measured `NONE == rank` 90.
+// Guarded 64-bit selected ID 106; selected-record reference with one missing-selection tail 90;
+// removal-target pointer 105; assignable rank with a refusal sentinel 108 or a rank cap 103;
+// request action before validity 121; authorized action before dispatch 92; early confirmation
+// predicate 130. The removal-target and rank-cap forms put rank in ECX and identity in EDX.
+// All eight forms restored; identity ECX/rank EAX and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

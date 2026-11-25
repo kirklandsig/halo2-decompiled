@@ -1166,6 +1166,8 @@ void swarm_leader_detach(long actor_index);
 // Direct type with stop member pointer 4, and const slot record with guard declaration 4.
 // NOT kept: the six 980-byte forms still form the slot address before the handler test.
 // The fixed-size copies grow the frame to 0x24 and keep the early address.
+// With the separate definition flag, slot-owner bound/type/both/callback/bound and callback/type and callback/all 4/4/4/4/4/8/4.
+// Slot-owner view acquired first 4. NOT kept: the match-only forms still form the slot address before the handler test.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

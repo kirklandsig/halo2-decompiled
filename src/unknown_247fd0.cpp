@@ -1100,6 +1100,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // last three 416; long-to-word on the first 403. Staging the product before a word
 // conversion on the first or last three 404/416. The gate address and gate/settings
 // homes still differ. The fourth-only form preserves length and raises the count.
+// Combined effect rejection and allocation failure in the handle, with conditional/branch/default
+// assignment or a terminal failure guard. Low-byte projection 417/417/417/417; bitfield
+// 344/344/344/344. NOT kept: the low-byte forms gain the two homes through a readback,
+// and the bitfield forms retain the folded address and raise the score.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

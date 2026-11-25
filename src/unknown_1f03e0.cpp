@@ -1600,6 +1600,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // Planar, spatial or both scales with direct mode ahead of damping 230/230/230.
 // Both scales with input after the flags 246, planar vectors for the two clip values 234.
 // NOT kept: the EDX damping forms gain at most four points. The raw/bounded homes and vertical join still differ.
+// Shared bit test for damping, direct, gravity, entry/history tests, or all saved flags:
+// 234/234/234/597/234. All contact reads 599, with direct declared first 596,
+// and with the input address after the flag reads 599. The saved-flag forms leave the
+// first extraction unchanged. Using the helper at the gates shortens the body.
+// M3 lane AO r1 (fast; control 234): the state flags read once into a named `dword flags` for the four bits, the first
+// test and the history gate 553 (3054 B), that with direct declared ahead of damping 553; the bits as mask tests
+// (`(state->flags & 0x10) != 0`) 234 (same code); the general arm's gravity cleared inside the two arms of the length
+// test (no `limited_step` flag) 549 (3049 B); the speed-band reads through one `real const *` to the settings at +0x4c
+// 466; `magnitude *= state->speed` 234, the low arm's offsets as `-shape_dot(...)` 234, the flying arm's length tests
+// as `!function_30bf0(&left)` 234 (same code each). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
