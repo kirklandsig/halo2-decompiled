@@ -5452,6 +5452,11 @@ struct s_weapon_projectile_creation
 // clip and request position 1128, all four 1151.
 // NOT kept: the request pair retains retail length but the 0x1ea4 probe and distinct
 // point homes persist. The other transfers also raise the score.
+// The 0x1ea4 probe and the clipping and request homes still differ. Standard clip copy 1121,
+// named owner and wielder homes 1121, named speed and spread homes 1121, named first projectile
+// direction 1121, shared special-marker draw 1121, separate target outputs 1139 (0x1eac frame),
+// standard request copies 1121, interleaved request fields 1125 at 5215 B, standard motion copy
+// 1121, standard synchronization point clear 1130.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
