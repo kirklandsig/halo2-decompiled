@@ -539,6 +539,21 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // Keyboard mode produced by the two successful decodes. Guarded assignments or
 // conditional results give long 167/173, short 172/179, word 172/179, enum 167/173.
 // NOT kept: the frame loses its 0x70 bias and the score rises.
+// M3 lane GB r10 (2026-11-25, 17 source trials + 3 diagnostics, fast control 61 at 579/585 B; 0x13fac0/0x212bc0/0x238c69/0x2ba9f4/0x1489b5/0x2ca244 MATCH):
+// On form 3 (two load arms + `0x238c69(controller, mode, type, name, maximum_count)` + `long maximum_count = 0x20`, base 183):
+// declaring `s_game_variant variant;` separately per half (first half + second half) or per block (first half + each second-half arm)
+// recovers retail's `lea ebp, [esp - 0x70]` frame bias on a two-arm body for the first time (177 each, 580 B, frame 0x254, mk 33->25;
+// on one-load body 61, same code); sole exit (`if (*item != NONE)` + `bool ok`) 183, second half in `else` 183, `s_game_variant *dst`
+// 183, per-arm `ctrl` 183, `name` before `variant` 183, `parameters` at top 183, `name` in second half 183 (all same code);
+// `do/while(false)` error-break 191, `goto error` 191, `entry->value2 == NONE` first 184, `g_54e49c = saved` hoisted above arms 186.
+// On one-load body with controller-first `0x238c69`: + named dest `variant_name` 92 (557 B, biased 0x250, `this` EBX),
+// + shared `mode` call 90 (559 B), + per-arm copy/named count 189 (554 B, unbiased 0x254).
+// Diagnostics (reverted): `/O1 /Gr` (no `/Oi`) on form 3 183 (breaks 0x2ca244); splitting `g_54e49c`/`g_54e4a0` and spelling the
+// second-half copies + `flags &= ~1` as `(&g_54e49c + 1)` on form 3 gives 65 (580 B, unbiased 0x250, `this` EBX, default arm exact),
+// and with per-half `variant` (`2scope` or `3scope`) hits exact byte MATCH (0, 585/585 B) in both fast and full checks (default-arm
+// copy only 24 at 582 B, selected-arm copy+flags only 63 at 583 B), proving 100% of the gap is the `&g_54e4a0` CSE hoist; NOT kept
+// because LTCG places separate `g_54e49c` (`0x9f9db8`) and `g_54e4a0` (`0x9fa4d0`) 0x718 bytes apart in `.bss`, so `(&g_54e49c + 1)`
+// would corrupt adjacent globals at runtime. Body unchanged.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

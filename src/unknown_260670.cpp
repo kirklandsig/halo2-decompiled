@@ -410,6 +410,16 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // store as an if/else (retail stores in each arm through a reloaded pointer) on main 639 (3102 B), on the lead 443
 // (3055 B, aligned 209 / 113), on the lead with the in-place lookup 535 (3158 B, aligned 208 / 96). Still BLOCKED-BY
 // 0x262a30, and the expansion would also need 0x13e2d0 to stay a call at that site.
+// M3 lane GB r10 (fast with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, all MATCH; control 440, 3097 B, frame 0x8a8):
+// wrapping the body after `if (count == 0)` in `else` 755 (3081 B); that with the first evaluator pass as `function_2600a0(..., NULL)`
+// 533 (3057 B, frame 0x8a4, `count` then takes EBX in the main loop as retail), plus single-exit `selected = NONE` / `if (selected != NONE)`
+// 797 (3050 B, 0x8a4), plus `0x271300` tail 781 (3050 B, 0x8a4); `count == 0` else + first pass call + `0x271300` tail 608 (3057 B, 0x8a4);
+// `count == 0` else + single exit + `unknown4c` before `0x270590` 788 (3058 B, `count` in EBX); `if (count != 0) ... else` 767 (3072 B);
+// sorted-loop break conditions in the `for` header 595 (3113 B), with first pass call 530 (3081 B, 0x8a4, `count` in EBX), with `count == 0`
+// else + flipped main test + first pass call 603 (3065 B, 0x8a4); nested post-loop check 706 (3081 B, 0x8a4), with first pass call 728
+// (3057 B, 0x8a4); pointer-stepped main loop 582 (3097 B); flipped main-loop test, `length_sq3f` in main loop, typed `s_type_967e20` fields,
+// `distance_squared < range * range`, flipped post-loop `if`/`else`, flipped random/sorted `if`/`else` 440 each (same code; flipped
+// random/sorted + first pass call 604, 3077 B, 0x8a4). Site 2 still expands 0x2600a0 in every form. Body unchanged.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
