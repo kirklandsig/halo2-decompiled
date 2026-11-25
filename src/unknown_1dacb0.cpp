@@ -1775,6 +1775,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // after iterator setup 749 (+0x29, al=95); combining 732 with `if (out.id.index == NONE) return out.id;` 750 (al=83);
 // flag-free break/do-while/`while (out.id.index == NONE && entry)` on 732 1075/1034/1097; `if (graph->inheritance_count
 // > 0)` in `graph_resources_request` 1012 (loses 0x1dc8c0 and 0x1ddd00).
+// Resolved mode seeded from the requested mode, used to seed the iterator key, or copied from
+// the iterator at its mode, final key, or final field: 814 each. Aggregate iterator with request
+// seed, resolved seed, or seeded mode key: 812/812/814. Candidate and mode homes persist.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2462,6 +2465,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // `graph_named_entry_find`, `urgent = (out.id.index != NONE)` all 732; `out.m/c/t` after iterator 749; + early no-result
 // return 750; flag-free break/do-while/`while (out.id.index == NONE && entry)` 1075/1034/1097; guarded inheritance loop
 // in `graph_resources_request` 1012 (loses 0x1dc8c0/0x1ddd00).
+// Shared resolved key captures for output stores and second request: mode, class, mode/class,
+// type, mode/type, class/type, all at their stores, and all before the first store: 812 each.
+// The resolved mode still takes the expired argument home.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

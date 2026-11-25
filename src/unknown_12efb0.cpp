@@ -1080,6 +1080,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // and recover `cursor=EBP, local_13=ESI, local_23=ESI`, but score 702 (short slot) / 705 (signed char inline) / 691
 // (all array indexing) / 694 (no alias with lookup helper) because `cluster_index` folds into `imul`. Lead 86 NOT kept
 // (mixes `cluster_index` local with `local_12->cluster_index` and uses a one-caller lookup helper without byte match).
+// Current-cluster predicate shared after provider, before provider, within the palette arm, or
+// across weighted winners: short slot 733/741/739/717, signed byte 729/740/735/713.
+// First difference moves into accumulator setup. Retail repeats the cluster comparisons.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

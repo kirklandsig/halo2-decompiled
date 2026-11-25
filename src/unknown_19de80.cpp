@@ -1074,6 +1074,9 @@ static inline bool teams_enabled_19e1c0()
 // 5..7 + `result = remaining;` on arm 12 + `best_score <=` on volatile 429 (1420 B); `size_t length = wcslen(text);` 691
 // plain / 390 volatile (same code); `do { ... } while (false);` wrapper on plain 425 (1435 B, frame 0x204, al=449, mk=358:
 // raises loop depth and inlines 0x19eae0 and 0x1587b0 while keeping token in EDI).
+// Separate text buffers in every token arm from the first write or the outer arm, with shared
+// or role-specific names: 390 each with the qualified result and 691 each with ordinary result.
+// The ordinary result restores 0x204 but still merges the name-copy tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

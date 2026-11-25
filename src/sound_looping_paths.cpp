@@ -1034,6 +1034,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `targets[target_count].field` with the count stepped last 940 (3289 B); the muted flag as `!g_509420` 837. Reading:
 // retail walks the query with the long count read from its home, keeps the choice count in ESI with a copy at frame
 // +0x24, and spills the loop index at frame +0x4 where ours puts the short query count. Body unchanged.
+// Exact-end bounds for query, duplicate, repair, conversion, both target walks, active lookup,
+// both query walks, or all choice and target walks: 837/905/837/837/837/837/837/905.
+// The 0x4dc frame and count homes persist. Retail uses a relational duplicate bound.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
