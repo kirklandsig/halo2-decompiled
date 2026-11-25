@@ -2020,6 +2020,11 @@ long function_10f5f0(long object_index);
 // or both 599 each. Those four with shared bounds, velocity and names storage 597 each.
 // NOT kept: shared storage reaches frame 0x1984 and first +0x54, but the body grows
 // to 2296 bytes and the temporary predicate-byte stores remain absent.
+// Explicit door maximum, powered default and open default 561 each; branch-produced
+// door requests 568. With shared bounds/velocity/names, the three maximum forms
+// reach 557 each and branch-produced requests score 562, all at 2264 bytes.
+// NOT kept: sharing reaches frame 0x1984 and first +0x54, but requires a byte match.
+// The four-point gain is below the retention threshold and the predicate byte still differs.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
