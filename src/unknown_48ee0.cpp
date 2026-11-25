@@ -535,6 +535,12 @@ extern real g_4c9798[36];
 // (1491 B) [73/58/37]: the flags word is then in EAX as retail's, but the tag is coloured ECX and the state EDI (it
 // arrives in EAX), where retail has the state in ECX and the tag in EDI from the entry. Next, once 0x48e70 is
 // `inline`: the switch with a form that ranks the tag above the state for the saved register.
+// M3 lane 16 r189 (H2M_FAST with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174; 0x48e70's file is open this round,
+// but `inline` on its definition stays held). The allocator reading of the scratch cycle: the tag word's temporary takes
+// EAX and leaves the cursor on ECX (the state), so the flags word takes EDX. Forms: one direction reference declared after
+// the inverse for every direction read 326 (1483 B, first +0x2); the mode started at 0 with the else arm dropped 180; the
+// mode test as `!(bool)((flags >> 10) & 1)` 302 (1489 B); the mode's tag test as `!*(short const *)(tag + 0x14)` 174
+// (same code); the border as one conditional initialiser at its use 320 (1479 B, first +0x2). Still BLOCKED-BY 0x48e70.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

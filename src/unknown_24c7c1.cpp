@@ -1018,6 +1018,26 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // `fraction` ternary, `while`/`++i` loop, nested scripted/else blocks, and B3 bounds order. Explicit `player_offset` local
 // used twice scored 9 (+0xb8, `lea ecx, [esi + edi]`, still swapped at +0x3bd), proving front-end symbol order does not
 // control the tie; only IR live-range changes flip +0x3bd. Body and callees restored to main (score 80).
+// The view and left coordinate homes still differ. Naming the status start, duration or end scores
+// 80/81/80. Start plus duration, start plus end, duration plus end and all three score 80/80/81/80.
+// Bounding the shared duration in place scores 108 at 1885 bytes. The view's initial spill and the 0x264
+// frame stay fixed.
+// M3 lane GA r6 (fast with 0x24ce9d, 0x24c80b, 0x24cedf, 0x1fa30, 0x15f120, all MATCH; control 80 at 1889/1889 B; 79
+// compiled fast trials + 1 plain check). Existing `s_widget_point position` (include/screen_widgets.h) reproduces the 2-diff
+// lead at 1889/1889 B (+0x3bd, `mov edi, [ebp-0x64]; mov ecx, [ebp-0x40]` vs retail `mov ecx; mov edi`) in both `--fast` and
+// a plain full check (all 24 peers including 0x1fa30/0x1fa50/0x24ce9d MATCH; still 2, not kept as parameter reorders and
+// `s_widget_point` grouping are match-only). A/B/C isolation on main's 80 base shows `bool timer_message` alone flips the
+// +0x3bd reload pair to `mov edi; mov ecx`: `s_widget_point` alone 158, nested tutorial alone 74 (-6 pts, under bar), both
+// 152 (all keep retail `mov ecx; mov edi`), while `bool timer_message` alone 104, + `s_widget_point` 21, + nested tutorial
+// 98 (all flip to `mov edi; mov ecx`), and `short timer_message` on the lead 141 restores `mov ecx; mov edi`. On the
+// `s_widget_point` lead: explicit `long player_offset` before `player` 9 (1889 B, still `mov edi; mov ecx`), `player` ref /
+// `byte` flags / `s_hud_player` direct indexing / early return / nested `if (view)` / C89 top declarations / shared
+// `game_time` / shared `field_24` across blocks 2+3 / dropping `globals`, `duration`, `ticks`, `text_height`, `hud`, inline
+// clamp 2 each; `timer_message` via `if` 11, ternary 4; `position.y` before `.x` 516; `count = split_screen ? 3 : 4` 477;
+// no `player` local 500; `status_player` dropped 386 / moved before `if` 408; sharing both `color` and `field_24` across all
+// three blocks flips +0x3bd back to retail `mov ecx, [ebp-0x40]; mov edi, [ebp-0x64]` (65 at 1889 B) even with `bool
+// timer_message`, while moving `color` above `text_bounds` (-0x2c vs -0x34); sharing only one or only blocks 2+3 leaves
+// `mov edi; mov ecx` (60/67/12/2). Body unchanged.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

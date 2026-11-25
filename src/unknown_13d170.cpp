@@ -1066,6 +1066,12 @@ struct s_physical_block_iterator
 // named earlier/equal tests or explicit rejection: 240/240/294/240. Move the callback
 // policy before the others with the same timestamp forms: 207/240/289/291.
 // NOT kept: dispatch still differs, and most forms shorten the scan.
+// M3 lane 16 r188 (H2M_FAST with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201): case 0 as `time <=
+// best.time && (time < best.time || pages < best.pages)` 222 (1220 B); case 0 as `better = time < best.time;` then
+// `if (time == best.time) better = pages < best.pages;` 235 (1178 B); the policy read into a `long state` for the switch
+// 201 (same code); the predecessor's next index named once (`long next = before->next;`) for its test, the successor
+// lookup and the entry's next link 203 (first difference +0xcc); the overlap end named ahead of the deletion walk
+// (`long end = best.offset + pages;`) 387 (1227 B). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

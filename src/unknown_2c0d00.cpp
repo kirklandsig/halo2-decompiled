@@ -986,6 +986,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // declaration order 903. Named bounds with no height/center/query/both 923/913/877/877.
 // Plain query height 910, center with bounds 934, query with bounds 888.
 // NOT kept: both plain gains move farther from retail length and retain the extra frame word.
+// Marker query admissions computed before object collection (entry/side/extra/entry+side/entry+extra/
+// side+extra/all) 927/934/938/949/935/945/951, prefiltered marker bits 942. NOT kept: entry,
+// side and masked forms recover 0x2cac with higher scores. Actor/zero registers remain exchanged.
 // Gemini lane GB r6 (2026-11-25, 46 trials, control 925 = plain, aligned 415, masked 262): 858 at 3724 B (retail's frame
 // 0x2cac, first diff +0x41, aligned 313, masked 191) from `bool enabled = true;` declared ahead of the classification test
 // (retail stores 1 in dl before that branch, at 0x2c120d) and both radius checks written distance-first (`!(d <= r*r)`), with
