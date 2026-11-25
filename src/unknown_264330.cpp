@@ -1037,6 +1037,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // path after the 0x264b50 call), so the expansion alone leaves 132 structural rows. Still BLOCKED-BY 0x2641c0's
 // expansion here and not in 0x264210 or 0x265680 (the build's inline threshold expands all three) and by the release
 // site's 0x25c820 expansion.
+// M3 lane 2 r151 (fast screen with 0x1e34e0, 25 in every form; control 404 at 1624 B): the 0x2641c0 call written out as
+// its body (a diagnostic, reverted at once) 509 (1696 B), and 0x1e34e0 still pushes the actor index; the update flag
+// computed from the sampling test after the 0x263670 call with `sample` initialised from it 453 (1636 B); both flags
+// declared after the 0x263670 call 404 (same code); the parameter copied into a local at entry 404 (same code); both
+// flags declared at function scope and cleared at the loop top 402 (1620 B, two lower: not kept).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
