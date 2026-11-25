@@ -805,6 +805,13 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // vector3f_scale's returned pointer as its first point; the subtraction reading through a named copy of that returned
 // pointer. A store has to go through a pointer or reference variable for the call to count as a writer; reads through
 // one do not. Still BLOCKED-BY 0x14b240's reading, whose fix raises 0x18ae80 (837) until that body is rewritten too.
+// M3 lane 15 r146 (H2M_FAST with 0x18d730 (287) and 0x14b240 (MATCH); control 295). Lane 5 r242's held 21 form re-measured
+// 21 (0x18d730 250, 0x222150 MATCH). Its colouring: the widened portal index ranks 134 and the cluster 124, and every walk
+// value scores EBX worse than EBP, so whichever of the two is coloured first takes EBP. Forms on main: the nearest test
+// through a short copy of the cluster's index declared ahead of it 295, the seed stores in the order clusters, portals,
+// distances 295 (same code each), the valid clear and the cluster pointer in the lead's order 296, the path list formed
+// ahead of the seed test 358; on the held form the path list ahead of the seed test 363. Still BLOCKED-BY 0x14b240's
+// write summary (its may-write form raises 0x18ae80, another lane's file).
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
