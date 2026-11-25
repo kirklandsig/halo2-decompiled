@@ -1963,6 +1963,19 @@ void function_2294a0(
 // or a store, kept only with a byte match, so the code stays as main has it (lead only). The vector setter 288; a typed
 // point advance 485 (it loses retail's frame and position base), with the clears separated 485, a named acceptance
 // 482, a shared normal sum 486. Left: the midpoint still groups its coordinate calculations ahead of the stores (+0x248).
+// GB12 (99 fast trials with 0x2281a0/0x228f30/0x2277b0/0x2266a0, all MATCH, control 231 at 1988/1981 B; body unchanged):
+// on the match-only helpers + first-body-pointer base, existing `vector3f_add_scaled` + `vector3d_from_points3d` +
+// `vector3f_add` + `vector3f_scale` (no new helpers) reaches 9 at exact 1981/1981 B (488/488 insns, +0x40b; only four
+// offset-0 commutative float pairs); manual normal sum (`B04`) reaches 2 at 1981/1981 B (486/488 insns exact; only
+// `position.x + constraint->position.x` at +0x43e; `component->rigid_body_mass_get`, in-place init, `vector3f` position,
+// `+=` normal, `for (long i)`, no matrix scope, rename all tie at 2); symmetric `vector3f_add` for both normal and
+// position + three `component_b` locals (`D09`) fixes +0x43e and reaches 2 at 1981/1981 B (486/488 insns exact; only
+// `dot3f(&impact->normal, &constraint->normal)` i-term at +0x3d5; reversed `dot3f` 4, `rigid_body_mass_get`/`rigid_bodies[]`/
+// `for (long i)`/in-place init/split keep/sub helper tie at 2, 2-use constraint normal/position pointers 7-18);
+// `B04` + 3 `component_b` locals (`D08`, 14) matches through +0x4ef (only tangent `vector3f_scale` i-term left);
+// `basis_dot_xzy` 13-20; `rigid_bodies[]` without the first-body pointer 486; `havok_component_rigid_body_linear_velocity_get`
+// 495 (1965 B); no `constraint` pointer 475-476; `if` max 246-250; dead-local phase scan (diagnostic, removed) confirms
+// all five offset-0 pairs follow the function's mod-8 symbol-count phase. Body restored at 231.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
