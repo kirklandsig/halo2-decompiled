@@ -1531,6 +1531,16 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // direction with component stores, setter, entry default or initialized value 418/419/593/389. Earlier anchor
 // with component stores or setter 439/439, also with a scoped opposite search 439/439. NOT kept: the 389
 // form reaches retail length and frame 0x28, but adds a second fallback vector and copy absent in retail.
+// The second scan still lacks the 0x2c frame and its distinct offset X spill.
+// Anchor X before two- coordinate subtraction with the cached sample array 433, anchor X before two-
+// coordinate subtraction with live entries in the opposite scan 555, anchor X after two-coordinate
+// subtraction with the cached sample array 433, anchor X after two-coordinate subtraction with live
+// entries in the opposite scan 555, complete anchor setter from X and pair with the cached sample array
+// 579, complete anchor setter from X and pair with live entries in the opposite scan 578, complete
+// anchor initializer from X and pair with the cached sample array 433, complete anchor initializer from
+// X and pair with live entries in the opposite scan 555.
+// NOT kept: The cached-entry forms retain 0x1c. Live entries reach 0x20 and one family reaches 2122
+// bytes, with higher scores.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

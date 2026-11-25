@@ -990,6 +990,15 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 518, minimum written before hit flag 516, conditional minimum 518, or minimum from
 // stored distance 574. NOT kept: the ray-length load takes retail's operand order,
 // but still uses the displaced ordinal and range slots and shortens the body.
+// The 0x108 frame agrees, with the success and hit slots still displaced.
+// World reconstruction through matrix helper 677, world reconstruction through axis helper 714, object
+// projection through matrix helper 621, object projection through axis helper 734, world reconstruction
+// through matrix helper, object projection through matrix helper 836, world reconstruction through
+// matrix helper, object projection through axis helper 763, world reconstruction through axis helper,
+// object projection through matrix helper 726, world reconstruction through axis helper, object
+// projection through axis helper 826.
+// NOT kept: The basis conversions grow the body and raise the score. The helpers can also change
+// addition grouping.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

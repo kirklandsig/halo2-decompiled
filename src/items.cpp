@@ -1001,6 +1001,15 @@ struct s_item_collision_bsp
 // Translation terms after their rows, after the first two rows, after all rows, or with X
 // early and Z before Y: 199/199/199/199 in both plane-row and scalar-row storage.
 // NOT kept: the length and frame stay at 1366 and 0xa0. The queried coefficient order still differs.
+// The rotated normal coefficients and pending x87 factor still use different homes.
+// Seed-step in fallback speed 190, seed-step in spin factor 190, seed-step in fallback speed, seed-step
+// in spin factor 190, site-tagged seed-step in fallback speed 190, site-tagged seed-step in spin factor
+// 190, site-tagged seed-step in fallback speed, site-tagged seed-step in spin factor 190, seed-step in
+// fallback speed, site-tagged seed-step in spin factor 190, site-tagged seed-step in fallback speed,
+// seed-step in spin factor 190, planar normal dot with the basis row first 198, planar normal dot with
+// coefficients first 198.
+// NOT kept: The integer draw providers tie the baseline. Both planar products grow the body and raise
+// the score.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1393,6 +1402,15 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // for either cross. Both lifetimes in transform up 232 for either rotation cross. Transform
 // left or forward for fallback 195/195. NOT kept: the 0xb4 forms expand the body and score
 // higher. Fallback-only forms retain 0xc0.
+// The normalized axis still requires a separate home in the opening body.
+// Scaled axis scalars from planar cross products 215, planar cross products produced before the root
+// 215, scaled vector initializer from planar cross products 218, shared scale on a planar cross
+// initializer 208, planar cross products through the axis setter and shared scale 208, scaled planar
+// cross products through the output workspace 184, scaled axis scalars from planar products with a
+// separate alignment dot 210, shared scale on a planar cross initializer with a separate alignment dot
+// 203.
+// NOT kept: The planar cross producers lengthen the body and increase the score. The output workspace
+// recovers the 0xb4 frame with a higher score.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

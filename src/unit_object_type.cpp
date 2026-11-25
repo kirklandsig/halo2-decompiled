@@ -9806,6 +9806,13 @@ struct s_unit_melee_collision
 // selection with the range snapshot: 496/496/525/531. With a range read at each product: 539/539/542/491.
 // NOT kept: the live range recovers frame 0x17c but shortens the body and all selection forms regress.
 // The unit and fan ordinal homes remain displaced.
+// The frame is still 0x180 against 0x17c, and the fan carries the unit and loop ordinals in different
+// homes.
+// Direct tag in each selector arm cached 521, direct tag in each selector arm live 450, live hit output
+// fields cached 553, live hit output fields live 562, timer player handle cached 447, timer player
+// handle live 534, damage owner initializer cached 447, damage owner initializer live 534.
+// NOT kept: The range-at-use forms either shorten the body or retain the displaced frame, and no form
+// beats the opening score.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
