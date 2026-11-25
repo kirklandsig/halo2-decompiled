@@ -1382,10 +1382,11 @@ static __forceinline void update_residual_pair(__m128 *&cursor,
 	residual_pair_vectors_31c940(vector_work, first, second, cursor, a, b);
 	_mm_store_ss(&scalar_a, first);
 	cursor[0].m128_f32[3] -= scalar_a;
-	cursor += 6;
+
 
 	_mm_store_ss(&scalar_b, second);
-	cursor[-3].m128_f32[3] -= scalar_b;
+	cursor[3].m128_f32[3] -= scalar_b;
+	cursor += 6;
 }
 
 // Residual rows retain A's angular contribution before the linear product.
