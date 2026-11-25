@@ -9794,6 +9794,10 @@ struct s_unit_melee_collision
 // Aggregate impact record 537; aggregate with per-product range 510; BSP and damage names 447;
 // query-center declaration first with live range 534. NOT kept: both deferred tag forms and the
 // aggregate with live range recover frame 0x17c at 2229 bytes but raise the score. The fan register homes remain.
+// Occupied-hit rejection, selected-type conditional, signed candidate type snapshot, and staged hit
+// selection with the range snapshot: 496/496/525/531. With a range read at each product: 539/539/542/491.
+// NOT kept: the live range recovers frame 0x17c but shortens the body and all selection forms regress.
+// The unit and fan ordinal homes remain displaced.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

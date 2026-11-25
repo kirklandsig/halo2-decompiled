@@ -3017,6 +3017,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
 // initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
 // `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
+// X-first displacement with retained Y, X/Y, Y/Z or X/Z camera basis: 500/500/421/556.
+// In-place basis scaling with setter or aggregate: 422/420. Retained basis with separate reflection
+// stores or a running projection sum: 563/422. The early camera loads and projection registers remain.
+// NOT kept: the 2285-byte forms reach 420 and 556, both above the opening comparison.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3839,6 +3843,10 @@ real magnitude3d(vector3f const *v);
 // angle test, all three tests together, eager lengths before angle, ordered lengths with independent
 // angle, and joint lengths with real absolute dot: 190/190/186/186/205/201/198/190.
 // NOT kept: all grow the body and leave the raw current magnitude in the bounded length's slot.
+// Shared projected-axis scale with cosine-scaled add or separate cosine vector plus sum, each in
+// place or with separate projected storage: 183/196/183/196. With the complete shared tangent:
+// 170/197/170/197. NOT kept: the two 170 forms tie at 1045 bytes and still store the raw root
+// at +4, leaving the real root, dot and cosine transfer slot unresolved.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -6245,6 +6253,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // Separate axis selections from a shared test, per-axis tests, guarded captures, or a complete
 // point snapshot: 392/518/231/717. With four-channel color: 390/516/225/723.
 // NOT kept: 225 gains six, grows to 1826 bytes, and leaves the radius spill at +0xc.
+// Indexed in-place scaling or a separate indexed scaled result, with the scale read at each use
+// or retained: scalar alpha 628/507/628/507, four-channel color 634/516/634/516.
+// NOT kept: the separate scaled result reaches frame 0xe0 with scalar alpha, but the indexed
+// variants lengthen the corner expansion and leave the radius spill at +0xc.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

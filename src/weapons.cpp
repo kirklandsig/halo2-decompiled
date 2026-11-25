@@ -4134,6 +4134,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Typed weapon-tag heat cap, destruction, misfire and holder feedback; typed barrel-tag recovery/heat,
 // pitch curve and event kind; all fields together: 593 each. NOT kept: all tie. The 0x1c64 probe
 // and separate magazine-tag and loaded-round spills remain.
+// Positive debit balance, explicit empty result, staged reload decision, and short-circuit reload
+// after debit: 593/593/590/593. With the ordinary owner index: 649/649/607/629.
+// NOT kept: the staged reload decision gains three at retail length but retains the 0x1c64 probe.
+// The ordinary-owner forms recover 0x1c60, shorten the body, and raise the score.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
