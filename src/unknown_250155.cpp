@@ -3276,6 +3276,20 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // piece. Forms: the default arm as one chain `*text_a = *text_b = *bitmap_b = *bitmap_a = NONE;` 93 (925 B), on
 // lane 16 r157's lead 84 (same as the lead), with a counter per loop 91; the five calls passing `0` for `false` 87;
 // `++i` in the last loop 87; the last loop's bitmap indices declared before the text indices 87 (same code each).
+// M3 lane 2 r148 (screens with 0x24fd74, 0x2507c3, 0x22f042, 0x250155, 0x22ee47 and 0x2514fd, all MATCH each run; control
+// 87, aligned 58, 49 with registers and offsets masked; body unchanged). The last loop as one inequality: the four slot
+// indices rank 35 + n each and the screen's call-block piece 5 x n, with n = 10 values referenced in the call block (the
+// screen, the row counter, the four indices, false, 6, 8 and the row bound), so the screen (50) is coloured ahead of
+// bitmap_a (45) once text_b has taken EDI. Retail's default arm copies text_a from text_b's register and bitmap_b from
+// bitmap_a's (two separate NONE loads, then `mov eax, edi` and a store from EBX): with those two copies as real
+// references text_b and bitmap_a would rank 50 and, being created later than the screen, be coloured first, which is
+// retail's last loop (text_b EDI, bitmap_a EBX, the screen reloaded into EDI after text_b's push). No form tried keeps
+// the copies: the default arm as `*text_b = NONE; *bitmap_a = NONE; *text_a = *text_b; *bitmap_b = *bitmap_a;` 92 (925 B:
+// the stored constants are forwarded, text_a gets its own NONE and the screen stays in EBX), as two chains 92, with
+// bitmap_a first 93, with the bitmap copy ahead of the text copy 92; the four indices as one record filled by the helper
+// (members copied in the default arm) 146 (952 B: the record stays in memory). A counter declared in each loop
+// re-measured 85 (two points, under the bar), with the first copy form 90, with the chains 90. Still BLOCKED-BY 0x53b40's
+// chain for the players[i] reload.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
