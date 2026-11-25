@@ -1044,6 +1044,11 @@ struct s_item_collision_bsp
 // Both signed plane queries agree. The left weight and contact-point homes differ.
 // Weight-seeded left, up, forward, left/up and all plane products 191/192/190/193/193.
 // Complete scalar rows with seeded left, left/up or left-basis products 191/193/191.
+// The left coefficient and contact-point homes still differ. Shared plane
+// query with optional instance, optional matrix, default world copy, or
+// conditional geometry selection 338/338/351/329. Reading the returned
+// plane in the same forms 363/363/367/262.
+// NOT kept: each raises the score and merges retail's two query sites.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1476,6 +1481,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Component-array reads for scaled axis, facing, marker up, marker forward,
 // paired alignment, paired projection or all rotation operands 130 each.
 // All component arrays with a separate alignment sum 178.
+// The scaled axis still spills and the frame remains 0xc0. Half-angle square
+// or full diagonal before the cross 141/189, or between cross and scale 184/190.
+// With a shared cross weight 182/188/128, early diagonal and reciprocal 218.
+// NOT kept: the 128 form gains two and leaves the extra axis frame space.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

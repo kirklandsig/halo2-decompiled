@@ -8925,7 +8925,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0024cdd8,197,game,size,packed,,,0013cb40 0014de70 00161b60 0024c80b,src/unknown_24c7c1.cpp,matched
 0024ce9d,66,game,size,ebp packed,,,0013e9c0,src/unknown_24c7c1.cpp,matched
 0024cedf,135,game,size,ebp packed,,,,src/unknown_24c7c1.cpp,matched
-0024cf66,1889,game,size,ebp packed,,,0001fa30 00122540 00131b20 00131bb0 00131e50 0013927e 001392a9 001396c7 0013cb40 0013eb60 0013edb0 0013ee20 0013ef30 0013fac0 0014de70 0015f120 00161b60 00163040 0022d2ee 0024c80b 0024ce9d 00321460 00372d48,src/unknown_24c7c1.cpp,todo
+0024cf66,1889,game,size,ebp packed,,,0001fa30 00122540 00131b20 00131bb0 00131e50 0013927e 001392a9 001396c7 0013cb40 0013eb60 0013edb0 0013ee20 0013ef30 0013fac0 0014de70 0015f120 00161b60 00163040 0022d2ee 0024c80b 0024ce9d 00321460 00372d48,src/unknown_24c7c1.cpp,matched
 0024d6c7,16,game,size,packed,,,00123d40,src/unknown_24d6c7.cpp,matched
 0024d6d7,213,game,size,ebp packed,,,,src/unknown_24d6c7.cpp,matched
 0024d7ac,90,game,size,ebp packed,,,0006b380 0024d6d7,src/unknown_24d6c7.cpp,matched
