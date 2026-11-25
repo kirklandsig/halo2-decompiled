@@ -2376,6 +2376,13 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // point y after the y term 565. Those four with a shared displacement 596 each. NOT kept:
 // the captures lengthen the body and raise the score. The count and clearance slots and
 // signed admission before the radius square still differ.
+// Lane AO r3 (fast with 0xc2d00/0x17a380/0x2469b0, all MATCH; control 551 at 2877 B): the projection through
+// vector_products.h's vector3f_add_scaled 604 (2906 B); the candidate through it 582 (2892 B); both 597 (2899 B); the
+// opposite radius as `-radius` 551 (same code); the cap as `point_count <= 8 ? point_count : 8` 551 (same code); the
+// opposite ray scaled by `0.0f - radius` with no local 552 (2879 B); both sums accumulated through vector3f_add 571 (2889
+// B); both averages through vector3f_scale 551 (same code). Reading: retail's four count/radius homes pair as count +0x88
+// with radius +0x94 (one arm) and radius +0x8c with count +0x90 (the other), nested, where ours keeps both radii below
+// both counts. Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -3098,6 +3098,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // at the old-end fade 595, so the hand-written block is already that expansion's code; in this loop the link expands a
 // 0x126df0 call at the loop top or under one `if` and calls it under two, while retail's old-end fade sits under
 // three. Body unchanged.
+// Lane AO r3 (fast with the two callers and 17 callees, control 597 at 2518 B): the creation arm tested first (`if
+// (index == NONE)`, the 0x10 test in its else) 607; both energy loops as `for` loops 769 (2596 B); the floor clamp as an
+// `if` 703 (2500 B); the three state pairs as chained assignments 597 (same code); the lookup identifier set by an `if`
+// 669; the transition walk without its reference pointer (offset tested, the field read at each use) 589 at 2522 B, NOT
+// kept: retail keeps the reference's NULL test (`add eax, edx; je`) and the length moves away; the gains array declared
+// at the head of the combine block 597 (same code), with `alternate` inside the definition guard 615. Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
