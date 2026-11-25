@@ -1092,6 +1092,10 @@ static inline word font_character_pixel(long alpha, long color)
 // The packed pair count is still loaded early and the literal uses shift/add.
 // Radix-16 accumulation across the low byte with add or OR 129/129,
 // across the high byte 129/130. With per-arm lengths 114/114/114/115.
+// The pair count load still precedes the second pixel store. Fixed output base
+// with pair and fill windows 184/184/184/184; cursor distance with count-only
+// tally 220/287; count advanced at pair or all single stores 155/155.
+// NOT kept: all raise the score and change the matched pixel-copy caller.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
