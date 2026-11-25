@@ -1037,6 +1037,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Exact-end bounds for query, duplicate, repair, conversion, both target walks, active lookup,
 // both query walks, or all choice and target walks: 837/905/837/837/837/837/837/905.
 // The 0x4dc frame and count homes persist. Retail uses a relational duplicate bound.
+// M3 lane 13 r158 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 837 at 3327 B; frame 0x4dc against
+// retail's 0x4e0 on today's main): the fade time named once for its test and divisor 845; the sound-definition list read
+// ahead of `inside` 924 (3289 B), at the block top 921; both counts long re-measured 1018 (3214 B: an opcode-aligned
+// read puts retail's extra code in the second scan's inside/portal selections, the PIN clamps and the primary's detail
+// lookup, not only the choice addressing); the scanned sound's tag named once for its test, the duplicate scan and the
+// store 838; the range test as `fabs(range)` (no negation) 865.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

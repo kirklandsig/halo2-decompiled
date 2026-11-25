@@ -995,6 +995,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // the position still 7), with y offset first 694; 0x1f9760's unused output declared ahead of its flag 462 (same
 // code); the side distance chosen by if/else with the point's y member then x member assigned 706 (3499 B, +0x4e,
 // the point again in memory); the if/else choice with main's point initializer 462 (same code).
+// 12-byte workspace names for the heading/defaults/request, location/query/target, matched point types
+// with distinct names, immutable request magnitude, and vector/planar request names: 462 each.
+// Immutable translated point 668; point setter 473; shared default-vector pointer 664; in-place
+// translation of the position or displacement copy 719/737; completed planar request copy 588;
+// both planar points immutable 668. NOT kept: the naming forms tie, and the other forms
+// raise the score. The position output still needs ESP+0x80 with the query output at +0x8c.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -82,6 +82,15 @@ struct s_short_bounds_3f660
 	short top, left, bottom, right;
 };
 
+// score 33 (was 33): 0.5f in XMM4 (retail XMM5) and crop arm schedule; blocked by g_4ba019 not yet living in an
+// address-escaping render-globals aggregate (caller 0x13c20 passes global &g_4b9da0 as view, so volatile through view
+// is forbidden). Tried (22 trials, 14 matched peers MATCH): splitting `new_width = view->crop_scale * width;` and
+// `new_height = view->crop_scale * height;` with `out[0..3] = x/y +/- new_w/h * 0.5f` fixes 0.5f in XMM5 and all crop
+// arithmetic/stores (6, first +0x106); ordering x before height and dropping crop_scale's volatile and right_result hits
+// 0 (MATCH, not kept: still uses main's volatile crop pointer through view); same clean body with zero volatile and a
+// diagnostic escaped g_4ba019 hits 0 (MATCH, not kept); clean body without escape 86-88 (492-494 B), only out[3]
+// volatile 77 (503 B, +0xbd); early return in crop 40; x-then-y crop 55; inline width/height 74; box2f view 55;
+// vertical_scale first 129; inline crop helper 61; local box2f copy 166; scenario helper 123 (loses 0x3f660).
 // @retail 0x2f970
 bool function_2f970(s_2f970_view const *view, real *out)
 {
@@ -177,38 +186,25 @@ struct s_projection_scalars
 
 byte function_016a90();
 
-// score 73 (was 73): left: 1.0f in xmm1 where retail loads it into xmm2 at entry (forced below the aspect value it
-// gives 70), then the tail: retail re-reads output.half_height from memory after the aspect branches (ours keeps the
-// local in xmm6), multiplies half_width * aspect before tangent (ours reassociates to aspect * tangent * half_width),
-// and stores right between the scales. Tried: half_width * aspect named first 73 (528 bytes, retail's product order);
-// output.half_width read at the scale 73; function_13cb40() for both written-out tests 76; with the named product: the
-// scales then the reciprocals then the four bounds stored in place 71, main's order with left stored in place 70,
-// scale locals stored then reciprocals 71; the clip rows scaled through a box2f pointer 70 and 73 (same code); the half
-// extents and offsets written straight into the output 113.
 // @retail 0x2fb70
 void function_2fb70(s_2f800_view const *view, box2f const *clip, s_projection_scalars *out)
 {
-    s_projection_scalars &output = *out;
     short const *viewport = (short const *)view->unknown30;
-    output.width = (real)(viewport[3] - viewport[1]);
-    output.height = (real)(viewport[2] - viewport[0]);
+    out->width = (real)(viewport[3] - viewport[1]);
+    out->height = (real)(viewport[2] - viewport[0]);
     if (!clip)
     {
-        output.clip.x0 = output.clip.y0 = -1.0f;
-        output.clip.x1 = output.clip.y1 = 1.0f;
+        out->clip.x0 = out->clip.y0 = -1.0f;
+        out->clip.x1 = out->clip.y1 = 1.0f;
     }
     else
-        output.clip = *clip;
-    real half_width = (output.clip.x1 - output.clip.x0) * 0.5f;
-    real half_height = (output.clip.y1 - output.clip.y0) * 0.5f;
-    real offset_x = (output.clip.x1 + output.clip.x0) / half_width * -0.5f;
-    real offset_y = (output.clip.y0 + output.clip.y1) / half_height * -0.5f;
-    output.half_height = half_height;
-    output.half_width = half_width;
-    output.offset_x = offset_x;
-    output.offset_y = offset_y;
+        out->clip = *clip;
+    out->half_width = (out->clip.x1 - out->clip.x0) * 0.5f;
+    out->half_height = (out->clip.y1 - out->clip.y0) * 0.5f;
+    out->offset_x = (out->clip.x1 + out->clip.x0) / out->half_width * -0.5f;
+    out->offset_y = (out->clip.y0 + out->clip.y1) / out->half_height * -0.5f;
     real tangent = (real)tan((double)(view->angle * 0.5f));
-    real aspect = output.width / output.height;
+    real aspect = out->width / out->height;
     if (function_016a90())
     {
         aspect *= 4.0f / 3.0f;
@@ -217,21 +213,16 @@ void function_2fb70(s_2f800_view const *view, box2f const *clip, s_projection_sc
     }
     else if (g_510c50 && ((byte *)g_510c50)[5])
     {
-        real scale = output.height * (1.0f / 480.0f);
-        output.clip.y0 = output.clip.y0 * scale;
-        output.clip.y1 = scale * output.clip.y1;
+        real scale = out->height * (1.0f / 480.0f);
+        out->clip.y0 = out->clip.y0 * scale;
+        out->clip.y1 = scale * out->clip.y1;
     }
-    output.scale_x = 1.0f / (half_width * aspect * tangent);
-    real inverse_x = 1.0f / output.scale_x;
-    output.scale_y = 1.0f / (output.half_height * tangent);
-    real left = 0.0f - (offset_x + 1.0f) * inverse_x;
-    output.right = 0.0f - (offset_x - 1.0f) * inverse_x;
-    real inverse_y = 1.0f / output.scale_y;
-    real bottom = 0.0f - (output.offset_y + 1.0f) * inverse_y;
-    real top = 0.0f - (output.offset_y - 1.0f) * inverse_y;
-    output.left = left;
-    output.bottom = bottom;
-    output.top = top;
+    out->scale_x = 1.0f / (out->half_width * aspect * tangent);
+    out->scale_y = 1.0f / (out->half_height * tangent);
+    out->left = 0.0f - (out->offset_x + 1.0f) * (1.0f / out->scale_x);
+    out->right = 0.0f - (out->offset_x - 1.0f) * (1.0f / out->scale_x);
+    out->bottom = 0.0f - (out->offset_y + 1.0f) * (1.0f / out->scale_y);
+    out->top = 0.0f - (out->offset_y - 1.0f) * (1.0f / out->scale_y);
 }
 
 #define k_real_epsilon 0.0001f
@@ -766,6 +757,16 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // float angle literal with promoted camera component 597; named double cosine 596; named double
 // turn increment 597; named distance span 596; plain phase pointer 597; direct phase field 597; double
 // bitmap phase terms 596. NOT kept: the float angle literal fixes the three operand widths for four points.
+// The random-pair tails are still shared, and the cosine and distance fraction have different homes.
+// Float cosine with a shared blend complement 598, bitmap phase rounded after the index 597,
+// named turn components 597, named distance fraction 597, local ring normalization 592,
+// shared records base 631, shared projected extents 597, shared quadratic complement 597, typed
+// filter state 597. NOT kept: local ring normalization gains five and writes the wrapped index once.
+// Independent crossing tests 566, positive-first refresh 604, indexed initialization 958,
+// complete random point then indexed assignment 537, selected refresh destination 642,
+// signed-remainder wrap 638, local wrap passes 624, named integer advance 597.
+// NOT kept: independent tests repeat the sign check on the negative path; complete
+// points add temporary stack stores absent from retail.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -952,6 +953,14 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // from separate progress branches 833; geometry-success scope 850; promoted player divisor 857;
 // radius through the extent view 832; horizontal radius local 860 at retail length; partition-relative
 // index 832; volume count initialized after the lock 860. The state parameter remains on the stack.
+// Active fade initialized to zero 832, fade before the snapshots 832, explicit fade results 845
+// (zero in XMM2, still a stack-passed state), named extent and camera 832, typed emitter 832,
+// shared volume distance with a local camera sample 962, shared exclusion distance 891,
+// absolute partition end 863. The opening extent and camera homes still differ.
+// Extent copy through memcpy 832, scalar camera snapshot 846, camera-first copy 833,
+// named live extent axes 858, explicit player divisor 857, explicit extent maximum 832,
+// shared scaled velocity update 831, staged velocity increment 885, array element
+// references 832. The scaled update gains one at the same extent; the stacked state remains.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1216,6 +1225,16 @@ bool function_143c0(long, short, short, real);
 // and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
 // W-buffer state 365; separate primitive branches 421, with a fresh mode read 422; named partition
 // end 365; shader mode helper 364; shader slot helper 378.
+// The unqualified vertex cursor restores the stack-passed state but shortens the draw body.
+// Unqualified vertex 409, with live primitive branches and a real width 459. Typed state 344,
+// real line width 352, current mode selecting the primitive 366, partition offset 340,
+// positive age branch 344, previous point setter 346, typed shader slot 344, indexed vertex 371.
+// NOT kept: the partition-offset loop gains four at retail length.
+// With the ordinary vertex cursor, selected primitive 409, common final submission 509,
+// final width assigned with color 509, submitted position snapshots 436, aggregate previous
+// point 409, direct SDK width and separate begins 474, vertex element reference 409,
+// shared displacement setter 408. The stack state comes back in six forms; each shortens
+// the push-buffer code and raises the score.
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
