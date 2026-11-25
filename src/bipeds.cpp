@@ -1879,6 +1879,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // target copied after the velocity reset 168; the boost as one ternary 158 (same code); material as dword 158 (same
 // code); `distance` declared ahead of `moved` 160; case 1's rate quotient named ahead of the call 158 (same code; on the
 // lead 137, same code). Body unchanged.
+// The joined material store scores 132 in the reduced image, with the walking-settings preload 120.
+// Typed pill-array reference and conditional result 176/155, copied pill descriptor 561/547, and
+// sphere-first joined result 137/125 (opening walking block / walking-settings preload).
+// NOT kept: the preload reads a one-use pointer ahead of the walking-speed call.
+// Codex F498: the joined material store (a second local assigned in both arms, then copied into material) gives 132 in the
+// plain check, the two adjusted addresses joining at retail's material store: a steering copy, kept only with a byte match;
+// reverted at review, code as before (158).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

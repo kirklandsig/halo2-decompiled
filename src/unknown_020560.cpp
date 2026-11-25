@@ -1523,6 +1523,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the top of the sample branch 418 (same code); the samples local declared ahead of scan 1 and used there too 623 (2071 B);
 // scan 2's offset built through the existing vector3f_assign 418, the delta through it 418 (same code each). A forced-
 // decision search (14 links) gives at best 409 (one pick), the frame staying 16 bytes short.
+// The second scan still needs the 0x2c frame and the candidate X store. Short-circuit projection and retained
+// displacement norm 646, with the squared-length helper 646 or a second dot 646; cutoff on rejection 590;
+// conditional winner and cutoff updates 646; named squares 646, named projection products 646; nearest skip
+// and named projection 646. NOT kept: the reused displacement shortens the loop and drops the needed home.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

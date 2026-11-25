@@ -4067,6 +4067,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // walking packet 181; combined member and kind validation 172; combined member and kind validation with
 // walking packet 164; separate relay and direct validation phase 153; separate relay and direct
 // validation phase with walking packet 170.
+// Channel EBP and the walking packet still disagree. Combined delivery predicate with a separate masked route
+// 154/164, named recipient bit with a separate route 171/179, removed local intersection 154/164, and named bit
+// with in-place route filtering 178/179 (indexed/walking). NOT kept: the masks raise the score and the
+// walking forms shorten the function.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -925,6 +925,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // or after normalization 296/297/290/279. Conditional reversing arm, magnitude first,
 // conditional magnitude arm or both tests evaluated 112/116/127/124.
 // NOT kept: all raise the score. The unity register and entry interleave still differ.
+// Unity still needs XMM3 at the first control sum. First velocity through the shared normalizer with its own
+// fallback: saved length test 570, early fallback 315, fallback alternative 315, combined short or zero guard
+// 317, staged normalized pair 570, saved fallback decision 222, named raw coordinates 570, short-input guard
+// alone 302. NOT kept: the helper forms disturb the entry and move away from the 1144-byte extent.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {

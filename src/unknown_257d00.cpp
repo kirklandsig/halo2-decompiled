@@ -2934,6 +2934,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // actor EDI / state EBX (+0x9). On main's actor-EBX base: early actor+7 + no `local_5` 431, plus case 13/20/4 579
 // (swapped), plus case 13/20/2-agg 620 (swapped), main + case 13 dropped + case 20 inline return-1 + else arm +
 // case 5/7/8 swaps 404 (2416 B, actor EBX, masked 92; match-only swaps), without the swaps 510 (2428 B). NOT kept.
+// The default still jumps to the late completion block. Update only for nonzero countdown, case 0/cases
+// 7–8/both 453/532/509; conjoin each countdown result with the inherited completion, case 0/cases
+// 7–8/both 510/511/613; guard the conditional timer and write only on pending 512, with case 0 the
+// same 485. NOT kept: all increase the score and none brings the success exit to the timer cases.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
