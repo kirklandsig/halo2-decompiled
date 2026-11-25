@@ -2850,6 +2850,11 @@ struct s_unit_event
 // drop blocks (ours still forms one data-plus-offset sum per block), the constant 1 spilled into the region slot at
 // the update, the vehicle block's constant 1 in ESI, the section scan's count/cursor pair, and scratch rotations in the
 // seat and event blocks.
+// The region and permutation registers remain exchanged. Short displacement,
+// long displacement, combined byte offset and staged byte offset score
+// 420/420/429/420. With a named full-width destruction bit, each scores 528.
+// NOT kept: the inline shifts tie or regress. The named bit shortens the
+// body by 16 bytes and leaves the same entry difference.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

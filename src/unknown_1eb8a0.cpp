@@ -1029,6 +1029,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // `n2 + (s->fast ? 7 : 1)` 567 (same code); the settle length through the existing magnitude3d 567 (same code); the
 // closing test as `s->duration + 6 > s->counter` 568; the 12/8 factor written inside the cap at all three clamps (no k
 // locals) 567 (same code); both activation step counts as one conditional expression each 677 (2879 B). Body unchanged.
+// EBX still takes the supplied direction. Staging the first displacement endpoint
+// in the vector, in three coordinates, as a point copy or as a point initializer
+// scores 570/670/716/651 with the alignment scale before those reads and
+// 567/670/716/648 after them. NOT kept: the staged vector ties at best, and
+// the coordinate and point forms move the frame or vector schedule away from retail.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

@@ -1084,6 +1084,11 @@ static inline word font_character_pixel(long alpha, long color)
 // The 0xc frame agrees. The packed length/count join and literal low-word/shifted-high OR still differ.
 // Common nonliteral count with zero header, nested tests or dispatch switch, branch or selected span 188/187/188/179;
 // with zero type and payload 176/181/183/193. NOT kept: an early literal branch changes the prologue and the caller.
+// The pair count load still precedes the last pixel store. Descending bit offsets,
+// upper boundaries, post-tested offsets and pre-stepped boundaries score
+// 175/192/175/196 with shared length and 175/192/175/196 with per-arm length.
+// NOT kept: the offset loops change the pair layout. The boundary walks also
+// change the matched pixel-copy caller.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
