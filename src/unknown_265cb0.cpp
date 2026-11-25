@@ -1126,6 +1126,18 @@ real function_30bf0(vector3f *vector);
 // the settings read through this file's `s_distance_rates_view` (its flags byte and the range at +4 named) 84 (same
 // code). Tried on it: the posture switch with `default: break;` 84; the clipped point brace-initialised 84; `side, up`
 // declared ahead of the seat loop 84; `a, b` declared ahead of the seat loop 84 (all the same code).
+// GB6 (24 trials, fast with 0x263740/0x26d370/0x25c9d0/0x263d70, all MATCH, control 84): `amount = PIN(amount, 0.0f, 1.0f);
+// if (amount > 0.0f)` (`amount < 0.0f ? 0.0f : (amount > 1.0f ? 1.0f : amount)`) fixes retail's `range` load into `xmm0`,
+// both `je`/`jne` jumps to the `range` reload, exact `1308/1308` B and exact clamp block, scoring 97 (lead held by the
+// coordinator; first cross flips two products by symbol phase and `amount` still pairs with seat counter);
+// `PIN` hi-first 192 (1296 B), local `fraction = PIN(...)` 246, `PIN` + `vector3f_add_scaled` 105 (1308 B), `within_range`
+// flag 239 (0x34c), `within_range` + `PIN` 231, `delta` k/j/i 104, `clipped` k/j/i 100, `plane.d` x/y/z or z/y/x 84 each,
+// typed actor basis struct 131 (1308 B), `mode >= 0 && mode <= 1` + seat ref 98. On `PIN`: `vector3d_from_points3d` delta
+// 156, `basis_dot3f` plane 152, secondary copied first 97, b-max first 96, both secondary-first 116, `amount` or `amount`+
+// `distance_squared` hoisted 97 each, `cross3f_staged` 97, seat ptr 91 (1310 B), `range` after `delta` 101 (with sec-first
+// 101); diagnostic (not keepable, reused variable): `PIN` + one scalar for `amount`/`distance_squared` 69 (1308 B, exact
+// retail offsets for `range` +0x30, `delta` +0x4c, `motion` +0x24, `plane` +0x38, `a`/`b` +0x58/+0x5c, `facing_primary`
+// +0x18). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

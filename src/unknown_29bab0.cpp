@@ -952,6 +952,15 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // both arms 751, helper both arms 731 / ternary 721, direct local_26 both arms 593); inline bool flip helper 665; combined clean
 // structure with mode-2 early i/j + MIN(1.0f, ratio) + field_50 early + no local_28 + blend helpers 673-675 (3475-3478 B,
 // aligned 112, reg+esp-masked 43: all 53 mode-2/scale instructions match byte for byte), without mode-2 early 466-493.
+// GB6 (fast with lane 6 r242's companion list; control 462 at 3504/3499 B, +0x100, aligned 182, masked 118; 22 trials, body unchanged):
+// on the 462 base: separate scoped velocity at line 1162 682 (3499 B, +0x60); MIN(1.0f, ratio) both 461 (al 170, mk 108); early field_50
+// alone 462 (al 173, mk 109), + MIN(1.0f, ratio) both 461 (al 161, mk 99), + separate local_26 *= 0.5f 475 (al 171, mk 103; folded single-expr
+// 651); vector3f_add_scaled side point 665 (3499 B); sqrt(j^2+i^2) 462 (same code); magnitude2d(&local_26) 475; frame_velocity dots swapped 664.
+// Combined retail lead B2_01 (mode-2 early i/j + MIN(1.0f, ratio) both + early field_50 + separate local_26 *= 0.5f, held by the coordinator):
+// 673 (3478 B, fr=0x88, +0x100, 839/844 insns, al 98, mk 72; folded T04 677, al 103, mk 79); on B2_01: byte local_21 673 (same code),
+// (bool)((byte)local_21 != 0) 670 (3483 B, 841/844 insns, al 93, mk 76: recovers retail's test/setne without moving local_2; cast, match-only),
+// byte side_ok 554 (3499 B, +0x60), + per-arm center_y 682 (3488 B, pos +0x80, +0x60), + sep velocity 682, zero-new-local per-arm local_25.y
+// (direct or +=) 739 (fr=0x90), two-ternary side 644 (al 131, mk 94), 29bab3 mul order 673, cross3f_staged 673.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
