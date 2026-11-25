@@ -1008,6 +1008,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // through approach_126660 914; the fade's pins with both flag setters 867 (3301 B); the used bit with the audible setter
 // alone 926 (3304 B); that with the fade's pins 925 (3305 B); the audible setter alone 863 (3304 B, masked 253). The
 // setters give retail's two byte operations but shorten the body (retail's word read for the audible flag stays).
+// Active-list append cursor with a computed count 889/912, indexed end
+// 845/912, cursor search 858/926, or counted append and cursor search
+// 817/926 (short/full-width query). NOT kept: indexed forms reach 0x4e0 but
+// regress. The 817 form loses gain-buffer reuse (frame 0x5dc) and shortens.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
