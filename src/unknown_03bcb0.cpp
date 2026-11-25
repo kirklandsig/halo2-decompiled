@@ -521,8 +521,9 @@ void function_3b950(void)
 	}
 }
 
+// Returns bool: its one caller (0x2bcd0) stores AL straight to a byte slot (0x2c10e) with no 0/1 normalisation.
 // @retail 0x3ba90
-long function_3ba90(long bit, s_record_sources const *data)
+bool function_3ba90(long bit, s_record_sources const *data)
 {
 	long result;
 	/* Retail keeps the source-table pointer on the stack. */
