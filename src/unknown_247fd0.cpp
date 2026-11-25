@@ -1139,6 +1139,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // low byte: 334/334/344/334. Enclosing admission with the same first three
 // projections: 334/334/344. Both admission-result arms before allocation 425.
 // NOT kept: the address remains folded. The result arms add 13 bytes.
+// M3 lane 1 r168 (fast with 0x247fd0 and 0x248cc0, both MATCH each run; control 334): the final call's tag index read
+// from a fresh getter call without re-assigning the definition pointer 334 (same code); one tag index local read before
+// the child loop for both lookups and the spawn call 375 (1658 B); the age copy moved up beside the field_08 clear 390
+// (still an integer move); the second rotation call through a file-local inline helper taking the record 334 (same
+// code: the +0x28 address stays shared in EDI); the collision normal bound as a `vector3f const &` 334 (same code). A
+// forced-ranking search over 40 single decisions found nothing under 334. Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

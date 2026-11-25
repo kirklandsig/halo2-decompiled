@@ -1017,6 +1017,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // projection through axis helper 826.
 // NOT kept: The basis conversions grow the body and raise the score. The helpers can also change
 // addition grouping.
+// M3 lane 1 r168 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 518): the tail's three dot products stored
+// straight into arg_3 in place of vector3f_assign 565 (2861 B); the side vector declared ahead of the other two 518; the
+// clearance test written `local_19 / local_6 < 0.1f` 518; the two angle totals declared in the other order 518; the
+// inactive exit as `return local_0;` 518 (same code each). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
