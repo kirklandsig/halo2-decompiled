@@ -493,11 +493,12 @@ static __forceinline void apply_first_normal_fallback(float impulse, bool retain
 	solver_velocity_31c940 *linear_source_body=(solver_velocity_31c940*)((char*)inverse_source - offsetof(solver_velocity_31c940,inverse_inertia));
 	w[5]=a->linear;
 	w[0]=linear_axis;
+	w[8]=_mm_shuffle_ps(w[1],w[1],0);
+	w[9]=_mm_mul_ps(w[8],w[4]);
 	w[6]=_mm_shuffle_ps(w[3],w[3],0xff);
 	w[7]=_mm_mul_ps(w[6],w[0]);
 	w[7]=_mm_add_ps(w[5],w[7]);
-	w[8]=_mm_shuffle_ps(w[1],w[1],0);
-	w[9]=_mm_mul_ps(w[8],w[4]);
+
 	w[10]=_mm_shuffle_ps(w[9],w[9],0xff);
 	w[10]=_mm_mul_ps(w[10],w[0]);
 	a->linear=w[7];
