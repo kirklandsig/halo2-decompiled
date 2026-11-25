@@ -5924,6 +5924,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // or explicit test outcomes 209. Separate final rate bounds selected, branched or initialized
 // from rate candidates 133 each. Both joins as selected results 213, or as candidates 200.
 // NOT kept: all grow and score higher. Clamp registers and coefficient reuse still differ.
+// Seeded angular displacements 62, upper subtraction staged 58, lower addition staged 62;
+// seeded rate displacements 57, both pairs 61, in-place angular/rate scaling at their tests
+// 169/173, full-turn constant shared with angle wrapping 175.
+// The clamp registers and shared angular coefficient still differ. NOT kept: the rate pair gains one, and the other offset forms tie or regress.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
