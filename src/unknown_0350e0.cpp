@@ -4616,6 +4616,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // code; the last three leave the ranks at 48 / 55). An empty `do {} while (false);` (what a compiled-out statement
 // leaves) at the top of pass 3's body, after the entry pointer, at the end of the body or after the loop 317 each (same
 // code: an empty block reads nothing, so it moves neither rank).
+// Creation self-swap by ordinal 368, retry only after replacement 369, final-candidate exit 369,
+// entry-identity guard 372. Duplicate self-swap guard 327, both removal guards 437, creation
+// and fallback guards 366, creation exit plus other guards 381. NOT kept: all regress.
+// The state and prefix still exchange registers and the creation ordinal still spills.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

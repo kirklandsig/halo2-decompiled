@@ -1370,6 +1370,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // Address-free axis with marker up, facing or marker forward snapshots 159/213/159. Up/facing,
 // up/forward, facing/forward and all three 213/159/213/213. Up snapshot and in-place projection 159.
 // NOT kept: 159 reaches frame 0xb4 and 848 bytes, with different alignment products and greater score.
+// Standard element-wise scale with direct or staged cross: separate axis and
+// member stores 293, separate axis and setter 293, output axis and setter 298,
+// output axis and complete result 323 for either cross. NOT kept: scale adds calls
+// and grows the frame. The scaled axis still lacks retail's register allocation.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

@@ -937,6 +937,10 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // Planar-first yaw/both. Selected or assigned final step 149/219 each. Selected time factor
 // 246/255. Named directional test 295/232. Early zero bound 295/292. NOT kept: the 149 forms
 // recover the store pair but shorten to 1696 bytes and regress. The 0x2c frame and opening body remain.
+// Planar-first plus memcpy at planar/spatial/fallback transfers 356/128/128;
+// planar with spatial or fallback 356/356; spatial with fallback 128; all three 356;
+// all three through memmove 402. NOT kept: 128 only gains two; planar copy changes the
+// first normalization. The opening J/depth store order and later rotation differences remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
