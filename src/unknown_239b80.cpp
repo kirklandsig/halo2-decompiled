@@ -1043,6 +1043,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // with the start index seeded before the classifier 264/224, and with both changes 242/216.
 // NOT kept: the aggregate copy moves the frame away from retail. The early start index variants
 // that reach frame 0x14 shorten the body to 762 bytes. Every early start variant changes the caller.
+// Duplicate span as short, published before/after the copy with the nested breaks
+// 144/146, and with the single exit 231/231. Long span with breaks 144/161,
+// and with the single exit 230/230. NOT kept: the breaks keep frame 0x18.
+// The single exit recovers 0x14 but shortens the body and loses the matched caller.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
