@@ -1120,6 +1120,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // not retail's test-first shape: not kept. Without V: D 335 (1654 B), RCD 353 (1658 B), LD 375, LRD 376, LCD 393, LRCD
 // 393 (1696 B, aligned 187, register-masked 78: the closest natural structure so far, 44 bytes long from the blend and
 // draw stores). LRCV with the `(short)` ordinal, `!local_3->unknown0c` or the sibling's record index 327 each (same code).
+// Single failure exit with a typed byte shift, word mask, named bit or named
+// low byte: 334/334/344/334. Enclosing admission with the same first three
+// projections: 334/334/344. Both admission-result arms before allocation 425.
+// NOT kept: the address remains folded. The result arms add 13 bytes.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -1745,6 +1745,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator stored graph, step, entries, then keys 732 (first difference +0x2d1, the first request's fifth-kind zero);
 // on the 742 form the candidate dropped (the id reset each pass, then set from the named entry) 1028 (2856 B); on the
 // 732 form the id assigned by a ternary on the named entry 1032 (2859 B). Body unchanged.
+// Continue from the candidate or returned index, by assignment or explicit
+// branches: 1005/1016/1011/812 in both do and while forms. NOT kept: the only
+// retail-length form ties, and the class/NONE and resolved-mode homes remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2415,6 +2418,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Resolved mode, class and type initialized beside their own requested keys, seven
 // subsets, then all three after cursor initialization: 812 each. The class and NONE
 // registers still exchange, and the resolved-mode and candidate homes still differ.
+// Clear step and cache together after keys, after graph, before graph or before
+// resolved defaults: 812/811/812/812. Clear only the two cache entries with a
+// separate step assignment at those points: 919 each. NOT kept: the first
+// difference stays +0x4, the best form gains one, and the pair clear adds 12 bytes.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

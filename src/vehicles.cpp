@@ -3978,6 +3978,10 @@ real g_47ff30 = 2.5f;
 // for force, or both reuses: 676/676/676/676. With separate mass reads: 713/713/713/713.
 // NOT kept: the 0xfc forms retain retail length but raise the score and still spill
 // acceleration at +0x20 instead of +0x34.
+// Angular-demand clamp as PIN on the computed rate, bounded updates, separate
+// result arms or lower arm plus MIN: 672 each. With separate final mass reads:
+// 710 each, frame 0xfc, first +0x66. NOT kept: the acceleration spill remains
+// at +0x20 and the velocity homes remain displaced. The frame forms regress.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

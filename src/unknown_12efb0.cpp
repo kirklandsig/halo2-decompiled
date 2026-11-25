@@ -1054,6 +1054,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // product 607, its weight likewise 607, both 607 (same code each); the palette byte read at each use (test, bounds,
 // index, source index) 666 (re-measured on its own: retail's `mov cl` byte load, NONE then in EDX); the three
 // six-field outputs typed as a color plus three reals with the helper writing members 607 (same code). Body unchanged.
+// Separate selection from contribution by resolving the tag in the no-palette arm,
+// selecting it after lookup, checking palette precedence, or setting the palette
+// pointer in each arm: 1085/1085/1087/1087 with short, 1081/1081/1083/1083 with char.
+// NOT kept: the provider and palette roles still differ and the body grows past 4140 bytes.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
