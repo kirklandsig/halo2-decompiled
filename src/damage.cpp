@@ -3967,6 +3967,12 @@ enum
 // chained child defaults 308; single child flags word 309; native child permission masks 309; shared
 // primary pass Boolean 540; nested damage-report admission 309; late absorption initialization 449;
 // separate region span and flag tests 310; separate shield-and-body gate 309.
+// Clear permissions on exclusion 493, explicit defaults in no-info arm 352,
+// snapshot of flags used at the two child gates 538, selected flags then both
+// permissions 355, defaults at info lookup 457, counted single-target append 309,
+// combined event mask 473, rolling damage initialized first 484.
+// NOT kept: the counted append ties and the rolling damage form only fixes length.
+// The child-permission homes and parent count register still differ.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)

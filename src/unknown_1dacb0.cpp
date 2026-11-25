@@ -1783,6 +1783,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // points. Compare the carried unresolved word at the latch with default or
 // copied candidate: 973/978/1005/945/1003/918/988/927. NOT kept: all raise the score, and
 // the latch forms grow the frame to 0x30. Class/NONE and candidate homes remain.
+// Per-attempt default pointer by selection or redirection after or before lookup
+// 934/976/975; shared default pointer selection or redirection 962/971; shared
+// default by value selection, on miss or before a hit replacement 962/930/939.
+// NOT kept: most forms grow the frame to 0x30. The default-first assignment
+// restores the initial class register but grows the body. All disturb callers.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
