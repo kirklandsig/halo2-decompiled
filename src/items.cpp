@@ -994,6 +994,10 @@ struct s_item_collision_bsp
 // The embedded basis reference also scores 190. Reading j/k/i once with the left-axis or
 // embedded-basis reference scores 190/190.
 // NOT kept: the first coefficient loads, 0xa0 frame and five excess bytes stay the same.
+// Pending spin k product scheduled between linear or paired output stores, including compound multiply:
+// 190 in all eight forms. Last angular store with the direct or named product after the paired i/j
+// outputs 186/186 at 1362 bytes. NOT kept: four-point gain below the threshold. The transformed-plane
+// registers and pending x87 scale still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

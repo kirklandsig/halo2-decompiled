@@ -1391,6 +1391,14 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // 535 instructions (aligned 97 / 14: the walk and the approach block are then retail's but for the index in EAX for
 // ECX); with the entry looked up at each use too 358 / 428; the four setup statements in all 24 orders on that form
 // 295..307, none with the mask store ahead of the gains. Not kept: the recipe is a stack of match-only forms.
+// M3 lane 3 r308 (h2m fast with 0x126df0 and 0x12a810; this body reads 87 without them). The two reloads tie in the
+// scheduler (equal height and successors) and follow their split pieces' numbers. The split pass takes NONE, zero and
+// the 0xffff mask, then the first index, then the count, and hands out free numbers in the order 4, 19, 15, 14, 21,
+// 12, 22 (19 and 15 are the duration and the 1000.0f constant). So the first index gets 14 and the count 21. One
+// split value more or fewer below the count, or one float or dead value more or fewer ahead of 14, would give
+// retail's order. Forms, 2 unless given: the definition through the existing sound_definition_get 2 (same code), with
+// the playing element unnamed 2, with no index local (`long index = iterator.index;` in the body) 2; the promotion lookup
+// through the out-of-line 0x221810 116 (236 B, a call); `long index = NONE;` 2 (removed before allocation).
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {
