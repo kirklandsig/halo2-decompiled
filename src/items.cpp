@@ -1019,6 +1019,15 @@ struct s_item_collision_bsp
 // planar output 294, branch-local separate planar output 266. NOT kept: the branch helpers
 // tie, and the joined or separate-output forms shrink the frame and raise the score.
 // The rotated normal registers and pending x87 spin factor still differ.
+// M3 lane GB round 5 (40 trials, fast with 0x10c850/0x10cec0/0x10d4e0/0x10d5f0 all MATCH; control 190, 1366 B, al=109, mask=63):
+// MAJOR LEAD: shared real spin_scale finishing all 3 spin.{i,j,k} in BOTH branches (or vector3f_scale in both) with
+// `real r = (real)(*seed >> 16) * (1.0f / 65535.0f); spin_scale = (r * speed) * 1.5707964f;` (`B2_07`/`B2_08`) reaches 1364/1361 B,
+// 326/325 insns, al=58 (vs 109), mask=35 (vs 63), recovering EVERY retail stack home, all 3 un-folded fmuls, retail's exact x87
+// tail-merge at 0x10d431, and matching 98/98 opening + 157/160 closing insns (235 raw solely from +1 insn shift in lines 99-169).
+// Also tried on main and B2_07: single-expr fwd+left+up / left+up+fwd / up+left+fwd plane 197-200; 2-stmt plane + no-paren dist +
+// marker-first pos 242 (mask=32); x+y+z-d dist 193; surface_plane*=offset 249-250; branch-local spin factor 240 (al=66);
+// double spin factor 244 (fr=0xa4); outer k + no-fold r 196; sp=plane copy 307 (fr=0xa4); normal+plane_d 244 (mask=33);
+// inline dist/offset 235/244; single plane in-place 245. Body unchanged.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1428,6 +1437,12 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // workspace and setter 170/170. Separate ordinary/staged rotation cross scaled first or at
 // use 257/218 for each helper. NOT kept: both output workspace forms attain 0xb4 and 848
 // bytes but increase the score. The scaled-axis registers and alignment order still differ.
+// M3 lane GB round 5 (32 trials, fast with 0x10c850/0x10cec0/0x10d4e0/0x10d5f0 all MATCH; control 130, fr=0xc0, 859 B, al=94, mask=37):
+// single-write address-free axis (or address-free quaternionf, dot3f, separate raw->scaled scalars, 2.0f*left, cross-last, scale-last, or inline 1/root)
+// recovers exact fr=0xb4, 848/848 B, +0x2b and 0 diffs on all 32 prologue/default and 65 else/epilogue insns, but scores 159 raw (80 vs 82 if-branch insns
+// shifts else/epilogue by 2 lines); naming `real align = ...` before `square = (align + 1.0f) * 2.0f` recovers retail's exact j*j+i*i+k*k dot order at
+// fr=0xb4 (831 B, 173; with j,i,k scaled scalars 848 B, 170); in-place facing-first cross + j,i,k scale 129 (fr=0xc0, -1 below bar); in-place raw->scale /
+// cross-before-sqrt / two-struct raw+axis 130 (fr=0xc0); sequential `align +=` 168-172 (fr=0xb8/0xc0); cross into up 200 (fr=0xbc). Body unchanged.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

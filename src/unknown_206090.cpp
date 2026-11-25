@@ -1021,6 +1021,20 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // pairwise 1421/1458/1402, all three with normalizer assignment or memcpy 1518/1518.
 // NOT kept: the frame shrinks as far as 0x5a8, but the body shortens and the score rises.
 // The retail 0x58c frame and earlier component and velocity homes remain different.
+// GB6 (fast with 0x2056e0, then plain with 0x2056e0/0x2078f0/0x2079f0/0x207ab0 all MATCH; control 1346, 6243/6238 B,
+// al=1555, mk=1178; 25 trials): 1334 at 6243 B (fr=0x5d0, al=1376, mk=1143), NOT kept (coordinator review: statement
+// order, a moved declaration and one-use locals, all kept only with a byte match), from: (1) local_19.field_c
+// computed ahead of local_19.field_0 (1341 alone; retail lines 175-194 store field_c before field_0); (2) local_48 = *g_4687b0
+// moved to the top of `if (field_84 > 0.0001f)` (1343 alone, al=1444; retail loads g_4687b0 ahead of field_88/field_94);
+// (3) speed_change_limit = g_510c54->field_2_3 * local_47 ahead of getMass() with minimum_mass/maximum_mass bounds for PIN
+// (1342 alone, al=1486, mk=1162; matches 61 retail insns across the mass/impulse block, keeping g_510c54 in a register;
+// pairs 1338/1337/1339, dv-only 1346, bounds-only 1366). Also tried: wheel local_25 interpolation with lazy
+// `local_24 - local_23` inside `||` and if/else bounds 1383 (exact 6238 B, al=1521, mk=1141: matches all 49 insns of retail's
+// local_25 block; on the 1334 form 1375 at 6238 B, al=1330, mk=1106); local_20 inside `if (local_7[0x81])` 1447 (6259 B); bundle
+// with float wave + in-place vector3f_add_scaled 1461 (al=1304, mk=1098); typed query array 1346; `for (;;)` contact loop
+// 1346; direct local_56 + early local_48 1387 (6208 B); split local_54 on the 1334 form 1390 (6238 B, al=1274); split local_13
+// square on the 1334 form 1420 (al=1277, mk=1095); all together 1461 (al=1231, mk=1041); dot3f(&local_42, local_76) 1334; direct
+// return on the 1334 form 1349; diagnostic `/Op` flag 1833 (6652 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

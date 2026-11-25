@@ -989,6 +989,20 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Marker query admissions computed before object collection (entry/side/extra/entry+side/entry+extra/
 // side+extra/all) 927/934/938/949/935/945/951, prefiltered marker bits 942. NOT kept: entry,
 // side and masked forms recover 0x2cac with higher scores. Actor/zero registers remain exchanged.
+// Gemini lane GB r6 (2026-11-25, 46 trials, control 925 = plain, aligned 415, masked 262): 858 at 3724 B (retail's frame
+// 0x2cac, first diff +0x41, aligned 313, masked 191) from `bool enabled = true;` declared ahead of the classification test
+// (retail stores 1 in dl before that branch, at 0x2c120d) and both radius checks written distance-first (`!(d <= r*r)`), with
+// both one-use `velocity` pointers dropped, s_obstacle_definition_flags_2c as a word bitfield (its declared width in
+// s_object_definition) and the four inner dots/length_sq through dot3f/length_sq3f. NOT kept (coordinator review): the
+// moved declaration and the flipped compares are kept only with a byte match, and the other changes alone score 927.
+// Lane readings: `enabled` alone 917 (0x2cb0, aligned 311), + entry `dot3f` 903 (3749 B, 0x2cb0), + first `velocity`
+// dropped 857 (3731 B, 0x2cac), + both `velocity` dropped 858 (3724 B), + entry `dot3f` 868 (3713 B); direct
+// `physics->spheres[s]` 931 (3786 B, 0x2cac, +0x41), + `dot3f` 917, + clean combo 893 (3759 B, 0x2cac); `switch (type)` 899
+// (3760 B, jump table); sphere flags bitfield 924 (3731 B); hybrid direct/local sphere 944. Match-only leads: the 858 form
+// + entry `dot3f` + type-1 `if` + `else straight = true;` 389 (3731/3731 B, +0x91, aligned 219, masked 69); that + the
+// vehicle index re-read + `long type` at the four arms + inner helpers 528 (3731/3731 B, 921/921 insns, aligned 146,
+// masked 46). Left on that path: retail's no-actor `straight = true;` store (0x2c0e9a), the type-1 single-store `if`,
+// `long type` at the four arm compares, the `vehicle_index` re-read.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

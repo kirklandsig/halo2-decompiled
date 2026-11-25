@@ -2952,6 +2952,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // (2396/2396 B, aligned 166, masked 32, still swapped); case 20 y/x/z subtraction + `b0 == NONE || d1` 602 (2376 B, masked 48).
 // On main's actor-EBX base (keeping case 13 and cases 2/4/18): case 20 conditional clear + `b0 == NONE || d1` 526 (2436 B, EBX, masked 71),
 // with main-arm shared exit 540 (2444 B, EBX, masked 69).
+// GB6 (fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130; control 429, 2416/2396 B, al=172, mk=123; 24 trials, restored):
+// isolating the 404 form (case 13 dropped + case 20 inline goto return-1 + else `b0==NONE||d1` + case 7/8 ternary + case 5
+// swapped) 408 (al=153, mk=87), case 7/8 only 502, case 5 only 503; + minor retail forms (cases 9/11 field-first, iter
+// index/datum_index, `? 1 : 0` +0x465, flag-first publish) 404 (al=143, mk=82: 129 straight insns match retail across cases
+// 7/8..11); + direct return 1/0 (no goto) 421/423 (2412/2416 B, short `mov ax, 1`/`xor ax, ax`); + natural if/else in case 5
+// or both case 5/7/8 556/621 (exchanged, two stores bump state weight); without case 20 goto 444 (2408 B), old case 20 else
+// 479; + direct `vector3f_assign` (no `turn_facing` local) 413; + case 20 `z,y,x` inline dist_sq 391 (al=133, mk=76; + iter
+// order 392, mk=74; diagnostic/hand-inlined); + case 6 typed `s_slot_4c` bitfield/split OR 404/404 (on main 429), split via
+// global 512 (2428 B); + case 21 `arg_2->flags3` 404 (same code); adding case 4 direct/kji/dot3f (583), case 18 held refs
+// (619, matches case 18 + case 20 init), or case 2 aggregate copy (629) all exchange actor/state (+0x9). NOT kept (404/391
+// depend on match-only case 5/7/8 swaps).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
