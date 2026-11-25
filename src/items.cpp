@@ -1596,6 +1596,19 @@ struct s_item_flags_view_10b850
 // entry bools 904; `item_cross_product` + ternary abs + scoped ray 929 (fr=0x130) and with two-def `item_flag_bit_test` +
 // `surface` before 0x10c880 + ternary settle 783 (4100 B, fr=0x12c, fd=+0x3e, match-only one-caller helper/hit local), bounce-first
 // + `tag_definition` + `flag4` 853 (4043 B, fr=0x12c, fd=+0x3e, mk=496).
+// GB11 (30 fast trials, control 813 at 4096 B, al=807, mk=589; all restored, body unchanged): existing `word_flags_set` 859
+// (4096 B, fr=0x148, mk=572: exact unmerged `and/or byte ptr` settle flags at 0x10bd41/0x10bd78); `byte_flags_set` 871;
+// `TEST_FIELD_BIT` at flag14+flag4 842 (mk=554), flag14 alone 846; single-store `value_13a` ternary 893 (mk=565); `if/else`
+// `correction` 867; both 867; + `word_flags_set` + `TEST_FIELD_BIT` 898 (al=723, mk=545); `cross3f_staged` 818 (mk=555;
+// tail-only 818, mk=552; + flag14 843); direct `item_spin_vector` 876; combined 857 (al=643, mk=529); SSE flow (`cross3f` +
+// ternary abs + `vector3f_add_scaled`) 912 (fr=0x13c, mk=525), + early `settled`/`collision.unknown24` 914 (al=635, mk=477);
+// bounce-first (`!((surface && floor && slow) || (slow && value_13a >= 4)) || (value_58 & 0x20)`) + single-store `value_13a`
+// + `if/else` `correction` 902 (mk=505; `!((...) && slow && ...)` 890; ternary cond 818; without `if/else` 880); + `word_flags_set`
+// + `TEST_FIELD_BIT` 913 / + `cross3f_staged` 903; full SSE (`item_cross_product` or `dot3f`) 877 each (4075 B, fr=0x13c, al=612,
+// mk=408: 8 calls 0x168f40..0xb8d30 locked at constant -12 delta; + scoped ray diag 878, fr=0x130, mk=402); + `surface = false`
+// before 0x10c880 858 (4096 B, fr=0x13c, 873/877 insns, mk=405; + direct spin 882, al=589, mk=393; alone 856, + cstage/early 860,
+// + cstage/wflags 858, ternary bf 912). Positional score stays above 813 because entry flag-byte stores and 0x16a040 (noinline)
+// shift all offsets by 0x10..0x28.
 // Earlier (824, was 813): Frame 0x154 versus 0x12c, entry Boolean bytes and the carrier, collision and rotation
 // stack homes still differ.
 // MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so

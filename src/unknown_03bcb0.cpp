@@ -1151,6 +1151,15 @@ s_3c9a0_matrix g_4c1b68;
 // overload 227, the first tangent through the double overload 227. Diagnostic (reverted): a float-consistency pragma around
 // the body 433 (1545 B: tan becomes a library call, so retail is not built that way, though the divide and compare then
 // turn SSE).
+// M3 lane 3 r309 (H2M_FAST; 0x3c9a0 MATCH and 0x3c3c0 74 throughout; control 291 at 1330 B). Retail gives the first
+// tangent, the view tangent and the near corner_x memory homes (the x87 result stored as a float, then an SSE divide and
+// SSE/integer copies); ours keeps them on the x87 stack. None of these moves it: the tangent or the view tangent as a
+// real product `(real)tan(...) * x` 291 / 291, both 291 (same code); both with no casts 291; every local declared bare
+// at the top 291; the clamp's first test as `!(width_scale > 1.0f)` 306 (1321 B: the second compare folds away, so the
+// `<=` / `>` pair is retail's). On the reused corner pair (r151's held form, re-measured 239 at 1387 B, 229 with the
+// two-multiply angle): tangent2 computed ahead of the near corner 239; the width scale in one expression 239; no casts
+// 239; the `!(... > 1.0f)` test 249; bare top declarations with the two-multiply angle 229. Reading: retail keeps one
+// home for corner_x across its near (x87) and far (SSE copy) values, ours splits the two.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1244,6 +1253,14 @@ long function_40de0(long index, bool first, bool second);
 // ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
 // Also tried (@coldspear, #104 2026-11-02): index as long in all five declarations: 0x41040 315, and the matched caller
 // 0x44ac0 stops matching (137), 0x44c90 107 -> 149. Not a lead.
+// M3 lane 3 r309 (H2M_FAST with 0x44ac0, 0x44c90 and 0x402b0, MATCH throughout; control 300). Retail ORs the incoming
+// index register into the handle raw (`or ebp, edx`) and sign-extends it only for the entry lookup (`movsx esi, dx`); its
+// callers pass 32-bit loop counters in EDX. Index as `long` in the definition and all four declarations, the three
+// `(short)` casts dropped at the calls, the entry read as `g_4ba138[(short)index]` and the handle OR-ing `index` 315
+// (1076 B: retail's raw `or`, every caller still MATCH); on it a local copy of the tag table for the two lookups ahead
+// of the first call 314, `long kind` 309, the material as a ternary 302 (cmove), all three 316. On the short form: the
+// tag-table local 301 (1079 B: the table load moves to the entry as retail's, the registers stay ours), `long kind`
+// with the material ternary 305, the tag-table local with the ternary 307.
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -1858,6 +1875,13 @@ extern long g_485a60;
 // slot is stored as a dword), values 0..255 so no behaviour change. 0x100000 test: retail `shr edx,0x14; test dl,1` but
 // every spelling (TEST_FIELD_BIT, bool local, (x >> 20) & 1) folds to `test [mem],0x100000` here (380 in all four).
 // Also tried: definition first then part_index/value/index (402), index kept as long raw_index + short (393), value first (404).
+// M3 lane 3 r309 (H2M_FAST; control 380). Retail decodes part_index as `xor ecx, ecx; mov cl, al; ... and ecx, 0xff`
+// and reads it back as a short (`movsx eax, word ptr [esp + 0x34]`): `short part_index = (short)(packed & 0xff);` gives
+// that exact sequence but 417 (part_index stays in EDI where retail spills it); with it, the definition lookup first
+// 414, the definition and the tag store first 414, definition/part/value/index 406, definition/index/part/value 406.
+// Other spellings: `short part_index = (byte)packed;` 401 (1399 B, `movzx di, al`), `(byte)packed & 0xff` into a long
+// 401 (1400 B, `movzx ecx, al`), `(short)((byte)packed & 0xff)` 401 (1399 B). Lead: the short form plus whatever makes
+// part_index spill.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)
