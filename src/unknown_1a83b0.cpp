@@ -849,6 +849,14 @@ s_1a8a10 g_4453c0[] =
 // copy, three counts at once (a single forced decision gives 23 at best, 60 tried). On the lead: stores in index order
 // 32; the negations read back from the stored [0]/[2] 34; the perpendicular's i as unary minus 31; x and y named from
 // the point for both sums 31; the perpendicular's j from the copy's i 32. Body unchanged.
+// M3 lane 1 r167 (h2m fast with 0x1a8c30, MATCH; control 17, the lead 31). Allocator reading: main's float block has 8
+// referenced register candidates and the lead 10 (its perpendicular j is its own copy candidate and its negation a
+// separate temporary); the per-block weight scales with that count, and at 10 the i and j webs (10 per candidate) beat
+// the zero (6 per candidate plus 40 from the switch arms) and the i copy (8) beats x (4 plus 36), which is the lead's
+// numbering; at 8 the order is retail's. So retail's block has main's candidate count with the lead's instructions. On
+// the lead: both sums as plain dot products (`perpendicular.i * x + perpendicular.j * y`, `copy.i * x + copy.j * y`)
+// 29; that with the perpendicular's j from the copy's i 32; the perpendicular declared and set ahead of the copy 31;
+// stores in index order 33; both vectors brace-initialised 32. Body unchanged.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

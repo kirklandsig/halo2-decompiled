@@ -939,6 +939,23 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // 14/18 and 15/19 as combined labels at retail's block positions: 12's zeros ascending (chain or two statements) 6,
 // with only 14/18 combined 6, the labels in case order 34, 12's zeros descending 2 (same code). So the flip is not a
 // count of blocks ending in the pair: it fires whenever the 12/13 zero pair has the order of 14/18's last two zeros.
+// M3 lane 8 r236 (h2m fast with 0x19be0/0x19ca0, both MATCH each time; the first form also in the plain check, 6).
+// Reading: the compiler's tail merge moves independent stores so that case blocks end on the same instruction as the
+// textually last case, then clones the small shared tails back. With EVERY case written as plain ascending statements
+// (`out[0] = ...; out[1] = ...; out[2] = ...; out[3] = ...;`, no chains) it produces all of retail's descending orders by
+// itself (case 9 [4][0], 11 [4][0], 16 [4][8][0], 17 [8][4][0], 15/19 [4][8][c][0], 20 [c][8][4][0]) and leaves 6: the
+// three [8]/[c] pairs of cases 10, 12/13 and 14/18, which it turns to [c][8] together. So the chains in this body only
+// spell what that pass does anyway, and the pair is the one thing it does differently from retail. Diagnostics on the
+// ascending form (semantics changed, restored): case 10 storing height at [8] and width at [c] 2 (every other block
+// retail's: the flip needs case 10's `movss [eax+8], xmm0`); 14/18 without the out[3] store, or 12/13 without it, no
+// flip (case 10 and the other tail stay ascending: the flip needs the two-store tail that 12/13 and 14/18 share once
+// merged); a third store in case 10 still flips (its [8] store moves last); case 17 without out[2] 95 (680 B). Forms on
+// the ascending form: case 10 placed first / after 11 / after 12 / after 13 / after 14 / after 18 / after 19 / last
+// 24/14/14/22/22/45/55/64 (the pairs flip at every place; first or last, every [8][c] pair in the switch flips and
+// cases 9, 11, 16 keep source order); 11 above 9 20; 10, 11, 9 29; case 9 last 111 (688 B, its two stores merged into
+// 16 and 15/19); 12 above 11 6; 16 first 31; 16 after 10 21; 13 above 12 6; cases 5-8 as one label group 6; `return
+// true;` in place of `break;` in case 10, in 12 and 13, or in 14 and 18, 6 each (same code); in every case 36 (the
+// merged blocks then sit at 14's and 15's places and cases 9, 11, 16, 17 keep source order), in every case but 10 36.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

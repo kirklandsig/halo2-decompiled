@@ -1340,6 +1340,21 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // with point setter 115; with shared denominator dot 224; with denominator in the fraction local 221;
 // with shared near normal negation 115; with shared forward negation for the far plane 130.
 // The early x coefficient preload and exchanged zero XMM home remain.
+// Lane GA r3 (fast with 0x1648d0/0x320b0, both matched unless noted; 67 trials across 6 batches): major structural lead:
+// calling ray_plane_distance (including unmodified ray_plane_distance_1648d0, 0x1648d0 stays MATCH) with vector_products.h's
+// vector3f_add_scaled naturally produces rank(delta.i) < rank(t) < rank(delta.j), rank(delta.k) without variable reuse or
+// written-out helpers, matching the entire head (+0x00..+0x22f, e4.i preload into XMM4 and xorps xmm4, xmm4) and all three
+// intersection rows at retail's 1851 B (173/170/169 positional only because a 1-byte diff in the k denominator product —
+// movss xmm0, [ecx+8]; mulss xmm0, xmm3 (9 B) vs retail movaps xmm0, xmm3; mulss xmm0, [ecx+8] (8 B) — drops one alignment
+// nop before the projection loop and shifts the identical 115-line tail). Tried: t=0 after denom/delta 252/239; plane helpers +
+// vector3f_negate_ab (+ indexed proj / vector3f_add / vector3f_add_scaled) 230-315; n[] loops 266; ternary bounds 290;
+// a one-caller crossing-point helper 249; single-expr denom/ternary t/no p0-p1 pointers + vector3f_add_scaled 119/121/119;
+// point3f & refs 115; unmodified ray_plane_distance_1648d0 + vector3f_add_scaled 173 (+ all-3 vector3f_negate_ab 196);
+// i,k,j ray_plane_distance + vector3f_add_scaled + walkout/out[k] 170/169, + all-3 vector3f_negate_ab 178 (matches all 6 XMM
+// regs of head & intersection), + basis_dot_xzy 174, + single-expr dot 190, + delta i,k,j 264, + walkout2 177, + real_point3d_set
+// 121/170, + plane helpers 206-274; changing shared ray_plane_distance_1648d0 to i,k,j breaks 0x1648d0 (186/194); diagnostic
+// partial-sum ratio + plane helpers + vector3f_scale 106 (reuses t for denominator, not kept) and phase sweep k=1..15 on
+// rpd_ikj + walkout 156..208 (period 8, best 156 at k=4/12, ~18 aligned diffs). Body unchanged.
 // M3 lane AO r1 (fast; control 115): the intersection as vector_products.h's vector3f_add_scaled(p0, &delta, t, ...) in
 // place of the scale and the three adds 119 (1851 B: the x row is retail's `t * delta.i + p0.x`, but the y and z rows
 // form t first where retail scales delta.j and delta.k in place, and the head's XMM roles rotate once more); the segment

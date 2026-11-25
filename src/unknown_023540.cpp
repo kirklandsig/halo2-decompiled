@@ -4391,6 +4391,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // 1130 (4832 B); every combination of five forms (`offset` after `maximum`, lane 8's span copy, one shared `gain`, one
 // shared upper/lower pair, the low-bound local; 31 builds) 4 or 5, aligned 4 each: only the first two change anything
 // and neither order of the pair's two pieces changes.
+// M3 lane 3 r308 (H2M_FAST; on the 4 form, re-measured 4). The reload pairs are a scheduler tie that follows piece
+// numbers: the float split pass takes its values in number order, the span ahead of the 1.0f constant (a higher
+// number), and hands out free numbers 116, 115, 107, 72, 78, 97, 94, 96, 85, 86, so the span's long piece is 115 and
+// the constant's 96 and the constant is reloaded first. On the 4 form: the exponent loop's test written
+// `(real)(1 << exponent) < inverse_span` 4 (same code); the offset clamp as an if/else 1072; `maximum` bare with a
+// `default: maximum = 1.0f;` case 1174 (4856 B); a named `real power = (real)(1 << exponent);` for the seven later uses
+// 885; the small-span exit ahead of the width and the clamp 10.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

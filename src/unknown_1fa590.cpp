@@ -465,16 +465,23 @@ real function_30bf0(vector3f *v);
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate,
     vector3f *velocity, real const *limits, real max_speed, real acceleration);
 
+/* facing comes second: both retail callers (0x1197b0, 0xe01d0) form the facing address only after the settings and
+   control addresses, the order a right-to-left evaluation of (object_index, facing, settings, control, ...) gives.
+   With facing that early its i component outranks the test's forward.i read unless two named values come ahead of
+   that read (speed_squared, limit_squared) and the cross product reads forward.i through the forward pointer, with
+   the up pointer the older symbol; the operand orders below are retail's only in that arrangement */
 // @retail 0x1faf80
-bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
-    real threshold, vector3f *facing, real *turn)
+bool function_1faf80(long object_index, vector3f *facing, void const *settings_pointer, vector3f const *control,
+    real threshold, real *turn)
 {
     s_slot_object_view *object = object_get(object_index);
     real const *settings = (real const *)settings_pointer;
     vector3f desired;
-    if (object->velocity.i * object->velocity.i + object->velocity.j * object->velocity.j +
-        object->velocity.k * object->velocity.k < 0.25f &&
-        ((vector3f *)object->unknown094)->i * ((vector3f *)object->unknown094)->i + ((vector3f *)object->unknown094)->j * ((vector3f *)object->unknown094)->j + ((vector3f *)object->unknown094)->k * ((vector3f *)object->unknown094)->k < g_557c70 * g_557c70 &&
+    real speed_squared = object->velocity.i * object->velocity.i + object->velocity.j * object->velocity.j +
+        object->velocity.k * object->velocity.k;
+    real limit_squared = g_557c70 * g_557c70;
+    if (speed_squared < 0.25f &&
+        ((vector3f *)object->unknown094)->i * ((vector3f *)object->unknown094)->i + ((vector3f *)object->unknown094)->j * ((vector3f *)object->unknown094)->j + ((vector3f *)object->unknown094)->k * ((vector3f *)object->unknown094)->k < limit_squared &&
         control->i * control->i + control->j * control->j + control->k * control->k < 0.0001f &&
         object->forward.k * facing->k + object->forward.j * facing->j + object->forward.i * facing->i > threshold)
         desired = object->forward;
@@ -489,11 +496,11 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
                 desired = *facing;
         }
     }
-    vector3f *forward = &object->forward;
     vector3f const *up = (vector3f const *)((byte *)object + 0x7c);
+    vector3f *forward = &object->forward;
     vector3f left;
     left.i = forward->j * up->k - *(real const *)((byte *)object + 0x80) * forward->k;
-    left.j = up->i * forward->k - up->k * object->forward.i;
+    left.j = up->i * forward->k - up->k * forward->i;
     left.k = up->j * forward->i - up->i * forward->j;
     real value = (facing->k * left.k + facing->j * left.j + facing->i * left.i) * 3.3333332538604736f;
     value *= control->i;
