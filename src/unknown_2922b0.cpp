@@ -985,6 +985,20 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 659/520/660, all 652, shared normalization workspace 662.
 // NOT kept: upper-axis selection gains two points. All axes reach 2886 bytes at 652.
 // The entry clearance byte stays at ESP+0x13. The in-place basis producers are restored.
+// M3 lane GA r7 (fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 518, aligned 194, masked 184; 36 trials).
+// On lane 2 r113's outer-origin positive-range 331 lead (rebuilt 331, aligned 122, masked 102): replacing object_get with
+// existing OBJECT_DATUM_GET and 3.402823466e38f with `static const real k_real_max_2922b0` naturally gives g_4687b0 symbol
+// #35 (no dummy reads) and drops the lead 331 -> 188 (2896 B, +0x91, aligned 112, masked 88); declaring local_18 ahead of
+// local_17 hits **184** (aligned 110, masked 88: lines 5..456 byte-exact except one 3-load order at 158 and rays 0/1's
+// `arg_2 * root` order). Also on that lead: k_zero const 663; up inline 188; cross3f_staged on up 188; dot3f in rot 329/329;
+// basis_dot_xzy in rot 445 (fixes rot1 (i+k)+j sum but also forces rot2); rot dot i+j+k / i+k+j clean 188/188; rot with
+// cross3f_staged / cross3f / temp out 434/303/432; tail dot3f in vector3f_assign 421, direct 286, without local_19 277
+// (reproduces retail's [esp+0x5c] v.k spill and final 3 stores at 666/667 insns, but shifts local_9.k/j to xmm5/xmm6);
+// tail dot3f(v, axis) 420; tail local_17 via vector3f_assign 548, +dot3f(v,axis) 361, .k/.j/.i 549; matrix3x3 tail 659;
+// permute local_7/8/9 decls 184/184; second static const (#36) 184; inline rays 264, rays 0/1 direct 446; cross3f_staged
+// + dot3f tail 333; sincos 316; normalize_inline 334. On 518 base (no moved local_13): OBJECT_DATUM_GET + k_real_max +
+// local_18 before local_17 515 (-3, under bar); positive range 637; no-else/div/cross3f_staged 631; range+no-else 636;
+// single-exit 643. Body unchanged (outer-origin lead requires byte match).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
