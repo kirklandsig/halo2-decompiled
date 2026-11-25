@@ -2416,6 +2416,10 @@ bool function_1900a5(long index);
 // admission and late flag sample 743/743/743/745/750/747. NOT kept: the
 // after-slot store follows retail, but EDX holds the flags instead of EBX
 // and the member forms grow the body.
+// M3 lane 14 r156 (h2m fast with 0x749b0, 0x75790, 0x192e60 and 0x1900a5, all MATCH; control 643): the user's identity
+// copied after the properties 645; `team` computed ahead of `valid = true` 643 (same code); the variant loop's index as
+// `long` 714; the values' identity refreshed from the local identity 726; the variant test as nested ifs 643 (same
+// code). Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
