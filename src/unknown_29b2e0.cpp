@@ -914,9 +914,22 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // late member writes 130; planar i early 130; planar j early 137. Interleaved full and planar member
 // stores in four orders 406 each; full component initializer with the independent planar pair 406.
 // The full component forms shrink the frame and length. Body restored.
+// Four-byte planar transfers of I, J, both I-first or both J-first 269/314/335/335.
+// I copied before the full snapshot and J assigned afterward 272; I assigned before
+// and J copied afterward 314; both copied first 345; J copied before and I afterward 345.
+// All move the first difference earlier, even at retail extent.
 // Round 469: whole-value conditional at the pitch calculation 379. Immediate branch
 // choosing the pitch comparison input 365, and the branch at the angle use 368. Five
 // input and projection name orders tie 130. The projected J/depth stores remain exchanged.
+// Planar pair before the full copy, with branch/conditional base rate, in-place bounds or
+// named lower bound on yaw only: 220/220/237/295. The same rates and bounds on both angles:
+// 208/208/299/292. NOT kept: the better forms fix the store pair but grow the body, and
+// the separate lower bounds reach retail length with a smaller frame.
+// Dot-first in-place rotation for yaw/pitch/both 222/130/222. On planar-first
+// initialization the same forms score 222/128/222. Both dot-first rotations with
+// the shared direct or staged side-axis cross score 222 each.
+// NOT kept: the pitch-only rotation gives the same code with either prefix. The
+// planar-first two-point lead fixes the store pair, below the keeper threshold.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
