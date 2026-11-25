@@ -1048,6 +1048,19 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Diagnostic, restored at once (volatile reads, not keepable): the saved mask read through a volatile view at the
 // compare and the OR with a plain present 115: the OR then takes the mask as its destination, present stays in memory
 // through the loop and its update there is retail's load/or/store in EBX, so the OR's operand order is the cause.
+// M3 lane 8 r239 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23, the one-use team-bit carrier 20). Allocator
+// reading on the carrier: after the loop the saved mask's piece ranks 16 with two references (the compare and the OR's
+// source) and a cost of 0, so it is never coloured; retail's piece also carries the OR's result and the 16-bit store.
+// Forms: present read into a dword local just ahead of the OR, with the OR stored through the existing dword local 78,
+// stored in one expression 78, with the local narrowed in the OR 78 (on the carrier 79/79/79: the local's load is still
+// the OR's destination); the OR into a dword copy of the saved mask made in the change block (`updated = old; updated |=
+// present;`) 25, on the carrier 22 (the first form where the mask side is the OR's destination, but present is loaded
+// into a register ahead of the playing store and the mask's piece still is not coloured); that copy OR-ed with the
+// narrowed present on the carrier 20; that copy made ahead of the change test and compared there, OR-ed in place, on main
+// 134 and on the carrier 134, compared through the saved mask 134, with the compare's operands swapped 134 (374 B: the
+// compiler re-reads the field after the loop instead of keeping the word spill, though the OR then has retail's
+// `or reg, [present]`); the compare's mask widened by a cast 23, on the carrier 20 (same code); the in-place
+// `old_team_mask |= present_teams` on the carrier re-measured 78 (the narrowed OR keeps present as destination).
 // @retail 0x158140
 void function_158140(void)
 {
