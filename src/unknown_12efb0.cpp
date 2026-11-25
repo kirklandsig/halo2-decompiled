@@ -1042,6 +1042,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Encoded palette byte then signed-char/short/long ordinal or sign-bit bounds 604/796/794/680.
 // Byte read before metadata defaults gives the same four scores. NOT kept: 604 gains three
 // at 3829 bytes. Provider and lookup register assignments still differ.
+// Shared palette address formation from ordinal, explicit source, byte offset or availability
+// 716/617/718/713 with a short slot and 720/698/602/597 with a signed byte.
+// Nullable table base or default missing offset with a signed byte 709/602.
+// NOT kept: 597 sets and re-tests an availability flag; the offset forms gain only five.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

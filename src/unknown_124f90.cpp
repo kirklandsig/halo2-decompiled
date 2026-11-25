@@ -1922,6 +1922,8 @@ long function_2197f0(real gain);
 // added to the ambience difference 87 (same code); the time sum written product first 87;
 // the fade-in copy and the reciprocal computed ahead of the window test 181 (633 B); re-measured: the eager clamp
 // `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
+// Staged release end with default result, exhaustive result, selectable endpoint, or elapsed fallback accumulator 92/92/155/157.
+// The same four with the quotient before the cap 148/148/153/97. NOT kept: duration reuse keeps the wrong XMM allocation.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4116,6 +4118,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // 61 but the element address is formed again), the stop call reading `g_4e6378[voice_index].sound_index` 83. Only
 // blocks outside the loop move a rank by one point: the index is live, unreferenced, across the loop preheader, which
 // holds seven candidates (hoisted constants and the sound-system global); one fewer there is the tie it needs.
+// M3 lane 3 r307 (H2M_FAST, control 8): the pool candidate's ledger on this body is 26 for its uses (entry 6, loop
+// top 4, latch 16), 2 for the entry load and five reload blocks of 4: the callback block, the stop-7 block, case 0's
+// tail, the join after the voice block and the join after the owner test and switch. A sixth block would make the
+// cost 0 (retail's latch); early exits do not make one, 8 each with the same code: the owner test as an early
+// `continue` inside a plain else, case 0 ending in `continue`, `continue` after the stop-7 call, `continue` after the
+// callback, the start test inverted into an early `continue`.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -5034,6 +5042,8 @@ struct s_128ca0
 // gain 48 (same code); the channel index named once ahead of the started test for both channel calls 164 (1038 B: it
 // is read ahead of the pins and kept across them); the first pin's result and the channel index named ahead of the
 // field_c store 48 (same code: the store still follows the index load).
+// Processed accumulator constructed, assigned, copy-constructed or copy-assigned before compound pin additions 177/177/177/177.
+// The same four with the permutation conversion preceding accumulator preparation 177/177/177/177. NOT kept: they remove the retail by-value pin homes.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
