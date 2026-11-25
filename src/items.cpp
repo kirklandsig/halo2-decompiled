@@ -2054,6 +2054,11 @@ struct s_item_flags_view_10b850
 // flow query, selected by a conditional, a guarded default, or either branch order:
 // 824 each with separate vectors, 881 each with shared ray and flow storage. NOT kept:
 // the shared form shrinks the frame to 0x148 but shortens the body and raises the score.
+// Shared predicted coordinates for aggregate stores, paired stores, displacement
+// setter or both setters, then a staged step vector, step held in the ray with
+// component or helper subtraction, and named steps in paired stores: 891/886/891/891/839/858/857/909.
+// NOT kept: the smaller 0x148 frames fall short of 4096 bytes and raise the score.
+// The entry Boolean stores and retail frame 0x12c still differ.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

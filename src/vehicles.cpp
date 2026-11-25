@@ -7461,6 +7461,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // a distinct relative product these score 1130/1115/1094/1126. NOT kept:
 // the branch-produced axis with distinct output reaches 0xdc and 5095 bytes,
 // but raises the score and leaves the handle and stride reversed.
+// Physics receiver, environment velocity snapshot, staged relative components,
+// or separate measured and relative velocities, with in-place and expired flip
+// matrix outputs: 959/1101/959/960/1009/1084/1009/1014. NOT kept: the expired flip output
+// shrinks the frame to 0xdc and raises the score. The handle and displacement
+// registers remain exchanged and retail reserves 0xd8.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
