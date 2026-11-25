@@ -1739,7 +1739,7 @@ result+=2;
 					do
 					{
 						float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
-						float mass = mass_source;
+						double mass = mass_source;
 						float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
 						solve_bounded_angular(mass, target, ((solver_angular_row_31e7b0 *)terms), a, velocity_b_pointer, inverse_b_pointer,
 							operation_float(op, 4), operation_float(op, 8), step, result, projection_pool, scalar_work.simd_scalar);
@@ -1906,10 +1906,10 @@ result+=2;
 					do
 					{
 						solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-						// Capture the row inputs before projection, retaining their x87 values.
-						float target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
-						float const &mass_source = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
-						float mass = mass_source;
+						// Capture mass before the target and retain the target in the
+						// x87 scalar path until the impulse is formed.
+						float mass = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
+						double target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 						__m128 *linear_b_pointer = &body_b.body->linear;
 						__m128 *angular_b_pointer = &body_b.body->angular;
 						// Match the same mass-before-step-scale order as the angular path.
