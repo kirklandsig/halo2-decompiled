@@ -349,6 +349,7 @@ static __forceinline void apply_circular_second_fields(float impulse,
 // Capture B's angular receiver after the linear writes, before either angular write.
 
 
+// Borrow A's field addresses separately within each row update.
 static __forceinline void apply_normal_positive_pair_31c940(float const &source_a,float const &source_b,
 	__m128 const &first_axis,__m128 const *first_angular,
 	solver_linear_row_31e7b0 const *second_row,solver_velocity_31c940 *body_a,
@@ -358,6 +359,9 @@ static __forceinline void apply_normal_positive_pair_31c940(float const &source_
 	__m128 second_scalar;
 	__m128 w[5];
 	{
+		__m128 &a_linear = body_a->linear;
+		__m128 &a_angular = body_a->angular;
+
 
 		// Capture inertia before the SIMD copy can replace one of its lanes.
 		// Use the stored float for accumulation and copy its bits for SIMD.
@@ -381,9 +385,9 @@ static __forceinline void apply_normal_positive_pair_31c940(float const &source_
 		w[3]=_mm_mul_ps(w[3],w[4]);
 		// Retain this receiver before A can replace the saved body pointer.
 		solver_velocity_31c940 *const linear_body_b=b.body;
-		w[4]=body_a->linear;
+		w[4]=a_linear;
 		w[4]=_mm_add_ps(w[4],w[2]);
-		body_a->linear=w[4];
+		a_linear=w[4];
 		w[2]=linear_body_b->linear;
 		w[2]=_mm_sub_ps(w[2],w[3]);
 		linear_body_b->linear=w[2];
@@ -393,9 +397,9 @@ static __forceinline void apply_normal_positive_pair_31c940(float const &source_
 		w[0]=_mm_mul_ps(w[0],w[2]);
 		w[2]=first_angular[1];
 		w[1]=_mm_mul_ps(w[1],w[2]);
-		w[2]=body_a->angular;
+		w[2]=a_angular;
 		w[2]=_mm_add_ps(w[2],w[0]);
-		body_a->angular=w[2];
+		a_angular=w[2];
 		w[0]=angular_body_b->angular;
 		w[0]=_mm_add_ps(w[0],w[1]);
 		angular_body_b->angular=w[0];
@@ -408,6 +412,9 @@ static __forceinline void apply_normal_positive_pair_31c940(float const &source_
 		second_scalar=w[1];
 	}
 	{
+		__m128 &a_linear = body_a->linear;
+		__m128 &a_angular = body_a->angular;
+
 		// The previous update already captured the SIMD value. Accumulation reads
 		// the stored second source after the first result is published.
 
@@ -426,9 +433,9 @@ static __forceinline void apply_normal_positive_pair_31c940(float const &source_
 		w[3]=_mm_mul_ps(w[3], w[4]);
 		// Retain the linear receiver before A can replace the saved B body.
 		solver_velocity_31c940 *const linear_body_b=b.body;
-		w[4]=body_a->linear;
+		w[4]=a_linear;
 		w[4]=_mm_add_ps(w[4], w[2]);
-		body_a->linear=w[4];
+		a_linear=w[4];
 		w[2]=linear_body_b->linear;
 		w[2]=_mm_sub_ps(w[2], w[3]);
 		linear_body_b->linear=w[2];
@@ -439,9 +446,9 @@ static __forceinline void apply_normal_positive_pair_31c940(float const &source_
 		w[0]=_mm_mul_ps(w[0], w[2]);
 		w[2]=second_row->b;
 		w[1]=_mm_mul_ps(w[1], w[2]);
-		w[2]=body_a->angular;
+		w[2]=a_angular;
 		w[2]=_mm_add_ps(w[2], w[0]);
-		body_a->angular=w[2];
+		a_angular=w[2];
 		w[0]=angular_body_b->angular;
 		w[0]=_mm_add_ps(w[0], w[1]);
 		angular_body_b->angular=w[0];
