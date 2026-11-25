@@ -1972,6 +1972,16 @@ void function_2294a0(
 // at 1989 bytes. A transform-scope position pointer with stores or setter 485 each.
 // Common transform for both endpoints or its returned second endpoint 781 each.
 // Endpoint and separation names 231, original point snapshot at publication 519.
+// M3 lane GA r13 (59 compiled fast trials with 6 matched peers all MATCH; control 231 at 1988/1981 B, +0x248; body unchanged):
+// on the zero-new-helper score-2 base (vector3f_add_scaled + vector3d_from_points3d + vector3f_add + vector3f_scale + match-only
+// a first-body local/bool keep/reset order/scoped dead vel): existing havok_component_rigid_body_matrix_get x2 reaches 2 (1981/1981 B,
+// +0x3d5 dot3f i-term only) with zero extra component_b locals (1-site mat_a/mat_b 7/18; mass method 9; rigid_bodies[] 9/4);
+// dot3f arg swap fixes +0x3d5 while flipping .k/.j (4); function_227811 on constraint dot 4/18 (2 on manual normal);
+// late/reordered normal/position/for-i/scoped velocity_a/b tie 2; single dead velocity local 164; squared_length_kij 50/28;
+// linear_velocity pointer locals 66; manual position.x += 96-98; plain position.n[k] loop + inverse_count (or + midpoint
+// component_b, or + position.n[k] *= loop) matches all 5 pairs A-E simultaneously at 8 (1982/1981 B, only +0x67a position.x *
+// inv_count left; manual position scale 17). Clean mod-8 phase scan confirms A, B/C, and D/E intervals have empty intersection
+// on this helper set.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
