@@ -2181,6 +2181,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // loop body 5; `remove_later` declared ahead of the slot table 5; the flags built from `false` 5 (same code each); the
 // slot table brace-initialised in place of the memset 248 (917 B); the type loop's test as one `valid_types[type] &&
 // CompareFileTime(...) == 0` 60 (934 B, a branchy bool). Body unchanged.
+// M3 lane GA r4 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, 0x2141f0, all MATCH; control 33; 5-form rebuilt 5).
+// Typed `s_cache_file` carrying `s_file_handle file` and named header fields (dropping the extra `handle` pointer local):
+// on main 81, on 7-form/5-form/constructed-header/inverted-close/early-continue/file-ref/zero-flags/xafcc06-helper 161
+// (917 B, first +0x41: dropping the second table index eliminates the scratch `ecx` in `imul`, shifting the whole rotator
+// back by one); on that typed struct a write-handle local recovers 930 B and retail's write (`mov eax,[ebp]`, `xor ecx,ecx`)
+// and EAX checksum load with no reference binding (45 at +0x41, close copy in `edx` for retail's `ecx`), while keeping the
+// second table index at open returns to 114 (917 B, write exact, close loses `mov ecx, eax`, checksum in `ecx`). Keeping
+// `handle` with typed header fields: 7-form 7, 5-form 5, constructed `s_cache_initial_header` 5, early-continue 5; do/while
+// wait on 5-form 234 (882 B); inline flags builder on 5-form 5. Body unchanged at 33.
 // @retail 0x213970
 void function_213970(void)
 {
