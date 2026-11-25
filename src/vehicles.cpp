@@ -3952,6 +3952,15 @@ real g_47ff30 = 2.5f;
 // Named lateral determinant with direct inputs or scalar linear, facing, or both pairs 672 each.
 // Separate final mass scales on those four forms 710 each, frame 0xfc and first +0x66. NOT kept:
 // the 0xfc forms raise the score, and the acceleration spill and planar input homes still differ.
+// M3 lane GB round 5 (20 trials, fast with 0x0eec90/0x0ef4f0/0x2053c0 all MATCH; control 672, 3244 B, fr=0x100, al=731, mask=552):
+// caller-side VEHICLE_ABS macro on vehicle_friction (recovering rates in EDX, state in EBX, and field re-reads without real const &)
+// alone 697 (3244 B), with acceleration_scale last 697, + vector3f_scale on vehicle->unknown25c 695 (fr=0xfc, +0x66), + interleaved
+// fractions 660 (3244 B, fr=0xfc, +0x66, mask=575; NOT kept: moved declarations/interleaved fractions are match-only per prior review),
+// + force via vector3f_scale/add_scaled 663, + alphabetical local renames 660 (identical: frame order is liveness/weight driven, not name);
+// transform initialized between cos(bank) and sin(bank) with SSE 0.0f stores and late scale=1.0f 683 (3244 B, mask=517 vs 552, matches
+// retail's fcos/transform/fsin/left interleaving), with memset 674 (mask=526), + vscale 709 (fr=0xfc, mask=520), on the 660 form 674
+// (3245 B, fr=0xfc, 757/756 insns, al=701, mask=535; + planar2f copies 710, al=687); torque in-place in rotation_axis 672 (same code);
+// staged force products 672 (same code); normalize_inline(&up) 721 (3223 B, al=668); reused base_maximum_speed 730/724. Body unchanged.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -7283,6 +7292,17 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Transpose returned by value after swaps of the value input or a copied reference
 // 1139/1139, or produced by axis from a pointer/reference 1205/1205. With a separate
 // relative product 1125/1125/1174/1174. NOT kept: each leaves frame 0xfc and grows past 5094 bytes.
+// Lane GB r5 (fast, 20 trials; control 959 at 5094 B, fr=0xfc, al=1301, mask=1197): normalize_inline(&desired.up)
+// 1122 (5012 B, fr=0xfc, al=997, mask=753); + axis-norm polarity flip 1122 (mask=749); + normalize3d(&axis) 1122;
+// + unscaled torque + vector3f_scale 1100 (al=945, mask=748); + per-use tilt angle + <=0 reversal test 1131;
+// split scoped target/sum/strafe_target alone 988 (5094 B), + block relative 1129 (fr=0xdc), + normalize_inline
+// 1191 (fr=0xdc, mask=713), + bool boosting 1185, + late speed 1160, + rolled short ternary reversal loop + tilt
+// + torque vector3f_scale 1164 (fr=0xdc, al=842, mask=668), + pitch through vehicle->forward 1202; axis-norm flip
+// alone 959 (mask=1189); <=0 reversal alone 1048; no-dup manual desired.up norm alone 1052 (mask=780), + flip + <=0
+// 1074 (mask=773); dot3f for drift+strafe 1005; full lead with no-dup up norm 1118 (al=752, mask=658), with retail
+// MAX/MIN lift + normalize_inline 1027 (fr=0xdc, 5097/5094 B, 1179/1179 insns, al=797, mask=622, saved
+// build/gb5/f4800-lead-b206.cpp), with MAX/MIN lift + no-dup up norm 1126 (al=709, mask=626). NOT kept: 0xdc stays
+// 4 B above 0xd8 and handle/offset remain EDI/ESI; body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
