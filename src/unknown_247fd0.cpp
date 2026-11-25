@@ -1100,6 +1100,8 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // last three 416; long-to-word on the first 403. Staging the product before a word
 // conversion on the first or last three 404/416. The gate address and gate/settings
 // homes still differ. The fourth-only form preserves length and raises the count.
+// M3 lane GB r2 (12 compiled trials, fast control 334 at 1652 B, aligned 271 / masked 177, 0x247470/0x247fd0/0x248cc0 MATCH throughout; body restored):
+// Member function s_247950::function_247950 (with caller 0x247470 calling via this) 334 (same code); dropping local_10 normal pointer 334 (aligned 271), with normal stored before |= 0xa and value24 = NONE after function_137bd0 334 (aligned 268); compound += on position/velocity + no (bool) cast + local_2 != arg_0->field_50 333 (1652 B, under bar), with blend x flipped 333; sibling 0x247fd0 child loop without one-use locals (particle_object_for_tag, (short)local_13, DATUM in link, if/else reciprocal, value24 after lookup) 376 (1696 B, aligned 207, masked 127), plus 0x247fd0 cache test/order 393 (1696 B, aligned 203, masked 120), plus compound +=/no_local10/combined header 393; dropping local_19/20/21 in final call 338; age copy after cache block 380 (1665 B); inline s_248000::set_age/scale_pos methods 337 (field_10 still integer mov); scaled point3f + next_age stored after both 386 (1681 B).
 // Combined effect rejection and allocation failure in the handle, with conditional/branch/default
 // assignment or a terminal failure guard. Low-byte projection 417/417/417/417; bitfield
 // 344/344/344/344. NOT kept: the low-byte forms gain the two homes through a readback,
