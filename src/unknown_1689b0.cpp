@@ -2392,6 +2392,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // B); both averages through vector3f_scale 551 (same code). Reading: retail's four count/radius homes pair as count +0x88
 // with radius +0x94 (one arm) and radius +0x8c with count +0x90 (the other), nested, where ours keeps both radii below
 // both counts. Body unchanged.
+// The acceptance counts and clearance homes differ. Retail loads the normal's j coefficient twice before projection.
+// Plane/normal address 560/561, normal vector snapshot 764, and single j coefficient shared across the two stages 581.
+// Shared projection offset with scalar coefficients/normal vector/normal address/plane address 543/760/611/601;
+// normal snapshot and shared scaled addition 760. NOT kept: the 543 form merges the coefficient reads, moves the
+// prism cursor from plane.j to plane.k and still squares radius before the nonempty prism branch.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

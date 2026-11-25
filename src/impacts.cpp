@@ -1976,6 +1976,15 @@ void function_2294a0(
 // `basis_dot_xzy` 13-20; `rigid_bodies[]` without the first-body pointer 486; `havok_component_rigid_body_linear_velocity_get`
 // 495 (1965 B); no `constraint` pointer 475-476; `if` max 246-250; dead-local phase scan (diagnostic, removed) confirms
 // all five offset-0 pairs follow the function's mod-8 symbol-count phase. Body restored at 231.
+// Existing typed point advance 485 at 1981 B, with interleaved midpoint stores but a 0x6c
+// frame. Scaled separation and shared sum 382, scaled midpoint result 485, standard default
+// copies 231, conditional mass ratio 457, shared constraint position sum 237, tangent setter 231,
+// staged normal projection 233, reversed admission operands 231. The midpoint setter still
+// preserves the 0x70 frame and the position base while grouping all three calculations.
+// Sequential midpoint assignments 231 and compound additions 231, both first +0x24f
+// at 1989 bytes. A transform-scope position pointer with stores or setter 485 each.
+// Common transform for both endpoints or its returned second endpoint 781 each.
+// Endpoint and separation names 231, original point snapshot at publication 519.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
