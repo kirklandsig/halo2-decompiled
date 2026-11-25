@@ -750,6 +750,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // On it: the header-array local declared first and assigned in place 24, the rigid-body local declared first 24, both
 // 24, `long result` ahead of the type 24, the header array through a file-local forceinline accessor 24, the object
 // index through a forceinline component accessor 24 (all the same code). Body unchanged.
+// M3 lane 12 r190 (h2m fast, caller 0x1d5bf0 listed; control 96). Reading from the register allocator on round 118's
+// one-read form (rebuilt 28 at 256 B with main's case-0 spelling): the rigid body ranks 94 against the object index 73
+// and the header pointer 53, so it is coloured first and keeps ECX; retail's object index ECX / headers EDX / rigid body
+// ESI needs the rigid body ranked below both (a forced-ranking search: the rigid body forced to ESI 23, the best single
+// decision; no match, the type load width and case 0's shift still differ). The incoming index's register follows the
+// overlap with the masked index: with the type read after the rigid body the index arrives in EAX (the caller's pair
+// flips). Forms, one type read used by both routes: a byte type after the rigid body 94 (re-measure), ahead of the rigid
+// body 106, that with case 0 through the object-index local 117; a long type ahead of the rigid body 124, after it 96 at
+// 256 B (component ECX, index EAX: flipped pair, no EBP). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
