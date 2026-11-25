@@ -1126,6 +1126,10 @@ real function_30bf0(vector3f *vector);
 // the settings read through this file's `s_distance_rates_view` (its flags byte and the range at +4 named) 84 (same
 // code). Tried on it: the posture switch with `default: break;` 84; the clipped point brace-initialised 84; `side, up`
 // declared ahead of the seat loop 84; `a, b` declared ahead of the seat loop 84 (all the same code).
+// The result still starts four bytes high and the clip fraction shares the seat count slot. Use final
+// threshold storage for actor secondary or primary 200/200; for seat secondary, primary or both 84/84/84;
+// for both queries' secondary, primary or both 188/188/215. The actor-only forms move the frame to 0x354.
+// The seat-only forms leave the frame at 0x350 and reproduce the opening code.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

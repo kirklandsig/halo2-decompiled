@@ -7785,6 +7785,9 @@ public:
 // paired Boolean accumulation 526, provisional empty result 494, usable and empty counts 518,
 // loaded count 508, any usable and all empty 508. NOT kept: the provisional result reaches 1785
 // bytes but writes the final flag inside the scan, clears it afterwards and leaves the early spills.
+// The early EBP save and unit/tag spills remain. Typed magazine block reads for the pickup, matching slot
+// or held weapon and their four combinations all score 508. Using a reused pickup magazine block pointer
+// with all three typed lookups also scores 508. The frame stays 0x3c and the refill query remains expanded.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
