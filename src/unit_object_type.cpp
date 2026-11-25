@@ -9778,6 +9778,10 @@ struct s_unit_melee_collision
 // shared across scale 532, shared up scale 532.
 // shared transverse stages 533, three shared vector operations 480.
 // NOT kept: live-range forms recover 0x17c but shorten the body. The other ray forms tie or regress.
+// Unit tag at branch entry or each use 524/524; the same with per-product range 536/536.
+// Aggregate impact record 537; aggregate with per-product range 510; BSP and damage names 447;
+// query-center declaration first with live range 534. NOT kept: both deferred tag forms and the
+// aggregate with live range recover frame 0x17c at 2229 bytes but raise the score. The fan register homes remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

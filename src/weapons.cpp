@@ -4109,6 +4109,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // 536; positive effect-timer exit 635; single bounded next effect 631; scan history and fresh
 // publication word 593; interval result initialized from lower bound 526; active effect index before
 // timer debit 593.
+// Typed barrel history, slot/countdown, complete selection state, three scales, extra shots,
+// shot count/sequence, continuation handle and all runtime fields: 630 each in the reduced image.
+// NOT kept: all tie the reduced control, which has a 0x1c60 probe and 2542-byte extent. The full
+// 0x1c64 probe, weapon/barrel register roles and separate magazine spills remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4669,6 +4673,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Trigger plus press, trigger plus hold, or both actions 1610/1579/1466. All three
 // 1619, and all three with the retail behavior order 1582.
 // NOT kept: all grow and retain frame 0x34, with the early dual byte still spilled.
+// Typed ordinal snapshots, signed input slot or action selectors 1412 each. First ordinal read at
+// every use 1549, second 1657, both 1544; paired tag references or all native selectors 1544 each.
+// NOT kept: the first-ordinal and paired forms recover frame 0x38, EDI/ESI and BL, but grow
+// to 5812 or 5800 bytes and raise the score. The typed snapshots retain frame 0x34.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
