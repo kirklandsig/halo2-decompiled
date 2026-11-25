@@ -1356,6 +1356,10 @@ void function_143250(
 // confined to a column to their first consumer gives 1600/1552/1576/1602/1574/1585/1590;
 // moving all seven product groups gives 1698. NOT kept: the second column recovers
 // frame 0x300 at 10765 bytes and first +0x3b, with a higher score.
+// Late axial and transverse mixed-product consumers, alone and together, 1540/1460/1538;
+// intermediate axial and transverse pairs 1534/1493; late root-35 squares, root-105
+// mixed consumers and both weighted pairs 1368/1511/1515. NOT kept: the last two
+// recover frame 0x300 and first +0x39, but shorten the body and raise the score.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

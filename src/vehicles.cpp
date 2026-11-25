@@ -7338,6 +7338,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // components, setters or memcpy scores 1091/1092/1095/1091. With the relative product
 // in the spent flip matrix the same forms score 1058/1039/1064/1058 at frame 0xdc.
 // NOT kept: scores rise and retail copies all nine flip words.
+// Final tensor in the spent steering, current, facing or state-rotation matrix:
+// 1061/1009/983/1037. With relative output in the expired flip matrix:
+// 1073/1042/984/1078. NOT kept: the facing forms reach 5094 bytes but retain
+// frame 0xfc and regress. The 0xdc forms shorten the body, and the entry registers stay exchanged.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

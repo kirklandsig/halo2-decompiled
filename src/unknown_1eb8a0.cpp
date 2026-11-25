@@ -1012,6 +1012,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // The 0x24 frame agrees, but EBX still holds the supplied direction instead of the sample.
 // Descriptive names for initial timing, capped timing, movement workspace, output sample,
 // output ramp, settling, both timing blocks and all six groups score 567 each.
+// Cold-branch active reload, reload only after activation, short-circuit active test,
+// and activation success result: 659/654/659/687. With the initial speed factor before
+// the time product: 680/698/680/716. NOT kept: the reload and result forms retain the
+// supplied direction in EBX. The early factor forms shrink the frame and lose the caller match.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

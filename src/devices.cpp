@@ -1821,6 +1821,10 @@ bool function_108530(long device_index, long name)
 // direct clamped duration 117; with double distance 120; signed distance limits 132;
 // both direct limits 121. NOT kept: the first three tie and the other forms lose both
 // XMM6 caller matches.
+// Promoted products rounded to real at the half times, half-ramp travels or doubled
+// rates, the three pairs, all three, and the phase squares: 127/143/117,
+// 176/170/143, 188/115. NOT kept: the squares gain one but extend the body
+// and lose both callers. The half times preserve the callers and also increase the extent.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
