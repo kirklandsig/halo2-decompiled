@@ -1873,14 +1873,15 @@ result+=2;
 				// Linear friction with a scalar limit.
 				case 6:
 				{
-					float const * &friction_scale_pointer = scalar_work.friction_scale;
-	 friction_scale_pointer = &step->friction_scale;
 					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+					// Publish the retained pointer homes before binding the linear field.
 					__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
 					inverse_b_pointer = &body_b.body->inverse_inertia;
-					__m128 *linear_b_pointer = &body_b.body->linear;
 					__m128 * &angular_b_pointer = scalar_work.angular_b;
 					angular_b_pointer = &body_b.body->angular;
+					float const * &friction_scale_pointer = scalar_work.friction_scale;
+					friction_scale_pointer = &step->friction_scale;
+					__m128 *linear_b_pointer = &body_b.body->linear;
 					do
 					{
 						float target=((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
