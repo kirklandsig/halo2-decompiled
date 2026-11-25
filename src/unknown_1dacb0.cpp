@@ -1717,6 +1717,24 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Direct or copy construction of a read-only found candidate, with present first, miss
 // first, miss continuation or a condition-scoped lookup: 991 each. NOT kept: splitting
 // construction by lookup result adds a frame word and grows to 2837/2825 bytes.
+// M3 lane GB r4 (fast with 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x1dd560, 0x2963f0, 0x1cb230 and
+// 0x1cc3f0, all 10 MATCH unless noted; control 812, al 453; 30 trials): s_graph_weapon_type_iterator constructor with
+// initializer list 810 (al 455; under bar), body assignments 812, inline `iterator.next(...)` member 810; inline member
+// `s_graph_weapon_type::named_animation_get(set)` 812 (same code), on siblings' loop 755, with ctor 769, with inner
+// return 994; `c_type_709360::is_valid()` 812; dropping inner `if (urgent || other)` from graph_kinds_resources_request
+// 812; helper wrapping both requests 1252 (2573 B; loses 0x1cb230/0x1cc3f0); named `inherited` pointer in inheritance
+// loop 812. New non-grouping lead (saved build/gb4/1db170-early-no-result-750.cpp; NOT kept: siblings' found-flag /
+// repeating-guard loop is match-only): `if (result.index == NONE) return result;` inside `if (weapon_class != NONE)`
+// with one trailing `return result;` scores 750 at 2825 B (al 221, direct lookup or member or `while (result.index ==
+// NONE && entry)` all 750, old iterator store order 754) and recovers all five retail homes (+0x10/+0x14/+0x18 outputs,
+// +0x1c result, candidate+table at +0x54, both inheritance counters/offsets in dead argument slots) plus retail's second-
+// request EBP=iterator_mode / EBX=this roles without aggregate grouping (228 consecutive matching lines, 39-266), because
+// sharing the epilogue pushes EBX at entry so `this` keeps EBX; adding an inner return restores shrink-wrapping and
+// loses those homes (772, 2805 B, +0x1c), early class return 1008, `return c_type_709360()` 1020. Flag-free loops with
+// that single-trailing-return early-no-result exit recover the same homes and second-request roles but shift at the loop
+// tail: do-while 1016 (al 328, member 1015 al 326, early class 1012, found-return 1011), `while (result.index == NONE &&
+// (entry = iterate(...)) != NULL)` 1015 (al 326; with `if (result.index != NONE)` 1040), `while (entry)`/`for` with break
+// 1056 (2-ret 1052), `while (entry && (result = ...).index == NONE)` 1056 (if-found 1-ret 1049, 2-ret 1022). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

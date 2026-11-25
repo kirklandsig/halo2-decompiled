@@ -555,6 +555,15 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // initialised longs at the top 334/334/334/342/342/342/342; the axis loads stay j, k, i (absolute addresses, so no
 // pointer-numbering effect), only their registers move. Retail re-reads the axis for the cross terms because its in-place
 // sine products overwrite i and k. Body unchanged.
+// M3 lane GB r4 (fast with 0x137ed0, MATCH unless noted; control 334, 20 trials): calling out-of-line 0x142640 1290
+// (826 B); inlined 0x142640 with `if (scale != 1.0f)` and `*axis` struct copy for squares 438/434/446 (1864-1877 B;
+// double angle in helper broke 0x137ed0 -> 42; scale test did not fold); inlined 0x143070 (`temp = *v`, 3-stmt accum)
+// 390/379/462 (1737/1741/1652 B); vector3f_scale for sine_axis 436; `axis->n[0..2]` 446; `(a.i*a.j)*t` + accum 446;
+// `compute_sincos` out-pointer helper 438/390 (0x137ed0 -> 42). Without the scale test and with float component square
+// copies on transform4x3f + in-place row rotations: sin/cos args 344 (1801 B, frame 0x8c, accum same 344), xy-only copy
+// 341 (1765 B, 338/338 insns, frame 0x8c); with 4 named trig locals ahead of builders 350 (1814 B, frame 0x90, +0x10,
+// mask 291: reproduces retail's pass-1 double-spill rotation schedule; accum and sq-first same 350), matrix3x3 locals
+// 336 (1780 B), row loop over `&g_467104.forward` 347 (1801 B, mask 298). Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -3013,6 +3022,19 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
 // initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
 // `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
+// M3 lane GB r4 (30 fast trials with 0x2f2d0/0x2e3f0/0x222d0; control 281, al=142, mask=65): clamp_2e9e0 as `return PIN(value, 0.0f, 1.0f);`
+// 514 (2270 B), with vector3f_add_scaled draw point 514, with 0x20d80(context, true) 513; clamp_2e9e0 mutating value in place 509 (2285 B);
+// reflected via vector3f_scale + vector3d_from_points3d + vector3f_scale (no loop) on main 500, with early attenuation + helper delta/forward
+// 383 (2286 B); full loop-free helper form (vector3d_from_points3d delta, dot3f x4, 3-helper reflected in place or via projected,
+// vector3f_add_scaled draw point, early attenuation; saved in build/gb4/2e9e0-noloop-helpers.cpp) 435 at 2289 B (568/567 insns, al=64, mask=26;
+// 136 of first 137 insns byte-identical, only projection's `direction.i * delta.i` adds 1 movss/+4 B shifting the remaining 422 insns);
+// on it: scaled_difference3f 444 (al=70, mask=28), vector3f_scale + vector3f_assign 452, clamp_2e9e0 PIN 469 (2302 B, al=68), plus 0x20d80 call
+// 475 (al=68, no loop-unroll loss without scaled_difference3f), late attenuation 501, inplace clamp 452 (2295 B), delta declared earlier /
+// all locals at top / inline dot3f / projection before inverse / reversed dot3f args / no projected local 435 each (same code), plus 0x20d80 call
+// 445 (al=65, mask=29), retail opacity arm order 435 (al=63, mask=25), axis_scale before angle 435 (al=62, mask=26), statement delta i,j,k 517,
+// direct projection `delta.i*dir.i + dir.j*delta.j + dir.k*delta.k` 383 (al=139), `delta*dir` i,j,k 458 (al=95), j+i+k 380 (al=111),
+// `dir*delta` i,j,k 263 (2286 B, 567/567 insns, al=138, mask=70; NOT kept: combination/operand-order steering that worsens aligned/masked counts
+// against both the helper form and main, emitting three reg-first projection multiplies where retail has one). Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -5101,6 +5123,21 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // dwords and one 12-byte home shared by the previous camera position and each element's old position; ours adds four
 // 8-byte projection results (the by-value returns stay in memory) and gives `old` its own slot (it interferes with the
 // first projection result, which shares the previous position's slot). Body unchanged.
+// M3 lane GB r4 (fast with 0x36b50, 0x24590 and 0x259d0; control 486, al 422, mask 267; 20 trials): calling
+// function_259d0(&g_4e7408->seed, NULL, 0, -1.0f, 1.0f) in motion_random_step with (double, double) 486 (same code),
+// with (real, real) 502 (2019 B, al 400, step-first same 502: reproduces all 92 instructions of retail's random-step
+// block including all three `fmul st(2)` and the third step's double `fstp st(0)`), inline without helper 571 (fr 0x5c);
+// LTCG-inlined magnitude3d(velocity) (0x24590 linked) 510 (2011 B, mask 264), with normalize3d 522 (1999 B, al 406);
+// unified 3x transform4x3f point helper (`point3f *out`) for world pos and both projections 537 (fr 0x44, yxz same 537),
+// proj-only 514 (fr 0x44, al 357), proj-only with real-param 259d0 and `x *= scale` 517 (fr 0x44, al 365); unified
+// transform4x3f + magnitude3d + 259d0 563 (fr 0x44); full retail-shaped body (byte cycle read, shared saved position,
+// stored camera delta, phase/distance/fade arm order, field-read divisor/maximum, size if/else, unified transform4x3f)
+// with magnitude3d + normalize_inline 585 (fr 0x3c), + normalize3d 604 (fr 0x3c), + vector3f_add 610 (fr 0x3c), + indexed
+// velocity writes 612 (fr 0x30, 1907 B); on that indexed-write retail base with real-param 259d0 + `x *= scale` + double
+// k,i,j speed test + normalize_inline 594 (fr 0x30, 1928 B, al 390, mask 254, 0x36b50 247: velocity add, separate double
+// reloads, normalize+max scales and size if/else match retail), float k,i,j speed test 585 (fr 0x3c), same-pointer
+// velocity add 589 (fr 0x3c), point2f output helper 561 (fr 0x34, mask 263); real-param 259d0 + float k,i,j speed test on
+// main 520 (al 390, 0x36b50 247). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
