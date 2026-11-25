@@ -1862,6 +1862,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Unit, biped or both references at their consumers 176 each. Movement, unit and movement,
 // or all three references 617 each. All three pointers at the consumers or beside the position
 // query 617/652. NOT kept: each increases the score and the movement views grow the frame to 0x100.
+// Material byte-address addition with integer or pointer storage: nested admission and selected address
+// 158 each, failure first and complete conditional result 659 each. NOT kept: the first forms tie and leave
+// the definition spill displaced; the complete assignments shorten the body by 32 bytes.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4675,6 +4678,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // address). The count reads 569 at 2722 bytes (retail 2712) where it read 537 at 2726: the body is now one row shorter
 // than retail's 650 rows, so the rows behind the call pair off one place apart; row for row after alignment the
 // difference falls from 442 to 437.
+// Stationary gates split at turn state, at object flags, at both, or with the animation exception first:
+// 602 each with a long exception, 645 each with a bool. NOT kept: long forms tie the reduced control,
+// and bool forms grow by four bytes. The full changed-byte and flight-threshold homes still differ.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6493,6 +6499,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // with ordinary/staged side, early input copies, or ordinary final cross
 // 333/333/342/333. The 0x3c frames and earlier differences lose retail's
 // 0x24 prefix. The complement spill and final forward load still differ.
+// Float CRT cosine or sine alone 93/93, with sine produced first 125/125, with a double angle 97/97.
+// Both float entries with sine first 175, or with a shared rounded angle 159. NOT kept: every form raises
+// the score and the paired forms shorten past retail. The first rotation still spills the cosine complement early.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

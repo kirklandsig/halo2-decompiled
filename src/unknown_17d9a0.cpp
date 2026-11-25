@@ -1185,6 +1185,40 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // A builder shared with matched 0x1544e0 loses that match (149-150 at 551 B); with 0x171d90, a 3x3 builder in that function's
 // own statement order keeps its 334 but gives 617 here, the transform-shaped one 374 there. Without the builder nothing gains
 // on main: the 0x17ef10 helper alone 667 (3535 B), with the offset kept 649, the while form alone 534, scale statements 559.
+// M3 lane 6 r242 (H2M_FAST with 0x50650, 0x17d9a0, 0x17d900, 0x17dd80, 0x120850, 0x22bbca and 0x17ef10; control 535, aligned 443;
+// body unchanged). HELD lead, build/r242/held-0x17fd20.patch (this file only): 4 at 3647 B in check.py --fast and in the plain
+// check (first difference +0x9e0, aligned 6), every other function of the file as on main. It is lane 8 r234's held form with
+// five changes, and it is still a new one-caller builder beside the contributor's 0x1546f0 one, so it needs the owner's OK:
+// (1) the builder as two levels, a (transform, axis, sine, cosine) one that sets the scale, calls a 3x3 (axes view, axis, sine,
+// cosine) builder and clears the position; the 3x3 one holds the squares and sine vectors and the rows in 0x1544e0's own
+// statement order (the members of a matrix filled one inline level down are numbered by offset, which is what lane 8's
+// 8-point diagnostic forced; `up.k` no longer has to be last); (2) `real sine = (real)sin(angle); real cosine = (real)cos(angle);`
+// in the body, as 0x1544e0 has them (the sine is then numbered ahead of the axis, which gives retail's `i * sine` on x87, the
+// k-then-j axis reload order after the arccosine call and the angle dot's i product); (3) the angle helper's dot through the
+// existing dot3f(a, b); (4) `short j;` and `long face;` declared once at the top of the group block for its three j loops and
+// two face reads (the zero-offset loads through pointers sort by the pointer's symbol number modulo 8, and every initialised
+// local of this function shifts the edge loop's `a`, the cross's second operand and the angle dot's second operand by one:
+// with (2) they need 4 or 5 more symbols or 3 or 4 fewer, and these two declarations are three fewer).
+// Steps on lane 8's 20 form: the nested 3x3 builder taking the angle 8 (first +0x45a), with `up.k` last 20, the scale store
+// after the call 8 (same code), the outer builder computing the trig for a (sine, cosine) 3x3 one 12; + dot3f in the angle
+// helper 6 (first +0x754); + caller sine/cosine locals 573 (the three late spots become retail's but the phase moves: the cross
+// keeps one temporary in the frame and the first edge distance flips), with the trig calls written as the arguments 10; that
+// with 1..7 unused initialised locals, a diagnostic, 573/573/573/4/4/6/8; + the block-level `j` and `face` 4, `j` alone 578,
+// with the sign folded into the angle expression as well 4.
+// Left at 4: row k of the in-place offset rotation adds forward before left (retail up, left, forward): the two copies the
+// helper keeps of the offset's x and y are numbered y first here, and the row's order needs x first.
+// Not the form, on the 4-point lead unless marked: the caller trig with a flat (sine, cosine) builder 594, and 148 at its best
+// phase; the rotate helper without its scale test, its rows spelled forward first, its copies as three statements, a `scale`
+// local in it, or its scale arms writing the copies: 4 each (same code); its copies declared y, x, z 798 (3535 B), z, y, x 782,
+// as one vector copy 721 (3679 B); the outer builder with the position stores first or the scale last, an axes pointer local in
+// it, or the output parameter last in both builders 4 (same code); a dummy parameter on the outer builder, a diagnostic, 18,
+// two 570 (3567 B), three 22; the 3x3 builder called from the body with the scale set beside it 313 (3615 B); a separate
+// offset vector rotated into the position 546 (3599 B), rotated in place and added in 520 (3631 B); the offset by three member
+// statements 18; a pointer local for the position 6 (one more symbol); the start added through the existing vector3f_add 33;
+// the scale store ahead of the offset 597; the face-plane helper as a face wrapper around a plane-index helper (same code:
+// helper symbols do not move the phase); the angle helper's bitwise compare through a small helper 614 (3663 B); the edge
+// distances as `dot3f(&plane.n, point) - plane.d` 577; the sign folded with the per-loop `j` and `face` 8, also without the
+// first loop's `face` local 17; unused locals inside the 3x3 builder 4 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
