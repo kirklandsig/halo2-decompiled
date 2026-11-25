@@ -1083,6 +1083,29 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // of the j reload in the latch's reload region (2 -> 3) gives the full match; ready-cycle changes of the count load and
 // cuts of node_index's range leave 2. That region holds only the reloads (no use of j), so retail's j reload sits in
 // the region of the latch's increment and compare. Body unchanged.
+// M3 lane 15 r145 (H2M_FAST with 0x270930 and 0x270750, MATCH each run unless said; control 286). The saved two-flag
+// lead applied to today's file is 2 again at 1388 B. Measured cause of the latch pair: both reloads belong to split
+// pieces and come out in ascending piece number. Piece numbers are taken from the numbers freed earlier and, when
+// those run out, from fresh higher ones. On the lead exactly ten pieces are made ahead of the index's (three for the
+// constant NONE, one for zero, the stack parameters link_count_out, complete_out and steps, then complete, link_count
+// and count) and exactly ten numbers are free (four constants with no register use: the fill loop's step, 6, 5 and
+// 0xffff; and six float values dropped at the start of the float pass because they live across a call: the margin, the
+// two float constants used in the scan loop and the edge offset's three forwarded components). So the step array's
+// piece is numbered below the index's. Diagnostics (wrong code, reverted): one more float value live across a call
+// frees an eleventh number and the latch reloads come out in retail's order; a new integer constant outside the loops
+// changes nothing. So retail has one more discarded float value or loop constant, or one piece fewer ahead of the
+// index. On the lead: one counter for the fill loop and the scan loop 2; the index declared at the top, after
+// link_count, or ahead of count 2 / 2 / 2; count declared at the top 349; the step-point copies or the fallback point
+// copies as memcpy 2 each; the usable bit as `(flags & 0x80) != 0` 2, without the dword cast 14; `count = (short)(j +
+// 1)` 2; `!count` with a cast store 2; `edge_index != (word)NONE` 2; `j + 1 < count` 5; `j >= 1 ? ...` 15; `long
+// link_count` 356 (1404 B); a `long` fill counter 40; `long initialize_count` 263; the fill loop through a walking
+// step pointer 382 (1405 B), through a per-step pointer local 2; `previous == NULL` for the first-step test 329
+// (0x270930 317); a block-local copy of the margin 2; the edge-margin clamp in a force-inlined helper taking the
+// margin by value 119 (1391 B, still six float values); the margin computed inside the scan loop 333; an ignored
+// pointer result from a force-inlined point copy 2. The distance through the existing 0x210a30 as a call 556 (1183 B);
+// diagnostics, restored at once: `inline` on 0x210a30's definition 428 (1307 B, 0x1f45c0 250), also on 0x210850's 539
+// with seven callers differing; file-local force-inlined copies of both expanded at the test 8 (the pair unchanged).
+// BLOCKED-BY 0x210a30 / 0x210850 (retail expands them here only). Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

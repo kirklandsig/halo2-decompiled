@@ -1096,6 +1096,10 @@ void function_245400(s_source_245400 const *source, long index,
 // them; a first-material record pointer used like the second one 50 (aligned 31, only the offset-0 levels move), the
 // two point pointers as casts of the vertex address 50 (same code), the dot written cross-first k, j, i 50: none moves
 // the four classes. Body unchanged.
+// Shared packed-code decoder returning index/side/plane/bare plane, promoted codes
+// 224/209/211/210, source words 224/209/221/210.
+// NOT kept: all raise the score and the two code words still lack retail's separate homes.
+// The original decode and both plane lookups are restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

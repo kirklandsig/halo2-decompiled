@@ -2384,6 +2384,12 @@ bool function_1900a5(long index);
 // binding 726, and chosen from a bound record 765. Valid identity pointer 758/758,
 // valid properties pointer 749, and bound record with identity gate 758.
 // NOT kept: the record result at retail length still changes the cursor and scores 726.
+// M3 lane GB r2 (20 trials, fast control 643 at 2862 B with 8 peers MATCH; plain confirmed 617 at 2862 B, all 40 other functions in this file plus 0x641a0, 0x8df50, 0x8dd70, 0x80940/aa0/bf0/d70, 0x1900a5, 0x192e60 MATCH, 0 address-target diffs):
+// Review (m3): NOT kept. The 617 needs two forms kept only with a byte match: the fill's stores in an order picked by score
+// (record->properties ahead of record->count, properties_used += 6 ahead of the loop) and query_time_now() rewritten as
+// if/return; with main's order and helper form the same body scores 704, the helper form alone 654, the struct alone 646.
+// Patch held (LANES/leads/held-74aa0-gb2-617.patch). The lane's 643 -> 617 form (aligned 631 -> 349, masked 680 -> 492): loose g_50c460..g_50fd14 folded into s_search_value_globals g_509450 (exact +0x3010..+0x70c4 offsets matching memset(&g_509450, 0, 0x70f8) in callers), query_time_now() as 0x75870's if-return form, two-use last_read/last_write and record_space/property_space locals, three-use properties pointer rolling the 6-property loop with properties_used += 6, type-5 duplicate continue, named completion owner/unknown10 fields, failed = true in the incomplete arm, and goto-free state < 0 || state > 1 polls.
+// Intermediate forms on g_509450 struct: struct alone 646; +clock 657; +completion (no type==0 swap) 634; +last_write 651; +last_read/last_write 651; +dup continue 648; +properties pointer 657; +ptr+dup 661; +ptr+space 654; +lw+dup 667; +lw+ptr+dup 676; +polls/space/ptr/dup/last_read/last_write 617 (kept). Rejected earlier forms: struct+clock+comp+polls 655; +last/space 693; +ptr 666; +ready flag & poll gotos 629; +logon >3 760; loose globals with comp+polls 696; struct+last+comp+space 660.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
