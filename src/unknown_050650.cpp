@@ -1076,6 +1076,10 @@ struct s_collision_result_buffer_1697c0
 // Scaled vector published via assignment, setter, memcpy or memmove 666/337/666/648;
 // early rejection with the same four transfers 666/337/666/648.
 // The startup zero register, axis j preload and transfer-word reuse remain. NOT kept: all staged normalizations change the frame and increase the score.
+// Nested-sum inline normalizer at axis/clear sample/best hit 292/335/335, axis-clear/
+// axis-best/clear-best 338/338/340, all 340, axis through setter 311.
+// NOT kept: all lengthen and regress. The axis-only form retains frame 0xa8,
+// and the others grow it to 0xb0. The original zero, j product and transfer homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

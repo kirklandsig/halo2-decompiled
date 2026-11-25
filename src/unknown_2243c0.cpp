@@ -997,6 +997,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Packed group memcpy word/mask 165/135, memmove 185/188, byte comparisons 180/183;
 // packed handle memcpy word/mask 117/152.
 // Fallback EDX masking and the split element addresses remain. NOT kept: the handle copy ties and the other packed acquisition forms regress.
+// Packed render-handle views through native shorts, bitfields, signed or unsigned low members.
+// Word/full mask scores 135/156, 156/156, 135/156 and 135/156. NOT kept: all eight
+// move the first difference to entry and raise the score. The EDX mask and split element loads remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -841,6 +841,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // shortens; the same with the dot written y first 391, with the copy as two member assignments 391 (same code each);
 // lane 2 r134's p1 lead rebuilt 249 (1722 B), with the member copy 412 (1706 B); local_1 as two member assignments 305,
 // the negated radius as `0.0f - arg_6` 305 (same code each).
+// Planar scaler for the cosine products on positive/negative/distant turns
+// 356/352/360, positive-negative/positive-distant/negative-distant 370/403/399,
+// all 445, cosine and sine on all 478. NOT kept: each grows the 0x64 frame and
+// regresses. Unity, rounded cosine and candidate ordinal still differ.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

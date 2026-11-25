@@ -5711,6 +5711,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // copy before 203, or in both with copy before/between/after 213/213/211.
 // Staged first-cross helper with first-live/between or both-live/after 208/211.
 // NOT kept: all keep frame 0x50 but increase length and score. The whole forward copy feeds both crosses again.
+// Split aim copy, pair first or depth first: reused forward projection, paired angles,
+// both, and both with a named horizontal magnitude 97/72/69/69 and 97/74/70/70.
+// NOT kept: the split copies lengthen to 772 bytes. The first cross preload and the final
+// x87 forward-scale lifetime still differ.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
