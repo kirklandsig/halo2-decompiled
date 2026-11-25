@@ -1717,6 +1717,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Direct or copy construction of a read-only found candidate, with present first, miss
 // first, miss continuation or a condition-scoped lookup: 991 each. NOT kept: splitting
 // construction by lookup result adds a frame word and grows to 2837/2825 bytes.
+// M3 lane 8 r237 (h2m fast with 0x1dc8c0, MATCH; control 812). Frame packer reading: the dead found_mode home goes to the
+// first 4-byte object in packing order that fits; ours packs the found mode first (11 memory references, eight of them
+// the second request's per-kind reads), retail packs the first request's +0x34 table temp there (one store, nine reads)
+// with the per-pass candidate beside it, so the found mode keeps its own cell; the homes follow from the second
+// request's registers. Forms on the found-flag loop with the three outputs and the id as one record (grouping, match-only):
+// the id set to the default ahead of the weapon_class NONE test and the outputs' defaults after it 1024 (2840 B); the id left to the
+// record's default construction 742 (2825 B, first difference +0x43, the iterator's zero stores); that with the
+// iterator stored graph, step, entries, then keys 732 (first difference +0x2d1, the first request's fifth-kind zero);
+// on the 742 form the candidate dropped (the id reset each pass, then set from the named entry) 1028 (2856 B); on the
+// 732 form the id assigned by a ternary on the named entry 1032 (2859 B). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
