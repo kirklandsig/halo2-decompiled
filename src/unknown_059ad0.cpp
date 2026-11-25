@@ -4739,6 +4739,27 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the end), that with the disconnect under `!result || (!same && !better)` 219, either with the `!result &&` tail 219
 // (same code each). Re-measured: the kept arms `return true;` or `return result;` on the 96 form 100 (a `mov al, 1`
 // return block of their own: the constant is not held in AL across the tests). Body unchanged.
+// Initial refusal code before the active gate, conditional/explicit 383/383; after state-nine bypass 386/386;
+// active range first 393/376; admitted range through state nine 394/381.
+// NOT kept: the common refusal shortens the body and does not recover both reason-2 edges or the acceptance reload.
+// M3 lane 2 r148 (fast screen with 0x5e3f0, 0x58d90, 0x58d20, 0x769a0, 0x62ca0 and 0x75870, all MATCH each run; main 295,
+// aligned 90, 75 with registers and offsets masked; lane 1 r144's 44 lead rebuilt from lane 1 r165's copy, 44, aligned 18
+// [14]; body unchanged). Reading of retail's exits: the function has one return of the result byte; the state-8 arm's
+// `result = true` is followed by a copy of it (store, reload, epilogue at +0x98), the channel-7 arm and the acknowledgement's
+// not-state-7 edge are merged into that same store, and the kept arms and the post-disconnect true edge enter the same
+// copy behind its reload with the result already in AL (the kept arms load 1 into AL, store the byte from AL and test
+// same and better through CL). So every accepting exit ends in the block that follows the state-8 test, and the result is
+// a register value from its store to those two exits. On the 44 lead: the state-8 arm `goto accept;` 337 (+0x2a: the byte
+// homes rotate, aligned 38), the channel-7 arm `goto accept;` 49, both 339 (1247 B). The 96 form rebuilt from the lead (no
+// accept block, the acknowledgement ending in `result = true;`, the kept arms and the post-disconnect test jumping to a
+// label on the final return) 96, aligned 14 [10]: only the kept arms (an immediate store, tests through AL, the jump to
+// the reload) and retail's `test al, al; jne` after the disconnect differ. On that 96 form: the result stored ahead of the
+// update arms 280 (1208 B, first difference +0x8); the post-disconnect test as `if (!result) goto received_done; goto
+// done;` 96, no test after the disconnect 96 and the kept arms as two tests 96 (the same code each). Forced decisions on
+// the result's 20 range cuts on the 96 form (a diagnostic, not source): none changes the code, as lane 1 r165 found on
+// the 44 lead; the result is
+// never a register candidate in this build (its cost is below zero in every pass), so the kept arms need a form that gives
+// the result a use at each of the two exits, not a pick.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

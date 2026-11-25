@@ -1333,6 +1333,20 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // a +4 load, delta.k not below a +8 load, and the plane pointer's number a multiple of 8. No form of the existing delta
 // and scale helpers gives the y and z parts those two ranks (they are numbered together); that is what the written-out
 // 18 and 10 forms reach by naming one part.
+// Whole-vector coefficient forms: both captured before the copies 455; near/far/both shared dots with coefficient
+// first 437/440/517; near/far/both with normal first 437/449/496; both vectors early with shared dots 517. Early
+// x-coefficient and following zero register roles still differ.
+// In-place factor-first x and delta-first y/z scaler 115; with separate scaled delta 467; with shared sum 115;
+// with point setter 115; with shared denominator dot 224; with denominator in the fraction local 221;
+// with shared near normal negation 115; with shared forward negation for the far plane 130.
+// The early x coefficient preload and exchanged zero XMM home remain.
+// M3 lane AO r1 (fast; control 115): the intersection as vector_products.h's vector3f_add_scaled(p0, &delta, t, ...) in
+// place of the scale and the three adds 119 (1851 B: the x row is retail's `t * delta.i + p0.x`, but the y and z rows
+// form t first where retail scales delta.j and delta.k in place, and the head's XMM roles rotate once more); the segment
+// flag set by an `if` 274 (1867 B); `outside0` as bool 259; the second pass without its `pass == 1 &&` 370; the clip
+// denominator and the near distance each as one expression 247/251 (1867 B); plane 0's d as `near_distance - d` 423;
+// the pass's plane as `&planes[pass]` behind one conditional test 380 (1835 B); the projection output taken as
+// `&projected_points[total]` with no cursor 249 (1867 B). Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

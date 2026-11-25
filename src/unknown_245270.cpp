@@ -280,9 +280,9 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// MiniMax B (11-20): no new form, no lower score (164): our frame is 0x24 against retail's 0x2c, retail homes the two decoded material codes as dwords and the first index as a dword where this build keeps two shorts, and retail materialises each side bit as its own stack byte where ours merges the two tests; retail also receives the source in ECX and copies it to ESI, which the declaration in the caller's file decides.
 // score 163 (was 163): The frame remains 0x24 against retail's 0x2c. The source receiver, material code spills
 // and independently decoded side homes differ.
+// MiniMax B (11-20): no new form, no lower score (164): our frame is 0x24 against retail's 0x2c, retail homes the two decoded material codes as dwords and the first index as a dword where this build keeps two shorts, and retail materialises each side bit as its own stack byte where ours merges the two tests; retail also receives the source in ECX and copies it to ESI, which the declaration in the caller's file decides.
 // Earlier score 164 (was 206; 206 before lane 13 r112's single-condition facing test at the end of this note, 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail's 0x2c; the source now arrives in ECX as in retail (earlier note: 206, was 206).
 // Earlier 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix;
@@ -1051,6 +1051,40 @@ void function_245400(s_source_245400 const *source, long index,
 // with separate sides and low-index/side-only tests 214/208. Native outer equality with packed
 // side-only test 210/222. Unsigned side-only/side-mask tests 234, and early packed equality rejection 229.
 // NOT kept: none recovers retail's frame and each raises the score and changes the matched caller.
+// M3 lane 12 r186 (fast with 0x245aa0 and 0x245400, both MATCH; control 163; lane 5 r213's saved lead re-measured 50 at
+// 789 B). Read from the compiler's operand ranks (every commutative sum or product is sorted by a 16-bit rank, largest
+// first; a field load through a shared address ranks by that address's value-table number modulo 4, a scalar by its
+// symbol number): on the lead the cross's four field addresses (first j, second k, second j, first k) rank 3, 2, 1, 2
+// where retail's operand sides need 0, 3, 2, 3, that is one more distinct expression ahead of the cross. A diagnostic
+// store of a parameter sum to a scratch global just ahead of cross3f (removed at once) gives all six products retail's
+// sides (157 at 799 B, the store's own code), the first plane's k still loaded twice where retail keeps it in a
+// register. Retail's j rows (up * z, then x * forward.j with forward.j as the memory operand, then left * y, in both
+// transforms) cannot come from one sorted sum while the scaled components rank near 0x1500: the left product would
+// have to wrap past 0x10000, which needs component ranks of about 0x2000 (symbol numbers near 0x100). Forms on the
+// lead: cross3f_staged 50 (same code); sides before the plane pointers 187; a plane-table local 50 (same code); the
+// second plane pointer first 54; named normal pointers 205 (0x245aa0 48); dot3f(&local_12, &local_6) 56; sides as
+// `(code & 0x8000) != 0` 50, `code < 0` 161 (783 B), `(bool)((dword)code >> 15)` 176, `(code >> 15) & 1` 52,
+// `(code & 0x8000) == 0x8000` 207; the scaled edge components as three conditional expressions 179 (818 B, one compare
+// each). Body unchanged.
+// Shared matrix-axes rotation in place, selected scaled input, assigned input, or initialized input and scaler return 266/276/245/179.
+// The same four rotations with edge formation after plane decoding 246/266/236/217. NOT kept: even the 0x2c forms grow past retail's extent.
+// On the late edge and independent plane-side decode, secondary code before primary index
+// 167, secondary record lvalue 167, named secondary short index 167, primary short index 169,
+// direct secondary surface subscript 169, primary bound at emission 167, both short indices
+// with that emission 169, paired encoded-field references 167.
+// NOT kept: these recover the 0x2c frame and retain the 783-byte extent, but the surface
+// and material table registers still differ and every score rises.
+// One copied normal with direct/staged cross, first or second 248/241 each.
+// In-place staged cross initialized on admission 236/233 or at decoding 221/218.
+// NOT kept: all increase the score and grow past 783 bytes. The frame and separate side homes remain.
+// The frame remains 0x24 against 0x2c, with separate material and side homes missing.
+// material prefix with late endpoint 204, material prefix with late start 205.
+// material prefix with endpoint indices 207, material prefix with selected emitter point 139.
+// selected point with late endpoint 204, selected point with secondary material reference 139.
+// selected point with staged cross 139, vertex records with staged cross 205.
+// selected point with plane table between codes 139, selected ordered facing comparison 208.
+// explicit facing exits on selected point 212, explicit exits with plane table between codes 212.
+// NOT kept: the 139 forms recover frame 0x2c and the entry through the material comparison, but grow to 787 bytes and retain the differing float and code homes. The two explicit facing-exit forms regress.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

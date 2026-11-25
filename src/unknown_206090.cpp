@@ -991,6 +991,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the statement whose else arm is the skip call; retail's wheel loop head is unpadded only because it would need 12
 // bytes. `do {} while (false);` after the hit/skip statement, at the end of the contact loop's body, or both: 1346 each
 // (same code, no new padding). Body unchanged.
+// Contact-normal ramp numerator 1344 at 6238 bytes, angle range 1404, both 1381.
+// Named quotient 1344, named limited fraction 1346, live quotient in explicit arms
+// 1350, one quotient in explicit arms 1344, and quotient limited in place 1424.
+// NOT kept: best gain two points, with the same 0x5d0 frame and displaced velocity homes.
+// Kinetic coefficient root after one direction store (i/j/k, i/k/j, j/i/k, j/k/i,
+// k/i/j, k/j/i), after two (i/j/k, k/j/i), or with a named radicand and the root
+// after the copy or before its final store: 1446/1446/1446/1446/1446/1446/1446/1446/1403/1403. NOT kept: every form
+// regresses while retaining the frame and displaced component/velocity homes.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

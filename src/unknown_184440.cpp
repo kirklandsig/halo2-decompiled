@@ -603,6 +603,20 @@ __forceinline bool function_184448(long arg_0)
 // given EDX) coloured ahead of it, and the flag word (ranked 96 here, given ECX) in EDX. Forcing any one of those
 // decisions (a diagnostic, not source) moves the count by 13 at most (957), so no single count gives retail's head.
 // Body unchanged; still BLOCKED-BY 0x48e70 for the reloads after its calls.
+// Per-face surface-array capture 965, neighbor record 984, both 984; signed plane word alone
+// 984, with the array 983, with the neighbor 983, with both 978, and current-face reference 978.
+// The 0x11d4 frame and the initial scene and surface homes remain.
+// M3 lane 2 r148 (screens with the callers 0x9cca0/0x184060/0x184250 and 0x48e70 in the image, all MATCH each run; control
+// 965 at 4590 B, aligned 711, 279 with registers and offsets masked; body unchanged): the worklist's first entry stored ahead
+// of its count (retail's store order) 965 (same count); the material lookup's inner test as a conditional expression 968; the
+// surface list computed ahead of the record pointer in the else arm 963; the material table pointer declared ahead of the
+// lookup 962 (three points, a declaration move); the plane word read once into a long for the index and the flip test on
+// this body 974; the lookup's sign test joined to the count test 965 (same count); the edge's far face read ahead of the
+// vertex copy 986 (4602 B); the first and third together 963. Reading of retail's head, for the next round: the record
+// pointer is never in a register there (its NULL is one immediate store to +0x98 and every later test reloads it), the
+// material count is loaded into EBX ahead of its compare, and the vertex loop keeps the two axis offsets pre-scaled
+// (`axis * 4 - 8` from a pointer stepped through the vertex array) with the table row offset saved for the sample loop,
+// which is the axes-read-at-each-use form already listed at 974/970. Still BLOCKED-BY 0x48e70 for the reloads after its calls.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

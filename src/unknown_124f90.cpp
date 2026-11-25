@@ -1922,6 +1922,8 @@ long function_2197f0(real gain);
 // added to the ambience difference 87 (same code); the time sum written product first 87;
 // the fade-in copy and the reciprocal computed ahead of the window test 181 (633 B); re-measured: the eager clamp
 // `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
+// Staged release end with default result, exhaustive result, selectable endpoint, or elapsed fallback accumulator 92/92/155/157.
+// The same four with the quotient before the cap 148/148/153/97. NOT kept: duration reuse keeps the wrong XMM allocation.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4075,6 +4077,53 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // bytes), the pointer declared through `sounds` ahead of the start test 162 (561 bytes). Reading: with the loop top reading the global, the latch's load is a CSE temporary placed at the latch head;
 // a user-variable definition keeps its place after the ternary, but its shorter range then takes ESI ahead of the scan
 // temporaries (retail: the scan result in ESI, the pool in EBP).
+// M3 lane 3 r306 (H2M_FAST, control 8; "rank" is the register allocator's colouring priority, read from a back-end
+// trace): the latch load is not a scheduling choice. This build keeps the pool global as one register candidate and
+// reloads it on the edges that come from calls (one reload block ahead of the latch, which the start test's jump
+// skips); retail reloads at the head of the block after the next-index ternary on every path. This compiler emits
+// that when the candidate's weighted cost (its uses less its reloads, 2 x loop weight each) is not above zero: it is
+// then split instead of coloured whole and the latch piece gets its own reload before its first use. Here the cost is 4
+// (26 for the uses, 2 for the entry load, 4 for each of the five reload blocks in the loop), so one more reload block or
+// one use fewer gives retail's latch. The switch without the unreachable default (`case 0: ... break; case 1:
+// continue;`, the listed 78 form, re-measured 78) has seven reload blocks (cost -4): its latch, its `sub eax, 0`
+// dispatch and every instruction are retail's, and the EBX/EBP swap that is left is ONE rank point: the voice pointer
+// ranks 60 (its definition and first read share a block with six candidates) and the sound index 59 (the extra edge
+// blocks, where it is live and not referenced, cost it 10), so the voice takes EBX first. Forced, as a diagnostic
+// (not source): the voice at 58, or the index at 61, on that form is a byte match. The form to find is therefore the
+// no-default switch with one more point for the index (one candidate fewer in a block it only crosses, or one more
+// in a block that reads it and not the voice) or two fewer for the voice. On the no-default form, 78 each at the same
+// ranks 60/59 (the block structure is the same after the compiler's own clean-up): the voice-owner test as an early
+// `continue`; case 0 ending in `continue`; `continue` after the stop call or after the callback; the callback test
+// nested; the pool global at every use; the previous owner named; `!= NULL` pointer tests; `NONE ==` tests; the
+// voice compare with its sides swapped; `(short)NONE`; `switch ((long)mode)`; case 1 first; the mode as if/else; the
+// class-flag and range tests nested; the index declared for the `for`; the stop call's else in braces; a `!= 0` on the
+// load test; `default: continue;` with `case 1: break;`; `default: break;` with `case 1: continue;`; 0x128020's
+// while loop with a bottom label; the real next-datum function at both sites with `inline` on its definition and on
+// 0x16bc00's (held form, measured only). `!= NONE ? ... : 0` in the latch 83; the start test as `time >= start` 84;
+// the sound pointer ahead of the start test 167; `case 1: break;` with no default, or with the unreachable default,
+// 49 (`test ax, ax`, five reload blocks); the waiting arm as an inline function with returns 326 (394 bytes, called);
+// the entry datum computed straight into the index 170 (the index ranks 93 and takes EDI). The 24 form re-measured 24:
+// cost -4, index 61 against voice 60, which is why its registers and latch are right.
+// On this body (8): a loop-top `sounds = g_4e637c;`, a body-scoped pool local for the loop top, the all-global latch
+// and the reload inside the search's argument 8 each (same code, re-measures); the reload inside the search's argument
+// with the loop top through `sounds` 25 (the 25 form's code: retail's instructions with the pool as a user variable
+// ranked 74, which takes ESI); a dead `(void)` read of the sound in the voice block 8 (removed); the sound pointer
+// taken again in the voice block 188 (578 bytes). No single forced pick, rank or range cut (about 170 tried) moves the
+// latch load on this body. Diagnostics, reverted at once: one more read of the pool global after the voice calls
+// (`SOUND_PLAYBACK_GET(sound_index)->value_ac = voice_index;`) gives retail's latch and single latch target at 577
+// bytes (174); a library call invalidates the pool global and a lookup that stores nothing (0x221810) does not
+// (stand-ins for 0x125e60: a thread-yield call reloads after it, 0x221810 does not); side-effect-free stand-ins for
+// 0x125e60 and the voice acquire split the candidate but keep its reload at the latch head (109). Later, on the
+// no-default form: the owner store as `g_4e6378[voice_index].sound_index = sound_index;` 163 (572 B; the index ranks
+// 61 but the element address is formed again), the stop call reading `g_4e6378[voice_index].sound_index` 83. Only
+// blocks outside the loop move a rank by one point: the index is live, unreferenced, across the loop preheader, which
+// holds seven candidates (hoisted constants and the sound-system global); one fewer there is the tie it needs.
+// M3 lane 3 r307 (H2M_FAST, control 8): the pool candidate's ledger on this body is 26 for its uses (entry 6, loop
+// top 4, latch 16), 2 for the entry load and five reload blocks of 4: the callback block, the stop-7 block, case 0's
+// tail, the join after the voice block and the join after the owner test and switch. A sixth block would make the
+// cost 0 (retail's latch); early exits do not make one, 8 each with the same code: the owner test as an early
+// `continue` inside a plain else, case 0 ending in `continue`, `continue` after the stop-7 call, `continue` after the
+// callback, the start test inverted into an early `continue`.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4993,6 +5042,8 @@ struct s_128ca0
 // gain 48 (same code); the channel index named once ahead of the started test for both channel calls 164 (1038 B: it
 // is read ahead of the pins and kept across them); the first pin's result and the channel index named ahead of the
 // field_c store 48 (same code: the store still follows the index load).
+// Processed accumulator constructed, assigned, copy-constructed or copy-assigned before compound pin additions 177/177/177/177.
+// The same four with the permutation conversion preceding accumulator preparation 177/177/177/177. NOT kept: they remove the retail by-value pin homes.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

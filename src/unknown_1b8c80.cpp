@@ -1064,6 +1064,15 @@ extern "C" void _ReadWriteBarrier(void);
 // looked up through a `long const &` to the index parameter 44; the slot read through a `s_slot *const &` to the
 // parameter 44; the state read through a `s_slot_4c *const &` to the state local 44. With the barrier: the actor looked up
 // through a `long const &` to the index parameter 6 (same code).
+// M3 lane 13 r155 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, no barrier 44 at 208 B): the flags test as a
+// one-bit bit-field member of a view of the slot (`byte point_target : 1` at 0x22), with the barrier 6 (same code),
+// without it 44, without it and the actor first 44; no barrier with the state through a file-local inline accessor
+// taking the slot by reference (`slot_view_4c(*slot)`) 44; no barrier with the pool's data named, then the state, then
+// the actor as `&actors[index & 0xffff]` 44; no barrier with the state read out of a two-pointer shared-storage local
+// declared after the actor 44 (all the no-barrier code); the final 0x450 store through its own `actor_get(actor_index)`
+// lookup, without/with the barrier 77 (229 B) / 71 (226 B): the lookup after the arms' stores is not merged with the
+// first. Allocator search on the no-barrier body (24 forced register picks and rankings): none changes the entry, the
+// slot is no candidate in the entry block at all, so the load's place is decided before allocation.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -2362,6 +2371,15 @@ void function_1f86a0(long actor_index);
 // condition 123; one element local shared by the loop and the tail 123; the flags read through a `byte const &` for
 // the mask and the 0x40 test 123; the entry as a pointer to const 123 (same code each); re-measured the no-mask form
 // with plain truth tests 244 (868 B). Body unchanged.
+// M3 lane 13 r154 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123, aligned 105). The
+// head's data-first lookup (retail loads the object table's data before the actor's index arithmetic and takes the
+// actor index in EDX): the object table's data bound to an `s_object_header_view *const &` ahead of the actor lookup and
+// indexed for the unit 130 (863 B, aligned 102: the actor index then arrives in EDX as retail, but the object data
+// loads ahead of the actor data, into ECX; match-only form); that reference declared after the actor lookup 222 (863 B);
+// that first form with the decline decided by an if/else flag 130. On the body: the state and selection views declared
+// ahead of the actor lookup (they come from the parameter) 126; the decline decided by `bool decline;` set in an if/else
+// on unknown86 123 (same code); the decline arm ending in `continue` with the accept test as its own `if` 123 (same
+// code). Body unchanged.
 // P657: Typed slot-data member 148; one selection guard around root rejection/admission 237/260;
 // three-way agreement with a default or exhaustive tests 263/252; agreement-first rejection/admission
 // 256/252; named selection requirement 248; rejection set by the three tests 240; entry name 123.

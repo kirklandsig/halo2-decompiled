@@ -5686,6 +5686,14 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // up with the ordinary cross, staged second cross or branch selection 194 each;
 // select both new axes 196. NOT kept: the live aim reads through the unit where
 // retail copies it and grows the body to 781 bytes. Separate up grows the frame to 0x5c.
+// The 0x50 frame remains. The first cross still loads up.i before the forward copy and the last row
+// consumes the forward scale. NOT kept: staged k with leading pair copy grows to 773 bytes and stages a
+// one-use component. The 767-byte forms raise the score. staged k with leading pair copy 99; staged i
+// with trailing pair copy 183; staged i/j with k copy 172; staged j/k with i copy 182; native array copy
+// k/j/i 173; aggregate aim copy 226; separate yaw trig results 169; aggregate direction publication 213.
+// Up j/k staged before aim and i afterward, ordinary/staged cross 182/183; contiguous pair copy 204/204.
+// Separate queried up with branch publication 218/218, or publication after its correction 211/211.
+// NOT kept: all lengthen and raise the score. The first up.i load and forward-scale lifetime still differ.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5775,71 +5783,12 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
    a point projected onto the aim line from its center, moved by offsets
    along the aim and its left and up, then held clear of the world from
    its center; and its root object's velocity */
-// score 2 (was 184; earlier 202, 218): frame 0x24 and 808 bytes agree; the first cross
-// product's j minuend loads aim.i before world-up.k. Earlier history follows.
-// Earlier 184 (was 202; earlier 218): the frame, convention (aim and point in registers, the other six arguments on the stack,
-// ret 0x18), branch shapes and call order agree; what differs is xmm register allocation and operand order.
-// Retail loads the dot product's seven operands first (aim.i in xmm0, the center in xmm4-6) and multiplies in a
-// register; ours folds the aim into memory operands. In each offset step retail loads the vector component and
-// multiplies it by the scale; ours copies the scale and multiplies it by the component for the first term.
-// The offsets pointer only stays on the stack (as retail's does) when it is read three times, not nine, so the
-// three steps go through an inline helper. The root loop must keep its own index: counting down unit_index
-// itself leaves ebp live past retail's early pops (215 with the helper, but a different tail).
-// Round 4 of #1049: a statement-by-statement walk found no logic difference (the project/clip/use_aim tests,
-// the cross products, the 0.0 compare, the clip call and the root loop all agree); the 45 bytes are loads retail
-// does not fold (about ten). Reading aim.i/j/k once into locals for the projection (dot product and the three
-// stores) makes the compiler load them unfolded, as retail does: 202 and 776 bytes. Retail re-reads them after
-// each store to point (it cannot rule out aliasing), so the locals are a spelling that only matters if aim
-// overlaps point, which no caller does. Retail also keeps aim in esi and point in edi (ours the reverse).
-// Tried (all 218): dx/dy/dz locals; `(point - center) * aim` operand order (it also reorders y before z); the
-// scale first in the helper; the clip call's unit read through a local (its call order then matches retail);
-// the helper's three products as locals before the adds; the dot product as three statements (220); aim.i alone
-// in a local (220). Locals for the three offsets instead of the helper (229) fuse the three steps into one sum.
-// Round 232 (m3 lane 3): 202 -> 184 through the existing helpers: both cross products through cross3f (186, 792
-// bytes); the offset steps through vector3f_add_scaled with the point cast as bipeds.cpp's eye point does, in place of
-// the file's own move-along helper (alone 187, aligned 65 -> 44); aim read at each use in the projection, no ai/aj/ak
-// locals (187; on cross3f alone 204); the projection's offset and dot product through vector3d_from_points3d + dot3f
-// (184, aligned 25); the projected point through vector3f_add_scaled (184, same code). Same 184: the dot written in
-// retail's (i + k) + j grouping (aligned 29); dot3f(&offset, aim); the root loop as a while loop; the clip call taking
-// function_baf40() directly (aligned 35). Left (16 bytes short): aim in EDI and point in ESI (retail ESI/EDI); the dot
-// product folds aim.i and sums j first; the k*j cross terms load the other operand; the first add_scaled product copies
-// the scale; the root loop head gets a 2-byte pad (retail inlines 0xbaf80, which is noinline here).
-// Round 234 (m3 lane 3): 184 -> 12 (808 bytes) by declaring point before aim: retail's callee keeps aim from EAX and point
-// from ECX, and its one caller (0x104150) sets EAX, then ECX; ours had them the other way round (definition, the
-// weapons.cpp declaration and the call changed together). Left at 12: the dot sums (i + k) + j in retail, ours
-// (i + j) + k; and in the first cross product retail loads a->k for the j minuend where ours loads b->i. On 12: the
-// dot written in i, k, j order, named or inline, 12 (the compiler reorders it); dot3f(&offset, aim) 12; the sum inline
-// as j + k + i 2, j + i + k 2, dot3f's own body inline (i + j + k) 2, offset-first orders 2 (all hand-written dots,
-// so not kept without a match); on those, cross3f_staged 2, the first cross product written out 91 (796 bytes), with
-// the j minuend's operands swapped 91; the permuter on the inline-dot form found nothing below 2.
-// Then 12 -> 2 with both cross products through the existing cross3f_staged (the dot then sums as retail, dot3f kept);
-// only the second staged 12, only the first 12; on 2 the inline dot forms and dot3f(&offset, aim) 2 (same code). Left:
-// the first cross product's j minuend `a->k * b->i` loads b->i first (retail a->k); it does so even without the
-// projection block (diagnostic), so it is local to that product. The world-up global in a local first 6; the first
-// cross product written out (staged order) 108 (796 bytes), with that minuend's operands swapped 108.
-// Also on 2: `up` declared before `left` 2, `up` declared after the zero test 2, `0.0f == function_30bf0(&left)` 121.
-// T91: existing scalar-input setter for aim/fallback/aim+fallback/clip/aim+clip/fallback+clip/all
-// publications 216/131/201/62/202/122/217; world-up copied into left before an alias-safe
-// in-place staged cross 179. NOT kept: no match; original copies and helper calls restored.
-// First +0x12a still exchanges the first cross j minuend's load and memory multiplier.
-// P432: CRT aim/fallback/clip copies 2/2/2; basis/projection role names 2/2;
-// function-scope projection/vertical workspaces 2/2; normalization result 21.
-// NOT kept: no match; first cross j load and memory multiplier still exchange.
-// b14D (11-17) walk against retail, fast build on r847: every statement agrees (frame 0x24, the project/aim/clip tests,
-// the dot and its three stores, both cross products, the 0.0 test and fallback copy, the three offset steps, the clip
-// call, the root loop; 808 bytes). The one differing pair is at 0xc83b7/0xc83bc: retail loads a->k ([eax+8]) and
-// multiplies by b->i ([esi]); ours loads b->i first. In every other product ours and retail load the same operand
-// first. On 2: the helper's i/j/k statement order, all six permutations, 2; the j minuend commuted in the helper
-// (b->i * a->k, canonicalised to the same code) 2; the aim argument cast to a const pointer 2; the first product
-// computed into a local and copied into left 191 (840 bytes); written out with the world-up in a local (the loads
-// then differ at the dot, 108, 796 bytes); first through cross3f alone 12 (dot product registers change).
-// M465: compound row subtractions 2; positive products first 2; all subtrahends first 21; subtrahend
-// then paired row 21; rows start with left components 2; rows start with right components 4; basis dot
-// aim-first 2; basis dot offset-first 2.
-// NOT kept: the staged helper forms regress a matched caller. The basis-dot forms leave
-// the first cross j load and multiplier exchanged.
+// Parameter order: retail's one caller sets aim (EAX) before point (ECX), so point is declared ahead of aim; and the
+// first cross product reads world-up.k ahead of aim.i, which the compiler's operand ranking gives only with aim sixth
+// from the end of the list (as seventh it ranks aim.i above world-up.k). The unit index leads, as in the file's other
+// unit functions.
 // @retail 0xc8290
-void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity, real const *offsets,
+void __stdcall function_c8290(long unit_index, point3f *point, vector3f *aim, vector3f *velocity, real const *offsets,
 	bool project, bool use_aim, bool clip)
 {
 	s_unit *unit = UNIT_GET(unit_index);
@@ -5954,6 +5903,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // before bound tests 66.
 // NOT kept: in-place rate scales gain four at retail length. The angular clamp registers
 // and reused coefficient still differ.
+// Angular bounds from actor/default value selection 210, actor candidates with fallback 208,
+// or explicit test outcomes 209. Separate final rate bounds selected, branched or initialized
+// from rate candidates 133 each. Both joins as selected results 213, or as candidates 200.
+// NOT kept: all grow and score higher. Clamp registers and coefficient reuse still differ.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -9625,7 +9578,7 @@ struct s_unit_melee_collision
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 484 (was 493): The frame remains 0x180 against 0x17c. The unit and both fan ordinals still use different homes.
+// score 447 (was 484): The frame remains 0x180 against 0x17c. The unit and both fan ordinals still use different homes.
 // Earlier detail: The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
 // MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the
@@ -9797,6 +9750,19 @@ struct s_unit_melee_collision
 // 492/533, scalar row products 493, aggregate row vector 489 and a whole-ray assignment 489.
 // NOT kept: the 0x17c forms shorten to 2205 bytes. Row products held across the inner
 // loop grow the frame to 0x184 and the body to at least 2240 bytes.
+// The range snapshot still gives a 0x180 frame and the unit still spills through the fan. With per-
+// product range, the following forms recover 0x17c but shorten the function and raise the score.
+// interval melee selector 535; single collision type read 527; direct fallback before self damage 520;
+// single final parent handle 531; single final parent and seat 531; half-open signed fan 531; named
+// trace and surface slots 531; separate clamp stores 531.
+// The 0x180 frame and fan ordinal homes still differ. The existing player-index
+// query inlines the second checked lookup and its fallback.
+// indexed ray with cached range 485, indexed ray with per-component range 533.
+// indexed transverse sum 533, indexed ray with direct unit aim 521.
+// existing player-index query 447, query with indexed live range 536.
+// shared across scale 532, shared up scale 532.
+// shared transverse stages 533, three shared vector operations 480.
+// NOT kept: live-range forms recover 0x17c but shorten the body. The other ray forms tie or regress.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
@@ -10018,8 +9984,7 @@ impact:
 
 				if (object && object->unknown13c != NONE)
 				{
-					object = (s_unit *)function_badc0(unit_index, 3);
-					long player_index = object ? object->unknown13c : NONE;
+					long player_index = unit_get_player_index(unit_index);
 					long controller = *(short *)((byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
 
 					if (controller != NONE)

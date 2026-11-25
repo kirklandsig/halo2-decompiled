@@ -384,6 +384,17 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // `!= 0` 76 (same code); the kind lookup after the index 80; the player pointer formed after the 0x1e9ce0 call 91 (434
 // B); the team read ahead of the engine test 107 (422 B); the row formed by short-element indexing 76 (same code).
 // Body unchanged.
+// M3 lane 13 r154 (H2M_FAST with 0x1ea770, 0x1e9ce0, 0x1e9df0 and 0x1e9fa0, MATCH each run; control 76, aligned 70).
+// A scan of retail's code for the enable byte's address as an immediate finds none: only 0x510cb0's address is formed
+// (pushed at 0x1962f6, 0x196415, 0x196766, loaded at 0x195a4b, 0x195ba1 and others), so the reload after the counter
+// store comes from the object the enable byte shares with that record, as listed above. On main's body: the old
+// maximum in the getter's own shape (`long value = NONE; if (index != NONE) value = ...; old_maximum = value;`) under
+// the enable test 99 (430 B), the team maximum so 96 (430 B), both 101 (428 B), both with the increment through the
+// statistics address and the row formed after it 105 (430 B, first +0x16), the player one with that increment 103.
+// Body unchanged (76).
+// Existing player statistics record for consecutive/recent/timestamp in all seven subsets 85 each.
+// Typed increment before binding the row 85. NOT kept: all reach 434 bytes but exchange the opening player and kind registers.
+// The later enable reload and previous maximum home still differ.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

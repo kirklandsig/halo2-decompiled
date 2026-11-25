@@ -644,6 +644,23 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // value 302 (1085); the start zeroed by its own statement after its declaration, ahead of the memory-status helper 150
 // (same code); the copy flags and texture format as named locals (3 and 10) used for the stores, the texture call and
 // the bitmap 150 (same code: they propagate, retail holds 10 in EBP and 3 in EDX). Not moved.
+// M3 lane GA r1 (fast; 0x1564e0/0x156960/0x156b30/0x155e50/0x1568d0 all MATCH; control 272 at 1098 B). New lead: calling
+// the existing include/unknown_080e10.h `function_80e14(g_4e9188.permanent_memory_size, 0, 0, (long)function_1566c0, 30, 0.1f)`
+// in place of the hand-written retry loop and bink_read_tsc matches every instruction of the retry loop (including start's
+// shared high-half slot, pumps at +0x14, unrotated loop, inline D3DDevice_IsBusy); with retail's skippable/large/direct_sound/
+// positive-tail/`function_1358c0(g_55ece8.format)` shapes and `g_55ece8.texture` stored between `unknown28` and `unknown54`:
+// in this file (/O2 /Ob1 /Gr) 269 (1085 B, frame 0x3c, aligned 168); in existing /arch:SSE src/unknown_1564e0.cpp 294 (1087 B,
+// exact 0x40 frame with every stack slot and the whole tail 0x15644c..0x1564d7 matching retail, aligned **20** out of 291
+// instructions against earlier leads' 80; saved in build/ga1/156090_t8_elem_tex.log). On that /arch:SSE lead: function_80e14
+// alone in this file 305 (1077 B); without texture reorder in 1564e0 296 (aligned 24); volumes before bins + texture early 296
+// (aligned 26); inline texture+bitmap helper 677 (704 B, stays a call); __forceinline bitmap helper taking 10 297 (aligned 57,
+// folds 0x1358c0); `texture_size`/`texture_data` zeroed at top 145 (1098 B, frame 0x48, aligned 81); `texture` local tested
+// twice 300 (1081 B, aligned 24); __forceinline out-param `(10, 3)` helper 294 (aligned 20, propagates); __forceinline struct
+// returning `{10, 3}` 285 (1098 B, aligned 23: reproduces `mov edx, 3; mov [copy_flags], edx`); diagnostic without /Ob1 294
+// (same code); phi `(10, 3)` across surround arms 278 (1100 B, aligned 55); `MEMORYSTATUS status = { sizeof(status) }` 275
+// (1100 B, aligned 59); non-null movie ternary `(10, 3)` 292 (1106 B, aligned 73). Left on the 20-aligned-diff lead (11 B
+// short): the two entry `mov [esp+0x3c], ebx` stores (+8 B) + loop pad `lea ecx, [ecx]` (+3 B), `mov edx, 3` / `mov ebp, 0xa`,
+// and one surround-volume store scheduling swap. Not kept (269 is under the keep bar; move kept only with a match).
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

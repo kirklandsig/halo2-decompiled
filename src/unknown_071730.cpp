@@ -521,6 +521,22 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Diagnostic (a test that folds away, not keepable): the getter as `local_2 ? local_2->get_data_4a00() : NULL` keeps it
 // out of line as in retail, 452 (1565 B), the listed `true ? ... : NULL` code. Body unchanged; still BLOCKED-BY 0x5b080's
 // call-site depth.
+// In round 641, the frame agrees. The second state still uses ESI and the getter still expands. Names for the candidate
+// receiver 376, both receivers 376, playlist index 376, index and settings 376, settings and roster 376, elapsed times
+// 376. Capturing the candidate only after the primary ready check 437; shared ratings and capacity rejection 445.
+// The names leave the relevant cells unchanged; the body is restored.
+// M3 lane 2 r148 (fast checks with 0x5b080, 0x5b040, 0x58d20, 0x71e00, 0x72140 and 0x706f0, all MATCH each run; control 376
+// at 1589 B, aligned 132, 62 with registers and offsets masked; body unchanged). Reading: three link-time expansion choices
+// differ, not registers. Retail calls the data getter at the top and expands both live-state tests (after the
+// members-ready test and at the not-ready exit); this build expands the getter and calls the header's live-state helper
+// at both places. The second state sits in ESI here only because the expanded getter tests it again after the 0x192e60
+// call; retail's EAX follows from its call. Forms: the getter diagnostic re-measured 452 (1565 B) with the two live-state
+// tests still calls, so the three choices do not share one budget; both live-state tests through the macro spelling
+// other session files use 431 (1602 B, retail's rows there, 13 bytes over with the getter still expanded), the first
+// only 424 (1597 B), the second only 420 (1594 B); the decision chain with no goto (the transition flag cleared by each
+// failing test, each later test guarded by it) 435 (1572 B: the stores of the cleared flag merge into one where retail
+// has one per failing test, and the live-state helper is still called, so retail's chain is not that form); the two
+// session-state exits as early returns 448 (1578 B). Still BLOCKED-BY 0x5b080's expansion at this site.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

@@ -3652,6 +3652,15 @@ struct s_ammo_conversion_entry
 // Generic source view mutable/const, generic destination view, and paired mutable/const views 190 each.
 // Existing header accessors for the destination, source with generic refresh, and both with generic refresh
 // 190 each. NOT kept: all preserve the exchanged saved-register roles and 731-byte extent.
+// Destination, source and tag-array lvalues, single and paired loop-entry bindings 190 each;
+// all three bound together at loop entry or per iteration 190 each. Saved destination and
+// conversion-key registers remain different.
+// The 0x20 frame agrees. The destination weapon and conversion key still use different saved registers.
+// separate source-magazine selections 234, separate selections with positive acquisition 226.
+// separate selections with one exit 227, conditional source pointer with positive acquisition 216.
+// shared source tag key and scoped magazine 234, full-magazine continue with scoped magazine 226.
+// transfer-gate continue with scoped magazine 226, source pointer assigned by the selected arms 242.
+// NOT kept: every form raises the score. The conditional source pointer changes the save prefix but shortens the body to 698 bytes.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4080,9 +4089,26 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // without the long count 596. Reading (frame and colouring traces): ours has 17 dword cells against retail's 16, and
 // the weapon index (a parameter) is never coloured (live across 93 unreferenced blocks to the tail's marker calls), where
 // retail holds it in EBX from the entry to the fire call; no single forced allocator decision reaches retail.
+// M3 lane 2 r147 (H2M_FAST with 0x101db0 and 0x159dd0, control 593; al = aligned differing rows exact/register-masked,
+// 261/150 on this body): the fire call once after the if/else on `fired` 593 (same code; on the plain unit index 649, same
+// code); the owner-unit lookup declared first 631 (2497 B); the effect's remaining count stored in each arm of
+// `lower == upper` (retail stores in both arms and re-reads the field for the loop test at 0x10338b) 641 (2518 B, frame
+// 0x1c5c, al 284/163), with the plain unit index 657 (2502 B, al 227/129); the plain unit index alone re-measured 649
+// (2503 B, al 208/95, the closest structure: the definition and the barrel offset trade both register and home, EDI and
+// [esp+0x18] against retail's [esp+0x14] and EDI). Body unchanged.
 // Named accumulated heat 593; shared tag cap 612; merged cap publication 604; native barrel accumulator 593.
 // Native item flag 629; chained failure flags 593; nested destruction test 593; named no-magazine heat rejection 593.
 // NOT kept: ties or regressions. The 0x1c64 frame and early weapon/tag register assignments remain.
+// Holder, magazine, effect tags, selected entries, owner and barrel role-name trials 630 each (reduced control 630).
+// Shared effect-history word setter 627, pending weapon byte setters 630, both 627. NOT kept: a three-point
+// preview change. The full probe still differs by four bytes and the weapon index and barrel occupy different registers.
+// The 0x1c64 frame and weapon/barrel register assignments still differ. NOT kept: cached history drops
+// the publication reload, the local duration keeps a joined timer store and register test, and both
+// shorten the body. The positive timer exit restores the frame but regresses. history word for the free-
+// effect scan 593; promoted history for the free-effect scan 593; exhausted history as a shared value
+// 536; positive effect-timer exit 635; single bounded next effect 631; scan history and fresh
+// publication word 593; interval result initialized from lower bound 526; active effect index before
+// timer debit 593.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4627,9 +4653,22 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // the heat byte's sum written `old + increment` 1412; the old value and the increment declared the other way round
 // 1412; the tick clamp as an if before the store 1412; the 0x194 validity test as nested ifs 1412 (the 1412s the same
 // code).
+// M3 lane 2 r147 (H2M_FAST, control 1412; al = aligned rows exact/register-masked/stack-masked/both, 909/708/703/520): a
+// bool result with down/up started false at the loop top and filled under `if (!blocked)` (pressed, released, then the
+// signed state byte) 1506 (5600 B); with blocked started false at entry and set in its own test 1517 (5600 B); the +0x20
+// ramp clamp tests against double literals 1453 (5724 B), with double stores too 1453 (same code); the first form with
+// the ramp clamps as double selects, the +0x1c clamps as float value selects and the complement written in place 1444
+// (5668 B, al 889/679/667/478). Body unchanged.
 // Conditional decay result 1413; named cooling adjustment 1412; one cooling coefficient read 1416; retained cooled heat 1412.
 // Single clamped write 1412; named recovery time or excess heat 1412 each; nested recovery guard 1412.
 // NOT kept: ties and regressions. The 0x34 frame, entry roles and dual spill remain.
+// Trigger/barrel runtime-array lvalues, tag pointer fields, paired lvalues, and array bases with
+// tag field pointers: 1413/1412/1413/1413 before their loops, 1412 each inside. The loop-entry
+// runtime array forms shorten the barrel phase by four bytes. The 0x34 frame and dual spill remain.
+// Retail block order for trigger states, press actions and hold actions 1555/1462/1427.
+// Trigger plus press, trigger plus hold, or both actions 1610/1579/1466. All three
+// 1619, and all three with the retail behavior order 1582.
+// NOT kept: all grow and retain frame 0x34, with the early dual byte still spilled.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5027,7 +5066,7 @@ struct s_entry_pair { long object_index; short entry_index; };
 struct s_damage_owner;
 struct s_type_1e6529;
 struct s_location;
-void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity,
+void __stdcall function_c8290(long unit_index, point3f *point, vector3f *aim, vector3f *velocity,
     real const *offsets, bool project, bool use_aim, bool clip);
 bool function_109e00(long object_index, vector3f *velocity, bool required);
 void function_cafc0(long unit_index, point3f *position);
@@ -5305,9 +5344,26 @@ struct s_weapon_projectile_creation
 // call. The callee writes only xmm0 and retail's 0x293130 keeps xmm2 across it, and 307 of the 311 retail call sites
 // that keep an xmm register across a call fit exact kill sets of the callee, so retail does know the callee's set
 // and still does not carry the zero into the loop.
+// M3 lane 2 r147 (H2M_FAST, control 1121; al = aligned rows exact/register-masked/register-and-stack-masked, 771/553/287):
+// the projectile tag and count assigned in both arms of the barrel-0 override (retail reads +0x6a in each arm and
+// multiplies with a 16-bit imul, 0x104c2a) 1116 (5214 B; that arm is then retail's instruction for instruction); with the
+// delayed-shot test as `delayed > 0` (retail jbe) 1116; with the rejected target reset as two statements, object first
+// (retail's store order) 1116; with the target type as a long 1155 (5197 B); the third form with the projectile owner
+// filled in if/else arms (retail 0x104cd5..0x104d15) 1131 (5195 B, al 683/533/316), with the actor call in both arms of
+// the bit-8 test 1128 (5215 B, al 718/560/266); the third form with only the actor call in both arms 1159 (5245 B). The
+// 1116 forms gain 5, under the bar. Lead: retail builds the mark code at 0x104437 as a six-bit field inserted into an
+// uninitialised stack byte with bits 6-7 cleared, a one-byte bit-field record passed by value to 0x15cca0, which hands it
+// to 0x196ef0; typing that parameter reaches 0x197160 and its caller in another lane's file. Body unchanged.
 // Shared spread weight, named blended endpoints or separate endpoint products 1121 each.
 // Captured default endpoints 1134; early spread position 1140; cone products 1154; shot-wide default weight 1158; selected shot scale 1154.
 // NOT kept: the local blend ties; the shot-wide form grows the frame. The 0x1ea4 probe remains.
+// The 0x1ea4 frame and holder-walk register assignments still differ. NOT kept: native player fields
+// tie, final actor and player reads expand the frame, and the other holder forms shorten the body and
+// raise the score. first parent retained across the walk 1154; aim permission from both final tests
+// 1153; aim permission seeded by the original parent 1152; native player fields in the holder walk 1121;
+// actor observation from the resolved holder 1147; player observation from the resolved holder 1123; aim
+// address from the resolved holder 1169; three values from the resolved holder 1152; shared typed holder
+// pool during traversal 1143.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
@@ -5422,7 +5478,7 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                 if (actor_index != NONE && WEAPON_SHORT_AT(g_4f55f0->data + (actor_index & 0xffff) * 0x888, 0x6fe) == 4)
                     use_aim = false;
                 if (WEAPON_LONG_AT(unit, 0x24c) != NONE) use_aim = false;
-                function_c8290(&origin, &direction, active_index, &motion,
+                function_c8290(active_index, &origin, &direction, &motion,
                     player_index != NONE ? (real *)(barrel_definition + 0x7c) : NULL, project, use_aim, true);
                 has_motion = function_109e00(active_index, &unit_velocity, true);
                 inherited_speed = direction.i * motion.i + direction.j * motion.j + direction.k * motion.k;

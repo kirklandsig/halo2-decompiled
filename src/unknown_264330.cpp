@@ -1023,6 +1023,20 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // motion and context records declared at function scope 404; `view` declared ahead of `tracking` 404; the 0x264b50 test
 // nested under its own `if (sample)` 404 (the same code each). Still BLOCKED-BY 0x2641c0's expansion here (and not in
 // 0x264210) and the release site's 0x25c820 expansion.
+// Sampling update derived from the prior and current walk state, with bool/byte/short/long
+// snapshots before node refresh 427/427/444/440 and after refresh 440/440/438/440.
+// The later short and long reach frame 0xa0 and 1616 bytes, with a stacked actor and higher scores.
+// M3 lane 12 r187 (H2M_FAST with 0x263210, 0x264330, 0x265680, 0x2641c0 and 0x264210; control 404 at 1624 B, aligned
+// unmatched rows [exact, stack masked, registers masked] 209/184/143; body unchanged). `short old_state` 404
+// [209/185/141] (the word store is still a dword here); the first prop read from `actor + 0x58` instead of a second
+// actor lookup 442 (1616 B) [220/195/147]; `sampled_one = true` ahead of the counter's reset 405; the closing step as
+// `+= 1` 404 (same code); the changed-state view through the existing 0x25d740 428 (1628 B); the maximum compare with
+// its sides exchanged 405. Diagnostic, reverted at once: 0x2641c0's noinline declaration dropped 509 (1696 B)
+// [201/174/132], 0x264210 lost; there retail's two flag bytes and the actor index in EBX are still missing and the
+// switch's arms sit in another order (retail lays case 0 and case 4 out first and puts the expanded sampler's failed
+// path after the 0x264b50 call), so the expansion alone leaves 132 structural rows. Still BLOCKED-BY 0x2641c0's
+// expansion here and not in 0x264210 or 0x265680 (the build's inline threshold expands all three) and by the release
+// site's 0x25c820 expansion.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -2448,6 +2448,24 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // or both before the spawn record 187/184, between tag read and type lookup 189/191,
 // and between type lookup and virtual queries 187/189. Single captures recover 0x44
 // but the system remains in EDI and the body grows to 572 bytes.
+// M3 lane 3 r306 (H2M_FAST with 0x178eb0/0x179020, both matched throughout; control 128; "rank" = the register
+// allocator's colouring priority from a back-end trace): on the early-colour form (both colours read into locals right
+// after set_location, ahead of the spawn stores; 184 at 572 B) the system parameter itself ranks -64 (live through the
+// loop) and is split; its piece over the entry block ranks 58 (three uses there: the location index, the 0x1751d0
+// call and the colour call, each counted with the block's nine candidates) and takes EDI, while colour A, colour B and
+// the tint rank 36 each (one read and one use in that block), so colour A then takes EBX and colour B and the tint
+// spill. Retail's allocation (colour B EDI, tint BL, colour A in a frame slot, the system reloaded from its home for
+// the colour call) needs that piece below the colours. Forced, as a diagnostic (not source): the piece at 18 gives
+// frame 0x44 and the 552-byte length (178, first difference +0x7); left there are colour A's spill slot, the tint in a
+// byte home instead of BL, the loop's definition not held in EDI and the zone block. New this round: on the
+// early-colour form, `dword const` colours read B first 185 (572 B); the tint and multiplied results declared bare at
+// the top and assigned after a type lookup with no block 184; the spawn's location index stored ahead of the colour
+// reads 184; multiplied queried ahead of tinted 182 (572 B). Forced ranks of colour A/B and the system's first piece
+// (22 single decisions) stay at 178 or above.
+// BSP base passed at the zone calls or captured at successful advancement,
+// with the location pointer or the cluster word, 128 each. The four forms
+// with an early color A capture give 187 each. The frame reaches 0x44 there,
+// with 572 bytes and the system still in EDI.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2720,216 +2738,11 @@ event_done:
 
 #pragma inline_depth()
 
-// MiniMax I (11-16): no new form, no lower score (63): retail still adds the record base into the scaled index before its
-// first load and still reads the object's index again from the effect after the 0xbadc0 validity call, where this build
-// keeps the index in ESI across the call; the bodies of 0xbadc0 and 0xbaf80 are in src/unknown_0bad50.cpp, which this
-// lane may not edit: BLOCKED-BY 0xbadc0, 0xbaf80.
-// MiniMax S (11-16): no new form, no lower score (63): the head's load still folds into the datum address where retail adds the record base into the scaled index before its first load, and the object's index is still cached across the 0xbadc0 validity call where retail reads it again from the effect; the body of 0xbadc0 and 0xbaf80 is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0, 0xbaf80.
-// MiniMax C (11-15): no new form, no lower score (63): the body stands as found.
-// MiniMax D (11-14): no new form, no lower score (63): the head still reads the object's index through the
-// folded address where retail adds the record base into the scaled index first and reads it back, and the
-// index is still cached across 0xbadc0 where retail reloads it; 0xbadc0's body is in another file.
-// MiniMax S (11-14): no new form, no lower score (63): the head's load stays folded into the datum address
-// because the base-plus-scaled-index pointer is formed by a helper in another file, so the add that precedes
-// the load in retail cannot be produced here; the body was re-measured and did not move.
-// MiniMax S (11-15): no new form, no lower score (63): retail still adds the record base into the scaled index
-// before its first load and still reloads the object's index from the effect after the 0xbadc0 validity call, where
-// this build caches the index in esi across the call and reads the field before the add; the head's load still folds
-// into the datum address where retail forms the pointer. This round the object index named in a local of its own
-// gives the same code (63) and reading the object index before the definition lookup gives 78, so both were
-// restored; 0xbadc0 and 0xbaf80 live in src/unknown_0bad50.cpp: BLOCKED-BY 0xbadc0, 0xbaf80.
-// score 63 (was 63): unchanged this round: retail adds the record base into the scaled index before its
-// first load and keeps the object's index in EAX across the validity call, where ours reads the field
-// before the add and caches the index in ESI; the validity callee's body is in another file, so the
-// reload cannot be produced from here.
-// score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
-// its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
-// src/unknown_0bad50.cpp.
-// MiniMax H (11-11): no new form, no lower score (63); the only difference left is retail's reload of the object's index from the effect after the 0xbadc0 validity call, and 0xbadc0's body lives in another file, so the reload cannot be produced from here.
-// MiniMax C (11-11): no new form, no lower score (63); the object index stays cached across 0xbadc0 where retail keeps NONE in ESI and reads the object index into EAX, and the head's load is folded into the datum address where retail forms the pointer; 0xbadc0 and 0xbaf80 live in another file.
-// MiniMax E (11-11): no new form, no lower score (63); retail still reloads the object's index from the effect after
-// the 0xbadc0 validity call, and that reload only appears when the compiler cannot prove that call read-only, so
-// the difference cannot be produced from this side (BLOCKED-BY 0xbadc0).
-// MiniMax A (11-06): no new form, no lower score; retail reloads the object's index from the effect after
-// the 0xbadc0 validity call, and that reload appears only when the compiler cannot prove that call
-// read-only, so the difference cannot be produced from this side: the body of 0xbadc0 is in another file
-// this lane may not edit (BLOCKED-BY 0xbadc0).
-// MiniMax A (11-06): no new form, no lower score; the only difference is the object's index, which retail reads
-// again after the 0xbadc0 validity call while ours keeps it in a register across that call; the body of 0xbadc0 is
-// in src/unknown_0bad50.cpp, which this lane may not edit, so the reload cannot be produced here
-// (BLOCKED-BY 0xbadc0).
-// MiniMax E (11-06): no new form, no lower score: the only difference left is the object's index,
-// which retail reloads after the 0xbadc0 validity call; that call's body lives in
-// src/unknown_0bad50.cpp, which this lane may not edit.
-// MiniMax A (11-03): no new form, no lower score: retail still reloads the object's index after the
-// 0xbadc0 validity call and keeps the definition pointer on the stack; calling the file-local copy
-// object_get_175d70 instead of 0xbadc0 compiles to the same code (63).
-// MiniMax R (11-01): no new form, no lower score: retail still reloads the object's index after
-// the 0xbadc0 validity call, and 0xbadc0's body is in another file.
-// MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
-// and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
-// MiniMax E (11-09): no new form, no lower score; the entry block still differs in where the record base is added into the scaled index and which register keeps the object index across 0xbadc0, and the permuter (29 tries in 311 s) plus the width and statement-order variants found nothing below 63.
-// Earlier note: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
-// Four-byte frame agrees; initial object handle remains retained across read-only queries.
-// Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
-// and 0xbaf80 (NONE in EBX), retail reloads it after each call with NONE in ESI. Retail's callers
-// 0x10a390 and 0x16c2b0 keep an index across 0xbadc0, so its summary is not the cause. Retail passes
-// 0xbaf80's result (still in EAX) as 0x1794a0's first argument, not the effect's object index (BLOCKED-BY
-// 0xbadc0: retail reloads the index after it; matched 0x138ab0 gets the same reload by reading the
-// field through its global again). The merged destruction call's place (ours keeps the invisible
-// arm's copy before the visible tests, retail the visible arm's copy) also differs.
-// Tried: deleted effect cleared without the gotos, later block guarded by `effect &&` 63 (kept: gives
-// retail's destruction block placement); one destroy call through a flag 137; root index as 0x1794a0's
-// first argument 197 (585 bytes; aligned 88 -> 61: the cached index then takes ESI where retail keeps
-// NONE, and EDI is reloaded), with the visible arm first 224, result false by default 197, the index
-// named in the arm 197; the object test as a second `if (effect && ...)` reached from the deletion path
-// 207 (retail's reload appears, NONE moves to EBX), that with the root index 130; the index named at
-// entry for the first test 63; the second test nested in `if (effect)` 207; invisible arm's flag test
-// the other way round (call to 0x177260 first) 87 (kept), with the visible arm written first 183, with
-// the visible arm's flag test also swapped 163; visible arm first, invisible arm unswapped 163; only
-// the visible arm's flag test swapped 178; visible arm as `flag2 && flag4` then `flag2` 138; update
-// word 109; response word 119; both words 119; native missing location 204; root location value 194;
-// root velocity value 198; both root values 218; origin value 109; native velocity/location/origin/all
-// copies 109; native color record 109; default visibility 109; short origin index 109; shared
-// destruction call 122; const tag/root 109/109; external datum reference 109; visibility result tests
-// 189; inline depth one/two 109/109; global optimization off 550; frame pointer 200; external tag
-// record 109; external root record 109; wide visibility result 144; byte visibility result 109;
-// unsigned color handle 109; root velocity address 109; root location address 109; origin output
-// lifetime 247; tag at every use 205; integer destruction result 230; word visibility 130; tag/result
-// 244; tag/word 212; result/word 239; all three 248; unsigned result with all 248; start/visibility/both
-// inline declarations 87/87/87; start noinline alone/with inline visibility 87/87; entry visibility
-// alone/with both inline/with signed-byte result 87/87/87; the else-if test read through the datum
-// lookup 87; root index with the first test through the lookup 212; only the first test through the
-// lookup 203; deletion path returning true with a plain second if 198; else-if test and 0xbaf80
-// argument both through the lookup 87.
-// 0x10a390 and 0x16c2b0 keep an index across 0xbadc0, so its summary is not the cause. 0x1794a0's
-// first argument is the root index in retail (EAX after 0xbaf80).
-// Round 72: deleted effect cleared without the gotos, later block guarded by `effect &&` 63 (kept:
-// gives retail's destruction block placement); one destroy call through a flag 137; root index as
-// 0x1794a0's first argument 197; the object test as a second `if (effect && ...)` reached from the
-// deletion path 207 (retail's reload appears, NONE moves to EBX); that with the root index 130;
-// the index named at entry for the first test 63; the second test nested in `if (effect)` 207.
-// Object-index reload (BLOCKED-BY 0xbadc0: retail reloads the index after it, so
-// retail's 0xbadc0 is not read-only to LTCG) and the merged destruction call's place (ours keeps the
-// invisible arm's copy before the visible tests, retail the visible arm's copy) still differ.
-// Round 88: invisible arm's flag test the other way round (call to 0x177260 first) 87 (kept);
-// with the visible arm written first 183; with the visible arm's flag test also swapped 163;
-// visible arm first, invisible arm unswapped 163; only the visible arm's flag test swapped 178;
-// visible arm as `flag2 && flag4` then `flag2` 138.
-// Earlier: object-index reload and visibility joins differ. Update word 109; response
-// word 119; both words 119; native missing location 204; root location value 194; root velocity value 198;
-// both root values 218; origin value 109.
-// object index remains cached across the validity call; visibility blocks differ.
-// Native velocity/location/origin/all copies 109; native color record 109;
-// default visibility 109; short origin index 109; shared destruction call 122.
-// frame agrees; object-index caching and visibility block order differ.
-// Const tag/root 109/109; external datum reference 109; visibility result tests 189;
-// inline depth one/two 109/109; global optimization off 550; frame pointer 200.
-// Four-byte frame agrees; cached object index across validity query and visibility/destruction
-// joins differ. external tag record 109; external root record 109; wide visibility result 144;
-// byte visibility result 109; unsigned color handle 109; root velocity address 109; root location
-// address 109; origin output lifetime 247.
-// Round 208: tag at every use 205; integer destruction result 230; word visibility 130;
-// tag/result 244; tag/word 212; result/word 239; all three 248; unsigned result with all 248.
-// Round 333: Start/visibility/both inline declarations 87/87/87; start noinline alone/with inline visibility 87/87; entry visibility alone/with both inline/with signed-byte result 87/87/87. All restored; object reload and merged-call placement remain.
-// Round 135: retail passes 0xbaf80's result (still in EAX) as 0x1794a0's first argument, not
-// the effect's object index; with that root index 197 (585 bytes; aligned 88 -> 61: the cached
-// object index then takes ESI where retail keeps NONE, and EDI is reloaded); with the visible
-// arm first 224; result false by default 197 (87 without the root index); the object index
-// named in the arm 197. Not kept until the reload blocker is gone.
-// Round 157: release inline 63; destruction inline 63; target inline 63; release/destruction inline 63;
-// release/target inline 63; destruction/target inline 63; all three inline 63; release/destruction inline
-// with separate noinline release 63. Original executable source restored.
-// Round 147: update mask 202; response masks 167; both masks 215; admission returns 201;
-// returns/update 215; returns/response 200; returns/both 228; shared admission/root handle 198.
-// All executable forms restored; sources and comparisons saved.
-// Round 282: tag acquired before root query, after query and after root copies
-// 85/113/89, each with ordinary/read-only inputs; external tag references before query
-// and after copies 85/89. All restored; cached object across validity query remains.
-// Round 95: root index (0xbaf80's result) as 0x1794a0's first argument 197 (585 bytes; the index
-// stays in ESI); location stores cluster first 63, with the root index 197; chained NONE location
-// stores 63, with the root index 197. Original body restored.
-// Round 7 (lane 14): root index named and passed first 197 (585 bytes; aligned 72 -> 48), named
-// without the argument change 63, with the entry index local 176 (579 bytes); entry index local
-// alone 198 (571 bytes); validity result compared with 0 63. BLOCKED-BY 0xbadc0/0xbaf80
-// (src/unknown_0bad50.cpp, avoid-listed this round).
-// Round 165: tail reading the field instead of its local 63 (identical: the field is cached across
-// 0xbadc0); one chain (`== NONE` arm, validity test, body) 198; second `if (effect && ...)` with the root
-// index and the tail field 130; outer `NONE || valid` test with the deletion in the else arm 63. Probe: the
-// second if, root index and 0x1794a0's index through a fresh datum lookup 177 but aligned 23, the head's
-// reloads then match exactly, so 0xbadc0/0xbaf80 being read-only to LTCG here is the blocker.
-// (src/unknown_0bad50.cpp, avoid-listed this round). Round 99: from the 0x1794a0 call to the end
-// ours and retail agree instruction for instruction; every difference is the cached object index
-// across 0xbadc0 (no new forms: its file was avoid-listed again).
-// Round 95: root index (0xbaf80's result) as 0x1794a0's first argument 197 (585 bytes; the index
-// stays in ESI); location stores cluster first 63, with the root index 197; chained NONE location
-// stores 63, with the root index 197. Original body restored.
-// Round 172: retail calls 0x1794a0(root index, object index) (the first argument's header flag is
-// tested). With the root index: second test as `NONE != ...` 197; a bool helper for the first test 197;
-// `if (effect && effect->object_index != NONE)` 130 (retail's head and reload, but the reloaded index is
-// then cached in ESI for 0x1794a0 and NONE takes EBX); nested head ifs 130; tail reading the field 130.
-// Round 90: split root declaration 63; root at function scope 63; definition declared first 63;
-// both 63; named root at function scope 63; visible in the outer block 63, at function scope 63;
-// tail object index at function scope 63. Original executable body restored.
-// Round 58 (m3 lane 11, fast): validity test nested under `object != NONE` with `return true` on deletion 206
-// (564 bytes), with the deletion in the if arm and the live work in its else 198 (571 bytes); definition
-// lookup moved into the live arm 85; a `deleted` result flag in place of clearing `effect` 202 (589 bytes);
-// early `return false` without an object, then the validity test 198. Still BLOCKED-BY 0xbadc0.
-// Round 41 (m3 lane 17, fast): the validity result held as the object pointer it returns 202 (587 bytes); the
-// definition fetched in the live arm 85; the root index (retail's EAX argument to 0x1794a0) named and passed 197
-// (585); the object test split off as an empty first arm 198 (571); root index with the definition in the live arm
-// 206 (584). Retail reloads the object index from the effect after 0xbadc0 and 0xbaf80 (both in
-// src/unknown_0bad50.cpp, avoid-listed again): BLOCKED-BY 0xbadc0.
-// Round 155 (m3 lane 5, fast): root index as 0x1794a0's first argument re-measured 197 (585 B); empty first arm 198
-// (571 B); `!(index == NONE || valid)` 63; `NONE != effect->object_index` 63; deletion arm `return true;` with a plain
-// second if 198 (572 B). Retail's reload at the join after 0xbadc0 still needs 0xbadc0 seen as writing memory.
-// Round 80 (m3 lane 1, fast; aligned counts by difflib with addresses and frame offsets masked, 41 for the
-// current body): retail also reloads the index after 0xbaf80 for 0x1794a0's second argument, so 0xbaf80 needs
-// the same (BLOCKED-BY 0xbadc0, 0xbaf80). The root index as 0x1794a0's first argument (a value correction)
-// 197, aligned 41 (585 B; only the cached index and the scratch rotation it causes differ); that with a plain
-// `if (effect && ...)` second test 130, aligned 52 (the head reload then matches; the index is cached for
-// 0xbaf80 instead); root index at function scope 197; tail reading the field 197; a named head index reused
-// by the tail 197.
-// Round 97 (m3 lane 9, fast with 0x1794a0/0x1792b0, both matched throughout; aligned counts in brackets, this body [72]): 0xbadc0
-// and 0xbaf80 are matched and write nothing, so retail's reloads are not their summaries; retail also reads the tag index through
-// the unadded lookup address and the object index through the formed pointer. Grid of the effect read through a fresh datum
-// lookup in place at the else-if test (a), 0xbaf80's argument (b), 0x1794a0's pushed index (c), with or without the root index
-// as 0x1794a0's first argument (d), abcd: 0001 197 [48]; 0010 219; 0011 210; 0100 72 [95]; 0101 206; 0110 269; 0111 216; 1000 87;
-// 1001 202; 1010 265; 1011 212; 1100 87; 1101 202; 1110 264; 1111 190 (593 bytes) [33]. Second grid, the tag read through the
-// lookup (t), the first test and 0xbadc0's argument through it (f), then a, b, d: t alone 84 [84]; t+d 205; t+b 181; t+b+d 170;
-// t+a 177; t+a+d 166; t+a+b 177; t+a+b+d 166; f alone 203 (581 bytes); f+d 212; f+b 203; f+b+d 205; f+a 204; f+a+d 263; f+a+b 199;
-// f+a+b+d 206; with t too the f rows repeat (203/212/203/205/204/263/199/206). None below 63; body unchanged.
-// MiniMax G (11-14): no new form, no lower score (63): the object index stays cached across the 0xbadc0 call where
-// retail reloads it from the effect and keeps NONE in ESI, and the head's load stays folded into the datum address
-// where retail forms the pointer first; both callees live in another file: BLOCKED-BY 0xbadc0, 0xbaf80.
-// MiniMax H (11-13): no new form, no lower score (63): the object index is still cached across 0xbadc0 where retail
-// reloads it from the effect, and the head's load is still folded into the datum address where retail forms the pointer
-// first; both callees live in another file.
-// MiniMax C (11-09): score 63 (was 63): the object index stays cached across 0xbadc0, where retail
-// reloads it, and the head's load is folded into the datum address where retail forms the pointer
-// first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
-// MiniMax R (11-10): no new form, no lower score (63): the object index stays cached across the call where
-// retail reloads it, and the callees in the other file decide that caching.
-// Round 155 (m3 lane 8): first difference unchanged (+0x29: retail keeps NONE in ESI and reads the object index into EAX
-// for 0xbadc0, then reads it again; ours keeps the index in ESI). Still BLOCKED-BY 0xbadc0 and 0xbaf80: their file was
-// avoid-listed again, so no new form was tried.
-// M3 lane 3 r236: no new form. Re-read against the listing: from the 0xbadc0 call on, every difference is the object
-// index cached in ESI (retail reloads it from the effect after 0xbadc0 and 0xbaf80, with NONE in ESI); the grids above
-// (fresh datum lookups at each use, root index, tests nested or split, definition placement, inline/noinline helpers,
-// widths) cover the caller-side spellings. Retail's 0x1794a0 call takes 0xbaf80's root index in EAX (a value
-// difference on this body, listed at 197 as a value correction). The lever is how LTCG summarises 0xbadc0/0xbaf80
-// (both matched; src/unknown_0bad50.cpp is avoid-listed this round).
-// MiniMax A (11-14): still no lower score (63): the object index named in a local of its own and used
-// for both the test and the call compiles to exactly the bytes we already have, and reading the object
-// index before the definition lookup scores 78; the listing shows why the register choice matters:
-// retail loads the object index into EAX after the definition lookup and reloads it from the effect
-// after 0xbadc0, because a value in EAX is clobbered by the call, while we keep it in ESI across the
-// call (a callee-saved register), so the else path reuses it instead of reloading it. Nothing in the
-// source can move a live value out of a callee-saved register, so the reload has to come from the
-// else path reading the effect again: BLOCKED-BY 0xbadc0, 0xbaf80.
-// MiniMax A (11-14): no new form, no lower score (63): the head's load still folds into the datum
-// address where retail forms the pointer first, and the object index is still cached across
-// 0xbadc0 where retail reloads it; both callees live in another file: BLOCKED-BY 0xbadc0, 0xbaf80.
+// Updates an effect that follows an object: deletes it when the object is gone, otherwise copies the root
+// object's velocity and location, refreshes the marker-driven scales and origin, and takes the root's colours.
+// Returns true when the effect was deleted. The velocity copy goes through a pointer to the field: a store
+// through a pointer local ends the compiler's cached read of the object index, which retail reads again for
+// 0x1794a0 (root index first, as retail's EAX shows); the deletion path joins ahead of the second object test.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -2941,13 +2754,16 @@ bool __stdcall function_1794e0(long effect_index)
 		function_1774f0(effect_index);
 		effect = 0;
 	}
-	else if (effect->object_index != NONE)
+	if (effect && effect->object_index != NONE)
 	{
-		s_effect_object *root = OBJECT_GET(function_baf80(effect->object_index));
+		long root_index = function_baf80(effect->object_index);
+		s_effect_object *root = OBJECT_GET(root_index);
 
 		if (TEST_FIELD_BIT(root->flag4_8))
 		{
-			effect->velocity = root->velocity;
+			vector3f *velocity = &effect->velocity;
+
+			*velocity = root->velocity;
 			effect->location = root->location;
 		}
 		else
@@ -2960,7 +2776,7 @@ bool __stdcall function_1794e0(long effect_index)
 		{
 			bool visible;
 
-			if (function_1794a0(effect->object_index, effect->object_index))
+			if (function_1794a0(root_index, effect->object_index))
 			{
 				visible = !effect->unknown10 || function_bab40(effect->object_index, effect->unknown10, &effect->scale_a);
 				function_bab40(effect->object_index, effect->unknown14, &effect->scale_b);
@@ -4192,6 +4008,20 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Post-gate classification from a signed/unsigned node word 93/94; sentinel/high-bit split 93/102.
 // The same four forms with per-call mode reads 108/109/108/116.
 // NOT kept: The cached forms tie or regress. Per-call mode recovers the 0x54 frame and passes the effect index in a register, raising matched caller 0x176f60 to 25 in each preview.
+// M3 lane 3 r306 (H2M_FAST with 0x176f60; control 93, caller matched): the trace ranks the type object 110 above the
+// system 96 (it takes ESI, the system EDI); retail's system ESI, type object EBX, colour B EDI. The convention is the
+// blocker for every per-call mode form: with the cached mode this function takes the particle system index in EAX and
+// the effect index on the stack (retail's); with the mode read at each call both indices go in registers (effect index
+// EAX, system index ECX), and with the effect index read once through its address it stays on the stack but the system
+// index moves to ECX (the caller then sets ECX, 18). Measured: the mode at each call 108 (0x176f60 25); that with the
+// effect index read through its address 127 (352 B; 0x176f60 18); the address read alone 93 (same code); both type
+// queries as the colour call's arguments 120 (325 B; 0x176f60 25); queries as arguments, mode at each call and the
+// address read 92 at 337 bytes (system ESI, next index EDI, type object EBX, colour B EDI, definition spilled and read
+// for each call as retail; left the system index in ECX, the effect pool base not held in EBX, frame 0x4c; 0x176f60 18,
+// so not kept); that with the type lookup's definition named 92 (same), without the address read 103 (331 B).
+// Actual pooled effect, system and definition object references, each alone,
+// each pair and all three 93 each. All three with the particle-location
+// object reference 93. The system/successor registers and 0x4c frame persist.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
