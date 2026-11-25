@@ -998,6 +998,10 @@ struct s_item_collision_bsp
 // 190 in all eight forms. Last angular store with the direct or named product after the paired i/j
 // outputs 186/186 at 1362 bytes. NOT kept: four-point gain below the threshold. The transformed-plane
 // registers and pending x87 scale still differ.
+// Named translation and scale products 203/203, named translation with a field accumulator
+// 199/199, scaled source distance before translation in a local 203/203 or the output field
+// 199/199, with direct or setter contact stores. NOT kept: all raise the score at the same
+// extent. Normal coefficient and contact-point homes still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1386,6 +1390,10 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // member stores 293, separate axis and setter 293, output axis and setter 298,
 // output axis and complete result 323 for either cross. NOT kept: scale adds calls
 // and grows the frame. The scaled axis still lacks retail's register allocation.
+// Output axis with direct or staged cross and shared fallback side, up, both, or final
+// setter: 117 in all eight forms, 857 bytes with frame 0xb4.
+// NOT kept: each writes the intermediate axis k to the final output slot. Retail keeps
+// that component in a register and writes the slot only after the rotation.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {

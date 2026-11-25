@@ -9807,6 +9807,10 @@ struct s_unit_melee_collision
 // candidate time shared on live range 534, shared type and time 532/556,
 // and resolved-type replacement with the shared time 548.
 // NOT kept: live-range frames recover 0x17c at shorter lengths and higher scores.
+// Direct damage default after the fan 446/535, response default 520/537, both defaults
+// 500/553, and shared ray setter 447/536, each with a range snapshot or per-product loads.
+// NOT kept: the direct default gains one at the original frame. Late response assignment
+// reaches 0x17c even with a range snapshot, but lengthens the function to 2232 and raises the score.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

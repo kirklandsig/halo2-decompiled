@@ -3054,6 +3054,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Opening Z/X/Y delta order 500/500/500/500. X/Y/Z order 500/500/498/500.
 // NOT kept: length stays 2286 and all scores rise. The generated dot still combines
 // the products in a different order from retail.
+// Staged axis projection into the reflection vector 506/515, named projected scalars 487/518,
+// in-place doubling of the projected displacement 365/515, and displacement scalars through
+// the setter 281/503, with the attenuation default at its original point or with the tint.
+// NOT kept: in-place doubling reaches the 2285-byte extent at a higher score. The camera
+// displacement registers and the early attenuation store still differ.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
