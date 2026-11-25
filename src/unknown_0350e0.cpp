@@ -3013,6 +3013,12 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // projection helpers too 486 (aligned 150). `vector3f const delta = {...}` with `real const forward` 280 (the aggregate
 // initialiser's code); on the lead a bare `real attenuation;` declared beside visibility 444 (same code) and
 // `real attenuation = 1.0f;` there 476 (its store moves ahead of the 0x20d80 call). Body unchanged.
+// Decoded-position seeds through an aggregate, setter or explicit components before in-place
+// origin subtraction 280/280/280; per-component seed and subtraction 486; retained draw
+// coordinates with direct deltas, aggregate seeds, component seeds or early capture 500/498/498/500.
+// The early camera-axis schedule and branch displacement remain. NOT kept: the three 280 forms gain one, and the other forms regress.
+// In-place X subtraction or all three subtractions before tint initialization 486/500.
+// The original camera-axis schedule and missing-tag branch displacement remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
