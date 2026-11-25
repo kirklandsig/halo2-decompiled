@@ -1385,6 +1385,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // order. Forms (row pointers change those numbers): a `vector3f const *` for the forward row 589 (2791 B), for the up row
 // 578 (2787 B), for the forward and left rows 575 (2791 B: the forward row then sums as retail's), for the forward and
 // up rows 581 (2798 B), forward and left with the scale statements k, j, i 575. Body unchanged.
+// M3 lane 15 r145 (H2M_FAST with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the projection
+// helper's divide on the negated depth (`1.0f / -transformed.k`) 290 (same code); its projected point built in a local
+// and assigned 701 (2977 B); the shape kind in a `short` local for the count and the arm test 661 (2807 B); the sphere
+// arm's position copy ahead of the up negate 368 (2828 B); the loop bound read into a local 663 (2799 B); the sphere
+// arm's scale store ahead of the position copy 306. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
