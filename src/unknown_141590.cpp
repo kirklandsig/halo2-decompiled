@@ -1367,6 +1367,10 @@ void function_143250(
 // The first three basis spills and the missing scalar word still differ.
 // Component names for forward j, left j, forward i, their pairs and all three,
 // or the complete nine-component set, all 939. The original names are restored.
+// The root-105 component-1 square and root-35 component-2 product still
+// lack separate spill homes. Copy then multiply for either weighted pair, both, the
+// full axial or transverse family, either family plus the other pair, and
+// both full families all 939. The frame stays 0x2fc against retail's 0x300.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

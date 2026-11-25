@@ -1036,6 +1036,11 @@ struct s_item_collision_bsp
 // Y/X/Z corrected coordinate locals with fields, setter or initializer 190 each.
 // Y/X/Z scaled normal components 194; paired distance contribution 190.
 // NOT kept: all retain 1366 bytes and leave the normal and contact homes displaced.
+// Shared unit-real draw for speed/spin/both 246/190/246. Sequential spin
+// scale with the spin draw or both draws 196/240. Third product at the
+// last angular store with the spin draw/both/both plus sequential scale
+// 186/250/244. NOT kept: 186 at 1362 bytes gains four, and the instanced
+// plane allocations still differ.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
