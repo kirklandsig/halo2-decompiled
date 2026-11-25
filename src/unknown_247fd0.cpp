@@ -1132,6 +1132,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // 421/421, each with the two nullable velocity forms 424/424. NOT kept: the nullable
 // gate gives the separate address add and DL but adds a null branch, grows to 1665
 // bytes and leaves the gate byte at +0x1f.
+// Combined short-circuit gate/allocation test and conditional allocation result:
+// byte 334/334, word mask 334/334, word shift 334/334, bitfield 344/344.
+// NOT kept: the effect load and gate spill remain in AL and ESP+0x1f.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

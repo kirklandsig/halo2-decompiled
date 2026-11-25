@@ -3979,6 +3979,10 @@ real g_47ff30 = 2.5f;
 // Named lateral determinant with direct inputs or scalar linear, facing, or both pairs 672 each.
 // Separate final mass scales on those four forms 710 each, frame 0xfc and first +0x66. NOT kept:
 // the 0xfc forms raise the score, and the acceleration spill and planar input homes still differ.
+// Force scaled after friction, inversion, relative-basis composition or quaternion conversion,
+// using components/helper with torque scaled from the mass field: 764/764, 685/685, 727/727, 727/727.
+// NOT kept: only the post-friction scale reaches frame 0xfc, and it shortens the body to 3184 bytes.
+// The acceleration spill stays at ESP+0x20 against retail's +0x34.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5293,6 +5297,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // final or both left outputs score 183/161/212 through the staged cross and
 // 183/161/214 through the direct cross. Both with indexed projection 214/216.
 // NOT kept: the separate left outputs enlarge the frame and the body.
+// Scoped turn trig with shared up rotation. Grouped switch, side turn first, full turn first,
+// or explicit side angle, with direct/returned projection: 153/153, 160/160, 171/171, 133/133.
+// NOT kept: all recover the prefix through +0x107 but raise the score and move away from 806 bytes.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

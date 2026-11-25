@@ -3609,6 +3609,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // direct expressions 95; both rotation, scale or bias parts named, in all seven subsets, 321 each. NOT
 // kept: the direct form moves the first difference back to +0x50f, and the named stages shorten the body to
 // 1914 bytes.
+// Rotate into the output pair, then use component loops for all scale/bias steps,
+// scale only, bias and half-scale, scale and bias, half-scale only, separate scale
+// and bias/half-scale loops, separate scale/bias and half-scale loops, or three loops:
+// 339/333/333/339/339/333/339/339. NOT kept: the loops shorten the body and raise the score.
+// The x87 store still leads the SSE subtraction in the restored form.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

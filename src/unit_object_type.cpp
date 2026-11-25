@@ -2390,6 +2390,10 @@ struct s_unit_motion
 // selections 69/69/70, and original launch velocity with shared or separate durations 69/69. NOT kept: the
 // XMM4 forms use XMM2 for time, inline both motion steps into the caller and lose two downstream matches in
 // the preview.
+// Save the phase input for displacement and update velocity first. Acceleration,
+// deceleration, both, and both with conditional durations, using the parameter/running
+// velocity: 88/70, 107/67, 95/64, 95/64.
+// NOT kept: the running-velocity forms inline into 0xc7840 and lose 0x1e5af0 and 0x1faf80.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
