@@ -5727,6 +5727,14 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // direction output 169/169, projected vector 276/272, forward vector 272/268.
 // NOT kept: the direct output ties and the workspaces grow the frame and body.
 // The early up.i load and x87 forward-scale lifetime remain.
+// M3 lane 13 r158 (h2m fast; control 169): dead initialised longs at the top, K = 1..16, 169 at every K but K = 10 (168),
+// so the cross product's and the x87 rows' operand orders are not a symbol-count state; up and forward declared the other
+// way round 169 (same code). Reading of the cross product's operand ranks: forward.i and up.i rank from the 0xb9fc0 call
+// that takes both addresses (178/179), below every other member, which the cross product meets later (up.j 182, forward.k
+// 183, forward.j 184, up.k 185); retail's up.i * forward.j with up.i first needs up.i above forward.j, so in retail up.i
+// was not ranked from that call. Also: the transform declared ahead of up and forward 169, the local vector declared
+// there 169 (same code each); up_scale computed ahead of the cosine 190 (778 B); `left` declared beside up and forward
+// (outside the aim branch) 169.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -9853,6 +9861,12 @@ struct s_unit_melee_collision
 // origin for both consumers with cached/live range 447/534. Distinct surface and damage
 // workspace names with cached/live range 447/534. NOT kept: ordinal widths enlarge the frame,
 // and the other live forms reach 0x17c but shorten the body. The unit and fan spill homes still differ.
+// M3 lane 13 r158 (h2m fast; control 447). Reading (register trace): the aim pointer (172) is coloured before the tag
+// table's value and takes ESI (retail EDI, with the table then the weapon definition in ESI); the weapon definition
+// pointer ranks -75 and the inner counter -84 here, so the counter takes EBX and the unit spills, where retail's rows
+// read the aim's j and k through the unit and the range from the weapon definition at each product. Forms: the NONE
+// defaults declared ahead of the weapon index 502, at the top 502; with the material index object ahead of them 532 (2216 B);
+// the melee entry selected ahead of the fan 551 (2259 B); the hit type as a long 518 (2224 B).
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

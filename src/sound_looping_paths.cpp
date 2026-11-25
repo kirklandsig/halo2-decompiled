@@ -1030,6 +1030,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // `targets[target_count].field` with the count stepped last 940 (3289 B); the muted flag as `!g_509420` 837. Reading:
 // retail walks the query with the long count read from its home, keeps the choice count in ESI with a copy at frame
 // +0x24, and spills the loop index at frame +0x4 where ours puts the short query count. Body unchanged.
+// M3 lane 13 r158 (h2m fast with 0x18bb80, 0x188f90 and 0x18a5a0, all MATCH; control 837 at 3327 B; frame 0x4dc against
+// retail's 0x4e0 on today's main): the fade time named once for its test and divisor 845; the sound-definition list read
+// ahead of `inside` 924 (3289 B), at the block top 921; both counts long re-measured 1018 (3214 B: an opcode-aligned
+// read puts retail's extra code in the second scan's inside/portal selections, the PIN clamps and the primary's detail
+// lookup, not only the choice addressing); the scanned sound's tag named once for its test, the duplicate scan and the
+// store 838; the range test as `fabs(range)` (no negation) 865.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

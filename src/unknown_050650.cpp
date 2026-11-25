@@ -2353,6 +2353,12 @@ struct s_actor_looking_structure_view
 // (diagnostic) 47, k still numbered ahead of j and i; the score as `dot3f(&directions[i], &forward)` or
 // `dot3f(&forward, &directions[i])` with 0-3 pairs on the clamp product 145/139/88/145 each. Left: a form where the
 // candidate's k alone ranks above the axis j.
+// M3 lane 13 r158 (h2m fast with 0x296e60, 0x297660, 0x2980d0 and 0x24590; control 23, 0x296e60 270 at 1431 B): lane 3 r277's
+// merged helper (sine, dot, cosine) re-measured 6 with 0x296e60 273 (1430 B; aligned 128 -> 135 there, a register swap of
+// its two scale products plus row orders), with the dot hand-written, `dot3f(axis, vector)` or `(1 - cos) * dot` the same
+// 6/273, dot first 6/282, versine named 6/273. On that lead: the angle named at the loop-body top 16; the up axis through a
+// `vector3f const *` local 175 (909 B); the cross terms in a vector3f local 49 (0x296e60 337); the projection after the
+// cross terms 162 (934 B; 0x296e60 276). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
