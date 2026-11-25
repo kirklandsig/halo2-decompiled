@@ -1105,6 +1105,10 @@ void function_245400(s_source_245400 const *source, long index,
 // score 139/139/139/214. Both transforms under one guard give the same scores.
 // NOT kept: the in-place forms recover frame 0x2c and the entry through the
 // material comparison, with 787 bytes against retail's 783.
+// Packed material code on the selected-point form. Index/side/both/raw
+// from code values 219/197/197/208, through record lvalues 204/204/204/206.
+// NOT kept: all recover frame 0x2c and regress. Code values and raw record
+// reads also raise the caller to 3 in the preview.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

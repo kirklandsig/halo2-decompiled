@@ -573,6 +573,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // diagonals first 356, in-place difference 349, shared sine scaler with scaled
 // or in-place difference 346/347. NOT kept: all displace the 0x90 frame.
 // Two forms reach retail length, with the axis and square registers still different.
+// Full-transform vector helper, first/second/both turn snapshots 452/536/520,
+// first/second/both direct in-place turns 432/349/379, copied in-place rows 540,
+// and fresh per-row output 469. NOT kept: all move the 0x90 frame and grow
+// the body. The first-axis register and square spills still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5199,6 +5203,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 530/530/543/491; by corresponding ordinate 500/500/517/507.
 // NOT kept: scalar projection reduces the frame to 0x3c–0x48. All forms raise
 // the score, and the independent velocity reads and native frame remain unresolved.
+// Two-point projection traversal, raw/screen y: returned point 510/542,
+// point pointer 502/499, point reference 502/499, scalar outputs 502/499.
+// NOT kept: returned points enlarge the frame. Output arguments retain
+// 0x60 and shorten the body. The independent velocity reads still differ.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6327,6 +6335,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // a separate last corner: scalar alpha 390/244/234/386; four-channel color 387/228/218/371.
 // NOT kept: 218 recovers frame 0xe0 but grows to 1829 bytes and leaves the radius at +0xc.
 // The retail-length color form raises the score.
+// Planar middle outputs and separate endpoint depth, scalar alpha/color:
+// scalar pointers 438/418, scalar references 438/418, typed point
+// receivers 1139/1136, returned planar points 493/493.
+// NOT kept: none recovers the radius/depth homes and extent.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
