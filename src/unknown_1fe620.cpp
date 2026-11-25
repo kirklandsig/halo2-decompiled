@@ -475,6 +475,13 @@ static __forceinline long real_to_long(real value);
 // vector's) and computes the side vector in what is left. Next: a form that ranks the side vector's components above
 // the displacement's (more references to them in the output rows, or fewer register references to the displacement),
 // once 0x1697c0 no longer captures its point.
+// M3 lane 5 r246 (H2M_FAST with 0x1fdce0, 0x1fe410, 0x210850, all MATCH; control 373). Allocator reading (a diagnostic
+// trace): the random-state pointer is one candidate from the first draw to the last (10 references), coloured ESI ahead
+// of the third input (priority 63 against 3); retail reloads the global after each call and gives the third input ESI. A
+// forced-ranking search: the pointer ranked last 359, the third input ranked first 458 (frame 0x48 as retail, the rest
+// worse); no single pick, cut or ranking reaches retail. Forms: the prop test as `!(unknown24 > 0 && unknown27)` 373
+// (same code); `local_0` declared at the prop block 395; the timer product written count first 373; the 0x1fe410 bound
+// named in its arm 373; the sign step through a `dword *` to the seed 373 (as listed). Body unchanged.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

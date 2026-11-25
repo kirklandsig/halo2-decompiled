@@ -2076,6 +2076,21 @@ static inline bool unit_dual_wielding(long unit_index)
 // toward the entries, so the probe sits right at a block boundary. Diagnostic: with 0xc9d00 called for type 3 (its
 // second-hand reads then live) the put-away data becomes a shared temporary and that lookup turns offset-first; for
 // type 10 those reads are removed before the sharing pass, so they cannot be what gives retail its order.
+// M3 lane 12 r189 (reduced-image screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17; rebuilt: the 2
+// form 2, the `result`-first 0xc9d00-call form 4). Operand ranks read per form: every expression node is numbered in
+// program order, two apart. The pool data load takes a number X at its first reading and X+4 for the reading lookup 4
+// shares with the dual-wield unit; an unshared reading ranks by X's low three bits alone. With the macro at lookup 1 the
+// mask and the offset are numbered just ahead of the data (offset X-2, under the shared X+4: lookup 4 D as retail) but
+// X is 4 mod 8, above the offset (lookups 1-3 D); with a one-use local at lookup 1 the data is numbered first (X 0 mod
+// 8: lookups 1-3 O) and the offset last (X+8: lookup 4 O). Lookup 1 on the `result`-first form through a one-use
+// header-array local, a one-use masked index, a one-use header pointer or a one-use pool copy 2 each (the 2 form's
+// code). Diagnostic (reverted): on the `result`-first form with the macro at lookup 1, a one-use local at the top
+// holding two expression nodes of the weapon index and read at the very end gives O O O D D, all of lookups 1-4
+// retail's; one node D D D D D (X 6 mod 8), four nodes X 4 mod 8 again, and the two nodes placed after lookup 1 change
+// nothing. An unused local at the top initialised with a shift of the index, that narrowed, or that masked 4 each
+// (unused expressions are dropped before the numbering). So retail evaluates two (or three) more live expression nodes
+// ahead of the first lookup's data load; the put-away lookup's data is a load seen once (the pool global is read again
+// after the animation call) and stays D in every form here.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -3675,6 +3690,11 @@ struct s_ammo_conversion_entry
 // Declared kind at each use 212; all declared fields with one kind read or per-use reads 190/212.
 // Both source counts shared with the limits or carried into the debit stores 211/221.
 // NOT kept: one kind read ties; per-use reads grow and the count snapshots change the frame and raise the score.
+// Existing reserve accumulator for the same-definition offer, capacity and unloaded debit
+// 190/197/217. Offer/capacity 197, offer/debit 244, capacity/debit 202, all three 223.
+// Accumulator after debit for the remaining reserve 236.
+// NOT kept: offer ties and the other forms raise the score. Destination and search register
+// homes still differ, and the debit-only and post-debit forms also grow.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4134,6 +4154,13 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Typed weapon-tag heat cap, destruction, misfire and holder feedback; typed barrel-tag recovery/heat,
 // pitch curve and event kind; all fields together: 593 each. NOT kept: all tie. The 0x1c64 probe
 // and separate magazine-tag and loaded-round spills remain.
+// Positive debit balance, explicit empty result, staged reload decision, and short-circuit reload
+// after debit: 593/593/590/593. With the ordinary owner index: 649/649/607/629.
+// NOT kept: the staged reload decision gains three at retail length but retains the 0x1c64 probe.
+// The ordinary-owner forms recover 0x1c60, shorten the body, and raise the score.
+// Pre-heat loaded snapshot short/long 593/621; separate pre- and post-heat snapshots short/long 593/621;
+// post-heat short for the minimum and debit 593; one short refreshed across both samples 593; debit
+// through the post-heat short 593, with its clamp also 593 at 2521 bytes. The 0x1c64 probe and magazine spill remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4708,6 +4735,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Typed runtime barrel, barrel tag, thermal tag and ramp tag fields 1412/1412/1417/1412.
 // Typed barrel and tag together, both weapon tag phases, runtime weapon, all fields 1412/1416/1412/1416.
 // NOT kept: ties and regressions at retail length; every form retains frame 0x34.
+// Explicit count refresh at the magazine, trigger, or barrel loop latch 1412 each.
+// Magazine/trigger, magazine/barrel, trigger/barrel and all three 1412 each.
+// Magazine while loop with the count refreshed after advancing the ordinal 1412.
+// NOT kept: the latch reads remain, but the 0x34 frame, EBX/EDI and the dual spill persist.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -5416,6 +5447,11 @@ struct s_weapon_projectile_creation
 // Muzzle center or clipped point reused for the world point 1136/1136, both with getter result 1134/1134.
 // World point transformed in place and copied 1155.
 // NOT kept: the first form gains one. Sharing a point reaches frame 0x1e98 but shortens the body; retail keeps distinct clipping and synchronization points.
+// Shared setters for clip-to-origin, marker-to-origin, request position and request direction
+// 1140/1125/1139/1157. Both origins 1136, both request fields 1122,
+// clip and request position 1128, all four 1151.
+// NOT kept: the request pair retains retail length but the 0x1ea4 probe and distinct
+// point homes persist. The other transfers also raise the score.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

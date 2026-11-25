@@ -651,6 +651,76 @@ void __stdcall function_508d0(void *payload_data)
 // copy 278 at 2384 B but further from retail's rows; the range test as an if block 328 (same code); the fraction and
 // its complement ahead of the range test 424; no named complement 327; the middle weight's product in three other
 // orders 328 / 332 / 328.
+// M3 lane 11 r168 (fast screen with 0x508d0 and 0x13bb90 listed, the full-build proxy; control 626; body unchanged).
+// LEAD, not kept (it stands on lane 5 r245's match-only pieces plus those below): 62 at retail's 2384 B, first
+// difference +0x77, 48 aligned rows left (held as a patch); with the seed
+// sum written out at each seeding 39 aligned rows left (score 555 by a one-instruction shift,
+// also held as a patch). Rules found, each measured:
+// (a) The operands of a commutative float product and the terms of a float sum are ordered by the age of their
+// symbols, the younger first. Age is the first assignment: the five inner-loop locals declared together ahead of
+// their assignments in 13 orders compile the same (328 each). Compiler temporaries are younger than every named local.
+// (b) The window's cells are such symbols. Retail's `end * right + middle * centre + start * left` needs the cells
+// first assigned left, centre, right, and its loop-top stores of the left cell from the carried registers need the
+// copy `left = right` at the top of the loop with the right cell set ahead of it. Both hold when the whole window is
+// filled from the first point ahead of the loop: six statements in either order 71, a chain `[0][2] = [0][1] = [0][0]
+// = noise[0].x` 71, three copies 71, an aggregate initialiser 68 (2385 B); only the left and right cells 344; without
+// the fill 342 (sums centre, left, right and the left x cell in XMM6).
+// (c) The complement `1 - fraction` takes the 1.0 constant's register (retail XMM3, subtracted in place, then copied
+// to XMM2 for the start weight) only when it conflicts with the start weight, i.e. the weights are computed start,
+// middle, end; the constant then follows it and the carried point takes XMM4/XMM5 (the entry's `movss xmm3`).
+// (d) Retail's middle product copies the fraction and multiplies by the complement (`movaps xmm1, xmm0; mulss xmm1,
+// xmm3; mulss xmm1, [2.0]`), so the complement is a named local assigned before the fraction's first assignment:
+// `real remaining = 1.0f - (real)j * inverse_stride; real fraction = (real)j * inverse_stride;`.
+// (e) The bias remap's products and the forward-vector rows match when both remap coefficients are written out in one
+// expression (the quadratic one twice). (f) The seed sum written out at each of the three seedings gives retail's
+// `mov eax, [words]; ...; lea edx, [eax + ecx]; mov eax, edx`.
+// Left on the 62 form: the right-index cursor is coloured EDX where retail has EAX (so retail's `mov eax, [cursor];
+// lea edx, [ebx - 1]; cmp eax, edx; cmovg eax, edx` comes out as `lea eax, [ebx - 1]; cmp edx, eax; cmovle eax,
+// edx` and four 4-byte homes sit in another order: retail cursor +0x10, y pointer +0x20, level count +0x38, x pointer
+// +0x40); the `count - 1` value at the clamp is coloured ahead of the cursor and takes EAX first (one forced register
+// choice there gives 53); both squares of a named value are `movaps b, a; mulss b, a` where retail has `movaps b, a;
+// mulss b, b` (phase and complement; reached only with the phase field read twice, which costs a pointer home, frame
+// 0x147c); the seed offset is a memory operand of the add where retail loads it into ECX; one left-vector product pair
+// (it follows the count of locals: three to seven unused longs fix it at 2385 B).
+// Forms, score (aligned rows where given). On lane 5's 321 lead (right ahead, top copy; weights end, middle, start):
+// main's weight order 402; the interpolated pair in a local then assigned 509; the complement written out 403 / 322;
+// the right index as an `if` 623 (the flag leaves CL), `MIN(count - 1, i + stride / 2)` 319; with that, the written-out
+// complement in weight orders m,e,s / e,m,s / s,m,e / s,e,m / e,s,m / m,s,e 403 / 322 / 390 / 345 / 345 / 403 (619 to
+// 630 with the `if`); a forced-inline square helper by value 319 (same code in eight weight forms 319 to 405), by
+// const reference or pointer the same code; the level seed without the parameter and the parameter added at each
+// seeding (three spellings) 563; `draw->phases[level]` squared directly 606 / 607, `square = phase; square *= square`
+// 319 (same code), a second read of the field in the square (five spellings) 606 / 607; a separately carried
+// previous point feeding the left cells (pair, pair by member, two reals; two weight orders; named or written-out
+// complement) 278 to 450, all with a larger frame; one to eight unused longs 320 / 412 / 320 / 320 / 320 / 319 / 320 /
+// 319 (only the final loop's rows move). On lane 5's 328 lead (left ahead, bottom copy; weights m,e,s): the
+// interpolated pair in a local 479; the complement written out 327; weight orders s,m,e / s,e,m / e,s,m / e,m,s / m,s,e
+// named 358 / 394 / 394 / 411 / 328 and written out 331 / 375 / 375 / 409 / 327; the middle product spelled five ways
+// 328 x4 and 331; the weights in a local three-element array, three orders, named or written-out complement, both sum
+// orders 359 / 332 / 330 / 328 / 413 / 411 (the same code as the named locals); one to three unused reals in the inner
+// block 330 / 290 / 329; start, middle, end with the middle weight as `2.0f * fraction * (1.0f - fraction)` 331,
+// `fraction * 2.0f * (1.0f - fraction)` 331, `fraction * ((1.0f - fraction) * 2.0f)` 297, `(fraction + fraction) *
+// (1.0f - fraction)` 289 (retail's inner-loop registers, the product as fraction * 2 * complement), `(1.0f - fraction)
+// * (fraction * 2.0f)` 289; with a named complement `(fraction + fraction) * remaining` 350, `middle += middle` 362,
+// three statements 358, end ahead of middle 306, the factor 2 applied after end 340, `2.0f * fraction - 2.0f *
+// fraction * fraction` 410, `1.0f - start - fraction * fraction` 427; the complement ahead of the fraction (rule d)
+// 348 (aligned 71), with every use written out 347, through an assignment inside the subtraction 348, the fraction as
+// `1.0f - remaining` 439, both written out everywhere (five spellings) 331 to 497, the start weight squaring the
+// written-out complement beside the named one 332 x3 / 426; a per-axis blend through a small inline taking the three
+// control values (five bodies, two call spellings) 1744 to 2184 at 3361 to 3721 B. On the top copy with rule (d): 342
+// (aligned 71); with the window fill (rule b) 71 (aligned 54); the bias remap as an if/else reading the sum in both
+// arms 291, reading the sum in the remap 239, the two coefficients declared ahead or exchanged 71 / 71, one expression
+// 62 (aligned 48); the seed sum written out 554 / 555 (eight spellings), with a named `level * 3` 555, with a counter
+// stepped by the loop 592, the word named 69, the named seed built in two statements 62; lane 5's `MIN(i + stride / 2,
+// count - 1)` again 64 (retail's compare once the cursor is in EAX); the inner index spelled six ways 62 each (same
+// code); the right index assigned and then clamped, or with an `if`, 590; a named `count - 1` 73; the index test as
+// `index < 0 || index > count - 1` 541, `>= count` 677; the stride from `4 << exponent` 578, the reciprocal from it
+// 586; one to seven unused longs on the 64 form 73 / 66 / 63 x5 (2385 B). The level seed through a second named
+// local (the word plus the offset, then the parameter) 71, the same in two statements 71, the state holding the word
+// sum first 62 / 62 (same code), the parameter first 62 (same code), the state built first and the seed copied from it
+// 76 (the sum then in EAX with both operands loaded, but no `lea`), a chained assignment 76. The 64 form with one
+// match-only piece put back to its plain form: a named half-stride 699 (2271 B), no window fill 344, the fraction
+// ahead of the complement 388, named remap coefficients 73; with all four 663 (2311 B), so nothing of the lead stands
+// without them.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,
