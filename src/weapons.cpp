@@ -5382,6 +5382,10 @@ struct s_weapon_projectile_creation
 // actor observation from the resolved holder 1147; player observation from the resolved holder 1123; aim
 // address from the resolved holder 1169; three values from the resolved holder 1152; shared typed holder
 // pool during traversal 1143.
+// Staged cosine contributions, additive subtotals and sine-weighted cross terms before rotation publication:
+// complete vectors 1177/1154/1154, direct component stores 1245/1216/1239. Result-vector updates in two
+// or three phases 1250/1257. NOT kept: all raise the score and move away from retail length. The
+// 0x1ea4 frame and separate clipping output remain.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

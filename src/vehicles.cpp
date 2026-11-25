@@ -1996,6 +1996,10 @@ long function_10f5f0(long object_index);
 // flags348, fresh bit-5 read after 0xba7f0, zero-initialized names[3] and `result |= changed` 571 (2264 B, aligned
 // 345, masked 191), plus TEST_FIELD_BIT views on flags_c0/flags_10a/definition+0x1ec 607 (2292 B, masked 182).
 // Body restored.
+// One typed snapshot for both opening door bits, with direct tests or locals for open, admission,
+// or both 599 each. Those four with shared bounds, velocity and names storage 597 each.
+// NOT kept: shared storage reaches frame 0x1984 and first +0x54, but the body grows
+// to 2296 bytes and the temporary predicate-byte stores remain absent.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3923,6 +3927,9 @@ real g_47ff30 = 2.5f;
 // 701); that + planar point2f copies 662 (3247 B, 0x100, masked 437; not kept: mixes local/field mass, one-use planar
 // copies, helper parameter type), + transform before cos/sin 701 (3259 B, 0xf8, aligned 674, masked 434), + (cos, sin)
 // rotate helper 663 (3247 B, 0x100, masked 437). Body restored.
+// Named lateral determinant with direct inputs or scalar linear, facing, or both pairs 672 each.
+// Separate final mass scales on those four forms 710 each, frame 0xfc and first +0x66. NOT kept:
+// the 0xfc forms raise the score, and the acceleration spill and planar input homes still differ.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
