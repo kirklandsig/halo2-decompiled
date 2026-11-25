@@ -548,6 +548,19 @@ const dword g_455978[81] = {
 // here is packed by reference density (references over size, densest lowest), so the optional volume's home sits below
 // the 12-byte direction where retail has it above: the counts follow from which callee is expanded, not from a
 // declaration. Still BLOCKED-BY 0x11bed0's expansion here and 0x279740's /Ob1 file (lane 12 r184's held route).
+// GA3 (fast with 0x11bed0, 0x279740, 0x1d43d0, 0x1d01c0, all MATCH each run; control 268): unrolling the 3-axis bounds
+// adjustment loop into six plain per-axis `if` statements keeps 0x11bed0 as a real out-of-line call WITHOUT any
+// redundant guard or callee-file change (373, 2011 B); combined with `point3f local_19 = *arg_11; local_19.x += ...;`
+// 323 (2037 B, first diff +0x54: entry registers EBX/ESI/EDI and both optional-state homes [esp+0x30]/[esp+0x40] match
+// retail); + `local_15.k = 0.0f; normalize3d(&local_15)` 330 (2030 B; single divss and `mulss reg, zero_reg` match
+// retail); + `sqrt(local_15.j * local_15.j + local_15.i * local_15.i)` 324 (2030 B: all 20 x87 length instructions
+// match retail byte-for-byte). Diagnostics adding 0x1d01c0's release check at the first release: on unrolled+ray_copy
+// 277 (exact 2083 B, aligned 165), + normalize3d 284 (2076 B), + j*j+i*i radial 278 (2076 B, aligned 140; all 20 x87
+// instructions match, 2-instruction radial scale shift). Other clean forms on baseline 268: normalize3d / normalize_inline
+// 308/308 (2078 B), + ray_copy 339 (+ do-while 343), + vector3f_add 311; bounds center locals 359; directions table
+// pointer / vector3f_add_scaled for arg_11 / transforms before loop / vector3f_add for ray 268 each (same code);
+// vector3f_add_scaled for blend 285; j*j+i*i radial alone 308. Body unchanged (still needs shared header for 0x1d01c0's
+// release helper).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

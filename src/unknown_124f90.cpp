@@ -5044,6 +5044,10 @@ struct s_128ca0
 // field_c store 48 (same code: the store still follows the index load).
 // Processed accumulator constructed, assigned, copy-constructed or copy-assigned before compound pin additions 177/177/177/177.
 // The same four with the permutation conversion preceding accumulator preparation 177/177/177/177. NOT kept: they remove the retail by-value pin homes.
+// Both start-arm sentinel compares still use immediates and the gain-pin scratch pairs remain exchanged.
+// Invalid controller link as inactive byte: separate active-first/inactive-first arms 208/212,
+// byte initialized from the link 131, joined selected byte 203. Complement test on effect/link/both
+// 138/129/140, with link-derived inactive byte 151. NOT kept: all raise the score.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
