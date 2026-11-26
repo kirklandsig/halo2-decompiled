@@ -2998,6 +2998,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // the state read through local_2 at case 1 and at the facing call too 429 (same code), with case 4's direct facing 611;
 // case 20's second arm as `local_3 = b0 == NONE || d1;` 523 (2432 B), with case 4's direct facing 635 (2416 B, +0x9).
 // Body unchanged.
+// M3 lane 4 r264 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; body unchanged). On the 2396 B
+// retail-length lead without the own-parameter read (604, actor EDI / state EBX): a forced-ranking search puts the
+// state's final piece at 198 and the actor's at 160; either one moved past the other gives retail's registers at 425
+// (first difference +0x4f), so the flip alone does not beat 429. Forms: the actor's typed fields (position, 41c, 420,
+// 44d, 464, 466, 040, 007) on main 429 and on the lead 604 (same code); case 21's flag set through one plain read of
+// the state parameter's address 604 (forwarded); the request flag set after the type store in all four request
+// cases 604 (same code); the switch's type as a named local also used by the two type-19 tests 558 on the lead (the
+// actor's piece 172, still exchanged) and 539 on main (2432 B); that with case 18's two references read in place 553.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

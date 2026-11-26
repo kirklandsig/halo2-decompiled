@@ -666,6 +666,11 @@ void session_searches_dispose(void);
 // target is 22 (+309). 0x54590 does not move with an explicit __fastcall on that member, the owner passed by reference
 // or as the view pointer, 0x6de50's body in the caller's file, or the two member declarations' place in their classes
 // (address order, after the data). A form that keeps both is the open lead.
+// Round 171 (body only; BLOCKED-BY 0x6de50, whose member form is a contributor change, and 0x70190, whose file another
+// lane held): the first call given `&owner_object` from `s_session_owner &owner_object = *SESSION_OWNER;` 51; a
+// `c_session_state_matchmaking &` local for the matchmaking and searches calls 51; a const reference to the owner
+// local 51; the owner local declared bare and assigned after the first call 51; the owner local made before the
+// first call and passed to it cast back 51.
 // @retail 0x58ee0
 bool network_session_manager_initialize(long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b)
 {
