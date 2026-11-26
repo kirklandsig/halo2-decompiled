@@ -227,7 +227,11 @@ inline real function_10e8e0(real t);
 // 1571 B), both read through `channels[c]`/`previous[c]` (386), `real prior = previous[c];` (328, 1616 B), the channel
 // pointer from `&curves->channels[c]` (262), the counted loop with both pointers declared before it and stepped at the
 // end of the body (22); on the kept form the key floats declared v_first first, t_first/t_last first, or the four
-// endpoints after the five others (12 each).
+// endpoints after the five others (12 each). Round 159 (m3 lane 14, fast): the clear as `real previous[24] = {0};` 343;
+// `used` declared after the clear 11 (its store then follows the clear, retail stores it first; the esi push stays
+// ahead of the clear); the first-key value assigned before the first-key time 17 (fixes the preheader load order,
+// swaps the body order); the four endpoint floats declared in the channel block 12, with `used` after the clear 11.
+// A forced-ranking search on the 11 form finds nothing lower: the push placement is not an allocator decision.
 // @retail 0x10de40
 void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, real time, real blend, bool skip_special)
 {

@@ -204,6 +204,18 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
 // order 46; vector3f_scale + vector3f_add 47 (matches +0x34 store ahead of mulss xmm2/xmm3); swapped phase sum 46;
 // double time 70 (637 B); separate linear local 47; inline ticks-to-sec with local rate 46; repeated linear expr 55;
 // wind pointer 46; vector3f_scale with inline linear expr 47.
+// Round 171: the clock read into two reference-bound locals (`long ticks = ...; long &t = ticks; real rate = ...;
+// real &r = rate; real time = t * r;`) gives retail's whole time block (ticks in ECX, rate in XMM0, time the sum's
+// destination) 10 (665 B); with `vector3f_scale(&wind, amount, &delta)` and vector3f_add for the velocity 7 (665 B: only
+// the i row still loads wind.i and multiplies by the amount where retail copies the amount and multiplies by wind.i; a
+// steering form without a match, not kept). With that clock: vector3f_add of vector3f_scale(&wind, ...) 36 (683 B),
+// vector3f_scale and the three += 10, vector3f_scale in place 39 (683 B). The i row did not move in a reduced-link
+// screen for 0-33 dead locals at the top or 1-8 before wind or amount, wind or amount declared at the top, a linear
+// local (by value, reference or const reference), the scale expression passed inline, the rows in any order or
+// spelling or added straight to the velocity, vector3f_add_scaled, the in-place particle scale, a direction pointer or
+// reference, or the +0x34 statement after the scale or after the add. Without it: delta.i as wind.i * amount 46;
+// `time += properties_values[1] * scale` before the call 56 (652 B), with the ticks getter 56; the converted ticks
+// bound by reference (`real &seconds = ticks; seconds *= rate;`) 43.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {

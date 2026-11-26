@@ -968,6 +968,12 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // local_5.j }`) 303 (frame changes, first +0x2); the planar k cleared before the planar copy 130 (same code); both limits
 // as ternary initialisers like the half-range 210 (1711 B); the half-range as a default plus `if` 236; the two sign tests
 // as `0.0f > k` 130 (same code); the yaw scale as `local_8 = field_38 * local_8` 130 (same code). Body unchanged.
+// M3 lane 16 r193 (H2M_FAST with 0x29b990, 0x170d70, 0x11cc90, 0x11ce20 and 0x1e5450, all MATCH; control 130, aligned
+// 162, masked 80): the planar copy as `*(vector2f const *)arg_2` 346 (first difference +0x60); the planar copy declared
+// ahead of the 3-D copy 128 (retail's store order at +0x101, first difference now +0x179: the yaw clamp's `movaps` and the
+// first rotation, whose dot retail sums as (i + k) + j and ours as (k + j) + i, the copy's loads j, i, k against ours j,
+// k, i); the yaw sine and cosine named ahead of the first rotation 164; the planar members assigned as two statements 130
+// (same code); the planar i taken from the 3-D copy 292.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

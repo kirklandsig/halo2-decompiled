@@ -85,6 +85,15 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
 // projection 205; else-branch delta orders k j i 236, i k j 82, j i k 82; update orders k i j 219, k j i 221, i k j 236;
 // local_7 stores i, k, j 192; an else-branch offset vector of its own 236 (with or without the helpers); the
 // segment itself through vector3d_from_points3d 237.
+// Round 159 (m3 lane 14, fast): `(real)sqrt(function_11e000(point, start, segment))` at both sites 920 (1026 B, the
+// helper stays a call in our link); the inline written in 0x11e000's statement shapes (v.k first, x/y/z scalars) 192;
+// the dot spelled i, j, k 205 at retail's length but aligned much closer: the dot, the else branch (k first) and the
+// second block's sums become retail's, and what is left is the first block's segment k/j registers, its update order
+// (retail updates k first, in the segment-k register) and the per-branch store of the sqrt argument, one instruction
+// short, which shifts every later row. On that form: update orders k i j 205, i k j 204; length-squared spellings,
+// the existing vector3f_add_scaled for the update and the length squared written twice all give the same code (205).
+// A forced-ranking search on it: the three segment reloads tie (i, j, k by creation); j one below k gives retail's
+// segment registers (197, update order still differs), j above the rest 29.
 // @retail 0x1a83e0
 bool __stdcall function_1a83e0(long arg_0, short *arg_1, real *arg_2, point2f *arg_3, bool *arg_4)
 {

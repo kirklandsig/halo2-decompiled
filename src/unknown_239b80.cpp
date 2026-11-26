@@ -1087,6 +1087,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 264 (762 B, 0x239d50 80); the lowest point as a point2f (copied whole on a new low) 244 (796 B); a pointer to the
 // scanned point in the lowest scan 144 (same code); the point2f with `current` at function scope 224 (784 B, aligned
 // 171, 0x239d50 80); the candidate offset through this file's point-difference helper into a vector2f 144 (same code).
+// M3 lane 4 r264 (h2m fast with 0x239d50 and 0x239b80, both MATCH each run; control 144; body unchanged): the pass
+// loop under a redundant `if (0 < count)` guard 247 (frame 0x14 as retail, but points in EBP and the hull count in
+// ESI); the classifier result named and tested through a const reference 144 (same code); the departure flag
+// declared after the lowest scan, just ahead of the pass loop, 240; the hull count set through a reference local 144
+// (same code); the three exits as `break` with the compaction under `if (pass == count)` 230.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

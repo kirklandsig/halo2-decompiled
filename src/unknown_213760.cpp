@@ -2207,6 +2207,14 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 6 form the scratch rotation is one step behind retail at the resize's handle load and one more between the write's
 // header lea and the close copy; tried there: the resize handle copied ahead of the remove-later call 15, the write
 // handle copied ahead of the header 6, the write flags as a named local 6, a close handle copy 118. Body unchanged.
+// M3 lane 8 r241 (H2M_FAST with 0x213800, 0x2138f0, 0x213760, all MATCH; control 33). The 5 form without a goto (the write
+// success set by its own test, the header read as `else if` with `valid = true`, the stored checksum through a reference)
+// rebuilt 5 at 930 B; only the write's flags zero in EAX is left (retail loads the handle into EAX first, zero in ECX). On
+// it: a write-handle copy at the call, before the header initialiser or at the resized block's top 114 each (917 B: the
+// write call is then retail's exactly, but the close loses its `mov ecx, eax` handle copy and the loop-head pads move);
+// one handle copy for the resize and the write 139 (917 B), with the close 153 (914 B), with the size query 170, with
+// both 170 (914 B); the write flags as a named local at the call, the block top, before or after the header initialiser
+// 5 each (same code); a file-local inline by-value handle accessor at the write 5, with the named flags 5. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
