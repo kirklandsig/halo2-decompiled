@@ -1059,6 +1059,15 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `vector3f_rotate_into_axes` 761. On GA7's 184 lead (rebuilt 184, al 148, mk 91): 3-arg in-place 184, all-3 crosses 184
 // (mk 88), `vi/vj/vk` 376 (667/667 insns), `function_x84d9e8` 449 (+ tail `dot3f` 317), tail cross-first 210, `v = *arg_0`
 // 506, `vk`-only 329, `cos`-first 275.
+// M3 lane 2 r157 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 362). Reading: the positional count is
+// mostly register colour, not shifts (ours 670 rows, retail 667, the aligned offset within +-4 throughout); at the basis
+// join retail holds the side vector in XMM6/5/4 and the origin in XMM1/2/3, ours one register higher in each, because
+// ours keeps the shared negated half-width live in XMM1 where retail negates a fresh read of the field for each point.
+// The two-return form re-measured 610 (2886 B, entry exact; its first row off is the zero in XMM1). Forms: a named
+// half-width local for the four points, the ray lengths and the clearance 671 (2877 B); the origin passed from the
+// object's field with no copy 687 (2858 B); a named ray length for the four-length initialiser 608 (2886 B); the ray
+// loop as a plain `for` over the index (no down-counter) 683 (2828 B); the output fraction's clamp through the existing
+// PIN_126660 439 (2873 B). Body unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

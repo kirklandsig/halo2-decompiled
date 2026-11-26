@@ -490,9 +490,7 @@ static __forceinline void actor_looking_rotate(vector3f *vector, vector3f const 
 
 static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, real angle)
 {
-	real sine = (real)sin(angle);
-	real cosine = (real)cos(angle);
-	actor_looking_rotate_in_place(vector, axis, sine, cosine);
+	actor_looking_rotate_in_place(vector, axis, (real)sin(angle), (real)cos(angle));
 }
 
 /* function_1697c0 fills 0x5c bytes; the shared result type covers the first
@@ -502,7 +500,9 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
+// score 239 (was 270): Frame 0xa8 agrees; the pitch axis's `j * scale` is now retail's. The startup zero register (XMM1
+// against XMM2) and the axis j register, the two trig transfer slots (pitch sine and cosine swapped) and the yaw rotation's
+// schedule differ.
 // MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
 // and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
 // still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
@@ -1134,6 +1134,14 @@ struct s_collision_result_buffer_1697c0
 // 0x24cf66 (two tied loads swapped), while 0xc2d00 and 0x185be0 stay matched: not kept, held as a patch. The setter alone
 // 296 (1440 B); the sine/cosine change alone 269 (1430 B); the lead with the yaw axis copied into a local 431 (1506 B);
 // the lead with the pitch axis's zero test written `!normalize(...)` 249 (1433 B). Body unchanged.
+// M3 lane 2 r157 (h2m fast with 0x297660, 0x297a50, 0x2980d0 (MATCH), 0x297d30 (23) and 0x24590; control 270). KEPT 270 ->
+// 239 (check.py --fast and the full check; nothing lost, 0x1c4590, 0x24cf66, 0x185be0 and 0xc2d00 all still match): lane
+// GB r15's held form, the rotation helper passing the sine and cosine calls straight in (its two one-use locals dropped)
+// and the pitch axis set through the existing vector3f_assign; the sine/cosine change alone 269 (1430 B). On 239: the
+// rotation helper reading the vector's three components into locals first 306 (1450 B; 0x297d30 243); the rotation's
+// dot product named ahead of the versine product 295 (1439 B); the fallback test on `!result` in place of `!clear` 344
+// (1423 B, but 0x297660 10); early returns in place of the result flag 341 (0x297660 13); `clear` initialised true at
+// its declaration as well 239 (same code).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1142,7 +1150,8 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 	real best_fraction = 0.f;
 	vector3f best_direction = *g_4687a8;
 	bool clear;
-	vector3f pitch_axis = { -forward->j, forward->i, 0.f };
+	vector3f pitch_axis;
+	vector3f_assign(&pitch_axis, -forward->j, forward->i, 0.f);
 	if (actor_looking_normalize3d(&pitch_axis) == 0.f)
 		pitch_axis = *g_4687ac;
 	for (short attempt = 0; attempt < 10; ++attempt)
