@@ -2073,7 +2073,9 @@ void __stdcall function_14c090(long index, bool reuse, s_player_creation_record 
 
 
 #include "unit_requests.h"
+#include "object_tag_definitions.h"
 #include <math.h>
+#include "unknown_11cc90.h"
 struct s_target_candidate;
 bool function_151c10(long, s_target_candidate *);
 bool function_151c90(long, s_target_candidate *);
@@ -2424,6 +2426,14 @@ static __forceinline long player_round_ticks(real value)
 // use 710 at 2702 B, frame 0x74, 33 calls (masked 242); with the two-test entry and the target and lunge forms as well
 // 691 at 2742 B, frame 0x6c (masked 214). A plain `inline` wrapper for the 0x151aa0/0x151b80 pair taking the flag 703
 // (the same code). Still BLOCKED-BY 0xe68c0's file flags, 0x151b80 and 0xccd20.
+// M3 lane 7 r234 (fast screen with 0x151b80 (5), 0x151aa0 (43), 0x151940, 0x14f2e0 and 0x14e970; control 703). Kept
+// (703, no rise): the seat block read through object_tag_definitions.h's typed unit definition
+// (`definition->unit.seats.address`, the same code) and the movement test's length through unknown_11cc90.h's
+// magnitude2d on the input's throttle pair in place of the hand-written square root (two loads reordered, same
+// count). Forms: the idle clamp's `first + second` named once as `long limit` inside an else block 700 (2740 B, a
+// gain of three, under the bar), declared after `second` 715 (2733 B); the else-block limit with lane 16's target
+// preset 701, with the `(short)(lunge + 1)` count 701 (2736 B), with both 702 (2734 B). Still BLOCKED-BY 0xe68c0's
+// file flags, 0x151b80 and 0xccd20.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -2476,8 +2486,8 @@ void __stdcall function_14f820(long player_index, long unit_index, byte *input)
     if (parent_index != NONE && seat_index != NONE)
     {
         byte *parent = object_get_unchecked(parent_index);
-        byte *definition = g_4e3b44[*(long *)parent & 0xffff].bytes;
-        byte *seat = *(byte **)(definition + 0x1cc) + seat_index*0xb0;
+        s_unit_definition *definition = (s_unit_definition *)g_4e3b44[*(long *)parent & 0xffff].bytes;
+        byte *seat = (byte *)definition->unit.seats.address + seat_index*0xb0;
         if ((*(dword *)seat & (1 << 11)) && !function_0c7070(unit_index) &&
             (g_4e6948->mode == 4 || !function_e68c0(0x1f, unit_index)) && (buttons & 0x4000000))
             function_e68c0(0x16, unit_index);
@@ -2597,8 +2607,7 @@ void __stdcall function_14f820(long player_index, long unit_index, byte *input)
         weapon = player_current_weapon(unit_index, 0);
         bool local_85417d = weapon != NONE && function_101340(weapon);
         real angle = (real)atan2(*(real *)(input + 0x10), *(real *)(input + 0xc));
-        real x = *(real *)(input + 0xc), y = *(real *)(input + 0x10);
-        bool moving = sqrt(x*x + y*y) > *(real *)(settings + 0x30) &&
+        bool moving = magnitude2d((vector2f const *)(input + 0xc)) > *(real *)(settings + 0x30) &&
             angle > *(real *)(settings + 0x34)*-0.01745329238474369f &&
             angle < *(real *)(settings + 0x34)*0.01745329238474369f;
         real remaining = idle - rest*decay;
