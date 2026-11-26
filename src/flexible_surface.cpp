@@ -1019,6 +1019,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // keeping `vector_k` with `projection*axis` first or `cross_j,k,i` ties 130 (all peers intact). In `0x117dd0` alone:
 // `s_random_globals *random = g_4e7408` before/after `definition` 130, `axis` at function top 130, `oscillation` ahead of
 // `fraction` 199 (`880 B`, folds 1/65535*0.15), `double oscillation` 131, reversed cmp 175. Body unchanged.
+// M3 lane 2 r154 (fast with 0x2551f0, 0x1ff360, 0x1e5bb0, 0x1161f0, 0x26d570 and 0x118140; control 130): in the shared
+// rotation helper, cross i written inside the i row 130 (same code here; 0x1e5bb0 112); that with both table draws through
+// random_unit_vector 130 (889 B); cross k named ahead of cross j with cross i in the row 158 (880 B; 0x2551f0 15 and
+// 0x1ff360 60, lost); cross i in the row with only the axis draw through random_unit_vector 154 (880 B). In this function:
+// the tick count read into a `short` local, then the draw, then the time product 123 (889 B: ESI loads between the pushes
+// as retail, but the seed read moves ahead of the clock loads and the time stays on the x87 stack (`fst`) where retail
+// stores and reloads it; a one-use local and a moved statement, so a lead only); the `short` local alone 130 (same code).
+// Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
