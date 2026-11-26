@@ -1160,6 +1160,17 @@ real function_30bf0(vector3f *vector);
 // facing` 187 at 1331 B, `al=92`; on base 199, on split 195; init-before 203, else-first/ternary/b-max/else-sec/range-after 190-210,
 // `real_bounds` 192-243, `real_bounds` for `facing_limits` 100/108), matching 11 of 13 stack slots and 14/16 first-cross insns, but
 // emits +23..26 B of extra `xmm1`/`xmm2` reloads of `secondary`/`primary` inside the seat loop.
+// M3 lane GA r13 (30 compiled trials across 2 batches, fast with 0x263740, 0x26d370, 0x25c9d0, 0x263d70, all MATCH;
+// control 84 at 1310/1308 B, al=109, mk=20; body unchanged): on `PIN(amount, 0.0f, 1.0f)` (97): `seat_end = seats + count`
+// pointer walk 171 (on base 177, on `PIN`+split 171: end-pointer still pairs with `amount`), countdown `rem = count` 133,
+// `word` loop index 184, hoisted `distance_squared`/`amount` 97/97, `dot3f(&delta,&delta)` 97, `dot3f` plane 152, `if/else`
+// posture 126, `short result` 97, early-return mode guard 315, no `bool facing` 152. Combining `PIN` (97) + split `mode == 0`
+// (86) + two-use `s_object_seat const *seat = &seats[i]` (90 alone, 92 with split, 91 with `PIN`) reaches 70 (1310/1308 B,
+// +0x27, al=98, mk=12; + b-max first 69, al=97, mk=12; `cross3f_staged` 1st/2nd or `dot3f` motion 70 each; `PIN`+split+sec-first
+// +b-max 75 at 1308 B, mk=20): NOT kept (every component regresses alone and `amount` still pairs with `seat_counter` at
+// +0x14). On `T06` (70): direct `&secondary, &primary` 184 (1328 B, pairs `amount`+`distance_squared` at +0x1c), direct
+// secondary-only 188 / primary-only 187 (both revert `amount` to +0x14), scoped `facing_secondary/primary` inside `if (facing)`
+// 89 (1308 B), defaults-first before `if` 190, inlined `scale * range` 141, shared two-use `actor_up` pointer 144.
 // GB12 (44 fast trials with 0x263740/0x26d370/0x25c9d0/0x263d70, all MATCH, control 84 at 1310/1308 B, al=63, mk=20;
 // body unchanged): two-use `s_object_seat const *seat = &seats[i]` alone 90 (1308 B); on `PIN`+split `mode == 0` (76 at
 // 1308 B, al=65, mk=23) adding `seat` drops score to 70 (1310 B, al=52, mk=12, fixing 7 insns in the first seat cross;
@@ -1170,6 +1181,12 @@ real function_30bf0(vector3f *vector);
 // 110, `short result` 76, `flag7` local 312, `plane` helper 84/247, `switch (mode)` 266, `amount >= 0.0f` 236; on `B12`:
 // `cross3f_staged` 70, `matrix3x3` basis ptr 117 (1308 B), hoisted `world_up` 141, `exceeded` flag 72 (on base 239),
 // `result == 0` guard/nested 97/97 (on base 90), `range` after delta 75, sec-first copy 70, `if (count > 0)` 145.
+// M3 lane 7 r230 (h2m fast with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84): the frame packer
+// counts scale and range at 5 references each where retail's layout needs 4 (both final codes have 4: ours counts one
+// store per posture case and two range loads ahead of the join). Forms aimed at one posture-scale store: both cases
+// sharing one `posture == 0 ? 0.3f : 0.7f` assignment 214 (1312 B); the posture tested by an `if` with that conditional
+// 181 (1311 B); the whole scale as one nested conditional at its declaration 219 (1308 B); an explicit `default: break;`
+// 84 (same code); the clip clamp as a conditional assignment 84 (same code). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
