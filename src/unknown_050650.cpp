@@ -1098,6 +1098,14 @@ struct s_collision_result_buffer_1697c0
 // order 292 (270 on base), axis-first crosses / cross j,k,i / proj-first rows / named versine 292 (mask=46–52), dot k,j,i 293.
 // Also on base: cross3f local_up 425, cross3f in rotate_in_place 329 (312 on lead; 0x297d30 58), norm fabs>=0.0001f 328,
 // dropping __forceinline on actor_looking_rotate 270 (0x297d30 468). Body unchanged.
+// M3 lane 3 r311 (fast screen with 0x297d30 (23), 0x297660 (MATCH), 0x2967b0, 0x24590, 0x2980d0 and 0x297a50; control
+// 270). Rank reading: the normalizer's three products sort the reciprocal (a temp) above the pitch axis's i and j, which
+// are member symbols of the brace-initialised local; retail's `j * scale` needs j ranked above the reciprocal, which only a
+// load at an offset of a memory object gives (the setter form re-measured 296: normalizer products and registers' roles
+// then as retail, zero still in XMM1, frame 0xb0); 1-7 unused locals at the top move nothing (270 each, diagnostic).
+// Forms: the attempt counter as long 269 (1430 B; retail compares it as a word, so short is right); the collision step as
+// `if (!test_collision) continue;` 270 (same code); the success exit copying the candidate out and normalizing the output
+// in place 288 (1426 B); the same at the trailing exit 348 (1400 B, 0x297660 4); at both 376 (1388 B, 0x297660 40).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
