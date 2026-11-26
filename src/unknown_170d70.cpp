@@ -1684,6 +1684,13 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // The fixed-axis unity register and two square spills still differ. Existing general builder for the fixed axis 386;
 // general forward/up/both transforms on the fixed axis 385/364/379, or general builder and both transforms 356;
 // general forward/up/both transforms on the moving axis 360/346/348. NOT kept: every form shortens the rotation and regresses.
+// M3 lane 14 r157 (fast screens with 0x1726d0, 0x170fd0, 0x172c70, 0x173910, 0x171d00 and 0x1701f0, all MATCH; reduced
+// control 337, plain 334, difflib-aligned 378 plain). Forms: the closing dot through dot3f 342 (1453 B); the matrix as
+// the existing matrix3x3 (forward, left, up) with the existing function_2477b1 transform 367 (1441 B), with
+// vector3f_rotate_into_axes 377 (1426 B); the matrix as matrix3x3 with this file's transform and sums unchanged 337 fast,
+// 334 plain (aligned 357 against 378: every matrix element then sits at retail's offset, tij - s * k at +0xc, but the
+// code is otherwise the same; held as a patch); on it tij formed first 348
+// (1455 B), with the shared (1 - c) * k named 357 (1431 B); tij first on main's matrix 348. Body unchanged.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2727,6 +2734,17 @@ struct s_camera_reference_171830
 // indexed products with the shared negate 391, first rear product negated after the others 45 at 1219 bytes.
 // On the opening plane path: all rear products then shared negate 158; three named rear products 264.
 // NOT kept: the 45 form still differs and uses the former one-use plane distance and grouped sample products.
+// M3 lane 14 r157 (fast screens with 0x170fd0, 0x171d00 and 0x16ebf0, both matched ones MATCH each run; round 154's lead
+// rebuilt, 9 at 1219 B). Rank reading on the lead (the reassociation sort's ranks): a parameter load at offset 0 weighs
+// 0x2000 per place counted from the last parameter plus 8 (point 0xa008, forward 0x8008, up 0x6008, distance 0x4008),
+// the +4/+8 loads through forward weigh 0xc008 and 0x0008 (the count wraps at 0x10000), and the named depth weighs 0x200
+// (0x20 per local). The centre's products then sort forward.i > depth, forward.j > depth, depth > forward.k; retail
+// needs depth above forward.i only, which no local's weight reaches. On the lead: forward read through a pointer local
+// in the three rear rows 154 (all three rear loads then come first, first difference back at +0x3c), with the pointer
+// declared at the top 154, used in the cross product too 261, as a const reference 154; forward.i copied into a local
+// ahead of the depth or after it 266 each (1222 B); the depth bound by const reference to the sum 263 (1223 B), or to
+// a sum local 263. Diagnostic only (unread parameters are not source): four unread longs after forward 27 (first
+// difference +0x92), at the end of the list 29. Body unchanged.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

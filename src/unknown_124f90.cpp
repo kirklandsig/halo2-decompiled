@@ -4140,6 +4140,15 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // becomes `test byte [eax + 0xa], 0x20`, one candidate fewer in case 0's first block); the range written out at
 // both uses with no local 31 (559 B: the range is sunk below the flag test). On main's body: the mode if/else 8,
 // the flag test without the bool cast 79, the range at both uses 37 (559 B).
+// M3 lane 2 r152 (H2M_FAST, control 8; on the no-default form the sound index ranks 59 and the voice 60, and on a tie
+// the sound index colours first, so one point is the whole gap; the voice's blocks are all inside the loop and move
+// by even amounts, so the point must come from the entry join or the preheader, whose seven hoisted candidates are
+// six loop constants and the sound-system global): on the no-default form, the sound-group flag as a one-bit field of the
+// promotion-flags view (bit 5 of +0xa) through TEST_FIELD_BIT 78 (same code); the loop top reading the pool through
+// `sounds` 29 (index 67 over voice 60, so those two take retail's registers, but the pool is then a ranked user
+// value in ESI and its latch load moves ahead of the ternary again); only the sound pointer through `sounds` 163
+// (index 55); the entry reading the global with `sounds` set only at the latch 78; the first absolute index named
+// ahead of the datum 78 (ranks unchanged). All restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

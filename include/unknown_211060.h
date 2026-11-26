@@ -9,8 +9,8 @@
 
 struct s_location;
 
-long function_211060(vector3f *velocity, dword flags, void const *mover_settings, s_location *location,
-	long cell_slot, point3f *position, vector3f const *force, vector3f *normal, short *material_type, real radius,
+long function_211060(dword flags, void const *mover_settings, s_location *location, long cell_slot,
+	point3f *position, vector3f *velocity, vector3f const *force, vector3f *normal, short *material_type, real radius,
 	real dt);
 
 #endif

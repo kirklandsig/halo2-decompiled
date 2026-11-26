@@ -3149,6 +3149,14 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // reassigned as the index 16; the request record at function scope with the default fill storing the flags first 17;
 // the index from a ternary with one NONE test and request priority as long 16; the default arm first (`if (!extra)`)
 // with the sound index stored before the delay 36; the default fill storing the object index first 16. Roles unchanged.
+// M3 lane 2 r152 (H2M_FAST): the allocator's ledger: the index ranks 48, the request priority 33 and the NONE constant 14,
+// which earns weight only from its four stores (B3 5, B4 5, the default arm 4: its two compares cost nothing), so it
+// colours last; a forced-ranking search finds one byte match, NONE moved to the top, and no single other decision (index
+// in ESI 12, index or request priority one rank down 12). Forms: the index as `short &` bound to entry_index 40 (248 B);
+// the 0x114520 result in a bool read through a `bool const &` 16; the fallback result bound to a `short const &` and
+// copied after its test 17; the request reached through a `s_request_114b60 *const` passed to memset and 0x114680 16; the
+// out value through a `long &definition_index` bound to the priority parameter 16. Re-measured: the request priority and
+// the out clear ahead of the fallback block 23, the extra arms inverted 29, entry_index reassigned 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

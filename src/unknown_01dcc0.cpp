@@ -570,6 +570,11 @@ long g_55e6c0;
 // range keeps EAX to the push at rank 48, so the clamp takes EDX as retail), the count copied and clamped in place 166
 // (497 B: the count's whole range then ranks 55 and takes EBP ahead of the data pointer).
 // On the lead, the header pointer formed between the packing and the levels store 29 (484 B, the lead's score).
+// Roasted-Codes (#1515 comment, 2026-11-26; fast reduced-image scores): the primary header writes and the Register call
+// addressed through `g_4b4b58[index]`, with the entry pointer kept for the other fields, 167 (507 B; the scaled index
+// stays live and the stores take the global's displacements); only the common-word store so addressed 161 (528 B).
+// Register's data argument read as `entry->data` (on the signed-packing, late-levels, header-pointer form) 152 (499 B;
+// the height takes the data's EBP and a real field load follows the format call).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

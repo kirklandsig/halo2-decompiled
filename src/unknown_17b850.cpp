@@ -722,7 +722,7 @@ void __stdcall function_17c540(long contrail_index, real dt)
 				s_contrail_point_state *state = &definition->states[point->state_index];
 
 				if (state->physics_tag_index != NONE)
-					function_211060(&point->velocity, 0, g_4e3b44[state->physics_tag_index & 0xffff].bytes, &point->location, NONE, &point->position, 0, 0, 0, state->width * 0.5f, dt);
+					function_211060(0, g_4e3b44[state->physics_tag_index & 0xffff].bytes, &point->location, NONE, &point->position, &point->velocity, 0, 0, 0, state->width * 0.5f, dt);
 			}
 			point_list[count++] = point_index;
 			point_index = point->next_index;

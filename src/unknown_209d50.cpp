@@ -359,6 +359,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // them 85 (277 B, the pointer still in EAX); the arm's element taken from `result` with `result = NULL` right after it 93
 // (268 B), with `result = NULL` last 95 (266 B); the frame bound as a `s_hs_macro_frame *&` with the first allocation
 // written through it 83 (277 B, the clear-first code).
+// M3 lane 5 r247 (fast screen with 0x2099f0, which stays matched): volatile-free, the result read back at the return
+// through a `long *const &` bound to it 95; a bool set at the end of the arm and `if (...) result = NULL;` before the
+// return 95; the allocation kept in a void pointer with the array pointer and the result each cast from it 95; the arm
+// reading the array through a block-scoped const copy with `result = NULL` first 83 (277 B). With the volatile home:
+// the volatile pointer and the result each cast from a void allocation local 71 (277 B). The allocator's colouring
+// order for the volatile-free body has the pointer, the allocator's return and the result as one candidate (the result
+// copy is sunk into the two exits), so exit-side spellings do not separate them.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

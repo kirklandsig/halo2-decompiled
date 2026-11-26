@@ -2977,6 +2977,15 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // local_9) 479 (2404 B); case 6's stores written through the global with no local_8 428 (one point, under the bar: the
 // two flag ORs still merge into one `or byte [eax + 0x22], 0x69`); cases 6 and 18 both through the global 428 (same).
 // Body unchanged.
+// M3 lane 14 r157 (fast screens with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429). Allocator reading (the
+// allocator's per-block priorities, on a reduced image with those four callees kept, as the fast build): the actor
+// colours second (184) and the state third (91), but case 4 reading the facing from local_2->field_c with no copy lifts
+// the state's priority to 192 against the actor's 179, because the state is then coloured in the pass ahead of the
+// actor, where more candidates share its blocks (cases 6, 18 and 20 and the tail count 8 to 10 candidates per block
+// instead of 5 or 6), and the two registers exchange (+0x9). Forms: case 4 with no facing copy 611 (2400 B) re-measured;
+// the state read through local_2 at case 1 and at the facing call too 429 (same code), with case 4's direct facing 611;
+// case 20's second arm as `local_3 = b0 == NONE || d1;` 523 (2432 B), with case 4's direct facing 635 (2416 B, +0x9).
+// Body unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
