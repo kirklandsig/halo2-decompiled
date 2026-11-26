@@ -110,6 +110,13 @@ static __forceinline float second_coupled_impulse_31c940(float mass,
 {
  return mass * diagonal + other * coupling;
 }
+// Keep the coupled product live while forming the diagonal product.
+static __forceinline float circular_coupled_impulse_31c940(double mass,
+ float const &diagonal, double other, float coupling)
+{
+ double coupled = other * coupling;
+ return mass * diagonal + coupled;
+}
 // Paired projections retain retail's separate loads of A's velocity fields.
 static __forceinline void sum_three_to_arena_31c940(__m128 const &v, float &output)
 {
@@ -1675,11 +1682,11 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 					// Capture each mass before evaluating the coupled row.
 					float const &mass_a_source = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3];
 					float mass_a = mass_a_source;
-					float impulse_a = first_coupled_impulse_31c940(mass_a,
+					float impulse_a = circular_coupled_impulse_31c940(mass_a,
 						scalar_work.fallback_scalar, scalar_work.pair_a, operation_float(op, 8));
 					float const &mass_b_source = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3];
 					float mass_b = mass_b_source;
-					float impulse_b = first_coupled_impulse_31c940(mass_b,
+					float impulse_b = circular_coupled_impulse_31c940(mass_b,
 						scalar_work.pair_a, scalar_work.fallback_scalar, operation_float(op, 8));
 					// Retain the first tangential square before adding the second.
 					float norm = impulse_a * impulse_a;
