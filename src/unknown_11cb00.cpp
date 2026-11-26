@@ -284,8 +284,8 @@ vector2f *function_11df30(
 	return angles;
 }
 
-// review (machine 3, 2026-11-26): the score-37 form in the next note is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (77) stays.
-// score 77 (was 77): vector_products.h helpers (length_sq3f, vector3d_from_points3d, dot3f, vector3f_add_scaled) and inline ternary clamp match lines 1-46; left: two-return tail schedule and else subtraction order. Single-exit `real result;` matches byte-for-byte (0, 290/290 B; also improves 0x260670) but triggers LTCG auto-inlining in matched 0x1a8fa0 (435), so held as a patch; in-place v 48 (inlines 0x1a8fa0); kji/jki return sums 39; parenthesized xyz return 41; if/else clamp with helpers 78.
+// review (machine 3, 2026-11-26): the form in the next note (37) is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (77) stays.
+// score 77 (the held form described here scored 37): vector_products.h helpers (length_sq3f, vector3d_from_points3d, dot3f, vector3f_add_scaled) and inline ternary clamp match lines 1-46; left: two-return tail schedule and else subtraction order. Single-exit `real result;` matches byte-for-byte (0, 290/290 B; also improves 0x260670) but triggers LTCG auto-inlining in matched 0x1a8fa0 (435), so held as a patch; in-place v 48 (inlines 0x1a8fa0); kji/jki return sums 39; parenthesized xyz return 41; if/else clamp with helpers 78.
 // @retail 0x11e000
 real function_11e000(
 	point3f const *b,
@@ -552,8 +552,8 @@ real function_11e6f0(
 	}
 }
 
-// review (machine 3, 2026-11-26): the score-109 form in the next note is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (126) stays.
-// score 126 (was 126): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
+// review (machine 3, 2026-11-26): the form in the next note (109) is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (126) stays.
+// score 126 (the held form described here scored 109): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
 // @retail 0x11e800
 bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {
