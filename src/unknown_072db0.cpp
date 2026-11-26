@@ -2474,6 +2474,11 @@ bool function_1900a5(long index);
 // request gate through the existing elapsed-time function 0x75890 itself 646 (a call, same file reason); the delay as one
 // conditional expression 633 (same code); the property value as `= 0` then `if (type)` 642; the team flag declared ahead of
 // the valid flag 633 (same code).
+// M3 lane 11 r174 (h2m fast with 0x749b0, 0x75790, 0x192e60 and 0x1900a5, all MATCH; control 633): the opening test as
+// the file's own logon switch (a `connected` flag set in `case 1`, as 0x73ae0 and 0x73040 write it) 759 (2878 B: retail's
+// `dec eax`, but the users loop then loses its entry jump and pad); that with a request `due` flag 759; the request
+// test as a `due` flag set for state 1 and else-if for an elapsed state 4, 633 (same code); `bool due = state == 1`
+// then the elapsed test 634; the fill gate as `80 - records_used > 0 && 480 - properties_used > 0` 641.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
