@@ -2215,6 +2215,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // one handle copy for the resize and the write 139 (917 B), with the close 153 (914 B), with the size query 170, with
 // both 170 (914 B); the write flags as a named local at the call, the block top, before or after the header initialiser
 // 5 each (same code); a file-local inline by-value handle accessor at the write 5, with the named flags 5. Body unchanged.
+// M3 lane 6 r249 (fast with 0x213800 MATCH; control 33). The no-goto form rebuilt from its description (write success
+// set by its own test, the count scoped in the write block, the header read as `else if` with `valid = true`, the
+// stored checksum as a `long const &` to the field inside `if (valid)`) 7 at 930 B: the write's flags zero in EAX ahead
+// of the handle load and the checksum in EDX. The scratch picks rotate EAX, ECX, EDX in allocation order, so each
+// difference is one rotation step. On it: the compare's operands swapped 7; the reference bound to the read header's
+// checksum with the field on the left 7; a plain `long` copy in place of the reference 7; the close test through the
+// record pointer (`file->handle`) 7 (same code each). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

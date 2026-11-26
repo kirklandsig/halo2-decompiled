@@ -848,6 +848,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // with no local 27 (same code); a physical block local inside the release arm 27 (same code); the loop reading the block
 // field at each use with the base named in the arm and the tail through one block local 51 (EDI/EBP swap); that with a
 // group named in the arm instead 51.
+// M3 lane 12 r194 (h2m fast with 0x12e210, which stays matched; control 27): the arm's group and base both named inside
+// it, group first, then the call on the two names 27; the loop's test and argument both read from the field (no block
+// local) with the tail unchanged 27; one physical object local at the guard's top for the time test and its store 27;
+// the arm's page shift read from the physical object global directly 27; the block local declared bare at the loop
+// top and assigned after the count's store 27 (all five the same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
