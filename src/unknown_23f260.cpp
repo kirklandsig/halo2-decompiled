@@ -395,7 +395,12 @@ PRIVATE inline bool score_team_present(long team)
 // score 4: only the load order of criteria and fallback in the two sort
 // contexts differs (retail loads criteria first). Aggregate initialization and
 // the statement order keep the same code. Permuter: 372 tries in 600 s, no
-// lower form.
+// lower form. GB20 (20 fast trials + 1 diag, 0x15b330/0x23f6e0 MATCH): ctor init-list 4, rev init 4;
+// init helper 4; make-by-value 114; template sort 202; shared single ctx 13 (fr=0x10 vs 0x18);
+// fallback cond/byte expr 98; inline switch criteria 4; explicit pad byte 4; count before ctx 4;
+// addr criteria diag 4; const ctx 4; ctx ptr reversed store order 8 (still loads fallback first);
+// both ctx at top 4; decl-then-assign criteria 4; local fallback 188; /Ob1 diag 41; rename a/z or z/a 4;
+// criteria after counts 27; ctx via ptr 4.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {
