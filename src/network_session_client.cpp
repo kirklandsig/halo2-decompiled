@@ -1073,6 +1073,16 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // that re-read 115 (473 B; no mask spill, frame 0xeb8, one load site, the session still ESI); the re-read under `i < 15`
 // with the ordinary bound kept 146 (508 B; the mask spilled, frame 0xec0). The permuter on the whole image, 93 tries:
 // best 22.
+// M3 lane 3 r312 (h2m fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22; the plain `for` copy with the
+// reference-bound mask rebuilt 8). The NULL-preset stored pair on that 8 form gives 36: every instruction retail's
+// but the callee-saved permutation (session ESI, index EDI, player pointer EBX against retail's EBX, ESI, EDI; both
+// callers lost). Reading of the allocator: on main's body, the 8 form and this pair form the colouring is the same
+// (session first and given the first free register, then the index, then the player pointer), yet only main's body
+// and the 8 form come out with the session in EBX (the registers mapped session to EBX, index to ESI, pointer to EDI)
+// and with retail's callers (`push ebx; mov ebx, esi` around the call). So the session's register is not a ranking
+// tie here: it is decided after colouring, together with the callers. On the pair + `for` + reference form: the pair
+// typed as the two buffers' types 36; the variant and the summary declared above the pair 45, the variant alone 36;
+// the pair declared above `result` 36 (callers 69/94 in each).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

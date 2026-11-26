@@ -1106,6 +1106,5 @@ void function_31660(long index, long tag, s_index_state_31660 *state,
     }
 }
 
-s_projection_storage g_projection_storage;
 
 s_flags_storage g_flags_storage;

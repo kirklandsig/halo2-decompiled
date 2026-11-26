@@ -1384,6 +1384,12 @@ void function_1e3b60(long actor_index);
 // sampled prop's index (NONE until set) 505 (1688 B), and without the expansion 439 (1616 B, against 404); case 1's
 // 0x25c820 call jumping to the release pair's own 0x25c820 call 461 (1660 B); the 0x264b50 guard nested under
 // `if (sample)` 509. The actor index stays a stack argument in each. Still BLOCKED-BY 0x262ba0.
+// M3 lane 15 r150 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form; 0x262ba0 control 404).
+// In 0x262ba0: the tracked-prop tests written field first (three sites) 406; the prior state read ahead of the next link
+// 404 (same code); the prior state read after the 0x263670 call 434 (1620 B); the sampling test with the actor's sampling
+// flag tested first 429; the tail reading a fresh actor lookup after the walk 421 (1632 B). The actor index stays a stack
+// argument in each. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0's noinline declaration, in another lane's file
+// this round).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

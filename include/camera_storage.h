@@ -39,7 +39,8 @@ struct s_camera_storage
     real field_70;
 };
 
-extern s_camera_storage g_camera_storage;
+#include "render_view_storage.h"
+#define g_camera_storage (g_render_view_storage.camera)
 #define g_4b9da0 (g_camera_storage.field_0)
 #define g_4b9dac (g_camera_storage.group_c.field_c.value)
 #define g_4b9db4 (g_camera_storage.group_c.field_14.value)

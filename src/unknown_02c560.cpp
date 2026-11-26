@@ -39,7 +39,6 @@ struct s_unknown_485a88
 extern s_unknown_485a88 g_unknown_485a88;
 #define g_485a8a (g_unknown_485a88.rects)
 extern char const *g_4e9bb8;
-bool g_4ba010;
 long g_4ba030;
 long g_46701c = NONE;
 long g_4e9194;
@@ -199,9 +198,6 @@ void __stdcall function_2c8a0(byte const *source)
     g_4ba030 = 0;
 }
 
-// Gemini GB r19 (held as a patch, coordinator review): the view fields stored in retail's groups (forward, up,
-// position and the flag; the clips, angle and 1.0f; left, top, right, bottom and the rectangle copy) score 4 (was 28).
-// Statement order is kept only with a byte match. Left: g_4ba010 = true sinks three instructions into the camera copy.
 // @retail 0x2c560
 void function_2c560(short left, short top, short right, short bottom,
     vector3f const *up, real angle, vector3f const *forward, point3f const *position)
@@ -211,18 +207,18 @@ void function_2c560(short left, short top, short right, short bottom,
     s_frame_view_2c560 frame;
     *(vector3f *)(frame.view + 0x18) = *forward;
     *(vector3f *)(frame.view + 0xc) = *up;
-    *(short *)(frame.view + 0x30) = top;
-    *(short *)(frame.view + 0x32) = left;
-    *(short *)(frame.view + 0x34) = bottom;
-    *(short *)(frame.view + 0x36) = right;
-    memcpy(frame.view + 0x38, frame.view + 0x30, sizeof(short_rectangle2d));
+    *(point3f *)frame.view = *position;
+    frame.view[0x24] = false;
     /* the two clip distances are reals: read them as such (retail copies them with movss) */
     *(real *)(frame.view + 0x40) = *(real const *)&g_467014;
     *(real *)(frame.view + 0x44) = *(real const *)&g_467018;
     *(real *)(frame.view + 0x28) = angle;
     *(real *)(frame.view + 0x2c) = 1.0f;
-    *(point3f *)frame.view = *position;
-    frame.view[0x24] = false;
+    *(short *)(frame.view + 0x32) = left;
+    *(short *)(frame.view + 0x30) = top;
+    *(short *)(frame.view + 0x36) = right;
+    *(short *)(frame.view + 0x34) = bottom;
+    memcpy(frame.view + 0x38, frame.view + 0x30, sizeof(short_rectangle2d));
     frame.view[0x58] = false; frame.view[0x68] = false;
     *(long *)(frame.unknown26c + 0x24) = 0;
     frame.index = NONE; frame.mode = 0; frame.flag06 = false; frame.location = 0;
@@ -252,6 +248,6 @@ void function_2c560(short left, short top, short right, short bottom,
     g_4ba010 = false;
 }
 
-s_view_context_storage g_view_context_storage;
+s_render_view_storage g_render_view_storage;
 
 s_saved_frames_storage g_saved_frames_storage;

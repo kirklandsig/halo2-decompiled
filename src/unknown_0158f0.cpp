@@ -257,6 +257,9 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // score via spurious HRESULT (0x8007000e) length padding and worsen 0x1d3f0 (77-102), NOT kept. Body restored at 99.
 // GB r16: the D3DDevice_CreatePalette2 call wrapped in do { ... } while (0) MATCHES (95/95 B; 0x1d3f0 76 -> 65), not kept:
 // a dead loop whose only job is to change the compiler's inlining (the same class as a dead if (0) steer).
+// Round 159 (m3 lane 14, fast, 0x1d3f0 in brackets): the call assigned inside the NULL test 99 (76); `return (*out =
+// call) != NULL;` 99 (91); the pointer declared in the if condition with two returns 99 (76); a bool from the compare
+// and one store 103 (91); the success arm first 99 (76). The SDK call stays out of line in every straight-line form.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
