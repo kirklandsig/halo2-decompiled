@@ -206,7 +206,7 @@ bool function_12de70(s_geometry_block_info *, dword);
 void function_1c590(s_shader_cache *, long, long);
 void function_1c620(s_shader_cache *, long, long, long, byte const *);
 void __stdcall function_1c710(void *);
-void function_1cdd0(real const *, byte);
+void function_1cdd0(real const *, long);
 void function_1bbf0(long, long, long, long, long, real);
 void __stdcall function_224fd0(s_draw_mesh_seed const *, s_draw_value_cache *,
 	point3f const *, vector3f const *, real, color4f const *, s_draw_mesh_context const *);

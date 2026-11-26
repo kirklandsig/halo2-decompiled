@@ -1828,7 +1828,7 @@ void function_151c0(real const *constants);
 struct s_stream_description;
 void function_1cda0(s_stream_description const *stream);
 void function_1bd50(void *state);
-void function_1cdd0(real const *bounds, byte flags);
+void function_1cdd0(real const *bounds, long flags);
 void function_1bbf0(long tag, long first, long second, long third, long fourth, real scale);
 bool __stdcall function_1c8a0(D3DPRIMITIVETYPE type, word const *indices, long count);
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);

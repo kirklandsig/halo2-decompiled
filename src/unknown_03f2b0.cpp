@@ -45,7 +45,7 @@ void *function_439d0(long index)
     return (void *)((resource->Data | 0x80000000) + offset);
 }
 
-void function_1cdd0(real const *bounds, byte flags);
+void function_1cdd0(real const *bounds, long flags);
 bool function_13d9f0(long type);
 
 // @retail 0x4d7c0
@@ -63,7 +63,7 @@ void function_4d7c0(dword const *source, word const *type)
             real const *bounds = *(real **)(tag + 0x18);
             if (function_13d9f0(*type))
                 flags |= 1;
-            function_1cdd0(bounds, (byte)flags);
+            function_1cdd0(bounds, flags);
             return;
         }
     }
