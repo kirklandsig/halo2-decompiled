@@ -768,6 +768,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `headers[(word)object_index]` 63 [13]; two-read with main-branch `headers` local + `headers[(word)object_index]` 97 [13].
 // Five one-use-free forms reading `component->object_index` directly with separate `& 0xffff` / `(word)` / `*(word *)&`
 // widths for type and case 0: 121/117/97/124/124 (all [208], component drops off EAX).
+// M3 lane 8 r241 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]). Round 60's one-read form with case 0 through the
+// word-bit view's bit2 rebuilt 24 at 256 B [0]. Reading from the register allocator on it: the absolute index ranks 110,
+// the rigid body 94, the object index 73 and the header table 53; in the entry block (eleven candidates) the rigid body
+// weighs eight units against four for each of the other two, so it is coloured first and keeps the incoming index's ECX;
+// retail's object index ECX / table EDX / rigid body ESI needs both above it. Forms: main's case 0 through the bit2 view
+// 96 [0] (same score); object index, absolute index, table, type, rigid body 111 [9]; object index, table, absolute
+// index, rigid body, type 83 (256 B) [0]; the rigid body first with const element and table pointers 96 (256 B) [13].
+// Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

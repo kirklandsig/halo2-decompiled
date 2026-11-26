@@ -1095,6 +1095,12 @@ void __stdcall function_25eea0(
 // the band test as `inner <= distance` 252; distance defined where computed 253; delta through
 // vector3d_from_points3d 262 (with length_sq3f too 262 at 1306 bytes, frame 0x30); length_sq3f alone 275; the factor
 // clamp as a conditional expression 253; `weight *= ...` 253.
+// M3 lane 6 r247 (fast, same callees listed): the cover loop's inner type tests reading the `type` local 253; the
+// factor clamp tested as `factor < 0.f` 253; the band test as `distance >= inner && distance < outer` 252; the weight
+// tests with the 4.0 arm first (`if (61c > range * 1.5) weight = 4; else if ...`) 335 (1337 B); `real weight = 12.f;`
+// declared ahead of the early return 353 (1337 B). The first difference is the weight's colour (ours XMM1, retail
+// XMM2 with the 12.0 kept in XMM0); retail's induction pointers sit at position z (leader loop) and at the score
+// (cover loop) where ours use x and the tested byte.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

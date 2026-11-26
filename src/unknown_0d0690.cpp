@@ -1822,6 +1822,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 569; a pointer to the scanned entry for the two flag tests and the selection 530; no result local (the found block
 // under `if (parameters != NULL)`, `return parameters != NULL;`) 570 (first +0x9); the normal copied as one aggregate
 // 578 (2172 B, 0x3db00 8, 0xd4080 508). Body unchanged; the pair with 0xd4080 stays the blocker.
+// M3 lane 4 r264 (h2m fast with 0xd4080 378 and 0x3db00 MATCH each run; control 529; body unchanged). Retail's exits
+// are constants: AL cleared at the entry (the empty-block test jumps straight to the epilogue), `xor al, al` for no
+// entry and `mov al, 1` after the colours. On the constant-exit form (re-measured 568 at 2168 B; with the count read
+// ahead of the pointer 568, same code): the scan through an entry pointer 574 (2163 B); the block's count read at each
+// use 568 (same code); `if (count <= 0) return false;` ahead of the scan 568 (2189 B, but a separate early epilogue);
+// the body in the found arm with `return true;` and one `return false;` at the end 566 (2189 B, frame 0x28, entry to
+// +0xc; block and query still arrive swapped), with the count read at each use 566 (same code).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

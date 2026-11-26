@@ -1585,6 +1585,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // offset declared once with delta ahead of scan 2 418; both 418 (same code each); scan 1's distance as
 // distance_sq3f(position, sample) 448. A forced-ranking search (diagnostic, 12 decisions) moved the aligned distance only
 // 448 -> 433, so no single allocator decision gives retail's 0x2c frame. Body unchanged.
+// M3 lane 16 r193 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, 2094/2122 B, frame 0x1c, aligned
+// 273, masked 262): scan 2's dot as dot3f(&offset, &delta) 418 (same code); delta from source->entries[nearest] 418 (same
+// code); scan 2's distance as distance_sq3f(position, sample) 541 (2122 B but frame 0x18); a per-sample pointer local
+// in scan 2 for the offset and the distance 593 (2076 B); scan 1's distance as distance_sq3f(position, sample) 448.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
