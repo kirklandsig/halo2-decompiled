@@ -5607,28 +5607,17 @@ void function_47930(word flags, long format, long mode)
         D3DDevice_SetStipple(function_1c290(1.0f));
         g_4b8494 = 1.0f;
     }
-    switch (format)
-    {
-    case 1:
+    if (!(format == 1)) {
         function_1c590((s_shader_cache *)g_51f0f0,
             *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x54), 0);
         function_1ccb0(39);
-        break;
-    case 2:
-        {
+    } else {
         function_1c590((s_shader_cache *)g_51f0f0,
             *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x24), 0);
         function_1ccb0(40);
         real identity[12] = { 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
         D3DDevice_SetVertexShaderConstant(78, identity, 3);
-        }
-        break;
-    default:
-        function_1c590((s_shader_cache *)g_51f0f0,
-            *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x54), 0);
-        function_1ccb0(39);
-        break;
     }
     function_1c710(g_51f0f0);
     if (!(mode)) {
