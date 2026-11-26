@@ -910,6 +910,14 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // first block's 0x46000000 value as 8192.f 463 (2265 B); the first block's LOD bias as `(dword)0.f` 2 (same code: the
 // conversion folds before the reload numbering); the colour fetched ahead of the first pixel-shader clear 292 (2260 B).
 // The two reloads stay swapped.
+// M3 lane 4 r262 (H2M_FAST, control 2). Position scan of the two-real-copy ruler (diagnostic stores to a probe array,
+// removed): retail's order at every one of 13 places tried, from the top of the success block to the last quad's end
+// (after the pair too), and ours with a single copy; so the body is two real values short anywhere in the function,
+// not ahead of the pair. The last quad's centre copied by value into a `point2f` (two real copies) gives retail's order
+// but 161 (2194 B, frame 0x14: the copy keeps a home); the centre as two named reals 122 (2222 B, pair unchanged); the
+// fields read in place with no pointers 18 (pair unchanged); a `point2f const &` with the two pointers 2; the alpha
+// product written scale-first 2; the alpha named ahead of the product 2; the colour through a `real const *` to its
+// first component 2; the size local const 2 (same code each).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
