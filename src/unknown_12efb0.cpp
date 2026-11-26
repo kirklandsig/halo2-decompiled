@@ -1103,6 +1103,26 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the metadata stores in reverse order 607. The allocator ranks the lookup result (66, EAX preferred as the return
 // register) far above the NONE constant and the slot (24 and below), so the result keeps EAX where retail moves it
 // to EDX for NONE. Body unchanged.
+// M3 lane GA r21 (53 fast trials + 22 whole-image full-link diagnostics; control 607 at 3832/3817 B, +0x15f): a byte MATCH
+// (3817/3817 B, 0x12e5e0/0x12e960/0x12eb00/0x130f60/0x131030/0x1317a0 all MATCH, 62 verified targets, 0 differ), NOT kept:
+// every matching variant loses downstream 0x1c4590 (score 5, eax/ecx swap in add) and 0x24cf66 (score 2, +0x3bd mov swap) in
+// the full image (this translation unit links before both; 0xc2d00 and 0x185be0 stay MATCH), so the body is restored and the
+// match is held as a patch. Matching recipe (all pieces verified necessary by ablation): call existing vector3f_add_scaled
+// (include/vector_products.h) inside function_12efb2 with ternary clamp and intensity/distance/height/weight/remaining order
+// (direct assign/+= without helper 13 at 3817/3817 B); function_12efb3 tests if (weight > 0.0f) before division; function_12efb5
+// takes 4 scalar channels with (alpha == 0.0f ? 1.0f : alpha) first; tag arm clamps named raw_weight via ternary; inline
+// field_1c/field_34/field_c8 publications (dropping function_12efb4, restoring it 184); arg_3->field_6c before reciprocal; widen
+// long slot_index = *(signed char *)(local_13 + 0x6f); before previous_index test and call 0x12eb00's entry_at_index
+// (if (table && index >= 0 && index < table->field_340)) in the else arm (inlining lookup 695..696, dropping slot_index 697,
+// dropping table && 13); read palette tag via local_22 = local_19 + 0x22; long tag = *(long *)((byte *)local_22 + 0x4c);
+// (same +0x4c offset as tag arm local_29, keeping local_18 in EBX, cluster_index in EDI, and local_22 live across cmp tag, NONE
+// so NONE takes EAX and local_15 moves to EDX). Whole-image diagnostics: calling vector3f_add_scaled on HEAD alone flips
+// 0x1c4590/0x24cf66 (including vector_products.h unused does not); all 16 matching 7- and 8-function variants (inline/forceinline
+// helpers, typed s_1317a0_source, entry_at_index order/const/rename, dropping s_12ed00, local helper without vector_products.h,
+// vector3f_add_scaled in function_12efb3, fog_accumulator_reset) flip both; the 6-function score-13 form (without vector3f_add_scaled)
+// keeps both 0x1c4590 and 0x24cf66 MATCH (not kept: still requires match-only entry_at_index, one-use slot_index, and repeated
+// publication blocks), and macro forms replacing any of the 6 functions to stay at 6 functions with vector3f_add_scaled score 245..714.
+// Body unchanged (607).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
