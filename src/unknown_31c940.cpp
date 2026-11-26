@@ -775,69 +775,93 @@ static __forceinline float load_stored_impulse(float const &value)
 	return stored;
 }
 
-static __forceinline __m128 apply_second_pair_first_impulse(float const &source,
+static __forceinline unsigned long apply_second_pair_first_impulse(float const &source,
  solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 *linear_b_pointer,
  __m128 *const &angular_b_home,
  __m128 const *&inverse_b_home,solver_linear_row_31e7b0 const *&next_row_home,
  __m128 const &linear_axis,float *result,float &simd_copy,float const &second_source)
 {
- __m128 inertia_a=a->inverse_inertia;
+ // Consume five vector values through the linear and angular updates.
+ __m128 w[5];
+ w[2]=a->inverse_inertia;
  float impulse=load_stored_impulse(source);
  memcpy(&simd_copy,&source,sizeof(simd_copy));
- __m128 scalar=_mm_load_ss(&simd_copy);
- __m128 change_a=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),inertia_a);
+ w[1]=_mm_load_ss(&simd_copy);
+ w[0]=_mm_shuffle_ps(w[1],w[1],0);
+ w[0]=_mm_mul_ps(w[0],w[2]);
  __m128 const *inverse_b_pointer=linear_b_pointer+2;
- __m128 change_b=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),*inverse_b_pointer);
- __m128 linear_a=_mm_mul_ps(_mm_shuffle_ps(change_a,change_a,0xff),linear_axis);
- __m128 linear_b=_mm_mul_ps(_mm_shuffle_ps(change_b,change_b,0xff),linear_axis);
- a->linear=_mm_add_ps(a->linear,linear_a);
- *linear_b_pointer=_mm_sub_ps(*linear_b_pointer,linear_b);
- __m128 angular_a=_mm_mul_ps(change_a,row->a);
- __m128 angular_b=_mm_mul_ps(change_b,row->b);
- a->angular=_mm_add_ps(a->angular,angular_a);
- // Publish the inverse address after A may have overwritten the shared home.
+ w[2]=*inverse_b_pointer;
+ w[1]=_mm_shuffle_ps(w[1],w[1],0);
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[4]=linear_axis;
+ w[2]=_mm_mul_ps(_mm_shuffle_ps(w[0],w[0],0xff),w[4]);
+ w[3]=_mm_mul_ps(_mm_shuffle_ps(w[1],w[1],0xff),w[4]);
+ w[4]=a->linear;
+ w[4]=_mm_add_ps(w[4],w[2]);
+ a->linear=w[4];
+ w[2]=*linear_b_pointer;
+ w[2]=_mm_sub_ps(w[2],w[3]);
+ *linear_b_pointer=w[2];
+ w[2]=row->a;
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=row->b;
+ w[1]=_mm_mul_ps(w[1],w[2]);
+ w[2]=a->angular;
+ w[2]=_mm_add_ps(w[2],w[0]);
+ a->angular=w[2];
  inverse_b_home=inverse_b_pointer;
  __m128 *angular_b_pointer=angular_b_home;
- *angular_b_pointer=_mm_add_ps(*angular_b_pointer,angular_b);
- // Capture the next row and SIMD bits before result publication; its x87
- // consumer deliberately reloads the numeric value afterward.
+ w[0]=*angular_b_pointer;
+ w[0]=_mm_add_ps(w[0],w[1]);
+ *angular_b_pointer=w[0];
  float accumulated=*result+impulse;
  next_row_home=row+1;
- __m128 second_scalar=_mm_load_ss(&second_source);
+ // Snapshot only the SIMD bits before publishing the first result.
+ // The second accumulation deliberately reloads its numeric source afterward.
+ unsigned long second_bits;
+ memcpy(&second_bits,&second_source,sizeof(second_bits));
  *result=accumulated;
- return second_scalar;
+ return second_bits;
 }
 
-static __forceinline void apply_second_pair_second_impulse(float const &source,__m128 second_scalar,
+static __forceinline void apply_second_pair_second_impulse(float const &source,unsigned long second_bits,
  solver_linear_row_31e7b0 const *const &row_home,__m128 *&row_cursor,solver_velocity_31c940 *a,
  __m128 *linear_b_pointer,__m128 *const &angular_b_home,__m128 const *const &inverse_b_home,
  float *result,float &simd_copy)
 {
- // Each body keeps its angular weight while its linear change is applied.
- struct
- {
-  __m128 angular;
-  __m128 linear;
- } delta_a, delta_b;
- delta_a.angular=a->inverse_inertia;
+ // Consume five vector values through the linear and angular updates.
+ __m128 w[5];
+ w[2]=a->inverse_inertia;
  float impulse=load_stored_impulse(source);
- _mm_store_ss(&simd_copy,second_scalar);
- delta_b.angular=*inverse_b_home;
- __m128 scalar=_mm_load_ss(&simd_copy);
- delta_a.angular=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),delta_a.angular);
- delta_b.angular=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),delta_b.angular);
- // Retain this published row across both linear writes.
+ // Rebuild the rounded SIMD input from the pre-publication snapshot.
+ memcpy(&simd_copy,&second_bits,sizeof(second_bits));
+ w[3]=*inverse_b_home;
+ w[1]=_mm_load_ss(&simd_copy);
+ w[0]=_mm_shuffle_ps(w[1],w[1],0);
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[1]=_mm_shuffle_ps(w[1],w[1],0);
+ w[1]=_mm_mul_ps(w[1],w[3]);
  row_cursor=(__m128 *)row_home;
- __m128 axis=*row_cursor++;
- delta_a.linear=_mm_mul_ps(_mm_shuffle_ps(delta_a.angular,delta_a.angular,0xff),axis);
- delta_b.linear=_mm_mul_ps(_mm_shuffle_ps(delta_b.angular,delta_b.angular,0xff),axis);
- a->linear=_mm_add_ps(a->linear,delta_a.linear);
- *linear_b_pointer=_mm_sub_ps(*linear_b_pointer,delta_b.linear);
- delta_a.angular=_mm_mul_ps(delta_a.angular,*row_cursor++);
- delta_b.angular=_mm_mul_ps(delta_b.angular,*row_cursor);
+ w[4]=*row_cursor++;
+ w[2]=_mm_mul_ps(_mm_shuffle_ps(w[0],w[0],0xff),w[4]);
+ w[3]=_mm_mul_ps(_mm_shuffle_ps(w[1],w[1],0xff),w[4]);
+ w[4]=a->linear;
+ w[4]=_mm_add_ps(w[4],w[2]);
+ a->linear=w[4];
+ w[2]=*linear_b_pointer;
+ w[2]=_mm_sub_ps(w[2],w[3]);
+ *linear_b_pointer=w[2];
+ w[2]=*row_cursor++;
+ w[0]=_mm_mul_ps(w[0],w[2]);
+ w[2]=*row_cursor;
+ w[1]=_mm_mul_ps(w[1],w[2]);
  __m128 *angular_b_pointer=angular_b_home;
- a->angular=_mm_add_ps(a->angular,delta_a.angular);
- *angular_b_pointer=_mm_add_ps(*angular_b_pointer,delta_b.angular);
+ w[2]=a->angular;
+ w[2]=_mm_add_ps(w[2],w[0]);
+ a->angular=w[2];
+ w[0]=*angular_b_pointer;
+ w[0]=_mm_add_ps(w[0],w[1]);
+ *angular_b_pointer=w[0];
  *result+=impulse;
 }
 
@@ -916,69 +940,6 @@ static __forceinline void apply_second_normal_row_fallback_31c940(float impulse,
  w[2]=a->angular;w[2]=_mm_add_ps(w[2],w[0]);a->angular=w[2];
  w[0]=*angular_receiver;w[0]=_mm_add_ps(w[0],w[1]);*angular_receiver=w[0];
  *result+=impulse;
-}
-
-static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &step,
-	unsigned char *op, __m128 *terms, solver_velocity_31c940 *a, solver_scoped_body_fields_31c940 const &b,
-	float *result, solver_scalar_work_31c940 &scalar_work, solver_scalar_arena_31c940 &projection_pool)
-{
-	// Input rows stay anchored to terms; an active update walks its own cursor.
-	__m128 *update_cursor;
-	solver_scoped_body_fields_31c940 const &body_b = b;
-	__m128 *&angular_b_pointer = scalar_work.angular_b;
-	__m128 *linear_input=&body_b.body->linear;__m128 *angular_b_address=&body_b.body->angular;
-	__m128 first_linear_axis = terms[0];
-	float target_a = terms[0].m128_f32[3];
-	// Complete both SIMD projections before the coupled x87 errors.
-	__m128 first_projection=project_linear_axis(((solver_linear_row_31e7b0 *)terms),a,*linear_input,*angular_b_address,first_linear_axis);
-	// Projection inputs precede publication of the shared angular home.
-	angular_b_pointer=angular_b_address;
-	_mm_store_ss(&projection_pool.normal_second_projection_a,first_projection);
-	project_second_pair_second_row(((solver_linear_row_31e7b0 *)terms)+1,
-	a, *linear_input, *angular_b_pointer, terms[3], projection_pool.normal_second_projection_b);
-	solver_step_31c940 *parameters = step;
-	// Retail spills the first error and both coupled impulses to 32-bit storage.
-	scalar_work.pair_b = target_a * parameters->error_scale
-	- projection_pool.normal_second_projection_a * parameters->velocity_scale;
-	float error_b = terms[3].m128_f32[3] * parameters->error_scale
-	- projection_pool.normal_second_projection_b * parameters->velocity_scale;
-	float const &mass_a_source = terms[2].m128_f32[3];
-	float mass_a = mass_a_source;
-	scalar_work.pair_a = first_coupled_impulse_31c940(mass_a, (float const &)scalar_work.pair_b,
-	error_b, operation_float(op, 4));
-	// Capture the second mass before its coupled product.
-	float const &mass_b_source = terms[5].m128_f32[3];
-	float mass_b = mass_b_source;
-	scalar_work.fallback_scalar = second_coupled_impulse_31c940(mass_b, error_b,
-	(float const &)scalar_work.pair_b, operation_float(op, 4));
-	do
-	{
-		if (load_stored_impulse(scalar_work.pair_a) > 0.0f)
-		{
-			if (load_stored_impulse(scalar_work.fallback_scalar) > 0.0f)
-			{
-				__m128 *linear_receiver=linear_input;
-				__m128 second_scalar=apply_second_pair_first_impulse(scalar_work.pair_a,
-				((solver_linear_row_31e7b0 *)terms), a, linear_receiver, angular_b_pointer, scalar_work.inverse_b,scalar_work.next_normal,
-				first_linear_axis, result, projection_pool.normal_second_a_copy,scalar_work.fallback_scalar);
-				apply_second_pair_second_impulse(scalar_work.fallback_scalar,second_scalar,
-				scalar_work.next_normal,update_cursor,a,linear_receiver,angular_b_pointer,
-				scalar_work.inverse_b,result+1,projection_pool.normal_second_b_copy);
-
-				return;
-			}
-			break;
-		}
-		float candidate_b=error_b*terms[4].m128_f32[3];
-		if(candidate_b<=0.0f)break;
-
-		apply_second_normal_row_fallback_31c940(candidate_b,((solver_linear_row_31e7b0 *)terms)+1,
-		scalar_work.next_normal,update_cursor,a,linear_input,b,angular_b_pointer,result+1,scalar_work.fallback_scalar);
-		return;
-	} while (false);
-	float candidate_a=scalar_work.pair_b*terms[1].m128_f32[3];
-	if(candidate_a>0.0f)apply_second_pair_fallback(candidate_a,((solver_linear_row_31e7b0 *)terms),a,linear_input,
-	angular_b_pointer,b.body->inverse_inertia,first_linear_axis,result,scalar_work.fallback_scalar);
 }
 
 // Retain the coefficient and B inertia addresses across consecutive rows.
@@ -1501,6 +1462,18 @@ static __forceinline void accumulate_velocity_field_31c940(__m128 &sum, __m128 c
 	accumulated = _mm_add_ps(accumulated, input);
 	_mm_store_ps(sum.m128_f32, accumulated);
 }
+// The deferred normal path keeps the second error in its native float
+// expression while borrowing the first error from its published home.
+static __forceinline float first_pending_normal_impulse_31c940(double mass,
+ float const &diagonal, float other, float const &coupling)
+{
+ return mass * diagonal + other * coupling;
+}
+static __forceinline float second_pending_normal_impulse_31c940(float mass,
+ float diagonal, float const &other, float coupling)
+{
+ return mass * diagonal + other * coupling;
+}
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -1552,53 +1525,132 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 				// Retail forms this address before dispatch, including for empty streams.
 
 				solver_scoped_body_fields_31c940 scoped_b(b);
-				switch (*(signed char *)op)
-				{
-				case 0: dispatch_done=true;header_complete=true;continue;
-				// Retail groups up to two coupled normal pairs, then checks directly
-				// for the three-axis friction record. Longer runs redispatch here.
-				case 3:
-				{
-					// Read the following opcode after the row writes and before advancing.
-					// Advance the stream before the row/result cursors, as in retail.
-					signed char next_pair_kind;
-					{
-						solve_contact_pair(step, op, normal_axes, terms, a, scoped_b, result, scalar_work, projection_pool);
-						next_pair_kind = *((signed char *)op + 8);
-						op += 8; terms += 6; normal_axes += 6; result += 2;
+				__m128 first_linear_axis;
+                float error_b;
+                __m128 *linear_input;
+                __m128 *update_cursor;
+                __m128 *&angular_b_pointer = scalar_work.angular_b;
+                bool first_positive;
+                enum { not_normal, normal_complete, normal_fallback }
+                    normal_completion = not_normal;
+                switch (*(signed char *)op)
+                {
+                case 0: dispatch_done=true;header_complete=true;continue;
+                // Process up to two coupled pairs, then join the spinning record.
+                case 3:
+                {
+                    solve_contact_pair(step, op, normal_axes, terms, a, scoped_b,
+                        result, scalar_work, projection_pool);
+                    signed char next_pair_kind = *((signed char *)op + 8);
+                    op += 8; terms += 6; normal_axes += 6; result += 2;
+                    if (next_pair_kind != 3) continue;
 
-					}
-					if (next_pair_kind != 3) continue;
-					{
-						solve_second_contact_pair(step, op, terms, a, scoped_b, result, scalar_work, projection_pool);
-						next_pair_kind = *((signed char *)op + 8);
-						op += 8; terms += 6; result += 2;
-
-					}
-
-					if (next_pair_kind != 8) { normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128)); continue; }
-					break;
-				}
-				// Continue below the switch for the shared spinning-friction path.
-				case 8: break;
-
-				// A single unilateral linear row.
-				case 2:
-				{
-					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-					__m128 *linear_b_pointer = &body_b.body->linear;
-					__m128 * &angular_b_pointer = scalar_work.angular_b;
-					angular_b_pointer = &body_b.body->angular;
-					do
-					{
-						solve_unilateral_linear(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, scoped_b,
-							*linear_b_pointer, angular_b_pointer, step, result, projection_pool, scalar_work.fallback_scalar);
-						terms += 3; ++result; op += 4;
-					} while (*op == 2);
-
-					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
-					continue;
-				}
+                    solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+                    linear_input = &body_b.body->linear;
+                    first_linear_axis = terms[0];
+                    float target_a = terms[0].m128_f32[3];
+                    // Derive angular input from the retained linear address.
+                    // An independent saved pointer would introduce another home.
+                    __m128 first_projection = project_linear_axis(
+                        ((solver_linear_row_31e7b0 *)terms), a, *linear_input,
+                        linear_input[1], first_linear_axis);
+                    angular_b_pointer = linear_input + 1;
+                    _mm_store_ss(&projection_pool.normal_second_projection_a, first_projection);
+                    project_second_pair_second_row(((solver_linear_row_31e7b0 *)terms) + 1,
+                        a, *linear_input, *angular_b_pointer, terms[3],
+                        projection_pool.normal_second_projection_b);
+                    solver_step_31c940 *parameters = step;
+                    scalar_work.pair_b = target_a * parameters->error_scale
+                        - projection_pool.normal_second_projection_a * parameters->velocity_scale;
+                    error_b = terms[3].m128_f32[3] * parameters->error_scale
+                        - projection_pool.normal_second_projection_b * parameters->velocity_scale;
+                    float const &mass_a_source = terms[2].m128_f32[3];
+                    float mass_a = mass_a_source;
+                    scalar_work.pair_a = first_pending_normal_impulse_31c940(mass_a,
+                        (float const &)scalar_work.pair_b, error_b, operation_float(op, 4));
+                    float const &mass_b_source = terms[5].m128_f32[3];
+                    float mass_b = mass_b_source;
+                    scalar_work.fallback_scalar = second_pending_normal_impulse_31c940(
+                        mass_b, error_b, (float const &)scalar_work.pair_b, operation_float(op, 4));
+                    first_positive = load_stored_impulse(scalar_work.pair_a) > 0.0f;
+                    if ((first_positive) && load_stored_impulse(scalar_work.fallback_scalar) > 0.0f)
+                    {
+                        __m128 *linear_receiver = linear_input;
+                        unsigned long second_bits = apply_second_pair_first_impulse(
+                            scalar_work.pair_a, ((solver_linear_row_31e7b0 *)terms),
+                            a, linear_receiver, angular_b_pointer, scalar_work.inverse_b,
+                            scalar_work.next_normal, first_linear_axis, result,
+                            projection_pool.normal_second_a_copy, scalar_work.fallback_scalar);
+                        apply_second_pair_second_impulse(scalar_work.fallback_scalar, second_bits,
+                            scalar_work.next_normal, update_cursor, a, linear_receiver,
+                            angular_b_pointer, scalar_work.inverse_b, result + 1,
+                            projection_pool.normal_second_b_copy);
+                        normal_completion = normal_complete;
+                    }
+                    else
+                    {
+                        normal_completion = normal_fallback;
+                    }
+                }
+                // The normal fallback follows the unilateral loop. Both normal
+                // outcomes then use the same stream and result advancement.
+                case 2:
+                {
+                    if (normal_completion == not_normal)
+                    {
+                        solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+                        __m128 *linear_b_pointer = &body_b.body->linear;
+                        __m128 *&angular_b_pointer = scalar_work.angular_b;
+                        angular_b_pointer = &body_b.body->angular;
+                        do
+                        {
+                            solve_unilateral_linear(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3],
+                                ((solver_linear_row_31e7b0 *)terms), a, scoped_b,
+                                *linear_b_pointer, angular_b_pointer, step, result,
+                                projection_pool, scalar_work.fallback_scalar);
+                            terms += 3; ++result; op += 4;
+                        } while (*op == 2);
+                        normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+                        continue;
+                    }
+                    if (normal_completion == normal_fallback)
+                    {
+                        bool choose_first = first_positive;
+                        float candidate_b;
+                        if (!first_positive)
+                        {
+                            candidate_b = error_b * terms[4].m128_f32[3];
+                            // Unordered second candidates enter the update.
+                            choose_first = candidate_b <= 0.0f;
+                        }
+                        if (choose_first)
+                        {
+                            float candidate_a = scalar_work.pair_b * terms[1].m128_f32[3];
+                            if (candidate_a > 0.0f)
+                                apply_second_pair_fallback(candidate_a,
+                                    ((solver_linear_row_31e7b0 *)terms), a, linear_input,
+                                    angular_b_pointer, scoped_b.body->inverse_inertia,
+                                    first_linear_axis, result, scalar_work.fallback_scalar);
+                        }
+                        else
+                        {
+                            apply_second_normal_row_fallback_31c940(candidate_b,
+                                ((solver_linear_row_31e7b0 *)terms) + 1,
+                                scalar_work.next_normal, update_cursor, a, linear_input,
+                                scoped_b, angular_b_pointer, result + 1, scalar_work.fallback_scalar);
+                        }
+                    }
+                    // Observe the following kind after all row writes, before advancing.
+                    signed char completed_pair_kind = *((signed char *)op + 8);
+                    op += 8; terms += 6; result += 2;
+                    if (completed_pair_kind != 8)
+                    {
+                        normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
+                        continue;
+                    }
+                    break;
+                }
+                case 8: break;
 
 				case 1:
 					header_complete = true;
@@ -2009,7 +2061,7 @@ scalar_work.first_error = (spin_target * load_friction_scale(step) - projection_
 					double captured_target_b = (float const &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
 					// Both products precede the limit publication, including aliased scales.
 					double target_product = captured_target_b * load_friction_scale(step);
-					float velocity_product = projection_pool.spin_second * load_velocity_scale(step);
+					double velocity_product = projection_pool.spin_second * load_velocity_scale(step);
 					state.solving.spin_limit = operation_float(op, 12);
 					scalar_work.fallback_scalar = target_product - velocity_product;
 					// Keep limited impulses in native x87 intermediates until their stores.
