@@ -930,6 +930,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the first texture handed to 0x14390 through a named pointer 2; the size's first value written `64.f * 0.5f` 2; both
 // readiness tests written `!= 0` 2 (all the same code); the first quad's first coordinate pair with its half products in
 // parentheses 377 (2289 B: the products are scheduled ahead of the first reservation). The two reloads stay swapped.
+// M3 lane 14 r161 (single-address H2M_FAST, control 2): the first quad's `arg_1 * 0.5f` written `arg_1 / 2.f` 2; the
+// scale copied into a named real at the function's top, or at the head of the success block, and used by the first
+// quad's texture calls 2 / 2; the lower value written `0.5f + -arg_1 * 0.5f` 2 (all the same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

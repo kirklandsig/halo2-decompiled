@@ -1263,6 +1263,10 @@ real function_30bf0(vector3f *v);
 // real t2 with / (double)two_a + maxgrav 253 (983 B, aligned 189, dword -1.0f, both fdiv, all 7 match); + minimum before optimal_time (either div via (double)two_a) 204 (985 B, aligned 187, both fdiv, all 7 match; not kept: steering cast + order, 985 B);
 // double t2 without cast 219 (3 callers +4 B frame: proves no double local in retail), + maxgrav 218 (+ late path 262, + t-clamp + late path 205, + min before opt 271);
 // clean forms (all 7 match): maxgrav + uncast sqrt in real t2 215 (aligned 188), + min before opt 271 (1006 B); vector3d_from_points3d 217 (+ maxgrav 215); two-use t_squared local 216 (+ maxgrav 215); t then PIN + maxgrav 263; magnitude2d helper 258 (callers lost); clamped_gravity local 255 (callers lost); early delta.k 217.
+// M3 lane 14 r161 (H2M_FAST with the six matched callers and 0xfa580, all MATCH; control 216): the horizontal root
+// `real const` 216; the horizontal tests written constant first 216; two_a written `2.0f * a` 216; the optimal time's
+// product `root * (-1.0f / two_a)` 216; `a` written `0.25f * gravity * gravity` 216 (all the same code). Frame map: ours
+// packs a temp, distance_squared, a and b in four cells (0x28, eleven argument homes reused); retail's 0x30 holds two more.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2688,6 +2692,18 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // center or center+point typed vector3f 40/40; owner typed s_damage_owner or 12-byte padded struct 40/40; owner field order 0/4/8 42; owner via local pointer 40;
 // hoisted probe locals 40; area data.direction component-wise copy 67 (2200 B), memcpy 40, direction before position 56; sound compressed_forward before position 51.
 // forward (+0x30) vs owner (+0x1c) slot pairing and point-first vector3f_add loads stay unchanged across all forms; 0x1ca690 short-arg fix remains held as a patch (raises 0xf8eb0).
+// M3 lane 14 r161 (H2M_FAST). Reading: the 12-byte locals are packed in reference-count order (centre 16, position 11,
+// point 8, forward 7, owner 5), each joining the newest slot it does not overlap, so forward takes the point's slot and
+// owner the centre's; retail's pairing (forward with the centre, owner with the point) comes out when the centre
+// accumulator and the forward vector are one function-scope variable. The add's x/y operand order follows the field
+// symbols' numbering. On the 0x1ca690 short-parameter control (23) with the three store orders (15): owner declared
+// ahead of `current` 15; owner at function scope 15; up declared ahead of forward 15; one point shared through a
+// vector reference 201 (the probe's z product flips); one `vector3f forward` for the centre and the forward vector 4;
+// that with the existing vector3f_scale for the centre scale 4, with the add's inputs as (point, forward) 4, both 2 (left:
+// the y add loads the point first); on 2: the init through a non-const cast 2, the point declared after the init 2, the
+// point at function scope 289, the inverse inside the scale call 2, the point typed as a vector 2, a const cast on the
+// add's input 2. Without the parameter change the 2 form is 19, and without the store orders too 27. Held as a patch
+// (needs the 0x1ca690 change; the shared variable holds two roles).
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -3058,6 +3074,11 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // movement before forward/up copy 1030 (4694 B), with distance_traveled before copy 1017; direct dword OR on flag 5 or flags 11/2 1017/1017;
 // case 2 reusing projectile 1027 (4692 B) or bitfield/bit_vector_set 1017; inline gravity fall ternary 1016 (4682 B). Body unchanged;
 // 0xfaa30 two-site expansion (/Ob1 file) and magnitude3d second-site inline remain the blockers.
+// M3 lane 14 r161 (H2M_FAST): 0x1ca690's 3rd/4th parameters as `short` 1017 (4683 B: the call's `xor`/`mov cx` becomes
+// retail's, the rest shifts one instruction); the speed curve's average velocity through vector3f_add + vector3f_scale
+// 1045 (4706 B); its forward read from the projectile at each use 1054 (4646 B); both 1032 (4663 B); the guidance block
+// reading the velocity field at each use, no pointer, 1029 (4698 B). Frame map: ours packs to 0x114 with no slot for the
+// saved index * 12 or the contrail index, which retail spills because 0xfaa30 is expanded at two sites (BLOCKED-BY 0xfaa30).
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
