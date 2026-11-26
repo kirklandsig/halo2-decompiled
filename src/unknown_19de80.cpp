@@ -1077,6 +1077,15 @@ static inline bool teams_enabled_19e1c0()
 // Separate text buffers in every token arm from the first write or the outer arm, with shared
 // or role-specific names: 390 each with the qualified result and 691 each with ordinary result.
 // The ordinary result restores 0x204 but still merges the name-copy tails.
+// M3 lane 11 r169 (h2m fast with 0x19e0f0, 0x19ea60 and 0x19eae0, all MATCH; control 390). Ranking on the plain result:
+// the result 223, the token length 75, the event 63 and the token 52 take the four callee-saved registers; `remaining`'s
+// whole candidate is -45 (its arm references add about 36, 37 blocks where it is live but unread take 81). Forcing that
+// candidate to the top (a forced-ranking search, not source) gives 499 against the plain 691: `remaining` then holds a
+// register from entry and the token is re-read per compare as retail, but a zero constant takes EBX, the event goes to
+// EBP and the frame grows a word, so the ranking alone does not give retail's body. Forms: the chain inside
+// `do { ... } while (false);` on the kept result 584 (1586 B); on the plain result 425 (listed, re-measured), with the
+// event teams read at each use 589 (1586 B), with a `long` opponent team and `best_score <=` 429 (1432 B), with both
+// 576 (1576 B); the kept result with the wrapper and the scan pair 486 (1511 B). Body unchanged.
 // Initial result clipped from capacity or token length. Zero at optional-arm
 // entry or on rejection, with engine success publication or miss-length
 // selection: 663/659/490/626/664/659/490/626. NOT kept: count rises, and the 0x204

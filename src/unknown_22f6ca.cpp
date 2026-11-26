@@ -364,6 +364,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // `!= NULL` / `!= false` tests in the text and model loops 23 (the 23s the same code). Reading: matched /O1 0x2b3e4d's
 // `and [slot], eax` is a plain `field = 0;` store to a memory local after a `repe cmpsd` left EAX zero, so retail's text
 // reset is a constant-zero store given the zero register late, its model reset a store of the counter's zero register.
+// Roasted-Codes (#1508 comment, 2026-11-26; fast reduced-image scores): `long i = 0;` above the pane lookup plus the model
+// loop as a guarded do/while over an explicit zero-initialised byte offset 24 (416 B); both resets are retail's (text `and`,
+// model `mov`) and the earlier loops keep retail's registers; left are the `xor ebx, ebx` ahead of the pane call and the
+// model loop's `mov eax, esi`. Without the byte offset 25 (model reset back to `and`); with the zero after the lookup 69 (418 B).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
