@@ -6227,8 +6227,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
         g_485a30 = g_485a34 = g_485a38 = g_485a3c = 1.0f;
         g_485a40 = 0.0f;
     }
-    function_0497a0(source, (s_view_result *)g_48597c, camera, flags, &g_485944, &g_485950, g_48595c,
-        &g_485a2c, (vector4f *)g_485a0c, (vector4f *)(g_485a0c + 4));
+    /* retail passes the light's frame in eax (read above) and its shape in ecx
+       (the short above); 0x497a0 takes the shape as its source (its kind at +0,
+       its extent at +0x38) and the frame as its camera (forward +0x28, up
+       +0x34) */
+    function_0497a0((s_view_source *)camera, (s_view_result *)g_48597c, (s_view_camera *)source, flags,
+        &g_485944, &g_485950, g_48595c, &g_485a2c, (vector4f *)g_485a0c, (vector4f *)(g_485a0c + 4));
     s_bounds3d bounds;
     if (resource)
     {

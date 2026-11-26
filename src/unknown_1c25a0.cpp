@@ -1765,6 +1765,11 @@ long function_1d3880(s_havok_component const *component, long *constraints, long
 // score 6: only the argument-setup order at four havok_printf calls differs;
 // retail issues the fild before the integer push, ours after. Permuter: 299
 // tries in 600 s, no lower form.
+// M3 lane 4 r263 (h2m fast with 0x1d3880, 0x2797a0, 0x22c390 and 0x22cb00, all MATCH each run; control 6: the runtime
+// pool line and the two component lines, retail loading the first real argument before pushing the integer beside it):
+// the maxima tests written `count > maximum` 14; the totals and maxima declared in total/maximum pairs 12; the output
+// counts declared contacts, bodies, constraints, other 6 (same code); the final sum in a named total 6 (same code); each
+// total's maximum test right after its sum 211 (1167 B). A forced search over 10 scheduler decisions finds nothing below 6.
 // @retail 0x1c4590 standard
 void __stdcall function_1c4590(long flags)
 {
