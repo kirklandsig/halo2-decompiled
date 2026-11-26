@@ -1447,6 +1447,11 @@ __forceinline long vehicle_round(real value)
 // plain side cross 4. Also: S with the side scale read from the axis copy (`0.0f - axis.k`) 47; the strength select as
 // one expression times the clamped rate (`(... ? 0.3 : -0.3) * rate`) 137, on S 137; S with the side scale named ahead
 // of the side cross 78; the strength select as an if/else 141.
+// M3 lane 8 r240 (fast screen with caller 0xefde0, which stays at 561; S = cross3f_staged at the first cross, re-measured 4):
+// S with a `real const *` to the definition's two rate bounds declared just before the clamp 2 (left: the side cross's
+// forward.j * up.i), declared at the top beside the definition 4 (+0x131); S with the tick length bound as `real const &`
+// for the rate 2 (the same product left); S with both 6; S with the axis copied from the forward first and the cross
+// overwriting it under the mode test 173.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2696,6 +2701,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // overlay dot: 15 each); arm 2's fraction or overlay 1's value named 13 each; either named with the forward pointer 13
 // (arm 3's i term then retail's; left the k/j order and two of overlay 1's cross products); on those, the model local
 // folded into the graph lookup, both names, and the overlay dot in k,j,i / i,j,k / j,k,i / j,i,k orders 13-25.
+// M3 lane 8 r240 (fast screen), at 9. Reading (operand ranks): arm 3's three products sort by the velocity components'
+// ranks (k lowest, then j, then i, as overlay 1's dot first reads them), so the sum runs (i + j) + k; the forward
+// loads (pointer plus offset) outrank every velocity leaf, so the i term loads forward.i first. Forms: arm 3 through
+// basis_dot_xzy (forward, velocity) 11 and (velocity, forward) 11; `left` declared at the arm's top with the channel
+// and the counter 9 (same code); the state test on the first lookup's pointer 530 (2011 B); arm 3 velocity-first with
+// `(k + j) + i` grouped 11.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
