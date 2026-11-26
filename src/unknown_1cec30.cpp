@@ -3251,6 +3251,11 @@ struct s_1cf531
 // named outside the final's block, the block holding only the store and the call 7 (same code); local_13 declared
 // with local_7 in the outer block 7; local_14 declared ahead of local_13 7. On the kept body: the copy written through
 // a reference to local_13 with the corrected vector a value 2 (same code). All restored.
+// M3 lane 2 r152 (H2M_FAST, 2): the contact point named once as `hkVector4 const &point` for both calls 2; the
+// direction as an hkVector4 object 2; the velocity product as an hkVector4 object 2; the velocity local_14 in a block
+// that ends after the speed is taken 2 (all the same code); lane 14's 7 form with that velocity block 7 (905 B: the
+// block-local final then joins the freed velocity slot 0x50 in place of 0x40, so it takes the newest slot free of
+// interference, and 0x30 needs every newer slot busy while the final is live). All restored.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

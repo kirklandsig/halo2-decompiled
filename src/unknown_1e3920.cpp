@@ -1373,6 +1373,11 @@ void function_1e3b60(long actor_index);
 // 404; both flags at function scope, cleared at the loop top, 402. A first-pass (all-stack) compile of 0x262ba0 holds the
 // actor index in EDI but reloads it from its home five times after EDI goes to the view pointers, so link-time code
 // generation keeps it a stack argument. Still BLOCKED-BY 0x262ba0.
+// M3 lane 8 r239 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form): in 0x262ba0 (forms
+// and counts in its note) an all-stack compile-only screen that reads the actor index from its home once (the update
+// flag at function scope, cleared after its use) still leaves it a stack argument here (0x262ba0 431); a nested
+// 0x264b50 test 404, `actor[0x48] != 0` 404, the existing prop walk 446 and that with the function-scope flag 447.
+// Still BLOCKED-BY 0x262ba0 (0x2641c0's expansion; its noinline declaration is in another lane's file this round).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

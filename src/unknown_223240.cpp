@@ -525,6 +525,9 @@ void function_2232a0(void)
 // record, the terminal record and the stub's views 50 (aligned 31), declared at the terminal call 50; the layout as one
 // nested conditional 47 (same code); the view count and a named terminal pointer declared at the terminal call 40 (the moved
 // declaration's 40; the pointer adds nothing); the counter stepped before the loop call 57. Still BLOCKED-BY 0x2b5d0.
+// Roasted-Codes (#1519 comment, 2026-11-26; fast reduced-image scores): the terminal initializer's arguments through
+// one-use `const &` locals: the mode 374 (374 B, a second out-of-line call, the expansion is lost); the null source 306
+// (442 B); the two sentinels through one reference with the mode literal 47 (575 B, same tail).
 // @retail 0x2234e0
 void function_2234e0(void)
 {
