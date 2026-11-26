@@ -5123,6 +5123,12 @@ struct s_128ca0
 // TEST_FIELD_BIT pending test 209 (1049 B), with the voice pointer for the channel index 204; the pitch bounds read as
 // the record's two fields (no pointer) 207 (first +0x8f); the count extraction cast to char 204 (same code). Body
 // unchanged.
+// M3 lane 4 r266 (H2M_FAST with 0x1293f0, 0x1251e0, 0x12a420, 0x125e60, 0x12a810, MATCH; control 48; L = the LEAD 17 above
+// rebuilt, re-measured 17; Lc = L with `char count = NONE`, re-measured 204). The char count is the field's own type:
+// matched 0x127390 compares the same playback byte with NONE. Allocator reading: on Lc the shifted entry value is a
+// second-pass candidate whose entry-block count is 19 against L's 20, so it scores 114 and falls behind the three
+// 120-point pitch values. Named parts in the entry block, each on Lc and L: the pitch range index 204/17, the upper
+// pitch bound 204, the permutation index 204/17 (same code each: the names fold away). Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
