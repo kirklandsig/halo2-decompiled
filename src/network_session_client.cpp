@@ -1064,6 +1064,15 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // candidate count does not change), the member count bound by `long const &` 46, the countdown declared ahead of the copy
 // index 46. On this opening: one stored players pointer set under `flag && &first` 215, the pair with the second address
 // set under a test of the first 215 (the address tests fold).
+// Roasted-Codes #1525 (released 2026-11-26; fast reduced-image scores with 0x6e910 and seven other neighbours, matched
+// at every run; control 22). Their earlier 8 reached without the extra 0x6e910 parameter: the plain `for` copy plus, in
+// the player loop, the mask read into a local bound by a const reference (`dword mask = session->player_mask;
+// const dword &player_mask = mask;`, the test on `player_mask`) 8 (483 B); the mask read stays unfolded and what is left
+// is the opening's scratch order. A one-use reference, not kept. On the flag-guarded stored pair with the `for` copy:
+// the mask read once ahead of the player loop and again at the loop's end, the loop left by `if (i == 15) break;` before
+// that re-read 115 (473 B; no mask spill, frame 0xeb8, one load site, the session still ESI); the re-read under `i < 15`
+// with the ordinary bound kept 146 (508 B; the mask spilled, frame 0xec0). The permuter on the whole image, 93 tries:
+// best 22.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
