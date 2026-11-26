@@ -1149,6 +1149,20 @@ __m128 work_1; __m128 work_3; __m128 work_4;
 }
 
 
+// Round once for the SIMD updates while retaining the scalar accumulation.
+struct rounded_angular_input_31c940
+{
+	__m128 value;
+	__forceinline rounded_angular_input_31c940(float &home, float input)
+	{
+		home = input;
+		value = _mm_load_ss(&home);
+	}
+	__forceinline __m128 broadcast() const
+	{
+		return _mm_shuffle_ps(value, value, 0);
+	}
+};
 // Capture target and limit before projection, retaining the coefficient address
 // across consecutive rows. Keep B's inertia pointer through the clamp and read
 // its value when forming the update. Only the SIMD copy rounds to float.
@@ -1157,24 +1171,26 @@ static __forceinline void solve_angular_friction_kernel(float target, float &lim
 	solver_angular_row_31e7b0 *row, solver_step_31c940 *const &step,
 	solver_velocity_31c940 *a, __m128 &velocity_b, __m128 const *const &inverse_b_pointer, float *result, solver_scalar_arena_31c940 &projection_pool, float &simd_scratch)
 {
-	__m128 work_a;
-	__m128 work_b;
-	__m128 work_c;
-	// Retain both projection inputs before the limit can replace a row lane.
-	work_b=row->a;
-	work_a=a->angular;
-	work_c=velocity_b;
-	work_a=_mm_mul_ps(work_a,work_b);
-	work_b=row->b;
-	work_c=_mm_mul_ps(work_c,work_b);
-	work_a=_mm_add_ps(work_a,work_c);
-	// Publish the captured limit before storing the reduced projection.
-	limit=next_limit;
-	work_b=_mm_shuffle_ps(work_a,work_a,0x55);
-	work_c=_mm_shuffle_ps(work_a,work_a,0xaa);
-	work_b=_mm_add_ss(work_b,work_a);
-	work_c=_mm_add_ss(work_c,work_b);
-	_mm_store_ss(&projection_pool.angular_friction,work_c);
+	{
+		struct { __m128 axis, contribution; } input_a;
+		__m128 work_c;
+		// Retain both projection inputs before the limit can replace a row lane.
+		input_a.axis=row->a;
+		input_a.contribution=a->angular;
+		work_c=velocity_b;
+		input_a.contribution=_mm_mul_ps(input_a.contribution,input_a.axis);
+		input_a.axis=row->b;
+		work_c=_mm_mul_ps(work_c,input_a.axis);
+		input_a.contribution=_mm_add_ps(input_a.contribution,work_c);
+		// Publish the captured limit before storing the reduced projection.
+		limit=next_limit;
+		input_a.axis=_mm_shuffle_ps(input_a.contribution,input_a.contribution,0x55);
+		work_c=_mm_shuffle_ps(input_a.contribution,input_a.contribution,0xaa);
+		input_a.axis=_mm_add_ss(input_a.axis,input_a.contribution);
+		work_c=_mm_add_ss(work_c,input_a.axis);
+		_mm_store_ss(&projection_pool.angular_friction,work_c);
+	}
+
 	float impulse = (target * (*friction_scale_pointer)
 	- projection_pool.angular_friction * load_velocity_scale(step)) * row->a.m128_f32[3];
 	float magnitude = (float)fabs(impulse);
@@ -1185,25 +1201,25 @@ static __forceinline void solve_angular_friction_kernel(float target, float &lim
 		row->b.m128_f32[3] *= factor;
 	}
 
+	__m128 update[3];
 	// Retain A inertia before the scalar store, then consume three SIMD values.
-	work_c=a->inverse_inertia;
-	simd_scratch=impulse;
-	work_b=_mm_load_ss(&simd_scratch);
-	work_a=_mm_shuffle_ps(work_b,work_b,0);
-	work_a=_mm_mul_ps(work_a,work_c);
-	work_c=*inverse_b_pointer;
-	work_b=_mm_shuffle_ps(work_b,work_b,0);
-	work_b=_mm_mul_ps(work_b,work_c);
-	work_c=row->a;
-	work_a=_mm_mul_ps(work_a,work_c);
-	work_c=row->b;
-	work_b=_mm_mul_ps(work_b,work_c);
-	work_c=a->angular;
-	work_c=_mm_add_ps(work_c,work_a);
-	a->angular=work_c;
-	work_a=velocity_b;
-	work_a=_mm_add_ps(work_a,work_b);
-	velocity_b=work_a;
+	update[2]=a->inverse_inertia;
+	rounded_angular_input_31c940 scalar(simd_scratch, impulse);
+	update[0]=scalar.broadcast();
+	update[0]=_mm_mul_ps(update[0],update[2]);
+	update[2]=*inverse_b_pointer;
+	update[1]=scalar.broadcast();
+	update[1]=_mm_mul_ps(update[1],update[2]);
+	update[2]=row->a;
+	update[0]=_mm_mul_ps(update[0],update[2]);
+	update[2]=row->b;
+	update[1]=_mm_mul_ps(update[1],update[2]);
+	update[2]=a->angular;
+	update[2]=_mm_add_ps(update[2],update[0]);
+	a->angular=update[2];
+	update[0]=velocity_b;
+	update[0]=_mm_add_ps(update[0],update[1]);
+	velocity_b=update[0];
 	*result+=impulse;
 }
 
