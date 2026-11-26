@@ -6538,7 +6538,7 @@ void __stdcall function_b6df0(dword const *previous, dword const *current, long 
 void function_d4de0(void);
 void function_d4e20(void);
 void function_d4e30(void);
-void function_d4e60(short bsp_index);
+void __stdcall function_d4e60(short bsp_index);
 void object_list_initialize(void);
 void object_list_dispose(void);
 void object_list_initialize_for_new_map(void);

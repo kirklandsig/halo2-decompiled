@@ -1064,6 +1064,9 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // is the same ranking as 0x81780's lone difference (src/unknown_081780.cpp): ours adds the compiler's stepped terms
 // first and the named base last, retail the base first; a compile-only screen of that loop over twenty-odd optimisation
 // and debug-information options never flips it.
+// Roasted-Codes (#1519 comment, 2026-11-26; fast reduced-image scores): the occupied key's index taken as a pointer
+// difference, `player - watcher->players.players`, 239 (1099 B; the exact division survives as a multiply by 0xb60b60b7
+// and a `sar`).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

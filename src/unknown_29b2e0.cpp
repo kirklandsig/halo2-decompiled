@@ -961,6 +961,13 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // with the original projection and 202/202/147/220 with planar first.
 // NOT kept: both-set staging with planar first fixes the projected J/depth
 // stores, then shortens to 1696 bytes and raises the score.
+// M3 lane 3 r311 (fast screen with 0x29b990, 0x170d70, 0x154df0 (13), 0x11cc90, 0x11ce20 and 0x1e5450; control 130). Phase
+// diagnostic (removed): 1-7 unused initialised locals at the top give 222/219/219 for 1-3 and 126 for 4-7 (1695 B at 1-3),
+// and 1-3 redundant pairs around the yaw test's length or the pitch's stored-angle load move nothing, so no symbol or
+// node phase cell holds retail's rotation operand order. Forms: the planar copy taken from the planar vector (`{ local_5.i,
+// local_5.j }`) 303 (frame changes, first +0x2); the planar k cleared before the planar copy 130 (same code); both limits
+// as ternary initialisers like the half-range 210 (1711 B); the half-range as a default plus `if` 236; the two sign tests
+// as `0.0f > k` 130 (same code); the yaw scale as `local_8 = field_38 * local_8` 130 (same code). Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

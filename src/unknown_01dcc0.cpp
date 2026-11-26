@@ -582,6 +582,11 @@ long g_55e6c0;
 // has taken EAX in the first; a forced-ranking search that puts the clamp in EDX leaves 7 (`sub eax, 0x1000` scheduled
 // after the pitch terms and EDX for the `width - 1` term), the same 7 with the height term written first in the OR.
 // No statement order in the source moves the clamp's pass.
+// Roasted-Codes (#1515 comment, 2026-11-26; fast reduced-image scores): the primary header writes and the Register call
+// addressed through `g_4b4b58[index]`, with the entry pointer kept for the other fields, 167 (507 B; the scaled index
+// stays live and the stores take the global's displacements); only the common-word store so addressed 161 (528 B).
+// Register's data argument read as `entry->data` (on the signed-packing, late-levels, header-pointer form) 152 (499 B;
+// the height takes the data's EBP and a real field load follows the format call).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

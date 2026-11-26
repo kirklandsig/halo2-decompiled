@@ -377,6 +377,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // first pass and takes XMM3; the advance product is used again after the draw call, so its whole range is split and only
 // its draw-block piece is coloured, in the second pass, taking XMM4 (the same 162 as the copy); retail's product takes
 // XMM3, so its piece outranks the copy in retail's first pass. A forced-ranking search over 30 decisions found nothing.
+// Roasted-Codes (#1508 comment, 2026-11-26; fast reduced-image scores): the named advance with the pulse result bound by
+// `real const &` ahead of it 15 (849 B); the query and the centring match, so the named advance's 53 is the pulse query
+// sinking below the half extents. With the advance moved after the half height on that body: 12, the same XMM3/XMM4 pair.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

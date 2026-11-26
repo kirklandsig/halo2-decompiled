@@ -2977,6 +2977,18 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // local_9) 479 (2404 B); case 6's stores written through the global with no local_8 428 (one point, under the bar: the
 // two flag ORs still merge into one `or byte [eax + 0x22], 0x69`); cases 6 and 18 both through the global 428 (same).
 // Body unchanged.
+// M3 lane GA r13 (40 trials across 3 batches, fast with 0x110ab0, 0x258a00, 0x258cf0, 0x25a130, all matched peers MATCH;
+// control 429 at 2416/2396 B, al=315, mk=125; body unchanged): on the 2396 B retail-shaped lead (613, mk=73, actor EDI/state
+// EBX): typed actor fields 613, signed char flags 613, case 12 word flags_23 635 (mk=68), dword header flags 638, case 2
+// dword/real member copy 633/633, case 2 by-value helper 625 (2380 B), case 2 + tail member-wise unknown458 587 (moves state
+// to EDI and actor above state to EBP while datum takes EBX), `*(short *)g_502400` before `field_3 |= 0x20` 512 (2396 B,
+// mk=68), tail-first `!local_3` 636, case 20 k/j/i 617, case 5 if/else 544 (on main 592, flips actor/state), `short *g_502400`
+// + `void *g_5023fc` 508 (2396 B, mk=59: matches retail's case 18/14 global load order); clean lead + `short *g_502400` + case 2
+// dot2d swap + case 5 zero-first + case 6 split + case 20 k/j/i 615 (mk=53; direct return 612 at 2396 B, mk=56; `local_2` in
+// case 1 & 0x25a130 615; tail `local_22` y-first 621; ablating case 18/4/2/13/20 all stay swapped 608-657); + case 7/8 ternary
+// 610 (2396 B, mk=57). On main's actor-EBX base: `short *g_502400` alone 429; + case 6 split + case 20 k/j/i 480 (EBX); +
+// case 5/6/2/7-8 449 (EBX, mk=119), + case 20 retail 539 (EBX, mk=73), + case 18 held flips to SWAP (633-682); case 5
+// `!function_e70e0(arg_1) ? 0 : rate` alone 400 (fast & plain, 2416 B, mk=122, NOT kept: match-only arm swap already listed).
 // M3 lane 14 r157 (fast screens with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429). Allocator reading (the
 // allocator's per-block priorities, on a reduced image with those four callees kept, as the fast build): the actor
 // colours second (184) and the state third (91), but case 4 reading the facing from local_2->field_c with no copy lifts
