@@ -3137,6 +3137,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 669; the transition walk without its reference pointer (offset tested, the field read at each use) 589 at 2522 B, NOT
 // kept: retail keeps the reference's NULL test (`add eax, edx; je`) and the length moves away; the gains array declared
 // at the head of the combine block 597 (same code), with `alternate` inside the definition guard 615. Body unchanged.
+// M3 lane 1 r171 (fast screen with the two callers and 13 callees, control 597; the allocator gives the entry's flags
+// byte EBX at priority 31 over the entry blocks, where retail holds the constant 1 there): `alternate` as `(flags & 1) ?
+// true : false` 597 (same code); `bool alternate = flags & 1;` 597 (same code); `result` declared above `alternate` 597
+// (same code); the resume test as `state == 0 && (flags & 0x10)` 632 (2499 B); the missing-definition path as an early
+// `return true` in place of the final else 779 (2497 B). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

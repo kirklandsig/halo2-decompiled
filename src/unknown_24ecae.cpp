@@ -4,6 +4,13 @@
 #include "globals.h"
 #include "view_context_storage.h"
 
+// score 165 (was 165): retail loads g_510c94 into EDI in the first loop's preheader and re-reads the global itself
+// after each movsd copy and after the drawing calls; ours loads the `globals` local into EDX at entry and keeps the
+// list count in EBX (retail EDX); retail also keeps a zero register in the second part. Round 158 (m3 lane 14, fast):
+// g_510c94 read at each use (no local) 242 (retail's EDI loads and most of the second loop, shifted one
+// instruction, but the zero register goes: `and [slot], 0`); the first loop through the global with a block-local in
+// the second part 296; the local kept for the first loop only 242; the scaled height without its volatile 205; the
+// kind read through `list->items[index].kind` 165.
 // @retail 0x24ecae
 long __stdcall function_24ecae(s_marker_list const *list, s_24ecae_placement const *placement, real offset)
 {

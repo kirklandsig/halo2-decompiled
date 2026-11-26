@@ -195,6 +195,10 @@ __inline void quaternion_rotate_point(
 	out->z = v->z * m + cz * w2 + d * q->k;
 }
 
+// Gemini GB r19 (held as a patch, coordinator review): quaternion_rotate_point summed in i, j, k order with named
+// square and dot locals and w2 computed after d, plus the existing point3f_scale for the scaled position: 8 (was 35),
+// and 0x11dd80 4 (was 48). The locals and the w2 placement are statement and operand order, kept only with a byte
+// match. Left at 8: the dot sums (j + i) + k in retail and cy multiplies q->i * v->z.
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,
@@ -414,6 +418,11 @@ PRIVATE __forceinline void point_out_11ea30(point3f const *origin, vector3f cons
 // 0x28 against retail's 0x1c), cross and dot are interleaved as in 0x11e130, the delta is computed before the
 // normal, and the final difference has its own local. Left: the sum order of dot(u, delta) in the parallel arm and
 // `radius * radius`, which retail computes last.
+// Gemini GB r19 (held as a patch, coordinator review): MATCH for 0x11ea30 and 0x11e130 with cross3f in place of the
+// file's cross copies, one point helper for both functions, the final test as `dot <= radius * radius`, vv grouped as
+// i + (j + k), and a second dot helper (k, j, i accumulated) used only for the parallel arm's start while the shared
+// one names its three products. Two dot texts picked per call site are per-site twins, so the match is not kept;
+// one dot text for every caller is needed.
 // @retail 0x11ea30
 long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vector3f const *v, real radius)
 {

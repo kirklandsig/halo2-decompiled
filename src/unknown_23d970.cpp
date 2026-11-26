@@ -1034,6 +1034,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // second product's k, j, i schedule with copies of right's registers (retail up.k = r.j*f.i - r.i*f.j, stored after all
 // three), and the else arm's forward.j/k stores through ecx. No form beyond the listed ones; the best match-only
 // recipe is still the else-arm forward pointer, 43 (one-use pointer, not kept).
+// M3 lane 4 r263 (`h2m fast 0x23de50 0x1f0870 0x130f60`, control 45, aligned 26, masked 12): cross3f_staged for the second
+// product re-measured 217 (1270 B, aligned 37); the direction computed straight into the output's forward (no local)
+// 360 (1231 B); the else arm's forward through one pointer for its three stores and the 0x11d090 call 43 (aligned 24,
+// masked 10: the else arm is then retail's; two under the bar); that pointer at function scope for both arms 328; on
+// the 43 form the first product through function_1f087b too 47 (1264 B). A forced-decision search (14 decisions) finds
+// nothing below 45; left are the first product's right.i/right.j colours and the second product's k, j, i schedule.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
