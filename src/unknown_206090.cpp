@@ -1067,6 +1067,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // vector3d_from_points3d 1344 (1455 instructions like retail, masked-aligned 946). Retail's contact loop recomputes its
 // three element addresses with `imul` from the counter each pass and reloads the state pointer from its argument slot,
 // where ours steps induction pointers.
+// M3 lane 3 r314 (H2M_FAST with 0x2056e0, MATCH each run; control 1346, masked-aligned 922 over 85 clusters; the wheel loop's
+// element pointer stays biased +0xe4 against retail's +0xe0 in every form): the velocity pointer declared ahead of the
+// lever-arm pointer 1346 (masked 924); the speed sum named once for the ray scale and the hit fraction 1370 (6238 B); the
+// definition element pointer computed ahead of the state element pointer 1347; local_18 computed ahead of local_17 1346
+// (same code); the steering choice's two magnitudes through fabs 1397 (6240 B). Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
