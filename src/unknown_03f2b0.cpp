@@ -1652,6 +1652,13 @@ struct s_133f70;
 // `previous` for 0x3d430 + 2nd lookup 326, for 0x3d430 only 98, that with `signed char previous` + `success` first 118
 // (exact 1309/1309 B lockstep, **masked 27** vs 46, matching retail's `success` store order and byte `previous` `mov`/`movsx`
 // without `const &` or an inline helper). Body restored.
+// M3 lane 6 r248 (plain checks, 0x4bcc0/0x4c190/0x4c450 MATCH; control 93; body unchanged): the reduced image, with
+// or without the ballast functions, builds this function at 344 with retail's 0x4bcc0 argument setup (the distance in EAX
+// ahead of the force push), so the plain build's ECX load there comes from something only the whole image
+// holds. Retail also loads the source object into ESI for the cache lookup (`mov esi, [esi]`; the pointer is
+// reloaded from its home later), where ours uses EAX. Forms: the visibility byte through a named `bool *` at all
+// eight uses 93 (same code); the object type as one ternary 93; each with `success` declared first in the loop
+// body 91/91; all three 91.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

@@ -6156,6 +6156,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // in 0x142570's up, left, forward order 231, the origin added first 231, both 231; the opacity and collision tests as
 // one negated early return 231; the radius renamed to sort ahead of the helper's scaled x, y and z 231 (all the same
 // code: the spill homes ignore names). Body unchanged.
+// M3 lane 3 r313 (fast, control 231): the opacity test as `0.05f < opacity` 231; the alpha as `opacity * (1.0f - t)` 231;
+// the radius as `0.35f * radius field` 231; the offset's z set first 231; the offset declared ahead of the corners 231
+// (same code each).
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -6758,6 +6761,13 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 // no value local / pow(*strength) / if (*strength) before pow / combined if (*strength && 30830) / early return / double-cast pow / raw before PIN /
 // else-if (value > 0) all 43; assign *strength after if 191 (637 B); else { *strength = value; } 119 (659 B); else { *strength = 0.0f; } 118 (666 B);
 // exponent ternary 108 (664 B); 0.0f < value/strength 99 (632 B); nested if (curve) 55.
+// M3 lane 3 r313: HELD (needs the owner's OK; held as a patch): MATCH in the fast and plain checks with 0x30830 declared
+// (d, a, camera, scale, perspective, negate, out) and returning bool (its definition, the four declarations and both calls,
+// one of them a line in contributor 0x4f7e0), and the atan2 result written at the cos and sin calls with no double local
+// (that local keeps every register save at entry: 8-byte stack parity). 0x30830 195 -> 187, 0x4f7e0 325 unchanged. Parts:
+// the reorder with the bool return 18; with the long return 1 (`test eax` for `test al`); the atan2 form alone on main 21.
+// Retail sets up `a` (EDX) before forming `d` in place in the state's ESI: under the link's last-to-first argument setup
+// `d` is declared first.
 // M3 lane GB r21 (12 compiled fast trials on the 20 base with 0x50650/0x13bb90 MATCH, 0x30830 195): typed definition/state/curve structs 20;
 // early return on count <= 0 20; nested projected check 20; inline state projection helper 293 (537 B); inline (dir, pos) wrapper 20;
 // inline curve tail helper 166 (542 B); curve read at each use 187 (682 B); curve 2-pass loop 231 (703 B); real atan2 local 21;

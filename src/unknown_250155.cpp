@@ -3290,6 +3290,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (members copied in the default arm) 146 (952 B: the record stays in memory). A counter declared in each loop
 // re-measured 85 (two points, under the bar), with the first copy form 90, with the chains 90. Still BLOCKED-BY 0x53b40's
 // chain for the players[i] reload.
+// M3 lane 8 r242 (fast screen with 0x2507c3/0x22f042, MATCH each run; control 87). On lane 16's 84 lead with the chained
+// default arm (83, re-measured): the case arms writing bitmap_b as `*bitmap_a + 0x10` 86 (bitmap_a then outranks the
+// screen and takes EDI, but the add is not folded back into `slot + 0x15`); with text_a also `*text_b + 0x10` 104 (917 B:
+// the last loop's call block is then retail's, screen reloaded, text_b EDI, bitmap_a EBX, immediate zeros, but both
+// arms compute from the other output); the arms storing text_b ahead of text_a 93; the bitmap chain ahead of the text
+// chain 84. The chained default arm on main's body 92. So retail's last loop needs text_b and bitmap_a one weighted use
+// above the screen's call-block piece with the arms still computing from the slot. Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

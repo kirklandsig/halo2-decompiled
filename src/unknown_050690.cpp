@@ -721,6 +721,13 @@ void __stdcall function_508d0(void *payload_data)
 // match-only piece put back to its plain form: a named half-stride 699 (2271 B), no window fill 344, the fraction
 // ahead of the complement 388, named remap coefficients 73; with all four 663 (2311 B), so nothing of the lead stands
 // without them.
+// M3 lane 8 r242 (fast screen with 0x508d0 and 0x13bb90 listed; lane 11's 62 lead re-applied, 62, held as a patch). The
+// four integer homes that differ are equal-density 4-byte slots whose order is the back end's sort tie order: the
+// lead joins the y pointer to the cursor's slot and the x pointer to another and leaves the level count alone, where
+// retail's layout needs the cursor, y pointer, level count and x pointer in each other's places. On the 62 lead: the
+// phase bound by const reference (the square reads the field twice) 605 (2400 B); the weights in order middle, end,
+// start 381 or end, middle, start 400 (2368 B); the level count written into the loop test 579 (2385 B); the level
+// count declared ahead of the count 63 (two entry stores swap). Body unchanged.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

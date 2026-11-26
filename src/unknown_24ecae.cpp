@@ -4,7 +4,27 @@
 #include "globals.h"
 #include "view_context_storage.h"
 
-// score 78 (was 165): the hud globals read at each use (no `globals` local, no end-of-item reload), the list items
+// score 49 (was 78): combining `sequence_index >= 0 && sequence_index < group->sequence_count` (dropping the separate
+// `sequence_index < 0` continue) recovers retail's zero register in EDX for the sequence/bounds tests and `bitmap_index = 0`
+// plus retail's exact 1102/1102 B length (78 -> 49, +0x11e); not kept at review (a statement order, match-only): setting `bounds` (0,1,0,1) ahead of `pivot` in both non-sprite
+// branches (matching the sprite branch) schedules the bounds stores before `divss` as in retail (49 -> 45, mk 34 -> 17).
+// Still differs: the second part's XMM4/XMM5 swap, `lea esi, [eax + 8]` at the sprite bounds copy, and the corner loop's
+// counter/temp in ESI/EDI (retail EDI/ESI) with x stored before y is formed (retail computes both then stores x, y).
+// M3 GB r23 (85 fast trials across 4 batches; plain confirmed 78 -> 45, 1102/1102 B, +0x11e, 0x1392c5/0x22a664/0x24e59f/0x24f0fc MATCH):
+// Kept: combined `sequence_index >= 0 && sequence_index < group->sequence_count` (49); `bounds` before `pivot` (45) reverted at review (order).
+// Also tried (not kept): on HEAD: side if/else 78/79, center fields 254, origin fields else 156, nested ge0 / bitmap_index=NONE /
+// bitmap_index=seq 78, inline sprite helper 244, corner staged px/py 81 (52 on 49), point ptr 78, oy/ox 78, dx*=width 119,
+// offset_point2f 80; on 49/45: bounds between pivots 45, one-use sprite local 47 (43 on 45, matches `lea esi, [eax+8]`),
+// `sprites[0].bounds` 45, origin y-first 165 / rev-if 49 / copy-then-adjust 177, shift 0-x 49 / inline 252, alpha ternary/else 145,
+// `0.5f *` pivot 49, volatile height before width 55, corner copy-assign 138 / origin before bools 121 / dx before dy 117 /
+// y before x add 50 / inline dx/dy 117 / func-scope vertex 49 / point2f corner 49 / set_point2f 52 / add_scaled 55;
+// Lead without volatile height: dropping `volatile` on 45 fixes 100% of XMM4/XMM5 (`al=26, mk=5`, 138 at 1089 B, frame 0x58);
+// putting non-volatile width/height at top of the corner loop fixes EDI/ESI too (`al=13, mk=5`, 137 at 1089 B, leaving only
+// the height spill and `lea esi,[eax+8]`); non-volatile width/height inside loop with y+= before x+= recovers exact `sub esp, 0x5c`
+// + EDI/ESI + `movss [ebp-0x1c]` spill + `movaps xmm7` (45 at 1101 B, `al=21, mk=12`, spilling width instead of height), and
+// dx before dy + x+= before y+= spills height to `[ebp-0x1c]` (`58`, 1101 B); volatile height inside loop fixes XMM4/XMM5
+// and EDI/ESI (`+0x1c2`, 47/45/43) but stores `[ebp-0x1c]` inside the loop.
+// Earlier (78, was 165): the hud globals read at each use (no `globals` local, no end-of-item reload), the list items
 // read at each use (no item pointer: retail's iterator then points at the item's first color, the kind at -4) and the
 // per-user alpha read as g_4e6950.user_values (the same global, so the load follows the two movsd copies as in retail).
 // Left: the second part's XMM4/XMM5 swap (the allocator ranks center.y 9 above the side factor 8, retail the other way),
@@ -68,12 +88,10 @@ long __stdcall function_24ecae(s_marker_list const *list, s_24ecae_placement con
 				s_24ecae_bitmap_group const *group = (s_24ecae_bitmap_group *)g_4e3b44[kind->bitmap_index & 0xffff].bytes;
 				long sequence_index = placement->hidden ? kind->hidden_sequence :
 					placement->alternate ? kind->alternate_sequence : kind->sequence_index;
-				if (sequence_index < 0)
-					continue;
 				long bitmap_index;
 				box2f bounds;
 				point2f pivot;
-				if (sequence_index < group->sequence_count)
+				if (sequence_index >= 0 && sequence_index < group->sequence_count)
 				{
 					s_24ecae_sequence const *sequence = &group->sequences[sequence_index];
 					bitmap_index = sequence->first_bitmap;

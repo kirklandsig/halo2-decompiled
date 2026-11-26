@@ -671,6 +671,11 @@ void session_searches_dispose(void);
 // `c_session_state_matchmaking &` local for the matchmaking and searches calls 51; a const reference to the owner
 // local 51; the owner local declared bare and assigned after the first call 51; the owner local made before the
 // first call and passed to it cast back 51.
+// Round 251 (m3 lane 5, fast; body only, both callees' file avoid-listed this round): the owner local typed as the
+// record the joining, matchmaking and searches calls take (the state calls cast it to the view) 51; the owner local
+// made at the top with the first call given `&g_527330.state` directly 51; the owner local `const` 51; the five client
+// stores and the first call through a reference to the client 51; `return g_527330.initialized = true;` 51 (same code
+// each: both differences sit at the two callee calls, whose member forms are the open lead above).
 // @retail 0x58ee0
 bool network_session_manager_initialize(long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b)
 {
