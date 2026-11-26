@@ -351,7 +351,9 @@ bool function_2461a0(
 	return result;
 }
 
-// score 73 in a full build with stand-in SDK headers (was 104): the capsule's vector is read through the capsule
+// score 70 (was 73): the plane rows go through vector3f_add_scaled, whose pointer parameter gives the axis i load
+// retail's place (loaded ahead of `back`, then multiplied). Left: the a/b and uv/vw register pairs and the vw i row.
+// At 73 (in a full build with stand-in SDK headers, was 104): the capsule's vector is read through the capsule
 // at each use instead of through a `v` pointer local, and the first product is dot3f.
 // Earlier (104, was 106): every sum now associates as in retail (the compiler reorders unparenthesized
 // sums of three products); what still differs is scheduling of the first block: retail multiplies
@@ -372,6 +374,17 @@ bool function_2461a0(
 // dot3f 210; q from vector3f_add_scaled(&w, u, t_enter, &q) 76; along from dot3f(&capsule->vector, &q) 207,
 // dot3f(&q, &capsule->vector) 208; first-block screens (uu from dot3f, a from dot3f, den as a * uu - uv * uv, uu
 // computed first) leave the ranking or make it worse.
+// Round 233: the operand order of each product follows its operands' ranks; a load through the capsule's own
+// offset ranks lowest, a load through an inlined helper's pointer parameter ranks by that parameter's number, so
+// the helper fixed the plane i row; the vw i row (w.i ahead of the axis i) needs the same. Tried, on the plane
+// helper unless given: vw from shape_dot_reverse(&capsule->vector, &w) 206 alone (vw then exact, but uw's j/i pair
+// flips), 112 with the plane helper, and with uw from dot3f(u, &w) or dot3f(&w, u) 92/92; vw from
+// shape_dot_reverse(&w, &capsule->vector) on the plane helper 113; the plane helper with uw
+// from dot3f 209; plane->d from dot3f + radius 207, from shape_dot_reverse + radius 207; q from vector3f_add_scaled
+// 73; along from shape_dot_reverse 69 and with the q helper 69 (both new wrong rows; the drop is pad and relocation
+// noise). The ranking is unchanged (vw 197, uv 185, den 180, b 160, a 153): the second block's eleven float
+// candidates are disc, the radius load, the zero, b, vw, the three w values, den, uv and a; uw and c are computed in
+// place and do not count.
 // @retail 0x246360
 bool function_246360(
 	vector3f const *direction,
@@ -462,9 +475,7 @@ bool function_246360(
 	q.k = u->k * t_enter + w.k;
 	real along = ((capsule->vector.k * q.k + capsule->vector.j * q.j) + q.i * capsule->vector.i) / a;
 	real back = 0.f - along;
-	plane->i = capsule->vector.i * back + q.i;
-	plane->j = capsule->vector.j * back + q.j;
-	plane->k = capsule->vector.k * back + q.k;
+	vector3f_add_scaled(&q, &capsule->vector, back, &plane->n);
 	if (function_30bf0(&plane->n) == 0.f)
 	{
 		plane->i = 1.f;
