@@ -1817,6 +1817,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 526/533/529/539, both length curves 533, both luminance curves 542,
 // all four 546, and all four with constant success/failure returns 587.
 // NOT kept: the output luminance gains three points; the others tie or regress.
+// M3 lane 16 r191 (h2m fast with 0xd4080 378 and 0x3db00 MATCH unless noted; control 529, aligned 527, masked 281): the
+// count read ahead of the selection pointer's declaration 529 (same code); the type mask computed at the top of the body
+// 569; a pointer to the scanned entry for the two flag tests and the selection 530; no result local (the found block
+// under `if (parameters != NULL)`, `return parameters != NULL;`) 570 (first +0x9); the normal copied as one aggregate
+// 578 (2172 B, 0x3db00 8, 0xd4080 508). Body unchanged; the pair with 0xd4080 stays the blocker.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
