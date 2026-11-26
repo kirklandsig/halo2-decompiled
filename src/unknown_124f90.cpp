@@ -5094,6 +5094,17 @@ struct s_128ca0
 // as signed char/short/long or byte 207/123/126/79. With a retained synchronization handle,
 // signed char/byte 207/79, and with both controller handles retained 207/79.
 // NOT kept: the signed byte moves the first difference to the pitch setup, and all forms regress.
+// M3 lane 7 r231 (H2M_FAST with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt, re-measured 17; Lc
+// = L with `char count = NONE`, re-measured 204). Allocator reading: L and Lc reference the same values at the same costs
+// in the entry block, and the first integer pass sees 20 values there in both (its only difference is the NONE constant
+// with 5 references in L and 6 in Lc, retail's count), but after it the char form keeps 19, so
+// each second-pass entry value scores 6 x 19 = 114 instead of 120 and one of them loses its tie with the pitch-bounds and
+// pitch-range values (EAX first in L, ECX after them in Lc); a forced-ranking search's best single decision on Lc (that
+// pick back) gives 43, leaving only the pitch-range block (retail forms the range pointer with `lea` and reads +8 and +2
+// through it) and branch offsets. Forms on Lc: without the decibel-local assignments 208 (1049 B), without the
+// TEST_FIELD_BIT pending test 209 (1049 B), with the voice pointer for the channel index 204; the pitch bounds read as
+// the record's two fields (no pointer) 207 (first +0x8f); the count extraction cast to char 204 (same code). Body
+// unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
