@@ -880,6 +880,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // the object cast at each use instead of the pointer local 307; both normalizations through the header's existing
 // normalize2d_fast 305 (same code); the facing test's dot through the existing dot_product2d 396; with the far arm's
 // dot through it too 396.
+// M3 lane 4 r264 (h2m fast with 0x29a190 and 0x298c30, both MATCH each run; control 305; body unchanged). Ranking read:
+// unity (38) is coloured ahead of the first normalisation's scaled x (24); the near arm's two scale stores give unity
+// 8 each (loop weight 2, two float candidates in each block), and without them (wrong code, diagnostic) unity drops
+// under the scaled x and the entry is retail's to +0x147 (348 at 1713 B). Forms: each quarter turn's stores through
+// one entry pointer 342 (1693 B); the scale stored as a double literal 305 (same code); the scale store right after
+// the angle store 313; the side, flag, scale and ordinal stores together after the angle store 313; the scale store
+// after the ordinal store 305 (same code).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
