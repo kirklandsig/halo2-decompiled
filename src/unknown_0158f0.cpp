@@ -248,6 +248,8 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // body in the function 25, one result variable 23, *out stored before the test 39, a local for the table read 18.
 // b16K (11-17) fast build on r852: the tail as 0x15a60's (result and flag assigned in both arms, one store and one
 // return) gives 99 (was 103); the rest is still D3DDevice_CreatePalette2 kept out of line, as above.
+// GB r16: the D3DDevice_CreatePalette2 call wrapped in do { ... } while (0) MATCHES (95/95 B; 0x1d3f0 76 -> 65), not kept:
+// a dead loop whose only job is to change the compiler's inlining (the same class as a dead if (0) steer).
 // @retail 0x15b10
 bool function_015b10(
 	long index,

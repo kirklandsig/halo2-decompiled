@@ -870,6 +870,16 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 305 (same code as the body); no staging, the x row then the y row as plain sums after the sine 382 (1692 B,
 // aligned 242). So the SSE y product follows from the y row being one sum; what moves it ahead of the sine's
 // branch is not found here (an identical product in both arms of a side test, hoisted, would give it).
+// M3 lane 16 r191 (h2m fast with 0x29a190 and 0x298c30, both MATCH unless noted; control 305, aligned 257, masked 123).
+// Ranking read for the first difference: the 1.0f constant is one float candidate live over the whole body (priority
+// 38: the normalization block plus six uses in the outer loop at weight 2), so it is coloured before the normalization's
+// product copy (24) and takes XMM1; retail has the copy in XMM1 and the constant in XMM2. Retail also keeps the candidate
+// count a short in BP (`movsx`, `inc bp`) and the outer counter in BX, and compares the near-test distance with the
+// unrounded sqrt still on the x87 stack (`fstp st(2); fstp st(0); fst`) where this build stores, pops and reloads it.
+// Forms: the entry's read of arg_0 through its address removed 316 (1726 B, 0x29a190 345); the 0x88 pair read through
+// the object cast at each use instead of the pointer local 307; both normalizations through the header's existing
+// normalize2d_fast 305 (same code); the facing test's dot through the existing dot_product2d 396; with the far arm's
+// dot through it too 396.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

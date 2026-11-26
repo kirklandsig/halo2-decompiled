@@ -1469,6 +1469,14 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // condition (no found local) 41; the first test on `flags & 1` with the dword mask declared in the block 41 (same
 // code); the instance's mark through a `long &` to the table entry 57; the cluster mark test as a `!=` block around
 // the instance and object parts 23 (same code).
+// M3 lane 1 r170 (h2m fast over this file's markers, 23). Allocator reading of the dword mask: its 44 is the entry block
+// (cost 6 x 8 candidates, the integer parameters all counting there) less the call block it only lives through; the
+// pointer's 22 is the two call blocks; the pointer would win an equal priority (it was created later). The instance
+// tick's increment and its in-loop load are separate pieces when the tick is split, and the in-loop piece covers only
+// the compare and the store, so it never spans the loop's back edge. Forms: an explicit `if (0 < entry->instance_count)`
+// guard around the instance loop 26 (with the dword mask 44); the cluster entry taken from the BSP global at its use,
+// no bsp local, 23 (same code); a `long *` to the instance's mark for the test and the store 57; the instance element
+// read at each use 157; the mask as a long from the flag-test macro 41.
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)

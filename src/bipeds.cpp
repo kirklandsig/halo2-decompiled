@@ -1910,6 +1910,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 158; velocity declared ahead of position 158; boost declared after facing 158 (the three the same code: declaration
 // order does not move the packing, as the frame reading above says); the animation-flags pointer declared after the
 // state pointer 174 (first +0x23); material declared after facing 159. Body unchanged.
+// M3 lane 15 r148 (h2m fast with 0xdfa60 and 0xe59e0, MATCH; control 158, aligned 90). Renaming facing, position, boost or
+// material so it sorts first or last 158 each (same code: names do not break these slot ties); 1-7 unused initialised longs
+// at the top 158/158/176/176/158/158/158; gravity read into a named real right before the 0x1e5bb0 call 158 (same code),
+// ahead of the turning test 536; the walking speed in 0xe4770's spelling (the +0x134 block in a named pointer, the call's
+// result first, then `(1.0f - *(real *)(globals + 0x78) * biped->unknown2e4) * speed_scale`) 137 (aligned 76; 0xe4770
+// still MATCH; the same lead as r141's, a one-use pointer read ahead of a call, so match-only). Body unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

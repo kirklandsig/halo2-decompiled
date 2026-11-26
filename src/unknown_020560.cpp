@@ -1567,6 +1567,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // (fr 0x2c, +0x9); `*position` copy for delta on samples/entries 418 (fr 0x28)/575 (fr 0x2c, +0x9); existing
 // `vector3f_negate_ab` on samples/entries 400 (2122 B, mk 119, non-retail `0.0f -` ops)/569; existing
 // `particle_direction_squared_2b` on offset 646, on dvec + delta_raw copy 442 (fr 0x24). Body restored at 418.
+// M3 lane 7 r230 (h2m fast with 0x22750, 0x22c30, 0x24550, all MATCH, and the caller 0x23690 at 354; control 418):
+// scan 2 skipping the nearest sample with `continue` 418; scan 1's distance declared once ahead of the loop 418; the
+// offset declared once with delta ahead of scan 2 418; both 418 (same code each); scan 1's distance as
+// distance_sq3f(position, sample) 448. A forced-ranking search (diagnostic, 12 decisions) moved the aligned distance only
+// 448 -> 433, so no single allocator decision gives retail's 0x2c frame. Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
