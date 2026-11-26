@@ -1888,7 +1888,11 @@ result+=2;
 							update_linear_limit_values(low * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), first_linear_axis, a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
 						float high = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 8)) * load_error_scale(step) - velocity;
 						if (high < 0.0f)
-							update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), ((solver_linear_row_31e7b0 *)terms)->linear, a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
+						{
+							// Capture the axis before the rounded input can replace its W lane.
+							__m128 high_axis = _mm_load_ps(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32);
+							update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), high_axis, a, scoped_b.body->inverse_inertia, linear_b_pointer, angular_b_pointer, result, scalar_work.simd_scalar);
+						}
 						terms += 3; ++result; op += 12;
 					} while (*op == 11);
 
