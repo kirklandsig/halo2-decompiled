@@ -6728,7 +6728,13 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 #endif
 
-// score 43 (was 270): the three clamps use PIN, which reevaluates the
+// score 20 (was 43): retail's 647/647 B length and entire body (0x4ff72..0x501c5, including the pow -> xorps xmm2,xmm2 -> fstp [ebp]
+// -> movss xmm0,[ebp] -> comiss xmm0,xmm2 reload and strength guard) now match byte for byte after separating the projection phase into
+// `if (facing && *strength > 0.0f)`. All 20 remaining differences (prologue push order/state register ebx vs esi, 0x30830 call setup
+// order + test eax vs test al, and both epilogue pop orders) are caused solely by 0x30830's parameter order (`d` before `a`, BLOCKED-BY
+// contributor caller 0x4f7e0 in src/unknown_01cf50.cpp) and return type (`bool` gives 19 here and 189 on 0x30830, 0x4f7e0 unchanged at 325,
+// not kept for 1 pt across four files).
+// Earlier 43 (was 270): the three clamps use PIN, which reevaluates the
 // clamped expression as retail does (for the angle, function_50650 inlined
 // twice and then called), and the curve's base value is read where it is
 // used. What still differs: retail pushes ebx and edi after the first test and
@@ -6737,6 +6743,12 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 // function_30830's result as a byte. A pow on *strength or in double, and a
 // bool return for function_30830 (195 -> 189 for that function, 81 -> 80
 // here, across four files) were tried.
+// M3 lane GA r18 (21 compiled fast trials with 0x50650/0x13bb90 MATCH, 0x30830, 0x4f7e0; 43 -> 20 at 647/647 B):
+// Kept: separate `if (facing && *strength > 0.0f)` block for the 0x30830 projection (43 -> 20, 647/647 B; nested `if (facing) { if (*strength > 0.0f) ... }`
+// and dropping `real value` on it give the same 20). Tried on 43: bool return on 0x30830 42 (with split facing 19; 0x30830 189, 0x4f7e0 325);
+// no value local / pow(*strength) / if (*strength) before pow / combined if (*strength && 30830) / early return / double-cast pow / raw before PIN /
+// else-if (value > 0) all 43; assign *strength after if 191 (637 B); else { *strength = value; } 119 (659 B); else { *strength = 0.0f; } 118 (666 B);
+// exponent ternary 108 (664 B); 0.0f < value/strength 99 (632 B); nested if (curve) 55.
 // @retail 0x4ff50
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
     real cosine, real *strength, real *horizontal, real *vertical, real *out)
@@ -6757,16 +6769,16 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
                 else
                     *strength = 1.0f;
             }
-            if (*strength > 0.0f)
+        }
+        if (facing && *strength > 0.0f)
+        {
+            point2f projected;
+            if (function_30830((point3f const *)(state + 8), &g_4b9e14, (vector3f const *)(state + 0x14),
+                &g_4b9ecc, true, true, &projected) && (projected.x != 0.0f || projected.y != 0.0f))
             {
-                point2f projected;
-                if (function_30830((point3f const *)(state + 8), &g_4b9e14, (vector3f const *)(state + 0x14),
-                    &g_4b9ecc, true, true, &projected) && (projected.x != 0.0f || projected.y != 0.0f))
-                {
-                    double direction = atan2(projected.y, projected.x);
-                    *horizontal = (real)cos(direction);
-                    *vertical = (real)sin(direction);
-                }
+                double direction = atan2(projected.y, projected.x);
+                *horizontal = (real)cos(direction);
+                *vertical = (real)sin(direction);
             }
         }
         if (curve)

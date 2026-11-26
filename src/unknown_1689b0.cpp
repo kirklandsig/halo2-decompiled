@@ -2405,6 +2405,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Shared projection offset with scalar coefficients/normal vector/normal address/plane address 543/760/611/601;
 // normal snapshot and shared scaled addition 760. NOT kept: the 543 form merges the coefficient reads, moves the
 // prism cursor from plane.j to plane.k and still squares radius before the nonempty prism branch.
+// M3 lane 7 r231 (H2M_FAST with 0x120790/0x2469b0, both MATCH, and 0x16a440; control 551): the four tallies renamed so
+// their names sort in retail's address order (face count, edge radius, edge count, face radius) and in the reverse order
+// 551 both (same code: this frame is density-sorted, names do not break the ties); the averages written `inverse * sum`
+// 551 (same code); as three divisions by `(real)count` 578 (2891 B); that with the tallies declared edge count, edge
+// radius, face count, face radius 577; that with the normal-ray arm first (`if (use_normal)`) 536 at 2882 B (an arm swap:
+// lead only, held as a patch); that with `radius * radius` at its one use 543 (2886 B). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
