@@ -787,6 +787,16 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // call, the transform and the secondary block 202 (709 B: EDI formed once, retail forms it on each path); the centres
 // addressed from the object at each use 17 (the copy's load order becomes retail's, the adds unchanged; casts, under the
 // bar); the secondary adds spelled offset first 19 (same code); the radius at both uses with a const primary pointer 30.
+// M3 lane 6 r250 (fast screen with 0xb8600 MATCH; control 17). Allocator reading on the radius-at-both-uses form: the
+// definition ranks 102 and the index-times-12 web 99 (the web's 4 references in the entry block, 12 candidates there,
+// give it 96 of its 112), so the definition is coloured first and takes EBP; one more candidate in the entry block
+// would lift the web by 8 and the definition by 2. The secondary adds: with the bounding-offset fields read off the
+// definition the x row loads the offset first and y, z the centre; with a pointer to the offset the x row turns
+// centre-first and y, z turn offset-first when it is declared after the centre pointer (30), and nothing moves when it is
+// declared before it (29): a lone pointer load and a pointer-plus-constant load break their tie in opposite directions.
+// Forms: the centre pointer declared unset at the top or after the object 17, 17 (with the radius at both uses 29, 29);
+// the x row spelled offset first 17 (radius at both uses 29); the offset pointer 17 (30); the object's fields at each
+// use 17 (33); the offset pointer for the x row only 17 (29).
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {

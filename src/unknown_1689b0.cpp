@@ -2419,6 +2419,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // stays); the midpoint rows z, y, x 551 (same code); the half rows k, j, i 552; the sum adds z, y, x 551 (same
 // code). Retail colours the midpoint's x, y, z into XMM0, XMM1, XMM2 at the sum adds, ours the other way round.
 // Body unchanged.
+// M3 lane 6 r250 (fast screen with 0x120790 and 0x2469b0, both MATCH; control 551): the nearest-distance local declared
+// where the prism loop sets it 551, the shapes buffer declared inside the radius test 551, `closest` declared ahead of
+// the nearest reset 551 (all the same code); the plane distance as `dot3f(point, &plane normal) - d` on main's body 565
+// (2893 B); the prism loop and its square inside `if (count > 0)` (a redundant guard) 550 (2878 B: the square then
+// follows the `jle` as in retail, but the index store stays ahead of it and the frame cells keep their places).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
