@@ -1628,7 +1628,7 @@ static __forceinline void query_restore_pending()
 
 bool function_1900a5(long index);
 
-// score 643 (was 643): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
+// score 633 (was 643): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
 // Earlier at 663 (was 703): the same differences at 2878 bytes.
 // Earlier at 703 (was 703). The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
@@ -2444,6 +2444,12 @@ bool function_1900a5(long index);
 // request properties pointer with literal 6 and += 6 after fill 696 (2910 B); users loop direct g_509454[group] 753; completion
 // property->type == 0 ? 0 : ... 643; two-use last_write local 664, nested 665; nested last_read local 643; both nested 665,
 // with in-loop variant->type 667. Blockers stand: 0x1900a5 cmovne needs /arch:SSE (file flag), users cursor needs inlined 0x647d0.
+// M3 lane GA r21 (14 fast trials + plain check across all 51 file/caller/callee VAs, 50/50 peers MATCH; baseline 643 at 2878/2862 B -> kept 633 at exact 2862/2862 B):
+// Kept (both retail-verified and strictly additive, -7 and -3 -> -10): three-use `s_cache_property *properties = &g_509450.read_properties[properties_used];` in main's
+// store order (recovers retail's rolled property fill without `record->properties` reloads and restores 2862 B; 636 alone) plus `read_failures > 3 ? 300000 : 2000`
+// (matches retail's exact `setle` / `and 0x48c10` / `add 0x7d0` at lines 141-147 verbatim; 640 alone, 633 together). Also tried on the 636 base: existing_record pointer 636,
+// completion values pointer 636, typed query_restore_pending pointer 636, fill element pointer 636, users player pointer 638, records_used++ after fill 639, dup continue 684;
+// with `/arch:SSE` on this file (0 peer regressions): SSE alone 751 (2862 B), + properties pointer 759, + online_logon_connected() 692, + both 687, + space 757, + dup+space 769.
 // M3 lane GB r21 (25 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x80940, 0x80aa0, 0x80bf0, 0x80d70 all MATCH; control 643 at 2878/2862 B, aligned 361 / masked 272; body unchanged):
 // three-use s_cache_property *properties pointer in main's store order with j < record->count and properties_used += record->count 636 at retail's 2862 B (rolled property fill, -7 pts, one short of keep bar, not kept);
 // on that 636 form: + record_space/property_space 643 (aligned 403 / masked 311), + two-use last_read 639, + two-use last_write 640, + both 643, + space + last_read/last_write/both 645/642/644,
@@ -2498,7 +2504,7 @@ void function_074aa0(void)
         if (g_4e6948 && g_4e6948->flag1120 && g_4e6948->state != 3)
             delay = 300000;
         else
-            delay = g_509450.read_failures <= 3 ? 2000 : 300000;
+            delay = g_509450.read_failures > 3 ? 300000 : 2000;
         if (!g_509450.read_state && g_47d8f4.count && (g_47d8f4.flags & 2) &&
             (!g_509450.read_time || query_time_now() - g_509450.read_time > delay))
         {
@@ -2536,13 +2542,14 @@ void function_074aa0(void)
                             s_cache_property_record *record = &g_509450.read_records[records_used];
                             memcpy(record->identity, &identity, 12);
                             record->type = variant->field_8;
+                            s_cache_property *properties = &g_509450.read_properties[properties_used];
                             record->count = 6;
-                            record->properties = &g_509450.read_properties[properties_used];
+                            record->properties = properties;
                             records_used++;
                             for (long j = 0; j < record->count; j++)
                             {
-                                *(word *)&record->properties[j].unknown00 = (word)(j + 1);
-                                record->properties[j].type = 1;
+                                *(word *)&properties[j].unknown00 = (word)(j + 1);
+                                properties[j].type = 1;
                             }
                             properties_used += record->count;
                             added++;

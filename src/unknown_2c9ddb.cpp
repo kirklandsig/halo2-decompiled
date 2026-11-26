@@ -554,6 +554,14 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // copy only 24 at 582 B, selected-arm copy+flags only 63 at 583 B), proving 100% of the gap is the `&g_54e4a0` CSE hoist; NOT kept
 // because LTCG places separate `g_54e49c` (`0x9f9db8`) and `g_54e4a0` (`0x9fa4d0`) 0x718 bytes apart in `.bss`, so `(&g_54e49c + 1)`
 // would corrupt adjacent globals at runtime. Body unchanged.
+// M3 lane 5 r251 (fast with 0x13fac0, 0x212bc0, 0x238c69 and 0x2ca244, all MATCH each run; control 61). On the two load
+// arms (re-measured 174 at 595 B), the copy destination spelled three new ways, all 174 (same code: the variant address is
+// still one value in EBX): the index and the copy through a pointer to the whole record; the copy into
+// `*(s_game_variant *)(&g_54e49c + 1)` with both names still members of the one record (it folds to the same address,
+// unlike lane GB r10's two-global form); the copy as memcpy into `variant_bytes`. The second half's variant declared in
+// the second half and the first half's in its own arm 172 (600 B, first +0x7); that with one named count for the name
+// copy and both requests 173 (585 B, retail's length; EBX still holds the address, `this` in ESI and spilled). Reading:
+// retail calls the name copy (0x13fac0) out of line in the default arm; this build expands it on every form above.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

@@ -1829,6 +1829,10 @@ PRIVATE inline long score_string_list_1608e0()
 // advance read from the row position instead 677; the 675 form with the height plain 737 (2840 B, aligned 567, masked
 // 203); main's body with the height plain 737 (aligned 561). Retail also divides by the fade count at each fade (0/n,
 // 1/n, row/n read from its stack cell) where this build shares one reciprocal. Body unchanged.
+// M3 lane 12 r193 (H2M_FAST with 0x161420 and 0x1600f0, MATCH, 0x1603f0 253 in the reduced image; control 679): the team
+// row's active test through the existing 0x161e10 770 (2794 B: called, not expanded); the team row's counter increment
+// ahead of the name call 679 (same code); the team gap tested on the stored panel count 706 (2858 B); the row total's
+// sum written team count first 678; the label text buffer declared at the top 679 (same code). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
