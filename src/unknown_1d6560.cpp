@@ -759,6 +759,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // flips). Forms, one type read used by both routes: a byte type after the rigid body 94 (re-measure), ahead of the rigid
 // body 106, that with case 0 through the object-index local 117; a long type ahead of the rigid body 124, after it 96 at
 // 256 B (component ECX, index EAX: flipped pair, no EBP). Body unchanged.
+// M3 lane GA r10 (fast with 0x1d5bf0 in brackets and 0x1d6560/0x1d6630/0x1d5ec0 MATCH throughout; control 96 [0] at
+// 268/256 B; 17 source trials + 1 flag diagnostic; body unchanged). Calling convention (def + caller decl together):
+// `__stdcall` identical under LTCG on main 96 [0], round 60's 24-form 24 [0], header-first HROAT long 93 [13], clean
+// one-read `headers[(word)object_index]` forms (HORt byte 103 [171], OHRt long 98 [13], HROt long 97 [171]); `__cdecl`
+// breaks stack cleanup on main 87 [156], 24-form 66 [156], HROAT byte 116 [169], OHRt byte 65 [169]. Flag diagnostic
+// `/Ob1` on 24-form 24 [0] (all peers MATCH). Clean one-read `if (kind == 7) ... else ...` single-exit with
+// `headers[(word)object_index]` 63 [13]; two-read with main-branch `headers` local + `headers[(word)object_index]` 97 [13].
+// Five one-use-free forms reading `component->object_index` directly with separate `& 0xffff` / `(word)` / `*(word *)&`
+// widths for type and case 0: 121/117/97/124/124 (all [208], component drops off EAX).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -984,12 +984,43 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // `byte same` in 4th else arm keeping `bool local_21` 665 (3499 B, +0x60: recovers retail's exact 8-bit `test al, al; setne al` at 0x29bf27 without a cast);
 // norm `(i*i+k*k)+j*j` 747 (3499 B), `.n[0..2]` 750 (3499 B, mk 105 vs 117); drop `local_28` alone 467, + dot orders 469, + MIN(1.0f, ratio) + early field_50 468;
 // 0x29ab90's steering formula 655 (3500 B); combined retail structure + `byte same` + `dot3f(&local_7, &local_9)` 670 (3483/3499 B, 841/844 insns, mk 64 vs 117: leaves only the 16-byte side-point y-in-arms block as missing length).
+// M3 lane 1 r169 (h2m fast with lane 15 r139's companion list plus 0x1f38c0 and 0x22bbca; control 462 at 3504 B,
+// 0x1f38c0 and 0x29b990 MATCH each run). Frame reading from the back end's slot packing: the frame is over 0x80 bytes, so
+// slots sort by references per byte; the position's 12-byte slot has 7 (583) and the slot shared by the translated
+// target, the pre-turn copy and 0x1f9760's unused output has 8 (4 + 3 + 1, 666), so the shared slot sorts below it
+// (+0x70, position +0x7c; retail has the position below). One more reference of the position (retail reads its y in
+// each arm of the side select) makes the two equal, and equal densities keep creation order. Retail copies the
+// pre-turn vector whole (its k is stored) and forms only i and j of the translated target, as ours does. Forms: the
+// side point copied from the position and offset in place 694 (first difference +0x4e: the point gets an 8-byte home,
+// the position still 7), with y offset first 694; 0x1f9760's unused output declared ahead of its flag 462 (same
+// code); the side distance chosen by if/else with the point's y member then x member assigned 706 (3499 B, +0x4e,
+// the point again in memory); the if/else choice with main's point initializer 462 (same code).
 // 12-byte workspace names for the heading/defaults/request, location/query/target, matched point types
 // with distinct names, immutable request magnitude, and vector/planar request names: 462 each.
 // Immutable translated point 668; point setter 473; shared default-vector pointer 664; in-place
 // translation of the position or displacement copy 719/737; completed planar request copy 588;
 // both planar points immutable 668. NOT kept: the naming forms tie, and the other forms
 // raise the score. The position output still needs ESP+0x80 with the query output at +0x8c.
+// M3 lane 14 r157 (fast screens with GB15's companion list; control 462 at 3504 B, aligned 193, registers and stack
+// offsets masked 66). Frame reading from the back end's packer: the position's 12-byte slot has 7 references (583 per
+// 1000 bytes) and the slot shared by the translated target (4), the pre-turn copy (3) and 0x1f9760's unused output (1)
+// has 8 (666), so the shared slot sorts nearer ESP; the frame is otherwise retail's slot for slot. Forms: the two velocity
+// dots axis first (`dot3f(local_4, &local_1->velocity)`, `dot3f(local_28, &local_1->velocity)`) 458; with both clamps
+// as `MIN(1.0f, ratio)` 457 (aligned 180, masked 58: the cross product's six products are left, retail a.j, a.k, a.k,
+// b.k, a.i, a.j first); on that, the override read straight into the result (`local_24 = override; if (local_24 ==
+// 0.0f) {...}`) 663 (3511 B); the velocity vector built member by member 457 (same code), with the override form 663;
+// local_6.i/.j set ahead of the k test 675 (3475 B, 839 instructions, aligned 123, masked 44); that with the override
+// test written `== 0.0f` and the override in the else arm 655 (3499 B, but 850 instructions). A forced-ranking search
+// on the 457 form found no single allocator decision that lowers it (12 of 2718 candidates). The middle dot axis first
+// too (all three) 663 (3499 B, first difference +0x60: the frame's homes move). NOT kept: 457 is a gain of 5, under
+// the bar.
+// GB15 (fast with 0x29b2e0/0x29b990/0x170d70/0x11ce20/0x11cc90/0x1e5450/0x1f9e70/0x110ab0/0x2922b0/0x22bbca/0x1f38c0;
+// control 462 at 3504/3499 B, +0x100, fr=0x88; 17 trials, body unchanged): scalar cx/cy if/else (no neg local) cy-first/
+// cx-first/sub/local-s 718/718/717/738 (fr=0x8c, moves pos below local_14 at +0x84 but spills cx/cy); direct vector2f
+// local_26 if/else 584 (fr=0x88); existing vector2d_from_points2d 665 (3499 B); vector2f perp + dot_product2d 660 (3499 B);
+// scalar cx/cy with local_24 ternary 686 (fr=0x8c); 4th else arm bool == / ternary / long same 661/663/628; tail dot3f
+// swapped 462; frame_velocity retail dot3f argument orders 458 (-4, matches lines 628-653; + cross3f_staged 458), + both
+// MIN(1.0f, ratio) clamps 457 (-5, al 336, mk 106; + tail dot3f / cross3f_staged 457; NOT kept: under 8-point bar).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -26,6 +26,9 @@ struct s_bitstream
 	long checkpoints[4];       /* bit positions saved by the push, popped at 194710 */
 	long unknown2c;
 	long unknown30;
+
+	/* 0x194710, src/unknown_195720.cpp: pops the last saved position */
+	void function_194710(bool discard);
 };
 
 void function_195720(s_bitstream *stream, dword value, long count);

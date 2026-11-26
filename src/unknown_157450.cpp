@@ -1037,6 +1037,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // both uses. Diagnostic (a second read of the field after the loop as the OR's mask operand, restored): present then
 // stays in memory through the loop with the pool in EDI and the globals in EBP as retail (130 at 374 B, the entry
 // read folds away), which is the cause confirmed. Body unchanged.
+// M3 lane GB r12 (52 fast trials with 0xb58c0, 0x196780, both MATCH; control 23 at 390/390 B, +0x60, al=17, mk=12; body unchanged): on plain (non-volatile) `present_teams`: `*team_mask = (word)(old_team_mask | (present_teams & ~(dword)old_team_mask))` (`B06`, semantically identical) gives `present_teams` only 1 ref in the change block and `old_team_mask` 3+ refs after the loop, matching retail's prologue, `0x10` frame, `globals` in `EBP`, `pool` in `EDI`, 100% byte-exact player loop (`or ebx, esi; mov [esp+0x10], ebx` with zero `volatile` and zero team-bit carrier), and pre-`jne` 32-bit reload of `[esp+0x18]` + `movzx` from register at **mk=8** (`87` at `391/390 B`, `+0x56`; only the extra `not`/`and` differs; without `word *team_mask` `74` at `381 B`, `+0x2`, loop still exact); ternary `present != old ? old | present : old` 117 (`404 B`, loop exact); De Morgan `~(~old & ~present)` 112 and `(old ^ present) | old` 110 (both keep `present` in `EDI`); `c_word_team_flags` 59 (also with `c_dword_team_flags` 59); `u_team_bits` union (`all`/`low`), `team_bit_or(dword *, long)`, `old | old | present`, `(old | present) | old`, `(old & 0xffff) | present`, `(old + 0) | present`, `dword`/`word` copy + `|=`, `mask_or_in_place(word &, dword)`, signed `long` / `unsigned int`, `(short)` casts, `old_team_mask` updated before `playing_teams`, `dword p = present_teams`, `present` declared first with `old_team_mask |=` all compile to `63` (`384 B`); both saved masks `word` with both pointers 139 (`368 B`). On main's `volatile` base (`23`): `team_masks_commit` inline helper 84 (`390 B`, `mk=9`, 32-bit `or eax, [esp+0x18]`; with `team_mask` ptr 84; `volatile dword &` 77); `B05` (`old | (present & ~old)`) 85 (`391 B`, `+0x56`, `mk=10`, `mov ecx, [esp+0x18]` + `movzx edx, cx`); De Morgan 86 (`391 B`, `mk=10`); nested `bool changed`, `goto changed`, `added_teams` after stores (with `(word)`), `engine` local, signed `long` 23 each; uncast `dword updated_team_mask` / `short old_team_mask` 24; `word` updated / `old | old | present` / `(old | present) | old` / `added_teams` after uncast store 77; `(playing != old) | (present != old)` 82 (`381 B`); `xor != 0` 84; `c_word_team_flags` 90 (`393 B`); both saved masks `word` 60/59; `two_bools` 105; `for` + `pool` local 169 (`426 B`).
 // M3 lane 7 r229 (fast with 0xb58c0/0x196780, both MATCH; control 23). Allocator reading: after the loop the saved
 // mask's pieces have two references (the compare's zero extension and the OR's source) and no net gain, so they are
 // never given a register; retail's piece holds ECX because its OR takes the mask as the destination. Here the OR sorts
@@ -1048,6 +1049,19 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Diagnostic, restored at once (volatile reads, not keepable): the saved mask read through a volatile view at the
 // compare and the OR with a plain present 115: the OR then takes the mask as its destination, present stays in memory
 // through the loop and its update there is retail's load/or/store in EBX, so the OR's operand order is the cause.
+// M3 lane 8 r239 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23, the one-use team-bit carrier 20). Allocator
+// reading on the carrier: after the loop the saved mask's piece ranks 16 with two references (the compare and the OR's
+// source) and a cost of 0, so it is never coloured; retail's piece also carries the OR's result and the 16-bit store.
+// Forms: present read into a dword local just ahead of the OR, with the OR stored through the existing dword local 78,
+// stored in one expression 78, with the local narrowed in the OR 78 (on the carrier 79/79/79: the local's load is still
+// the OR's destination); the OR into a dword copy of the saved mask made in the change block (`updated = old; updated |=
+// present;`) 25, on the carrier 22 (the first form where the mask side is the OR's destination, but present is loaded
+// into a register ahead of the playing store and the mask's piece still is not coloured); that copy OR-ed with the
+// narrowed present on the carrier 20; that copy made ahead of the change test and compared there, OR-ed in place, on main
+// 134 and on the carrier 134, compared through the saved mask 134, with the compare's operands swapped 134 (374 B: the
+// compiler re-reads the field after the loop instead of keeping the word spill, though the OR then has retail's
+// `or reg, [present]`); the compare's mask widened by a cast 23, on the carrier 20 (same code); the in-place
+// `old_team_mask |= present_teams` on the carrier re-measured 78 (the narrowed OR keeps present as destination).
 // @retail 0x158140
 void function_158140(void)
 {

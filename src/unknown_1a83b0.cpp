@@ -866,6 +866,10 @@ s_1a8a10 g_4453c0[] =
 // forward sum computed first); that with the copy assigned j first 21; the perpendicular's j from the copy's i 32; the
 // left sum on both perpendicular members with the forward sum on the copy 29, that with the copy set ahead of the
 // perpendicular 32.
+// M3 lane 8 r239 (h2m fast with 0x1a8c30, MATCH each time; control 17): the outer test split into two nested ifs 17;
+// both sums with `(real)(...)` around each product, main's term orders 17 and retail's (`i * y` first, `j * y` first) 17;
+// `(real)(0.0f - j)` around the negation alone, main's term orders 17 and retail's 17 (all five the same code: the casts
+// are no-ops under SSE and do not make the negation a separate leaf, and j is still read once).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
