@@ -17,6 +17,7 @@
 #include <xtl.h>
 #include "globals.h"
 #include "geometry_cache.h"
+#include "unknown_044e90.h"
 
 void function_3c650(byte const *state);
 void function_3d000(real const *state);
@@ -1245,7 +1246,7 @@ struct s_render_part_context
 extern real g_4670e4;
 long function_40de0(long index, bool first, bool second);
 
-// score 300 (was 296): logic matches retail block by block. The two parameter volatiles stay: without them 0x44ac0 (a caller)
+// score 189 (was 300): logic matches retail block by block. The two parameter volatiles stay: without them 0x44ac0 (a caller)
 // stops matching because index/part_index leave edx/ecx. Retail takes index raw from edx (`or ebp, edx` at 0x410ed), ours
 // zero-extends it ((word)index); the signature is short in every declaring file, so not changed here. Still differs: register
 // allocation (retail keeps g_4e3b44 in ebx and spills entry/part to [esp+0x1c]/[esp+0x10]), retail re-reads *part for kind
@@ -1261,6 +1262,21 @@ long function_40de0(long index, bool first, bool second);
 // of the first call 314, `long kind` 309, the material as a ternary 302 (cmove), all three 316. On the short form: the
 // tag-table local 301 (1079 B: the table load moves to the entry as retail's, the registers stay ours), `long kind`
 // with the material ternary 305, the tag-table local with the ternary 307.
+// M3 lane GA r15 (46 fast trials with 10 peers MATCH; plain confirmed 300 -> 248, 308/308 insns, aligned 163 -> 43, masked
+// 72 -> 30): GA's form, existing visible_entry_geometry(index) (unknown_044e90.h) + direct *(word const *)part + material ?: +
+// *(word const *)(definition + 0x16) + if (record->active), matching retail lines 7-50 and 287-313 verbatim, all callee-saved
+// registers (ebx=g_4e3b44->definition, ebp=handle, edi=material) and all 4 non-delta stack slots ([esp+0x10..0x1c]). Also
+// tried (not kept): without visible_entry_geometry: TFB 305, TFB+no_sec 304, +part direct 315, +ternary 319, +word16 287,
+// +active local 283, +dot jki 283, +entry late 287, +tag first 290/287, +tag table 280, active only 314, word16 only 310,
+// record->active only 314, mat+active 314, mat+word16 310, long kind combos 312/311/308/279, vec helpers 302, member pos
+// 337 (breaks callers), first/second TFB 303, nested if 281, override via material 284 (breaks callers), direct+word16 only
+// 291; with visible_entry_geometry: alone 277 (breaks callers), +part 313 (breaks callers), +mat 313 (breaks callers),
+// +word16 272, +record->active 287, +long kind check 251 (aligned 38), keeping word/long kind local 192/194 (1062/1060 B,
+// 303 insns, aligned 99/98, wrong part/kind spill), dot jki 248, active local 248, entry before geom 248.
+// Review: kept only the existing visible_entry_geometry(index) and the word read of definition + 0x16, with the `kind` local,
+// main's material lines and context->active: 189 (1065/1089 B; 0x44ac0, 0x44c90 and 0x402b0 MATCH). The kind re-reads and
+// record->active are second reads (match-only) and the ternary changed nothing; byte reads of +0x16 on this form give 277
+// and 0x44ac0, 0x44c90 and 0x402b0 stop matching.
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -1273,26 +1289,7 @@ void function_41040(short index, long part_index, long group, byte weight,
     (void)&group; (void)&weight; (void)&context; (void)&material_override;
     (void)&force; (void)&and_mask; (void)&or_mask;
     s_44940_entry const *entry = &g_4ba138[index];
-    byte const *geometry;
-    if (entry->tag != NONE)
-    {
-        byte const *definition = g_4e3b44[entry->tag & 0xffff].bytes;
-        byte const *section = *(byte **)(definition + 0x28) + ((entry->flags >> 9) & 0x1ff) * 0x5c;
-        geometry = *(byte **)(section + 0x34);
-    }
-    else
-    {
-        byte const *structure = (byte *)g_4e0348;
-        byte const *section;
-        if (!(entry->unknown00 & 0x1000))
-            section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
-        else
-        {
-            byte const *instance = *(byte **)(structure + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
-            section = *(byte **)(structure + 0x13c) + *(short const *)(instance + 0x34) * 0xc8;
-        }
-        geometry = *(byte **)(section + 0x50);
-    }
+    byte const *geometry = visible_entry_geometry(index);
     byte const *part = *(byte **)(geometry + 4) + part_index * 0x48;
     dword handle = (((dword)weight << 16) | (word)index) << 8 | part_index;
     real priority = weight * context->priority * g_4670e4 * 4.0f;
@@ -1335,7 +1332,7 @@ void function_41040(short index, long part_index, long group, byte weight,
             delta.k = context->position.z - g_485618.position.z;
             record->tag = material;
             record->context = (void *)handle;
-            record->type = function_40e10((bool)(definition[0x16] & 1), (bool)((definition[0x16] >> 1) & 1));
+            record->type = function_40e10((*(word const *)(definition + 0x16) & 1) != 0, ((*(word const *)(definition + 0x16) >> 1) & 1) != 0);
             record->flags = 0;
             record->callback = function_41020;
             real depth = delta.k * g_485618.forward.k;
@@ -1367,6 +1364,16 @@ void function_41040(short index, long part_index, long group, byte weight,
 // 305 (same code), with the separate local 316; the 0x4cbb0 call reading out->value10 as retail does 305 (same code:
 // the stored value is forwarded); the selection switch's default listed with cases 1-3 365 (1164 B). Retail's primitive
 // switch shares one block for cases 1-3 and the default (same register), and tests the 0x4cbb0 result as a byte.
+// M3 lane GA r15 (34 fast trials with 8 peers MATCH; control 305 at 1196/1204 B, aligned 181, masked 80; body unchanged).
+// `(byte)function_4cbb0(...) != 0` gives retail's `test al, al` (304, -1 under bar); dropping the `material` local and
+// reading `out->value10` for 0x1cb20/0x4cbb0 puts `tag` in EBP (+0x1b), reproduces retail's 2-block primitive switch and
+// its `out->value10` reload after 0x1cb20 (334, with `case 4/5` first 320, with 449e0-shape inline geometry helper 329 at
+// +0x31 matching lines 8-22 verbatim incl. `lea esi, [esi+0x4ba138]`, with `material_tag` 340/351); existing
+// visible_entry_geometry(index) 332 (1208 B), with material_tag 357 (aligned 140, masked 69); 449e0-shape helper alone
+// 308 (1204 B); `(byte)mode * 0x132` first 305; value0c order swap 305; out late/in if 305; pass=0 after object 304;
+// shared override ptr/ref helpers 305; primitive init-before 356, signed char/long 305; result in else 364; stage/tag
+// locals 305/328; g_4ba138[index] in 15d70 args 376; out->value08 in 4cbb0 304/334. Left: splitting `tag` at switch
+// without an extra stack slot so stage takes EDI and pass stays on stack.
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
@@ -1892,6 +1899,18 @@ extern long g_485a60;
 // Other spellings: `short part_index = (byte)packed;` 401 (1399 B, `movzx di, al`), `(byte)packed & 0xff` into a long
 // 401 (1400 B, `movzx ecx, al`), `(short)((byte)packed & 0xff)` 401 (1399 B). Lead: the short form plus whatever makes
 // part_index spill.
+// M3 lane GA r15 (49 fast trials, control 380, all 13 peers MATCH; plain verified 360, all 35 file peers + callers/callees MATCH):
+// Not kept at review, 380 -> 360 (1399/1418 B, 418/420 insns, aligned 343 -> 299, masked 333 -> 277): short part_index = (short)(packed & 0xff) (retail's
+// xor/mov cl,al/and 0xff/movsx word), existing visible_entry_geometry(index), and 2-caller prepare_mask_stream(buffer, size) (retail's NULL
+// init + unconditional mask store in both mode==3 arms). Single-change fast scores: visible_entry_geometry 424 (aligned 243),
+// prepare_mask_stream 413 (aligned 237), short part_index 417 (aligned 200), definition first 405, direct shader 378, arm1+arm2 texture first
+// 349, 0x100000 TEST_FIELD_BIT/shift 380/380, short i prefetch 380, bit-4000 nested 380, compound/prefetch/tail order variants 380-433.
+// Leads (not kept without a byte match: statement-order move or extra local): moving definition first on the 360 body gives 344 (1399 B,
+// aligned 284, masked 99; direct shader 344 at 1398 B, aligned 261, masked 94; arm2 texture first 341; arm1+arm2 texture first 402 tail-merged;
+// size before buffer 344); adding a 32-bit entry_index local gives 381/382 at exact 1418 B with first diff +0x47 (lines 1-22 byte-for-byte
+// match) and masked 86; long index without extra local 407-429.
+// Review: prepare_mask_stream is a new helper used only by this function (two sites), match-only; without it the
+// short part_index and visible_entry_geometry(index) give 420, so the body stays at 380.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)
