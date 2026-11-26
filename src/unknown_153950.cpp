@@ -1120,6 +1120,15 @@ struct s_flag_word_bits
 // product's first operand with no local, `slot->priority9c * curve(...)`, 272 (1644 B; on the 105 lead 270, aligned 71);
 // on the 105 lead, the position as three statements z, y, x 387. A forced-ranking search on the 105 lead (40 single
 // decisions) finds nothing below it: what is left there is instruction order, not register choice.
+// M3 lane 3 r314 (H2M_FAST with 0x1544e0, MATCH each run; control 244, aligned 176, masked 88). Frame reading: ours puts
+// sine_axis (six references) below the transform; retail keeps axis, squares and sine_axis as three 12-byte homes above
+// the transform, with sine_axis i and j computed on x87 and only two fields of each stored. Forms: the position through
+// the existing real_point3d_set 255 (the draws change order); the position into a point local, then one aggregate
+// assignment 313 (1692 B); the two fade-table stores ahead of the distance and angle sums 243; the rotation through
+// 0x17fd20's decal transform-rotation helpers (sine and cosine parameters, whole products, the 3x3 sub-helper) 247 at
+// retail's length (1659 B, aligned 165, masked 61; frame 0x8c because axis then shares sine_axis's home), the same with
+// sine and cosine named in the caller or computed in an angle-taking wrapper 247, with the shared cross3f as well 247
+// (all three the same code); that helper form plus the 16-bit curve wrapper above 190 (1663 B, masked 58; lead only).
 // @retail 0x1546f0
 void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
 {

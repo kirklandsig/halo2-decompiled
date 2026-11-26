@@ -1128,6 +1128,12 @@ struct s_collision_result_buffer_1697c0
 // Forms: the attempt counter as long 269 (1430 B; retail compares it as a word, so short is right); the collision step as
 // `if (!test_collision) continue;` 270 (same code); the success exit copying the candidate out and normalizing the output
 // in place 288 (1426 B); the same at the trailing exit 348 (1400 B, 0x297660 4); at both 376 (1388 B, 0x297660 40).
+// M3 lane 12 r193 (H2M_FAST with 0x297660, 0x297a50, 0x2980d0 (MATCH) and 0x297d30 (23); control 270): lane GB r15's lead
+// (the rotation helper passing the sine and cosine calls straight in, and the pitch axis through the existing
+// vector3f_assign) re-measured 239 at 1427 B; its full check now loses matched 0x1c4590 (operand order of one add) and
+// 0x24cf66 (two tied loads swapped), while 0xc2d00 and 0x185be0 stay matched: not kept, held as a patch. The setter alone
+// 296 (1440 B); the sine/cosine change alone 269 (1430 B); the lead with the yaw axis copied into a local 431 (1506 B);
+// the lead with the pitch axis's zero test written `!normalize(...)` 249 (1433 B). Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

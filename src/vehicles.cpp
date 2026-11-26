@@ -1461,6 +1461,11 @@ __forceinline long vehicle_round(real value)
 // forward.j * up.i), declared at the top beside the definition 4 (+0x131); S with the tick length bound as `real const &`
 // for the rate 2 (the same product left); S with both 6; S with the axis copied from the forward first and the cross
 // overwriting it under the mode test 173.
+// M3 lane 14 r160 (fast screen; S = cross3f_staged at the first cross, D = the projection's dot named, B = a `real const *`
+// to the two rate bounds, T = the tick length bound by `real const &`), at 4: S+D re-measured 2; S+D+B 6; S+D+T 6;
+// S+D+B+T 8; D+B 6; D+T 6. Reading of the operand ranking: in the side cross the twelve loads take weights of one step
+// each, forward.i 6, forward.j 0, forward.k 5, up.i 2, up.j 0, up.k 1 (the higher loaded first); retail needs up.k above
+// forward.i and forward.j above up.i, which no uniform shift of these weights gives.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2716,6 +2721,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // basis_dot_xzy (forward, velocity) 11 and (velocity, forward) 11; `left` declared at the arm's top with the channel
 // and the counter 9 (same code); the state test on the first lookup's pointer 530 (2011 B); arm 3 velocity-first with
 // `(k + j) + i` grouped 11.
+// M3 lane 14 r160 (fast screen), at 9. Reading of the operand ranking: the velocity components are numbered by their first
+// reference in overlay 1's dot (left.k, vel.k, vel.j, left.j, left.i, vel.i) and arm 3's products rank by the forward
+// field address plus twice the velocity's number, so arm 3 runs (i + j) + k; retail's (k + j) + i needs vel.k numbered
+// above vel.j while overlay 1's own (i + j) + k needs its j product above its k product. Forms: overlay 1 through the
+// header's dot3f (left, velocity) / (velocity, left) 376 / 376 (2007 B); both dots through dot3f in the four argument
+// orders 365 each (2011 B).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
