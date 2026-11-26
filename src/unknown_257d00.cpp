@@ -2997,6 +2997,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // instead of 5 or 6), and the two registers exchange (+0x9). Forms: case 4 with no facing copy 611 (2400 B) re-measured;
 // the state read through local_2 at case 1 and at the facing call too 429 (same code), with case 4's direct facing 611;
 // case 20's second arm as `local_3 = b0 == NONE || d1;` 523 (2432 B), with case 4's direct facing 635 (2416 B, +0x9).
+// M3 lane GA r19 (12 fast trials with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429, peers MATCH; body unchanged):
+// on main's actor-EBX base: `s_cs_order const *command = &local_1->command;` everywhere 429 (same code); dropping case 13
+// alone 477 (2404 B), with clean minor retail forms 475, plus case 20 main-arm shared exit 492 (2420 B). On the clean
+// 2396 B retail-shaped lead (no volatile, no match-only swaps, still actor EDI / state EBX at +0x9): `command` everywhere
+// 500 (2396 B), plus `local_0->position` direct dist 497 (2396 B), plus direct returns 610 (2384 B); single or both tail
+// `unknown458` member-wise keeping case 2 aggregate copy 588/589/566 (2396/2396/2412 B); case 0 before 7/8 610; numeric
+// case order 647 (2364 B). Body unchanged.
 // Body unchanged.
 // M3 lane 4 r264 (h2m fast with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; body unchanged). On the 2396 B
 // retail-length lead without the own-parameter read (604, actor EDI / state EBX): a forced-ranking search puts the
