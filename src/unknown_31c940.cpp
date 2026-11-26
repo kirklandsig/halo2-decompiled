@@ -110,12 +110,18 @@ static __forceinline float second_coupled_impulse_31c940(float mass,
 {
  return mass * diagonal + other * coupling;
 }
+// Capture the row coefficient before forming its coupled product.
+struct circular_mass_31c940
+{
+ float value;
+ __forceinline explicit circular_mass_31c940(float input) : value(input) {}
+};
 // Keep the coupled product live while forming the diagonal product.
-static __forceinline float circular_coupled_impulse_31c940(double mass,
+static __forceinline float circular_coupled_impulse_31c940(circular_mass_31c940 mass,
  float const &diagonal, double other, float coupling)
 {
  double coupled = other * coupling;
- return mass * diagonal + coupled;
+ return mass.value * diagonal + coupled;
 }
 // Paired projections retain retail's separate loads of A's velocity fields.
 static __forceinline void sum_three_to_arena_31c940(__m128 const &v, float &output)
@@ -1686,11 +1692,11 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 					maximum_store = maximum * maximum;
 					// Capture each mass before evaluating the coupled row.
 					float const &mass_a_source = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3];
-					float mass_a = mass_a_source;
+					circular_mass_31c940 mass_a(mass_a_source);
 					float impulse_a = circular_coupled_impulse_31c940(mass_a,
 						scalar_work.fallback_scalar, scalar_work.pair_a, operation_float(op, 8));
 					float const &mass_b_source = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3];
-					float mass_b = mass_b_source;
+					circular_mass_31c940 mass_b(mass_b_source);
 					float impulse_b = circular_coupled_impulse_31c940(mass_b,
 						scalar_work.pair_a, scalar_work.fallback_scalar, operation_float(op, 8));
 					// Retain the first tangential square before adding the second.
@@ -2068,11 +2074,11 @@ scalar_work.first_error = (spin_target * load_friction_scale(step) - projection_
 					float captured_target_a = (float const &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
 					scalar_work.pair_b = captured_target_a * load_friction_scale(step) - projection_pool.spin_first * load_velocity_scale(step);
 					double captured_target_b = (float const &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
-					// Both products precede the limit publication, including aliased scales.
-					double target_product = captured_target_b * load_friction_scale(step);
-					double velocity_product = projection_pool.spin_second * load_velocity_scale(step);
-					state.solving.spin_limit = operation_float(op, 12);
-					scalar_work.fallback_scalar = target_product - velocity_product;
+					// Complete the second error before publishing the limit, then round it to its float home.
+					double spin_error = captured_target_b * load_friction_scale(step)
+                        - projection_pool.spin_second * load_velocity_scale(step);
+                    state.solving.spin_limit = operation_float(op, 12);
+                    scalar_work.fallback_scalar = spin_error;
 					// Keep limited impulses in native x87 intermediates until their stores.
 					// The norm and ratio use native scalar locals; SIMD rounds separately.
 					double impulse_a = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3] * scalar_work.pair_b + scalar_work.fallback_scalar * operation_float(op, 8);
