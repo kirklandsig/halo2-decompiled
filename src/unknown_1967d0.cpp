@@ -504,6 +504,13 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 	}
 }
 
+// score 3 (was 3): Exact 1839/1839 B (+0x2de); only SIB operand order [edi+eax] vs [eax+edi] in the
+// first group loop and add edx,ecx / lea [edx+eax+0xc6c] vs add edx,eax / lea [edx+ecx+0xc6c] at +0x417
+// differ. GB20 (16 fast trials, 0x85e70/0x198540 MATCH): typed 874-byte group_records[16] struct 3;
+// 438-counter union 7 (0x198540 3); flat 1D statistics.all 3; (i+update)->flag 3; short loop/count 804;
+// template<long> count 1110; macro apply 4; non-const update 3; (counters,update,count) param order 3;
+// flat ptr arith 3; signed short test 215; continue 3; ulong helper 3; do-while helper 804; dest before
+// src in earlier loops 5; inline parenthesized offset 3.
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {
