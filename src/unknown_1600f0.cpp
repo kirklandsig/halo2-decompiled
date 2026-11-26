@@ -1820,6 +1820,15 @@ PRIVATE inline long score_string_list_1608e0()
 // late limit 740, range bounds 741, existing height 740, and one scroll read 757.
 // NOT kept: the signed extent moves subtraction ahead of the fit test,
 // shortens the body and retains the four-byte frame gap.
+// M3 lane 16 r191 (h2m fast; control 679, aligned 597, register-masked 227): a two-short origin set from x and y with
+// the row position copied from it element by element and the title's far edges and the header advance read from it
+// 679 (same code: the copies are forwarded); the row position filled from the origin by a 4-byte memcpy (retail's dword
+// copy) 677 (masked 211: the viewer moves to EBX at entry as in retail, x to EDI); that with x stored into the origin
+// ahead of the scroll clamp and y after it (retail's store order and branch placement) 675 (masked 209, four points,
+// under the bar; the origin homes at +0x34 and is still not re-read after the title-text call); the far edges and the
+// advance read from the row position instead 677; the 675 form with the height plain 737 (2840 B, aligned 567, masked
+// 203); main's body with the height plain 737 (aligned 561). Retail also divides by the fade count at each fade (0/n,
+// 1/n, row/n read from its stack cell) where this build shares one reciprocal. Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

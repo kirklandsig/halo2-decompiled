@@ -185,6 +185,17 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
     }
 }
 
+// score 46 (was 46): 664/664 B (+0xc9, 5 int3 pad); prologue, cache, both property loops and wind lookup match retail
+// byte-for-byte. Two remaining sites: (1) retail unfolds g_510c54->game_time into ecx and rate into xmm0 before
+// cvtsi2ss xmm1, ecx / mulss xmm1, xmm0 (ours folds both memory loads); (2) retail copies linear amount into xmm1 and
+// folds wind.i (`movaps xmm1, xmm0; mulss xmm1, [esp+0x28]`) after storing +0x34 and before mulss xmm2/xmm3.
+// GB r18 (22 fast trials): function_146650() inlined ticks*rate 46, rate*ticks 46; amount/linear_amount declared before
+// wind 46/46, with 0x146650 46/46; vector3f_add_scaled 61 (647 B); scale_particle_vector_2b in place + vector3f_add 58
+// (677 B, dead wind stores); direct velocity+= without delta 61 (647 B); prop[0] before prop[2] 61 (647 B); delta=wind
+// + scale_particle_vector_2b 225 (735 B); vector3f_scale before +0x34 store 48, +0x34 after velocity 62; delta k/j/i
+// order 46; vector3f_scale + vector3f_add 47 (matches +0x34 store ahead of mulss xmm2/xmm3); swapped phase sum 46;
+// double time 70 (637 B); separate linear local 47; inline ticks-to-sec with local rate 46; repeated linear expr 55;
+// wind pointer 46; vector3f_scale with inline linear expr 47.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {

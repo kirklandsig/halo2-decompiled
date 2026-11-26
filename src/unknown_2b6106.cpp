@@ -565,72 +565,129 @@ void c_y_menu_player_selected_screen::v3()
 
 
 
+/* a text buffer of 0x100 characters, empty when constructed, filled from a screen's string */
+struct s_friend_text
+{
+    s_friend_text()
+    {
+        text[0] = 0;
+    }
+
+    void load(c_widget *screen, long handle)
+    {
+        screen->function_230134(handle, text);
+    }
+
+    word text[0x100];
+};
+
 // @retail 0x2b642e
 void c_y_menu_player_selected_screen::update_friend_status(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
-    c_class_1a2c81 *status = find_child(6, 3, false);
-    c_class_1a2c81 *time = find_child(6, 4, false);
-    word message[256], suffix[256];
-    message[0] = 0;
-    suffix[0] = 0;
+    c_class_1a2c81 *status = find_text(3);
+    c_class_1a2c81 *time = find_text(4);
+    s_friend_text message, suffix;
     bool joinable = (bool)((online_friend_get_flags(friend_) >> 3) & 1);
     function_2b635f(friend_, (c_widget *)this);
-    /* volatile: retail keeps session on the stack and reads it from there
-       after the calls, which leaves edi to this; a plain read makes LTCG
-       pass session in edi instead */
-    s_friend_session_2b642e *current = *(s_friend_session_2b642e * const volatile *)&session;
-    if (current->type == 1)
+    if (session->type == 1)
     {
-        if (current->state)
+        if (session->state)
         {
-            ((c_widget *)this)->function_230134(0x11000253, message);
-            goto activity;
+            message.load((c_widget *)this, 0x11000253);
+            switch (session->state)
+            {
+            case 2:
+                suffix.load((c_widget *)this, 0x12000255);
+                unicode_string_append(message.text, suffix.text, 256);
+                message.text[255] = 0;
+                break;
+            case 3:
+                suffix.load((c_widget *)this, 0xd000254);
+                unicode_string_append(message.text, suffix.text, 256);
+                message.text[255] = 0;
+                break;
+            default:
+                if (joinable)
+                {
+                    suffix.load((c_widget *)this, 0xf000256);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
+                }
+                else
+                {
+                    suffix.load((c_widget *)this, 0x13000257);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
+                }
+                break;
+            }
         }
-        ((c_widget *)this)->function_230134(0xe000258, message);
-        goto default_suffix;
+        else
+        {
+            message.load((c_widget *)this, 0xe000258);
+            suffix.load((c_widget *)this, 0x13000257);
+            unicode_string_append(message.text, suffix.text, 256);
+            message.text[255] = 0;
+        }
     }
-    else if (current->type == 5)
+    else if (session->type == 5)
     {
-        ((c_widget *)this)->function_230134(0x17000259, message);
-        goto default_suffix;
+        message.load((c_widget *)this, 0x17000259);
+        suffix.load((c_widget *)this, 0x13000257);
+        unicode_string_append(message.text, suffix.text, 256);
+        message.text[255] = 0;
     }
-    else if (current->activity == 1)
+    else if (session->activity == 1)
     {
-        ((c_widget *)this)->function_230134(0x1900025a, message);
-    activity:
+        message.load((c_widget *)this, 0x1900025a);
         switch (session->state)
         {
-        case 2: ((c_widget *)this)->function_230134(0x12000255, suffix); break;
-        case 3: ((c_widget *)this)->function_230134(0xd000254, suffix); break;
+        case 2:
+            suffix.load((c_widget *)this, 0x12000255);
+            unicode_string_append(message.text, suffix.text, 256);
+            message.text[255] = 0;
+            break;
+        case 3:
+            suffix.load((c_widget *)this, 0xd000254);
+            unicode_string_append(message.text, suffix.text, 256);
+            message.text[255] = 0;
+            break;
         default:
-            if (joinable) ((c_widget *)this)->function_230134(0xf000256, suffix);
-            else ((c_widget *)this)->function_230134(0x13000257, suffix);
+            if (joinable)
+            {
+                suffix.load((c_widget *)this, 0xf000256);
+                unicode_string_append(message.text, suffix.text, 256);
+                message.text[255] = 0;
+            }
+            else
+            {
+                suffix.load((c_widget *)this, 0x13000257);
+                unicode_string_append(message.text, suffix.text, 256);
+                message.text[255] = 0;
+            }
             break;
         }
     }
-    else if (current->activity == 2 || current->activity == 3)
+    else if (session->activity == 2 || session->activity == 3)
     {
-        ((c_widget *)this)->function_230134(0x1500025b, message);
-    default_suffix:
-        ((c_widget *)this)->function_230134(0x13000257, suffix);
+        message.load((c_widget *)this, 0x1500025b);
+        suffix.load((c_widget *)this, 0x13000257);
+        unicode_string_append(message.text, suffix.text, 256);
+        message.text[255] = 0;
     }
     else
     {
-        ((c_widget *)this)->function_230134(0xe00024f, message);
-        goto show;
+        message.load((c_widget *)this, 0xe00024f);
     }
-    unicode_string_append(message, suffix, 256);
-    message[255] = 0;
-show:
     if (status)
     {
         status->value6e = true;
-        status->function_22f52e()->set_text(message);
+        status->function_22f52e()->set_text(message.text);
     }
-    if (time && function_2b6db1((s_time_left *)session, (c_widget *)this, message))
+    if (time && function_2b6db1((s_time_left *)session, (c_widget *)this, message.text))
     {
         time->value6e = true;
-        time->function_22f52e()->set_text(message);
+        time->function_22f52e()->set_text(message.text);
     }
 }
 
@@ -651,22 +708,6 @@ s_entry_b *function_19c1f0(long key);
 s_entry_c *function_19c5f0(long key);
 wchar_t *localized_name_get(s_localized_name *definition);
 wchar_t *localized_short_name_get(s_localized_short_name *definition);
-
-/* a text buffer of 0x100 characters, empty when constructed, filled from a screen's string */
-struct s_friend_text
-{
-    s_friend_text()
-    {
-        text[0] = 0;
-    }
-
-    void load(c_widget *screen, long handle)
-    {
-        screen->function_230134(handle, text);
-    }
-
-    word text[0x100];
-};
 
 PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 **widgets, unsigned &row, word *text)
 {

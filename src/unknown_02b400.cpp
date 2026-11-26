@@ -767,6 +767,14 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // signed-remainder wrap 638, local wrap passes 624, named integer advance 597.
 // NOT kept: independent tests repeat the sign check on the negative path; complete
 // points add temporary stack stores absent from retail.
+// M3 lane 5 r247 (fast screen; aligned rows against retail in brackets, main 269 at 2683 B): the weights arm's fraction
+// clamp after the three weights 654 (331); the other arm's fraction clamp after the weight clamp 600 (297); both 671
+// (342); the bitmap fraction part named once for its clamp 679 (310); the heading's two components in named floats,
+// x first, 597 (269, same code); re-measured: the float angle literal 593 (262). Leads from the aligned listing: retail
+// computes the far-near span three times (the quarter step, the floor test and its else value) where ours shares one;
+// it clamps the fraction inside each weights arm (stored to its home in each branch of the clamp) where ours hoists
+// the identical clamp above the test; it evaluates the heading's x argument first with left + up; and its two random
+// point arms keep separate tails (the second forms the point address late) where ours tail-merges them.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -961,6 +969,15 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // named live extent axes 858, explicit player divisor 857, explicit extent maximum 832,
 // shared scaled velocity update 831, staged velocity increment 885, array element
 // references 832. The scaled update gains one at the same extent; the stacked state remains.
+// M3 lane 5 r247 (fast screen; aligned rows against retail in brackets, main 745): retail references no double constant
+// here (one double global load) where ours has 41; its random fraction runs in x87 with float constants and doubles
+// by `fadd st0, st0` after the 1/65535 multiply. The file's random fraction returning real with float call sites
+// 854 (816; ours folds the doubling into the constant); the header's existing random real for every draw 853 (814);
+// the float helper dividing by 65535 854 (816, still folded); `2.0f * r` 854 (816); only the three jitter draws through
+// the header's random real 832 (736). Registers: retail keeps the state in EBX (register argument, `ret 4`), the
+// vertex ESI, the seed pointer EDI and the particle EBP; the link-time colouring here ranks the seed pointer 1272,
+// the particle 682, the vertex 492 and the state 185 (left with EBP, so it is passed on the stack), while a
+// compile-only first pass of this file already gives the state EBX.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1220,7 +1237,7 @@ void function_1cf80();
 bool function_143c0(long, short, short, real);
 
 
-// score 310 (was 344): initializing the draw result before the geometry check restores the early
+// score 189 (was 310): initializing the draw result before the geometry check restores the early
 // true byte and puts the failure exit after the draw exit. The state still arrives in EAX,
 // and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
 // W-buffer state 365; separate primitive branches 421, with a fresh mode read 422; named partition
@@ -1258,6 +1275,21 @@ bool function_143c0(long, short, short, real);
 // the line arm's product order. On the 296 form: the line arm's products written scale first 296, the state factor
 // first 296, `(velocity * scale) * factor` 295; the zero `real const` 296; 1-12 dead longs at the top 296 each (not a
 // symbol-count state).
+// M3 lane 5 r247 (fast screen, plain 189; aligned counts against retail in brackets, main 168): kept: the begin call
+// through the SDK's force-inline member form in each arm of `if (lines)` (the line width read into a float local and
+// passed by its bits in the line arm, retail's stack copy), with the plain vertex cursor: both begin sites expand as
+// in retail and the state arrives on the stack in EBP, 310 -> 189 (102). On that form: the cursor volatile again 359
+// (1456 B); the width read straight as a dword 325 (1398 B, one begin site stays out of line); the arms tested on a
+// fresh mode-word compare 173 (92); the point arm first on `!lines` 206 (90), on a fresh `!= 2` compare 279 (80); the
+// player count as a short 204 (96), with the point arm first 216 (83), with that on the fresh compare 265 (73); the
+// existing 0x1cbe0(0, 0, 22) for the shader slot read 319 (106), with the point arm first and the short count 319
+// (62), on the fresh compare 252 (70); the member forms for every device call (same code); the point-scale zero for
+// A and B through a by-value float-bits helper 342 (62: both stored straight from XMM0 as retail); the particle
+// pointer declared ahead of the vertex pointer 266 (73, retail's load order, the stride homes still swapped). Left:
+// retail keeps the constant 2 in EDI from entry (both mode compares, the depth-buffer value, the line primitive),
+// which also gives retail's zero in ESI, the records pointer in EDI through the loop and the pop order. The allocator
+// ranks the second alpha (-6, created later) ahead of the constant 2 (-6 to -10 in these forms); a forced-ranking
+// search that puts the constant first gives aligned 34. 0x36b50 now pushes the state as retail (aligned 173 both).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
@@ -1295,15 +1327,23 @@ bool __stdcall function_391f0(void *state_address)
         D3DDevice_SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
         if (!lines) function_143c0(*(long *)(state + 4), 0, 3, 0.0f);
         function_1cf80();
-        if (lines) D3DDevice_SetRenderState(D3DRS_LINEWIDTH, *(dword *)(state + 0x7c));
-        D3DDevice_Begin(lines ? D3DPT_LINELIST : D3DPT_POINTLIST);
+        if (lines)
+        {
+            real width = *(real *)(state + 0x7c);
+            D3DDevice_SetRenderState(D3DRS_LINEWIDTH, *(dword *)&width);
+            D3DDevice::Begin(D3DPT_LINELIST);
+        }
+        else
+        {
+            D3DDevice::Begin(D3DPT_POINTLIST);
+        }
         long players = *(short *)((byte *)g_4e8c20 + 8);
         long divisor = players < 1 ? 1 : players > 4 ? 4 : players;
         long count = records->count / divisor;
         long first = g_485600 * count;
         for (long i = first; i < first + count; ++i)
         {
-            s_38450_vertex *volatile vertex = records->vertices + i;
+            s_38450_vertex *vertex = records->vertices + i;
             s_38450_particle *particle = records->particles + i;
             if (!(particle->age > 0.0f)) continue;
             if (!lines)

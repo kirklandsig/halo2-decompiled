@@ -1048,6 +1048,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // cursor/index and cursor/cursor append/search: 851/863/845/876/855/855/848/862. NOT kept: cursor append and indexed
 // lookup restore the 0x4e0 frame but shorten the body. The other forms enlarge the frame, and
 // all depart from retail's counted walk. The entry zero and count/query homes still differ.
+// M3 lane 14 r157 (fast screens with 0x18bb80 and nine other callees, the eight matched ones MATCH; control 837). Frame
+// reading from the back end's packer: our target count shares a 4-byte cell with two temporaries (11 references) and
+// sorts low (+0x14), where retail's +0x78 cell, right below the targets, holds the target count alone (seven references
+// at +0x88 in the listing), which only a count-first record (lane 2 r142's lead) places there. Forms on main's body: the
+// detail tag as one conditional expression 837 (same code); the inside test written `clusters[0] == cluster` 837 (same
+// code); the audible flag through an if/else 895 (3305 B); the portal distance as one conditional expression 838; the
+// blend's square named once for both terms 838. Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
