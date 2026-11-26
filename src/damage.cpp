@@ -2870,6 +2870,15 @@ struct s_unit_event
 // 420/420/429/420. With a named full-width destruction bit, each scores 528.
 // NOT kept: the inline shifts tie or regress. The named bit shortens the
 // body by 16 bytes and leaves the same entry difference.
+// M3 lane 7 r231 (H2M_FAST with 0xdaaa0, 0xdae60, 0xdb760, 0xd9d60, all MATCH, and 0xd5de0; control 420). Allocator
+// reading of the first difference: the permutation pointer ranks 66 (four entry-block refs +136, -308 over 83 blocks it
+// is live but unused) and the region index 58 (entry +34, the 0xa8360 block +16, the state update +16, -8 over the four
+// call blocks between), so the pointer colours first and takes EBP; with the region index at 66 or more (it wins the
+// tie) it would take EBP and leave EBX to the pointer, as retail. Forced that way: 516 at semantic distance 48 (from
+// 110), next difference retail's datum offset held in ESI from the mode block's join. Forms: the attachment re-read
+// into a named two-use local in each 0xb58c0 block 420 (same code); the permutation pointer in one expression 558 (1852
+// B); the reference read moved to the 0xa8360 argument 420 (same code); the state update as `x = x | bit` 420 and OR-ing
+// `(word)(1 << permutation_index)` 420 (same code each). Body unchanged.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5802,6 +5811,13 @@ struct s_damage_object_creation
 // by bit-removal inequality 200/200/202; full intersection equality 200;
 // complement exclusion 203. The section count and primary mask still compete
 // for registers. NOT kept: the alternate tests lengthen the loop and raise the score.
+// M3 lane 7 r231 (H2M_FAST with 0xdb810/0xdbb40, both MATCH; control 167). Allocator ledger of the section loop: the
+// bit ranks 50 (head block +48 at weight 2 with four values, second test +8, the first store's block -6) and info 48
+// (entry block +40 with ten values, count read +8 with four), so the bit takes EAX first; retail needs info at 51 or
+// more, or the bit at 47 or less. Forms: the definition read after the info call 227 (first +0x13); the object through
+// a pointer to its header element 167 (same code); the section stores as `field = field | (word)(1 << i)` 167 (same
+// code); the counter declared ahead of the `for` 167 (same code); the piece search's result declared at its
+// computation with no NONE initialiser 167 (same code). Body unchanged.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

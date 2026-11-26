@@ -1849,6 +1849,13 @@ bool function_108530(long device_index, long name)
 // (target, position, start, the halves, the acceleration and deceleration distances, velocity, cruise) 169 (486 B;
 // callers 19/34); the acceleration block reading the cruise-speed local 116, both blocks 116 (same code); the two half
 // times adjacent ahead of the acceleration zero, up first 116 (same code), down first 123 (525 B; callers 31/13).
+// M3 lane 7 r231 (H2M_FAST with 0x108600/0x108670, both MATCH in the control; control 116). Allocator reading: the two
+// half times tie at 146 (B22 +104, B23 +42 each) and the later-created half ramp-up colours first; a forced-ranking
+// search's best single decisions (69, 78, 81, 82) all move the initial velocity off XMM6. Forms: the half ramp-down
+// computed right after `distance` 142 (532 B; callers 31/13); the half ramp-up there 126 (529 B; its priority falls to
+// 84 and the half ramp-down, 138, colours first, but the position takes XMM6 ahead of the velocity; callers 31/13); both half times right after the ramp-down
+// minimum 133 (524 B; 31/13), right after `delta` 136 (527 B; 31/13); the cruise numerator named ahead of the
+// denominator test 116 (same code). Body unchanged.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
