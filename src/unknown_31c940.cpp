@@ -2208,10 +2208,60 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 				case 6:
 				{
 					{
-						update_residual_pair(terms, a, b, projection_pool.residual_circular_first, projection_pool.residual_circular_second, vector_work);
-						solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)terms;
+						// Own the pair temporaries until both projections are reduced.
+						// Advance the pair and angular row together after publishing both errors.
+						{
+							__m128 first, second;
+							{
+								__m128 work_0, work_1, work_2, work_3, work_4, work_5, work_6;
+								solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+								// Retain the shared inputs across both projections.
+								// Reuse each input only after its final multiplication.
+								work_3 = a->angular;
+								work_1 = row[0].a;
+								work_2 = b->linear;
+								work_5 = row[0].b;
+								work_0 = work_3;
+								work_0 = _mm_mul_ps(work_0, work_1);
+								work_1 = row[1].a;
+								work_3 = _mm_mul_ps(work_3, work_1);
+								work_1 = a->linear;
+								work_1 = _mm_sub_ps(work_1, work_2);
+								work_2 = b->angular;
+								work_6 = work_1;
+								work_4 = work_2;
+								work_4 = _mm_mul_ps(work_4, work_5);
+								work_5 = row[1].b;
+								work_2 = _mm_mul_ps(work_2, work_5);
+								work_3 = _mm_add_ps(work_3, work_2);
+								work_5 = row[0].linear;
+								work_0 = _mm_add_ps(work_0, work_4);
+								work_6 = _mm_mul_ps(work_6, work_5);
+								work_0 = _mm_add_ps(work_0, work_6);
+								work_4 = row[1].linear;
+								work_1 = _mm_mul_ps(work_1, work_4);
+								work_3 = _mm_add_ps(work_3, work_1);
+								work_2 = _mm_shuffle_ps(work_3, work_3,0xaa);
+								work_1 = _mm_shuffle_ps(work_3, work_3,0x55);
+								work_1 = _mm_add_ss(work_1, work_3);
+								work_3 = work_2;
+								work_2 = work_0;
+								work_2 = _mm_shuffle_ps(work_2, work_2,0xaa);
+								work_3 = _mm_add_ss(work_3, work_1);
+								second = work_3;
+								work_1 = _mm_shuffle_ps(work_0, work_0,0x55);
+								work_1 = _mm_add_ss(work_1, work_0);
+								work_2 = _mm_add_ss(work_2, work_1);
+								first = work_2;
+							}
+							_mm_store_ss(&projection_pool.residual_circular_first, first);
+							terms[0].m128_f32[3] -= projection_pool.residual_circular_first;
+							_mm_store_ss(&projection_pool.residual_circular_second, second);
+							terms[3].m128_f32[3] -= projection_pool.residual_circular_second;
+							terms += 8;
+						}
+						solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(terms-2);
 						subtract_angular_residual(spin, a, b, projection_pool.residual_spin);
-						terms += 2;
 						result_cursor.advance(3);
 						op += op[1];
 					}
