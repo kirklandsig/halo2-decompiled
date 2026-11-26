@@ -1118,7 +1118,7 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 			{
 				position = node->position;
 				if (definition->physics_index != NONE)
-					function_211060(&node->velocity, 0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, 0, 0, 0, .02f, dt);
+					function_211060(0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, &node->velocity, 0, 0, 0, .02f, dt);
 				vector3f delta = { position.x - previous.x, position.y - previous.y, position.z - previous.z };
 				real scale = (real)(segment->length / sqrt(length_sq3f(&delta)));
 				point3f target;
