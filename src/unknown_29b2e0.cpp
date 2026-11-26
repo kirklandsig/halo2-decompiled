@@ -956,6 +956,11 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // each (same code); 1/2/3 pairs around the first rotation's cosine argument 231/226/158 (the first two grow the frame by
 // 4), the same on the direct lookups 236/228/140 (at 3 pairs 17 meaning rows are left: the first rotation's dot starts
 // as retail's, its accumulation order and cross terms do not). Body unchanged.
+// For the object side axis, staging the positive terms, the subtracted terms,
+// both sets, or accumulating in the destination scores 202/202/149/220
+// with the original projection and 202/202/147/220 with planar first.
+// NOT kept: both-set staging with planar first fixes the projected J/depth
+// stores, then shortens to 1696 bytes and raises the score.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

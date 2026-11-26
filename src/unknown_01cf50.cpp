@@ -7694,7 +7694,7 @@ void function_1fa50(short_rectangle2d const *bounds, word const *string, void co
 }
 
 // @retail 0x1fa30
-void function_1fa30(word const *text, short_rectangle2d *bounds)
+void function_1fa30(short_rectangle2d *bounds, word const *text)
 {
     function_1fa50(bounds, text, 0, 0, 0, 1.0f, 0, 0);
 }
