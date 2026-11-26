@@ -1072,6 +1072,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // lever-arm pointer 1346 (masked 924); the speed sum named once for the ray scale and the hit fraction 1370 (6238 B); the
 // definition element pointer computed ahead of the state element pointer 1347; local_18 computed ahead of local_17 1346
 // (same code); the steering choice's two magnitudes through fabs 1397 (6240 B). Body unchanged.
+// where ours steps induction pointers. On the point-typed centre form (1344): both base-velocity adds through vector3f_add
+// as well 1344 (same code); every call of this file's scale helper through the existing vector3f_scale 1425 (6211 B);
+// both end-of-loop torque crosses through cross3f 1378 (6238 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
