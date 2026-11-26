@@ -728,11 +728,22 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
     return (transform4x3f const *)(object + *(short const *)(object + 0x116));
 }
 
-// Unmatched. The component lookup is written as the argument of the physics query and
+// score 53 (was 53): the component lookup is written as the argument of the physics query and
 // the node matrix comes through a small helper on the fresh object lookup: the lookup
 // is then index-first between the pushes, and the scale is reloaded for each product,
 // as in retail. Left: the secondary sphere's sum order and which callee-saved register
 // holds the definition.
+// Left at 53: the secondary block (retail re-reads the definition's secondary radius from memory for the product and
+// loads the primary centre first in each sum), the three-dword centre copy's store order, the movement test's i and j
+// difference registers (retail k, i, j; ours k, j, i) and the `return false` exit, which retail lays out after the
+// `return true` epilogue (the radius test falls through into the 0xb87b0 call). M3 lane 11 r170 (h2m fast with
+// 0xbc820, 0xbd020, 0xb8600, 0xb87b0, 0x1d44f0, all MATCH; control 53): the secondary radius read at each use 66 (retail's
+// re-read and xmm0, but the definition and header-offset registers swap); 0-16 dead locals at the top of that form 66
+// (176 at 1 and 9) and of the body 53 (160 at 1), so these orders are not symbol-count ties; the movement test as
+// `if (!(... || ...)) return false;` 53 (same code); the delta through the existing point-difference helper with
+// the squared length through the existing length helper 53, the length helper alone 53 (same code); the delta
+// assigned k, i, j 55, j, i, k 53, i, k, j 55; a single-exit `moved` result 59 (the return-false block stays inline);
+// `<= && ==` with an early return 67 (739 B). Diagnostic (not keepable): the return false behind a label at the end 53.
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {

@@ -1174,6 +1174,13 @@ void function_2640c0(long object_index, s_object_motion_view *result);
 
 // score 12 (was 83): retail copies object_index into edi just before the first function_badc0 call where ours
 // copies it after the squad lookup, and retail lays out the return-3 exit before the shared return-0 exit.
+// M3 lane 11 r170 (h2m fast with 0x263ed0, MATCH; control 12): the object index copy in the squad test's join is
+// what keeps the NULL-squad arm unthreaded (`jmp; xor ecx, ecx; test ecx, ecx`); retail's `mov edi, eax` right
+// before the call looks like the allocator splitting one value, not a source copy. Forms: the copy declared at the
+// top of the last arm, ahead of the first lookup, 84 (the copy moves to retail's place, but the NULL arm is then
+// threaded); the first lookup on the copy (the parameter dead after the copy) 12 (same code); the parameter itself
+// updated in place, no copy, 101 (the prologue changes); direct returns 50 (the NULL lookup's return 0 becomes an
+// in-line `xor ax, ax`); `short result = 0` with the chain nested under `!local_1 || !flag1` 17 (316 B).
 // @retail 0x25cb60
 short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *arg_4, long arg_5, short arg_6)
 {

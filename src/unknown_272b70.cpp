@@ -940,7 +940,8 @@ inline void actor_274f30_update(long actor_index, bool flag)
 	}
 }
 
-// score 47 (was 47): frame (0x34), dead stack store and length (192/192 B) match; only the shared
+// score 47 (was 47): frame (0x34), dead actor_index store and length (192/192 B) match retail; only the shared lookup product differs (ours shares imul eax, eax, 0x888 between update and erase as matched 0x274f30 does; retail computes imul ecx, ecx, 0x888 and imul eax, eax, 0x888 from the one masked eax). GA14 (35 fresh trials, all keeping 0x274f30 and peers matched unless noted): same-TU non-inline static/extern/stdcall/cdecl erase or update 110-175 (fail to inline under /Ob1, break 0x274f30); cross-TU LTCG inlining of erase/update from unknown_1e1f20.cpp (/O2 /Gr, fastcall/stdcall/cdecl, with 0x1e3240 sharing erase, with volatile/record/plain) 47/59; signed/unsigned byte-offset products 47; s_actor_view in erase 47; pointer/const-ref/param-ref index without volatile 59; direct erase with iterator.actor_index 47 or stored_actor_index 49 (201 B); g_4f55f0/data/slot locals 47; inverted if (!flag) 53 (breaks 0x274f30); (word) only in erase 43 or only in update 15 (193 B, movzx, breaks 0x274f30); short *value pointer 65 (breaks 0x274f30/0x2a55a0).
+// frame (0x34), dead stack store and length (192/192 B) match; only the shared
 // `imul ..., 0x888` differs (while matched 0x274f30 shares it). GB r16 (fast with 0x274f30 and 7 peers
 // MATCH, 25 real trials + 1 diag): &actor_index / erase taking long const* (no volatile) 59 (176 B);
 // actor_datum_get in each branch 41 (192 B, breaks 0x274f30 149); 0xffffu / byte-offset mul / shift mask /
