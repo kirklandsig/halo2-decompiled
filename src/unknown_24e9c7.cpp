@@ -807,6 +807,12 @@ struct s_24e9c7_points
 // and aggregate with native draw rectangle 243.
 // NOT kept: complete expressions shorten the frame and body; the typed
 // rectangle also changes the matched caller.
+// M3 lane 2 r154 (fast with 0x24e59f and 0x22a664, both MATCH; control 125): the side point set to the across products
+// right after the size (`side.x = size * -forward_j; side.y = size * forward_i;`) and scaled in place by the half width
+// (`side.x *= ...; side.y *= ...;`) 144 (746 B: our build multiplies `forward_j * size` and negates the product where retail
+// negates forward_j first); that with `size * (0.0f - forward_j)` 139 (742 B); the half width converted once into a local
+// for both scalings 154 (756 B); side j scaled before side i 123 (743 B; a statement order under the bar, and side j's
+// product is then formed late with no spill, where retail stores it at [ebp-8]); that with `0.0f -` 141 (740 B). Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
