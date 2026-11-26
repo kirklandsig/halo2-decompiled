@@ -1793,6 +1793,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 812; the entry pointer declared ahead of the iterator and the outputs 812; the lookup pointer declared in the `if`
 // condition 812 (same code each); the three output stores after 0x1dd9d0 and both requests 1037 (2846 B). A
 // forced-ranking search (diagnostic, 16 decisions) found no single decision below 812. Body unchanged.
+// AO r5 (fast, both twins with 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x2963f0, all MATCH): the result
+// value-initialised 812; the per-pass candidate value-initialised 812 or copy-initialised from the result 987; the iterator
+// stored graph/step/entries then keys on the do-while 812; the outputs declared after the entry pointer 812; the iterator
+// declared after the outputs 812; the entry pointer declared at its iterate call 812 (same code each); one `return result;`
+// after the block 1040 (2857 B).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2498,6 +2503,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 812; the entry pointer declared ahead of the iterator and the outputs 812; the lookup pointer declared in the `if`
 // condition 812 (same code each); the three output stores after 0x1dd9d0 and both requests 1037 (2846 B). A
 // forced-ranking search (diagnostic, 16 decisions) found no single decision below 812. Body unchanged.
+// AO r5 (fast, both twins with 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x2963f0, all MATCH): the result
+// value-initialised 812; the per-pass candidate value-initialised 812 or copy-initialised from the result 987; the iterator
+// stored graph/step/entries then keys on the do-while 812; the outputs declared after the entry pointer 812; the iterator
+// declared after the outputs 812; the entry pointer declared at its iterate call 812 (same code each); one `return result;`
+// after the block 1040 (2857 B).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

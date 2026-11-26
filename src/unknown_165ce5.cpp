@@ -2228,6 +2228,14 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // with or without `== 0 ? right : left`) fixes the 0x16710b reload cleanly at frame 0x2c (173,
 // 2196 B; 5+/all uses 374, frame 0x30); shift/bitfield/TEST_FIELD_BIT channel-byte tests all fold
 // to `test byte ptr [edi + 0x19], 0xa` (331..337, 2197 B). Body unchanged (score-3 lead is match-only).
+// M3 lane 3 r313 (fast with 0x165dc1, 0x166561 and 0x11eed0; main 172, the round-232 lead rebuilt at 3): on the lead,
+// `inline` on 0xb6760's definition gives MATCH (a held form) but 0x1cd070 MATCH -> 150 and 0x106790 61 -> 113; `inline` on
+// this file's declaration only 3; an explicit cdecl convention on 0xb6760 everywhere 3. Retail's 0x106790 also keeps its
+// pointer in ESI across both of its out-of-line 0xb6760 calls (ours ECX) and expands 0xb6760's shape at its channel-0
+// tests, so retail's callers had no register summary for it: BLOCKED-BY 0xb6760. On main: the user flags read ahead of the
+// look pointer 178; a named aiming-velocity pointer for the two aiming smoothing calls 190 (2193 B); the four overrides as
+// conditional assignments 172; the first-weapon pointer ahead of the springs 172; the frame-settings reference taken ahead
+// of the yaw clamp 203 (2193 B).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
