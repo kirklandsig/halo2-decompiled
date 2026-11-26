@@ -1249,6 +1249,11 @@ s_3c9a0_matrix g_4c1b68;
 // as one ternary 306 (1321 B); the near angle through the float tan overload 291; the tangent without casts with the view
 // tangent folded into `tan(half_angle) * aspect / tangent` 291; the field of view (+0x7c) named for its five reads 333;
 // the tangent scale (+0x80) named for its two reads 313.
+// M3 lane 13 r164 (H2M_FAST; control 291): the held reused corner pair re-measured 239 (1387 B), with the two-multiply
+// near angle 229; on the pair form the corner transform written out as 12 statements 239 (same code as the loop), the
+// position stored z, x, y, then the scale 238. Frame reading: retail's seven float cells are reused in turn (height, then
+// the tangent, then corner_x; the distance cell, then the aspect, then corner_y; offset, then the half angle, then the view
+// tangent), so its tangent is stored as a float right after its multiply, ahead of the aspect test's branches.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1373,6 +1378,18 @@ long function_40de0(long index, bool first, bool second);
 // retail's form. Forms: the kind word read through `part` at every use, no local 272 (1077 B); the depth through the
 // existing dot3f 189 (same code); the values copy tested on record->active 192 (1062 B), with the dot3f depth 192;
 // delta declared at function scope 189 (same code).
+// M3 lane 13 r164 (H2M_FAST with 0x44ac0, 0x44c90, 0x402b0 MATCH; control 189). Lead, held as a patch (it needs 0x40e10's
+// build options changed): 0x40e10 moved to an existing file built without link-time code generation, its parameters
+// declared (second, first), matches itself and takes this function to 156 at 1089 B (delta in stack cells); then `long
+// index` in every declaration 266, the kind word read through part at each use 140, a long kind local for the 0/5 test only
+// 122, 0x40e30's kind parameter long (retail's movzx at both calls; 0x174420 and 0x41640 then need NONE for their constant
+// kind) 52, `if (record->active)` 12, delta through the existing vector3d_from_points3d and the depth through the existing
+// dot3f 2 (either helper alone 18/12). Left: the two 0x40e10 argument masks in the other order, a scheduler priority tie
+// broken by creation order: the fastcall to a function built without link-time code generation evaluates the EDX argument
+// first; under link-time code generation the masks come out in retail's order but the delta stays in xmm registers (126),
+// also with 0x40e10 in an /Ob1 or explicit /arch:SSE file (126); an /O1 file breaks 0x40e10 (21). On main's build: the kind
+// through part 272, both existing helpers 201, the points helper alone 189 (same code), all three 282. BLOCKED-BY 0x40e10
+// (retail's callers neither inline it nor trust its register summary).
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -2054,6 +2071,14 @@ extern long g_485a60;
 // entry_index local (386, +0x47, duplicates g_4ba138[index] lookup; without visible_entry_geometry 398, masked 104),
 // entry_index + byte compound (390, +0x7d first 125 B exact; without visible_entry_geometry 392),
 // redundant bitmap = NONE after arm1 0x4dc60 (379, keeps bitmap in ebx + fixes compound loop ebx/edi, aligned 95, shifted by 1 insn at 0x15c90).
+// M3 lane 13 r164 (H2M_FAST; control 370): a long copy of the index (`long entry_index = index;`) for the entry lookup
+// and the three closing calls 444 (1390 B; the prologue registers turn retail's: mode EDI, index ESI, tag EDX, the
+// extended index stored at [esp+0x3c]), declared at the lookup 430; `byte compound` 393 (1420 B); the definition first +
+// short part_index + that long copy 413, with the existing visible_entry_geometry(index) 375 (1403 B, first difference
+// +0x47), with the early test read through the table and the caller's entry formed after the geometry 377 (the helper's
+// entry pointer is never merged with the caller's). Reading: retail keeps an unread byte (0 at the entry test, 1 after
+// 0x15c90) in packed's incoming slot, so value gets its own byte cell [esp+0x13]; without such a local, value takes
+// packed's home, the whole frame sits one cell lower and the compound walk's bitmap offset loses that home.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

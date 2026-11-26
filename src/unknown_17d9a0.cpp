@@ -864,6 +864,12 @@ PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
 // pointer walks the entry at +0x24 and keeps the loop index in EDI, the squared gaps sum x, z, y with the radius squared
 // last; the test written sum-first 899 before the global change, 889 fast after it), the oldest-slot loop (retail duplicates the entry fill
 // for the break path on the loop's own pointer) and every later block.
+// M3 lane 12 r195 (fast): retail inlines existing transform helpers here, which our link keeps as calls (their
+// file is /Ob1): the transform block through transform4x3f_apply_point 1163 (3288 B), the basis block's vector
+// transforms through 0x142640 1295, plus the direction through 0x1427f0 1433, the texture fetch through 0x12360 964.
+// The file's local vector-transform helper scaling x, y, z in registers (0x142640's shape) in place of the scaled
+// copy: 975 (3476 B) with the frame down from 0x90 to 0x68 (retail 0x60); with the position read from the placement
+// directly 965. Lead: that helper shape takes 0x28 off the frame.
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,
