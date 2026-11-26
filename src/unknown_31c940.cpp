@@ -1650,13 +1650,13 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
                         }
                     }
                     // Observe the following kind after all row writes, before advancing.
-                    signed char completed_pair_kind = *((signed char *)op + 8);
-                    op += 8; terms += 6; result += 2;
-                    if (completed_pair_kind != 8)
+                    if (*((signed char *)op + 8) != 8)
                     {
+                        op += 8; terms += 6; result += 2;
                         normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
                         continue;
                     }
+                    op += 8; terms += 6; result += 2;
                     break;
                 }
                 case 8: break;
