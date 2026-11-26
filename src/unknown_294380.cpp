@@ -435,6 +435,9 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // code); the clamp helper's test as `3.0f < total + strength` 252 (same code); the half radius as `0.5f * radius` 252
 // (same code); the count raised ahead of the three sums 253; the nearest arm with the point copied first and its test as
 // `local_26 < local_10` 255.
+// M3 lane 7 r233 (fast screen listing the same six with this function; control 252): the centroid sum through the existing
+// vector3f_add 533 (3725 B), with its operands the other way 533; the nearest arm's point copy ahead of the distance
+// 255; the two k zeros as one chained assignment 254; the speed vector's i store after the k zeros 260. Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

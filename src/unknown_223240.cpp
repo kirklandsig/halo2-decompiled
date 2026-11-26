@@ -528,6 +528,11 @@ void function_2232a0(void)
 // Roasted-Codes (#1519 comment, 2026-11-26; fast reduced-image scores): the terminal initializer's arguments through
 // one-use `const &` locals: the mode 374 (374 B, a second out-of-line call, the expansion is lost); the null source 306
 // (442 B); the two sentinels through one reference with the mode literal 47 (575 B, same tail).
+// M3 lane 8 r242 (fast screen with 0x223240/0x2232a0, MATCH each run; control 47). A forced-ranking search over 20 single
+// allocator decisions leaves 47 everywhere but register picks for the terminal record pointer (35 to 78), so the early
+// base add is the pointer's shape, not a pick. Forms: the view loop bounded by `view_count - 1` 132 (578 B); the terminal
+// record as `g_47f0f8 + 1 + local_2` 183 (583 B); view_count declared after the source pointer 47 (same code); the stub's
+// player count written `view_count - 1` 157 (588 B). Still BLOCKED-BY 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

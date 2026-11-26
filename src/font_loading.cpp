@@ -1110,6 +1110,15 @@ static inline word font_character_pixel(long alpha, long color)
 // (either order) 12; source[1] mask-split, source[2] word mask-split / outer word cast, s1&0xff<<8, long s1<<8, word
 // ptr>>8, word value, (short)source[2] with dword/long/short s1, (word)s2|0, 2-step loop, and &0xff00 all fuse to 90
 // (496 B); 4-channel word ARGB 135; (word)/(short) over dword shift-split 102; color-then-pixel 178/192; &0xffff 82.
+// GB22 (78 fast trials with 0x140960/0x122540/0x122570 MATCH, control 41 at 508/504 B, +0x24; body unchanged):
+// on score-41 base, if (remaining > 0) do...while 41, switch ((long)type) with default:__assume(0) + per-arm length=1 12
+// (504 B, match-only); on score-12 base, *(word const *)(source+1) swap macro/inline/masks 67-88 (504-512 B),
+// *(word const *)source >> 8 << 8 | (word)source[2] 20 (504 B), 4-nibble byte bitfield struct 11 (504 B, shl+or),
+// byte bitfield nibbles (4+4 or 1+7) and ((dword)((s2>>k)<<k) | (word)(s2&m)) (k=1/4/7, int/word/dword hi) 30 (504 B,
+// exact zero-extra-insn movzx eax; xor edx,edx; mov dh,[edi+1]; or eax,edx, 1 B off from 16-bit movzx ax), word bitfield
+// 4+4 31 (504 B, word load), word value on s2|(*(word*)source&0xff00) 89 (496 B, movzx ax; mov ah), word cast on hi-shift
+// 82 (keeps and 0xffff), outer word value/lo local on nibble split 102-106 (520-524 B), word/short/ptr/inline/bitfield/
+// &0xff/^0/~~/x&x/x|x/run|0/type|0 forms all fuse to 90 (496 B), code|s2 78, store-before-color 37/67, union color bf 33.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

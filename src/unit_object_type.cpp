@@ -9969,6 +9969,13 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // A forced-ranking search over 20 decisions found nothing below 390. Left: the prologue (retail holds the pool in EDI,
 // re-reads its data pointer at the weapon lookup and compares the weapon slot against NONE held in EBP), and the j/k
 // ray rows (retail sums the up product first and loads the aim component ahead of the range).
+// M3 lane 13 r162 (h2m fast with 0xcfc90, 0xcf040 and 0x24f590 MATCH; control 397). Retail stores the collision's
+// material type before the j and k ray stores, keeps the 0xcfc90 arm inline after 0xa9260's jump (ours moves it to the
+// end, where the join reloads the unit index into EDI), and in the tail holds the unit index in ESI with NONE as
+// immediates (ours: unit index EDI, NONE in ESI). Forms: the material type set ahead of the ray rows 395 (retail's
+// store position; statement order, under the bar); the normal copied ahead of the point 397; the owner as a brace
+// initialiser `{ NONE, NONE, NONE, 0 }` 397 (same code); TEST_FIELD_BIT at both seat tests with the material type first
+// 388 (2219 B; both parts match-only); `up` declared ahead of `across` 397 (same code). Body unchanged.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
