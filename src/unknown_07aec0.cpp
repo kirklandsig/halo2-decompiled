@@ -74,6 +74,11 @@ bool function_7af40(s_type_99af70 const *address);
 // const &value = address->ipv4_address`, through `s_type_99af70 const &source = *address`, stored and tested through
 // `*ipv4_address` with no output reference, a `dword *output` pointer for the store and test, `result` declared
 // before the output reference.
+// Round 233 (if-form tail): the address's priority is 30 (swap block +8 at four candidates, live but unread -2 in the
+// two blocks that compare the shared constant 4, -4 in the loop step) against the counter's 31; on the if-form, the
+// length test against sizeof(address->ipv4_address) leaves both (the 4 stays one constant; 14); 0x7af40's ipv6 hit as
+// `result = true; break;` 14; the length test written constant-first 14 (both lose 0x783d0, 0x784a0 and 0x7ab60);
+// 0x7af40's ipv4 case as an early return 90 (0x7af40 itself lost).
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

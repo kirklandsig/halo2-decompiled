@@ -539,6 +539,12 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // matching `sub esp, 0x34; push ebx; push ebp; push esi; or esi, -1`). Left on the 367/361 zero-goto forms: `local_3` takes
 // EBP instead of spilling to `[esp+0x1c]` (forcing `local_18` to `[esp+0x20]` and frame 0x38, and delaying `this + index *
 // 0x528` until `field_48c` instead of right after the NONE stores), plus 0x75910's `long` return. Body unchanged.
+// M3 lane 5 r251 (fast with 0x75910, 0x76520, 0x765c0 and 0x77940, all MATCH each run; control 356 at 1374 B, aligned 245).
+// Reading: the allocator leaves local_18 uncoloured (its weighted cost falls to zero or below over the blocks it spans from
+// its early NONE), where retail gives it EBP. Shorter ranges for it: its NONE moved to just ahead of the `if (local_14)`
+// block 417 (1369 B, first +0x5: frame 0x34 as retail); with local_5's NONE moved there too 417 (1356 B); local_18 set
+// NONE in an else arm of that block 412 (1369 B, frame 0x34, aligned 245 -> 183, register-masked 233 -> 155; `this`
+// then in EBP for retail's EDI); that with 0x75910 returning bool 412; that with local_5's NONE in the same else 414.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

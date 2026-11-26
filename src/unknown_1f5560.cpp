@@ -1959,6 +1959,12 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // of both transforms in this file (diagnostic) 198 (same code: only the definition decides); the forward minimum as
 // `0.11f * radius` 198, the side test x term first 198, `center` declared ahead of the side test 198 (same code each);
 // the offset added into the centre in place and the desired vector formed by vector2d_from_points2d 196 (1177 B).
+// M3 lane 8 r242 (fast screen with 0x29a190 and 0x1f9580, both MATCH; control 198). The allocator ranks a direction
+// temporary live from the normalize to the cosine (181) above the radius (114), and only XMM5..XMM7 are free for the
+// direction temporary, so the radius is left XMM4. Forms: the radius read from its field at each use (no local) 282
+// (+0x4); the cosine computed right after the desired normalize, ahead of the transforms 269 (1140 B); the 3-D direction
+// built member by member, in either order 198 (same code); the forward minimum written at both uses 226 (1176 B); the
+// forward distance computed ahead of the lateral one 238 (1185 B). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
