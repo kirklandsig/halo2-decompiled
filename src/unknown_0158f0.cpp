@@ -248,6 +248,13 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // body in the function 25, one result variable 23, *out stored before the test 39, a local for the table read 18.
 // b16K (11-17) fast build on r852: the tail as 0x15a60's (result and flag assigned in both arms, one store and one
 // return) gives 99 (was 103); the rest is still D3DDevice_CreatePalette2 kept out of line, as above.
+// GA14 (18 real + 2 diag, fast with 0x14a60..0x15cd0, 0x1d3f0): confirmed 0x15b10 is the sole caller of
+// D3DDevice_CreatePalette2 in our build (the library copy, 84 B, 0 data refs); removing __declspec(noinline)
+// (inlines 0x15b10 into 0x1d3f0, still calls CreatePalette2), size local, forceinline wrapper, direct return,
+// early return, const/enum g_43e8d8, param swap, direct *out, /Ob2, /arch:SSE, /Ox, and diag #pragma inline_depth(255)
+// all stay 99 (30 B); diag constant (D3DPALETTESIZE)0 still keeps CreatePalette2 out of line (104, 25 B). Wrappers
+// D3DDevice_CreatePalette (86-87), D3DDevice::CreatePalette (81) and IDirect3DDevice8_CreatePalette (76) only lower
+// score via spurious HRESULT (0x8007000e) length padding and worsen 0x1d3f0 (77-102), NOT kept. Body restored at 99.
 // GB r16: the D3DDevice_CreatePalette2 call wrapped in do { ... } while (0) MATCHES (95/95 B; 0x1d3f0 76 -> 65), not kept:
 // a dead loop whose only job is to change the compiler's inlining (the same class as a dead if (0) steer).
 // @retail 0x15b10
