@@ -8254,6 +8254,19 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 // parameter's address stored to a probe global 84 (the field still kept, not an aliasing kill); a probe global store
 // inside 0xe63b0 gives retail's two-vector arm exactly; a self-copy through its aim parameter does not. BLOCKED-BY
 // 0xe63b0 (its call order needs it to look side-effecting to the optimiser).
+// GB24 (56 real fast trials with 0xe63b0 and 0x1515e0 MATCH): `if (candidate_inside && current_inside) ... else if
+// (candidate_inside) ... else if (current_inside) ...` drops 55 -> 50 (384 B, al=29, mk=13; NOT kept: <8 gain above
+// 30) and matches retail's entire two-vector 0xe63b0 order, [esp+0x2c] spill, `mov cl,[esp+0x2c]; test cl,cl`, and
+// tail (lines 70-128) verbatim without changing 0xe63b0; plain `long result = NONE;` without parameter reuse also gives
+// 50 (coalesced into [esp+0x28]), and `long result = NONE;` at top hits 119 (exact 391/391 B, +0x3, al=28, mk=13) with
+// exact `sub esp, 0x18`, `mov [esp+0x28], -1` at 0xe5bf0, all immediate -1s, and lines 70-127 matching, leaving only
+// the prologue `[esi+0x44]` data-field reload (3-byte shift). Other trials on flat-&& / result-local: init/else-offset/
+// flag-then-unit/cand-first/pool-local/object_get/nested-else/point3f 50 each; early-NONE 132 (383 B, mk=8); NONE
+// between 131, after weapon_index 126 (391 B); result after unit 127 (382 B, al=26, mk=11), after weapon_index 126;
+// res_top + if-weapon/object_get/flag-first/nested-else/offset/point3f/pool/hdr_get 119 each; no unit local 207;
+// biped_get in cbd50 145 (406 B, reloads [reg+0x44] but duplicates unit load); != NONE first 114; early returns 148;
+// cur-outer 93; inverted 112; xor-order 95; bitwise & 92; or-wrap 80; int flags 131 (breaks 0x1515e0); diag inline
+// 0x1012c0/0xcbd50 50/132 (still caches data field). Body unchanged at 55.
 // @retail 0xe5bc0
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {

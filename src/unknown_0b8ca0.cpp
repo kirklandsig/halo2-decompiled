@@ -57,7 +57,14 @@ struct s_object_view
 	dword : 17;
 	byte unknown08[0x14 - 8];
 	long parent_index;
-	byte unknown18[0xa0 - 0x18];
+	byte unknown18[0x30 - 0x18];
+	point3f bounding_sphere_center;
+	real bounding_sphere_radius;
+	point3f world_bounding_sphere_center;
+	real world_bounding_sphere_radius;
+	point3f dynamic_light_sphere_center;
+	real dynamic_light_sphere_radius;
+	byte unknown60[0xa0 - 0x60];
 	real scale;
 	byte unknown0a4[0xaa - 0xa4];
 	byte type;
@@ -728,7 +735,13 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
     return (transform4x3f const *)(object + *(short const *)(object + 0x116));
 }
 
-// score 19 (was 53): typed s_object_definition, moved predicate with return-false after return-true, and explicit
+// score 17 (was 19): typed s_object_view bounding-sphere fields (dropping raw offsets) and moving primary_center/
+// secondary_center into the secondary-radius branch fixes both the 3-dword copy order (lines 122-203 verbatim) and the
+// primary-first addss operand order (736/736 B, al=13, mk=2; `#include "vector_products.h"` + vector3f_add gives the same
+// 17 but flips image-dependent 0x1c4590/0x24cf66 in a full build, so the header is not added). Left: retail re-reads
+// dynamic_light_sphere_radius directly in xmm0 (removing the trailing int3) without swapping definition/header_offset
+// between EBX and EBP. Earlier (53 -> 19):
+// at 19 (was 53): typed s_object_definition, moved predicate with return-false after return-true, and explicit
 // left-associated (k*k + i*i) + j*j (matching retail's exact movement sum and tail, lines 135-203 verbatim). Left
 // (736/736 B): secondary block (retail re-reads dynamic_light_sphere_radius from memory and loads primary_center->x
 // first in xmm0; reading dynamic_light_sphere_radius directly matches that block and drops the trailing int3,
@@ -755,17 +768,27 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // grouping (30): vector3f_add 31, no ptrs 33, reuse ptrs 30, offset ptr 31, def after active 46 (737 B), no from_physics
 // 30, swapped if 45, field copy 120, inline component_index 30, real_point3d_set sec 34, node_matrix by idx 30, def after
 // comp 43 (737 B), active bitfield 30, raw def 30, sec_radius ptr 30, const_ref def/masked idx/const_ref idx 176 (719 B).
+// GB24 (51 fast trials across 4 batches, 19 -> 17 kept): typed s_object_view + ptrs_in_if 17 (kept, exact 736 B,
+// al=13, mk=2; typed/raw + vector3f_add also 17, but adding vector_products.h flips 0x1c4590/0x24cf66 in full check); typed direct dynamic_light_sphere_radius + vector3f_add +
+// output_center (`B01`) hits 28 (exact 736/736 B, mk=2; 100% instruction/operand/copy match with ONLY EBX<->EBP swap);
+// moving `output_center` after `if (matrix->scale != 1.0f)` (`C01`) eliminates the EBX<->EBP swap (29, 737 B, al=3,
+// mk=2, lines 1-61 and 85-203 verbatim, only `lea edi,[esi+0x30]` moves from line 62 to 84). Also tried on direct
+// radius: typed no-out 43 / +vector3f_add 35 (al=7, no EBX/EBP swap); struct copy bounding_offset 179-180; nested/split
+// physics if 43; extra OBJECT_GET 43; pluseq 183; rad_lhs 43; inline transform4x3f 33/28 (mk=2); real_point3d_set/
+// vector3f_assign out 45; out before matrix/center 176/28; def/comp/active reorder 44/41/28; early return false 55;
+// cull via OBJECT_GET 164; real xyz 28; node_mat by idx 28; vector3d_from_points3d 38; moved else 28; swapped flags 37;
+// rad before add 36.
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {
-    byte *object = (byte *)OBJECT_GET(object_index);
-    s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
-    long component_index = *(long *)(object + 0xb4);
-    bool active = (bool)((*(dword *)(object + 4) >> 8) & 1);
+    s_object_view *object = OBJECT_GET(object_index);
+    s_object_definition const *definition = TAG_DATA(s_object_definition const, object->definition_index);
+    long component_index = object->havok_component_index;
+    bool active = (bool)((*(dword *)((byte *)object + 4) >> 8) & 1);
     bool from_physics = false;
-    if (component_index != NONE && ((1 << object[0xaa]) & 0x800) && TEST_FIELD_BIT(((s_object_view *)object)->physics_active))
+    if (component_index != NONE && ((1 << object->type) & 0x800) && TEST_FIELD_BIT(object->physics_active))
     {
-        from_physics = function_1d44f0(havok_component_get(component_index), (point3f *)(object + 0x30), (real *)(object + 0x3c));
+        from_physics = function_1d44f0(havok_component_get(component_index), &object->bounding_sphere_center, &object->bounding_sphere_radius);
     }
     if (!from_physics)
     {
@@ -773,7 +796,7 @@ bool __stdcall function_bdef0(long object_index)
         point3f center;
         real_point3d_set(&center, definition->bounding_offset.x,
             definition->bounding_offset.y, definition->bounding_offset.z);
-        point3f *output_center = (point3f *)(object + 0x30);
+        point3f *output_center = &object->bounding_sphere_center;
         if (matrix->scale != 1.0f)
         {
             center.x *= matrix->scale;
@@ -786,51 +809,51 @@ bool __stdcall function_bdef0(long object_index)
             matrix->forward.j * center.x + matrix->position.y;
         output_center->z = matrix->up.k * center.z + matrix->left.k * center.y +
             matrix->forward.k * center.x + matrix->position.z;
-        *(real *)(object + 0x3c) = *(real *)(object + 0xa0) * definition->cull_radius;
+        object->bounding_sphere_radius = object->scale * definition->cull_radius;
     }
-    point3f *primary_center = (point3f *)(object + 0x30);
-    point3f *secondary_center = (point3f *)(object + 0x50);
     real secondary_radius = definition->dynamic_light_sphere_radius;
     if (secondary_radius > 0.0f)
     {
+        point3f *primary_center = &object->bounding_sphere_center;
+        point3f *secondary_center = &object->dynamic_light_sphere_center;
         secondary_center->x = primary_center->x + definition->dynamic_light_sphere_offset.x;
         secondary_center->y = primary_center->y + definition->dynamic_light_sphere_offset.y;
         secondary_center->z = primary_center->z + definition->dynamic_light_sphere_offset.z;
-        *(real *)(object + 0x5c) = *(real *)(object + 0xa0) * secondary_radius;
+        object->dynamic_light_sphere_radius = object->scale * secondary_radius;
     }
     else
     {
-        *secondary_center = *primary_center;
-        *(real *)(object + 0x5c) = *(real *)(object + 0x3c);
+        object->dynamic_light_sphere_center = object->bounding_sphere_center;
+        object->dynamic_light_sphere_radius = object->bounding_sphere_radius;
     }
     point3f center;
     real radius;
     if ((bool)(((dword)definition->flags >> 12) & 1))
     {
-        center = *(point3f *)(object + 0x50);
-        radius = *(real *)(object + 0x5c);
+        center = object->dynamic_light_sphere_center;
+        radius = object->dynamic_light_sphere_radius;
     }
     else
     {
-        center = *(point3f *)(object + 0x30);
-        radius = *(real *)(object + 0x3c);
+        center = object->bounding_sphere_center;
+        radius = object->bounding_sphere_radius;
     }
     bool moved = true;
     if (active)
     {
         vector3f delta;
-        delta.i = center.x - *(real *)(object + 0x40);
-        delta.j = center.y - *(real *)(object + 0x44);
-        delta.k = center.z - *(real *)(object + 0x48);
+        delta.i = center.x - object->world_bounding_sphere_center.x;
+        delta.j = center.y - object->world_bounding_sphere_center.y;
+        delta.k = center.z - object->world_bounding_sphere_center.z;
         moved = ((delta.k * delta.k + delta.i * delta.i) + delta.j * delta.j > 0.1f * 0.1f ||
-            *(real *)(object + 0x4c) != radius);
+            object->world_bounding_sphere_radius != radius);
     }
     if (moved)
     {
         if (active)
             function_b87b0(object_index);
-        *(point3f *)(object + 0x40) = center;
-        *(real *)(object + 0x4c) = radius;
+        object->world_bounding_sphere_center = center;
+        object->world_bounding_sphere_radius = radius;
         if (active)
             function_b8600(object_index, 0);
         return true;

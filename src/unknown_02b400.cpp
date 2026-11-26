@@ -1243,9 +1243,12 @@ void function_1cf80();
 bool function_143c0(long, short, short, real);
 
 
-// score 189 (was 310): initializing the draw result before the geometry check restores the early
-// true byte and puts the failure exit after the draw exit. The state still arrives in EAX,
-// and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
+// score 189: GB24's 174 form is not kept (declaration order and one-use locals are kept only on a byte match):
+// declaring result before lines, particle before vertex (fixing both loop induction homes
+// [esp+0x14]/[esp+0x1c]), and naming the per-tick displacement components delta_x/delta_y/delta_z = velocity * scale
+// matches the line arm verbatim (lines 175-278, 189 -> 174, 1420/1420 B, al=96). Earlier (310 -> 189): initializing
+// the draw result before the geometry check restores the early true byte and puts the failure exit after the draw exit.
+// The state still arrives in EAX, and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
 // W-buffer state 365; separate primitive branches 421, with a fresh mode read 422; named partition
 // end 365; shader mode helper 364; shader slot helper 378.
 // The unqualified vertex cursor restores the stack-passed state but shortens the draw body.
@@ -1305,6 +1308,14 @@ bool function_143c0(long, short, short, real);
 // stays a call 343, 0x1cbe0(0, 0, 22) 313), the sete / flag order at entry, the point-scale zeroes stored straight from
 // XMM0, and retail testing the bool (not the word) before the point-scale call. Without the 167 form the constant
 // stays out of EDI: the short count alone 204, with the point arm first 265, the typed slot read alone 189 (same code).
+// GB24 (43 valid fast trials across 3 batches, 189 -> 174 not kept): naming per-tick displacement delta_x/y/z = velocity * scale
+// 175 (al=98, exact line arm); + result before lines 175 (al=96, mov bl,1 before sete); + particle before vertex 174 (
+// fixes [esp+0x14]/[esp+0x1c] homes). Also tried: vector3f scaled 269 (1427 B); vector3f_add_scaled 278; inline g_509418 189/175;
+// dt+length locals 235; union scale 189 / union zero only 188 (174 with delta); by-value float-bits helper (A/B, all) 338/338
+// (al=99/98, emits retail's movss [mem],xmm0 for A/B); switch(mode) default/case 2 208 (197 with delta); case 0/1/2 349 (1431 B);
+// typed s_391f0_state 189; vector3f_scale (normalize3d.h) 270/265; signed alpha 297; A/B before enables 338; loop end local 202;
+// divisor if-chain 175; records after reset 175; points=!lines 175; diagnostic fresh != 2 at both pointscale & begin + float-bits
+// + particle-first + short players + parens reaches al=45 at 1420 B (lines 176-348 verbatim; not kept, mixed mode test).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
