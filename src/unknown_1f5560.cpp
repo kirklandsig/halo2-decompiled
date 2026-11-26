@@ -1965,6 +1965,15 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // (+0x4); the cosine computed right after the desired normalize, ahead of the transforms 269 (1140 B); the 3-D direction
 // built member by member, in either order 198 (same code); the forward minimum written at both uses 226 (1176 B); the
 // forward distance computed ahead of the lateral one 238 (1185 B). Body unchanged.
+// M3 lane 1 r174 (fast screen with 0x29a190 and 0x1f9580, both MATCH; control 198). Our cosine also reloads direction
+// and desired from their homes after the calls, but into the registers their earlier values held (one candidate each
+// across the calls), where retail loads them as new values into XMM0/XMM1; that is the may-write reading above, so
+// still BLOCKED-BY the link-time summaries of 0x210690/0x210770 (the held `inline` lead). Forms: the type-one
+// difference through vector2d_from_points2d 198 (same code); the adjustment declared beside the side vector 198 (same
+// code); the type-zero centre as target plus a planar_scale offset in each side arm 253 (1167 B); the desired point
+// as the centre plus offset with the origin taken off by vector2d_from_points2d 196 (1177 B); the clamp as an `if`
+// storing 1.0f 250 (1141 B); the type-one difference normalized in the centre's own storage 198 (same code); the side
+// flag `bool const` 198 (same code). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
