@@ -317,7 +317,8 @@ static __forceinline void apply_circular_second_fields(float impulse,
 	w[3]=*inverse_b;
 	terms+=6;
 	w[1]=_mm_load_ss(&simd_scratch);
-	w[0]=_mm_shuffle_ps(w[1],w[1],0);
+	// Form A's broadcast independently from the rounded input word.
+	w[0]=_mm_load1_ps(&simd_scratch);
 	w[1]=_mm_shuffle_ps(w[1],w[1],0);
 	w[1]=_mm_mul_ps(w[1],w[3]);
 	w[0]=_mm_mul_ps(w[0],w[2]);
