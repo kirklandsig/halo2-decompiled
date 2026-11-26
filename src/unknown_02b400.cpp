@@ -1271,7 +1271,7 @@ void function_1cf80();
 bool function_143c0(long, short, short, real);
 
 
-// score 189: GB24's 174 form is not kept (declaration order and one-use locals are kept only on a byte match):
+// score 175 (was 189): GB24's 174 form is not kept (declaration order and one-use locals are kept only on a byte match):
 // declaring result before lines, particle before vertex (fixing both loop induction homes
 // [esp+0x14]/[esp+0x1c]), and naming the per-tick displacement components delta_x/delta_y/delta_z = velocity * scale
 // matches the line arm verbatim (lines 175-278, 189 -> 174, 1420/1420 B, al=96). Earlier (310 -> 189): initializing
@@ -1344,6 +1344,13 @@ bool function_143c0(long, short, short, real);
 // typed s_391f0_state 189; vector3f_scale (normalize3d.h) 270/265; signed alpha 297; A/B before enables 338; loop end local 202;
 // divisor if-chain 175; records after reset 175; points=!lines 175; diagnostic fresh != 2 at both pointscale & begin + float-bits
 // + particle-first + short players + parens reaches al=45 at 1420 B (lines 176-348 verbatim; not kept, mixed mode test).
+// M3 lane 7 r235 (fast screen, plain 175): kept, the line arm's per-tick displacement grouped as
+// `(particle->velocity.i * scale) * factor` in all three rows, 189 -> 175 (the line arm is retail's: velocity times
+// scale, then the state factor; no new names). Tried on main's body: the age test enclosing the arms in place of
+// `continue` 189; `result` declared after `lines` 189; the element pointers as `&records->vertices[i]` 189 (all three
+// the same code); the geometry test as an early `return true` with `result` declared at the 0x39780 call 352 (1406 B).
+// On the 175 form: the player count as a short 190; the point arm first on `!lines` 195; the loop bound named
+// `last` 175, a const records pointer 175, the clamp's inner ternary parenthesised 175 (all three the same code).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
@@ -1410,9 +1417,9 @@ bool __stdcall function_391f0(void *state_address)
             {
                 real scale = g_509418;
                 point3f previous;
-                previous.x = vertex->position.x - particle->velocity.i * scale * *(real *)(state + 0x78);
-                previous.y = vertex->position.y - particle->velocity.j * scale * *(real *)(state + 0x78);
-                previous.z = vertex->position.z - particle->velocity.k * scale * *(real *)(state + 0x78);
+                previous.x = vertex->position.x - (particle->velocity.i * scale) * *(real *)(state + 0x78);
+                previous.y = vertex->position.y - (particle->velocity.j * scale) * *(real *)(state + 0x78);
+                previous.z = vertex->position.z - (particle->velocity.k * scale) * *(real *)(state + 0x78);
                 D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | first_alpha);
                 D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, previous.x, previous.y, previous.z, 1.0f);
                 D3DDevice_SetVertexDataColor(1, (vertex->color & 0xffffff) | second_alpha);
