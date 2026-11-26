@@ -229,6 +229,13 @@ struct s_reference_filter_view
 // result = !flag;` 82 (283 B), `result = !flag; if (allow_any) result = true;` 29 (295 B); the three tests as an
 // early-return inline predicate 66 (the same code as the else-if allow_any form: every true-first spelling lays the
 // else block inline). All restored.
+// Round 171: retail places the else block (test of allow_any, `mov bl, 1; jmp` into the result block, `sete bl; jmp`
+// back to the result test) after the returns, true arm first; every spelling with the true arm first in the source
+// lets the not-flag arm fall into the result test and lays the block inline after `result = flag; jmp`. Tried: the
+// final `else result = true;` dropped 105 (280 B); the same under `if (!require_flag)` 106 (280 B); `result = flag ==
+// false` 6; `if (!require_flag) { if (allow_any) true else !flag } else flag` 67 (285 B); one nested ternary
+// `require_flag ? flag : allow_any ? true : !flag` 66 (285 B); `if (!require_flag) result = allow_any ? true : !flag;
+// else result = flag;` 67 (285 B).
 // @retail 0x2623a0
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference)
 {

@@ -295,26 +295,9 @@ static __forceinline void network_memory_track(void *block, long size)
 	g_4d87c4 += size;
 }
 
-// score 1 in a full build with stand-in SDK headers (was 22): each stream window's size is stored by the storage
-// constructor ahead of the shared window construct (which then stores head, count, valid and capacity), and the
-// connection count is assigned to both globals in one statement in each arm.
-// What is left: the first connection loop's address, retail `lea esi, [edx + edi]` (the table base reloaded after
-// each constructor call, first), ours `[edi + edx]` (the stepped offset first). Round 191 (m3 lane 12; fast unless
-// marked): through link_connection_get(i) 1; the table pointer read as the member of a file-local aggregate 1; a
-// running byte offset kept by hand (`offset += sizeof(s_link_connection)` after each construct) 7 (retail's lea, but
-// the offset is cleared ahead of the loop guard and stepped before the index, where retail clears it after the guard
-// and steps it after the index, as the compiler's own offset); 1..24 unused initialised locals at the top or after
-// `i` 1 each (no symbol-count tie). Compile-only (it reproduces ours, offset first): `&table[i]`, a pointer local, a
-// byte offset `i * sizeof`, a base local or a const reference to it, an index declared in the for statement, a while
-// or do-while loop, `i + table`, a long/dword/byte-pointer table global, a typed or array table, a member of an
-// aggregate, an inline accessor for the base, inline (base, offset) and (base, index, size) helpers, a macro, a
-// template construct helper, the result kept, an explicit NULL test and call, the address used twice, the index used
-// twice: all offset first; a pointer local bound by reference and `+=` gives `add base, offset` (two instructions).
-// Retail has no other loop of this shape (a reloaded base plus a stepped offset) to compare with: the one other,
-// matched 0xb3200, has the offset first.
-// Before that (22, from 74): in the first allocation the size and the block took edi
-// and esi the other way round, and the two stream constructors stored each
-// window's head before its count where ours stored the count first.
+// The connection table is walked with a byte offset kept beside the index, set up under the loop's own test and
+// stepped after the index: retail adds the reloaded table base and that offset in this order, where the indexed
+// form (`table + i`) adds the compiler's stepped offset first.
 // @retail 0x81780
 void __stdcall function_81780(long stage)
 {
@@ -336,9 +319,16 @@ void __stdcall function_81780(long stage)
 	size = g_4d87d0 * sizeof(s_link_connection);
 	g_4d87d4 = physical_memory_malloc_fixed(size, PAGE_READWRITE);
 	network_memory_track(g_4d87d4, size);
-	for (i = 0; i < g_4d87d0; i++)
+	i = 0;
+	if (i < g_4d87d0)
 	{
-		new ((s_link_connection *)g_4d87d4 + i) s_link_connection;
+		long offset = 0;
+		while (i < g_4d87d0)
+		{
+			new ((s_link_connection *)((byte *)g_4d87d4 + offset)) s_link_connection;
+			i++;
+			offset += sizeof(s_link_connection);
+		}
 	}
 
 	size = g_4d87d0 * sizeof(c_reliable_stream_storage);

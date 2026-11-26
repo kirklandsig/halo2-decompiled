@@ -378,6 +378,12 @@ void function_19c6d0(s_record_pool *data, long key0)
 // walk's iterator declared and set up at the top 123 (frame 0x1a4: the iterator goes to memory); a `long scratch;`
 // declared at the sort_4byte call and passed in place of the count's address 149 (375 B); the two array stores split
 // from their increments 108 (same code); the counts declared ahead of the table lookup 156 (371 B). All restored.
+// M3 lane 6 r247 (fast): the callers' idiom for sort_4byte's unused first argument, an uninitialised `long
+// temporary;` in its own block, 149 (375 B: frame 0x194; the flagged count is then spilled as in retail, but the
+// hoisted valid flag takes EBX), the same declared bare at the call or at the top 149, with the counts declared ahead
+// of the table lookup 157 (370 B); the two arrays declared the other way round 108 (same code; with the scratch
+// 149). The allocator ranks the pool's first-pass candidate at -40 under the flagged count's -30 (with the scratch
+// argument: -43 under the valid flag's -35); a forced raise to -34 changes nothing.
 // @retail 0x19c7e0
 void function_19c7e0(s_record_pool *data)
 {
