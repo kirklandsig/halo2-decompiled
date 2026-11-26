@@ -60,6 +60,13 @@ bool function_29d740(vector3f *arg_0, s_pathfinding_data const *arg_1, long arg_
 
 #include "unknown_25fc30.h"
 
+// score 117 (was 117): 0x29d740 call sets up &edge_normal last vs retail first; compiler hoists 0.4f into xmm0
+// before if (direction), moving length to xmm7 and delta.i to xmm3 and emitting mulss xmm2, [esp+0x2c] vs retail
+// movss xmm0, [esp+0x2c]; mulss xmm0, xmm3 (reloading length into xmm0 and loading 0.4f twice). Tried 0x29d740
+// param order (pathfinding, index, &edge_normal) 114 (fixes lines 14-16); swapped/reordered dot expressions 114-123;
+// 3-stmt k+j+i dot 103; 3-stmt k+i+j / i+k+j / basis_dot_xzy 92 (649 B, un-hoists 0.4f and matches lines 5-105
+// and 123-190, but changes float grouping without matching); check_start/check_end defaults/long/nested 105-128;
+// /Ob1 114; inline offset 121; in-place edge_normal rotation 139.
 // @retail 0x29d7b0
 bool function_29d7b0(long index, s_pathfinding_data *pathfinding, s_type_d4fbfa *definition,
 	vector3f const *direction, point3f *point, vector3f *normal, char *side)

@@ -5745,6 +5745,14 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // was not ranked from that call. Also: the transform declared ahead of up and forward 169, the local vector declared
 // there 169 (same code each); up_scale computed ahead of the cosine 190 (778 B); `left` declared beside up and forward
 // (outside the aim branch) 169.
+// GB r17 (fast with 0xde190/0x1fe120 MATCH, 0xc60c0 172; control 169 at 768/767 B): on s_view_angles base, reusing local
+// for clamped direction 169; renaming up/forward/left/local/matrix 169/169; inline 0xb9fc0 wrapper 169; inline mat3 helper
+// 169; inline trig without scale locals 169; plain double trig scales 191 (776 B); double cosine+forward_scale with real
+// left/up 191 (774 B, all 26 row insns match retail, cosine spills to qword); direct cross3f_staged (both/first, with or
+// without s_view_angles) 169; inline orthonormalize_up helper using cross3f_staged first (both/first, static/forceinline,
+// vector3f* return, swapped params, HEAD/angles, kij/cb_kji/cb_kij) 156 at 768/767 B (delays up.i to retail's line after
+// left.i, matching lines 37-56 and the second cross, still 1 extra movaps for up.j*fwd.i; NOT kept: new one-caller helper);
+// helper with cross3f first or ijk/ikj staged 169, jki/jik 184 (774 B), reversed stores 181, by-value cross 358. Body unchanged.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5989,6 +5997,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // (!from_actor)` the default) 168 (812 B), with the velocity local 159; on the both-in-place form the rate block's
 // scaled limits as their own locals 170. Re-measured: a/b in place 168, c/d in place 61.
 // @retail 0xd0080
+// M3 lane GA r15 (35 fast trials with 0xc49b0, 0x1e3370, 0x1ecf50 all MATCH; control 58; plain verified 37, all file peers MATCH):
+// Not kept at review, 58 -> 37 (810/810 B, first diff +0x59 -> +0x1cf): shared 2-caller clamp_turn_bounds(real const *value, limit, scale, *high, *low)
+// computing above = limit - *value and below = *value + limit then scaling in each clamp test; matches lines 1-118 byte for byte
+// (xmm4/xmm5 clamps, shared xmm3 for pi/4 and 4.244, xmm6 for 2*pi, both clamp blocks and both random branches exact).
+// Also tried (not kept): clamp_turn_bounds with real value by value 57 (subss xmm0, xmm1); with scale = 1/(0.3*limit) 37; with below first 173;
+// with pre-scaled products 173; without above/below locals 81; with real const &value 37; with two-use turn_rate = unit->unknown2dc + turn 28
+// (and turn_rate = turn; turn_rate += unit->unknown2dc 25, matching rotate_direction lines 144-188: gains only inside unchanged rotate_direction);
+// include/axis_rotation.h function_x84d9e8 alone 100, with both clamp sums in place 70 (+0x1cf, lines 1-118 exact, tail 56 diffs from vector_k),
+// with c/d or a/b in place 97/84, with clamp_turn_bounds 100-130, with function_x82e52f 100, with swapped high/low 100.
+// Review: clamp_turn_bounds is a new helper used only by this function (two sites), match-only; body restored at 58.
 void function_d0080(long unit_index, vector3f *direction)
 {
 	s_unit *unit = UNIT_GET(unit_index);

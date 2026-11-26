@@ -301,6 +301,9 @@ c_class_58d20 *network_session_manager_find_session(s_network_session_list *mana
 // `*(volatile long *)&g_510518` also MATCHES with the other 31 functions of this file unchanged, but is a volatile
 // cast on a global (not kept). No score change from: g_510518..g_510528 merged into one struct (20), its address
 // stored in another global (20), a session_tracking_changed(bool) helper for the inner block (20).
+// Roasted-Codes (#1527 comment, 2026-11-26; fast reduced-image scores): the four tracking globals defined in
+// src/unknown_072db0.cpp with externs here 20 (the reread stays folded); a `const bool &` on the first test 19 (106 B,
+// the state still cached in ESI).
 // @retail 0x59940
 void function_59940(void)
 {
@@ -652,6 +655,17 @@ void session_searches_dispose(void);
 // A forced-ranking search (34 single decisions: priorities, picks, cuts) finds
 // no match, so the owner constant's register and the eax reuse after 0x70190 are
 // not a ranking choice on this body.
+// Roasted-Codes (#1527 comment, 2026-11-26; fast on main bfb863d1, a plain full check on 071eb14b6): a MATCH that costs
+// matched 0x54590, held (a new loss of 0x54590 needs the maintainer's word). Form: the two initializers as members of
+// their existing classes, bodies unchanged, 0x6de50 on s_session_owner and 0x70190 on c_session_state_matchmaking,
+// called as `SESSION_OWNER->session_owner_initialize(...)` and
+// `g_527330.state_matchmaking.session_state_matchmaking_initialize(SESSION_OWNER)`: target 0 (455 B, 68 address fields
+// verified); 0x6de50, 0x70190 and this file's other functions still MATCH; the full check gave +0x58ee0, -0x54590,
+// nothing else. 0x54590 becomes 2 at +0xff (the image-following reload pair its notes describe), and that follows
+// 0x70190 being a member: with 0x70190 a free routine taking the state by reference, 0x54590 matches again and this
+// target is 22 (+309). 0x54590 does not move with an explicit __fastcall on that member, the owner passed by reference
+// or as the view pointer, 0x6de50's body in the caller's file, or the two member declarations' place in their classes
+// (address order, after the data). A form that keeps both is the open lead.
 // @retail 0x58ee0
 bool network_session_manager_initialize(long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b)
 {

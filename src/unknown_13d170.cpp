@@ -1093,6 +1093,11 @@ struct s_physical_block_iterator
 // `mk=23` (`221`, `+0x1cc`, case 1/case 0/join and full 2-stage insertion CFG 100% retail without any helper, leaving
 // default `eax/ecx`, copy `eax/edx`, walk `ebx/edi` + `add edi, ebx`, and insert `ebx/edi`); with `at_head` 207 at
 // 1213 B (mk 38). Body restored at 201.
+// M3 lane 3 r311 (fast screen with the file's six other functions and 0x13d320, all MATCH; control 201): the default
+// arm's two ages clamped by explicit `if (age < 0) age = 0;` statements 274 (retail's 1213 B, but the frame shrinks to
+// 0x1040 and the entry registers change); only the second age clamped that way 395 (1255 B); the take test as
+// `better || !have_best` 201, the scan loop as `for (long i = head, next; i != tail; i = next)` 201 and the default arm's
+// comparison written `candidate->pages * best_age < best.pages * age` 201 (all three the same code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
