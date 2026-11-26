@@ -44,6 +44,14 @@ bool function_7af40(s_type_99af70 const *address);
 // matching. More if-form spellings, all unchanged or worse: result as byte (58) or long (61); (short) length cast,
 // result declared first, a copy of address, a byte local for the low byte, empty-if/else, "!(word)(output << 8)"
 // (all 14); "!(output << 24)" (28); the value swapped in a local then stored (29); "address &&" first (86).
+// GA14 (40 real + 1 diag, fast with 0x783d0/0x784a0/0x7ab60/0x7acc0/0x7acf0/0x7af40/0x7af80): if-form variants without
+// output ref, *(byte *)ipv4_address, ((byte *)&output)[0], commuted swap operands, 0x7af40 defined above 0x7aec0,
+// (byte)output == 0, (char)output, renamed params/locals, nested if without ref, embedded assign, goto done, addr ref
+// inside, inline/forceinline byte-check or convert wrapper, (word)address_length, (byte)(*ipv4_address & 0xff), shared
+// header include, valid local, and 0x7af40 long i / case order all hit 14 (113/113 B, identical tail, ECX/EDX swapped
+// in inlined 0x7af40 prefix, breaking 0x783d0/0x784a0/0x7ab60); inline/forceinline bswap 16; ternary / if-else false
+// 26; local union 28 (spills out); if-ret-false 42; 4-term bswap 45; switch length 46; early ret false 49; MSB/mask
+// check 54; diag #pragma optimize("s") 92. Body restored at 26.
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

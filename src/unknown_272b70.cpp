@@ -358,6 +358,12 @@ inline void ai_script_object_set_flag10a_14(long object_index, bool flag)
 // ECX and the creature in EDX; retail keeps the base in EDX and the creature
 // in ECX. Permuter on this function: 147 tries, best 7, no improvement; the
 // rest of the body is identical. Needs the callers and 0xdc310 in a fast check.
+// GA14 (23 fresh trials): non-inline static/extern/stdcall setter 113 (163 B,
+// does not inline under /Ob1); word &flags, ternary SET_FLAG, early return,
+// header subscript, byte offset, swarm_creature_iterator_new helper, long flag,
+// bool value local, macro setter, perception subscript, != NULL, g_4e0300 local
+// all 7 (219 B); object_get_or_null 67; no flags ptr 116; byte +0x10a[1] 69;
+// (word) index 49; bitfield flag14 39/93; (word) perception 70; if (!flag) 13.
 // @retail 0x273200
 void function_273200(long ai_index, bool flag)
 {
@@ -960,6 +966,7 @@ inline void actor_274f30_update(long actor_index, bool flag)
 	}
 }
 
+// score 47 (was 47): frame (0x34), dead actor_index store and length (192/192 B) match retail; only the shared lookup product differs (ours shares imul eax, eax, 0x888 between update and erase as matched 0x274f30 does; retail computes imul ecx, ecx, 0x888 and imul eax, eax, 0x888 from the one masked eax). GA14 (35 fresh trials, all keeping 0x274f30 and peers matched unless noted): same-TU non-inline static/extern/stdcall/cdecl erase or update 110-175 (fail to inline under /Ob1, break 0x274f30); cross-TU LTCG inlining of erase/update from unknown_1e1f20.cpp (/O2 /Gr, fastcall/stdcall/cdecl, with 0x1e3240 sharing erase, with volatile/record/plain) 47/59; signed/unsigned byte-offset products 47; s_actor_view in erase 47; pointer/const-ref/param-ref index without volatile 59; direct erase with iterator.actor_index 47 or stored_actor_index 49 (201 B); g_4f55f0/data/slot locals 47; inverted if (!flag) 53 (breaks 0x274f30); (word) only in erase 43 or only in update 15 (193 B, movzx, breaks 0x274f30); short *value pointer 65 (breaks 0x274f30/0x2a55a0).
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
