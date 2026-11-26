@@ -1094,8 +1094,25 @@ struct s_flag_word_bits
 // at 0x1547cc-0x154806 and reads the first two values back from memory), and the rotation helper writes its nine
 // elements straight into the transform. The frame is now retail's 0x98. Left: the transform at [esp+0x28] against
 // retail's 0x1c, the z/y conversions of the position triple, `xor eax, eax` before both 0x17ca10 curve loads.
-// Before:
-// score 484 (was 521): flags 5 and others read through a word bitfield view give retail's load-and-shift; the rest still differs.
+// Earlier at 484 (was 521): flags 5 and others read through a word bitfield view give retail's load-and-shift; the rest
+// still differed.
+// M3 lane 4 r263 (h2m fast with 0x1544e0, 0x141ce0, 0x142a60, 0x17ca10 and 0x17c900, all MATCH each run; control 244,
+// aligned 176). The rotation builder with each matrix element written as its whole product (no t/tij/tk/tki/tkj
+// temporaries), `up.k` last 240 (1660 B, aligned 116), in 0x1544e0's row order 246 (aligned 79; the transform then sits at
+// retail's 0x1c). The missing `xor eax, eax` at each curve load shifts the rows from there on by one: retail zero-extends
+// the curve into EAX, which here only comes from passing it through an inline parameter typed as an unsigned 16-bit value
+// (lead, a one-caller helper, so match-only, held as a patch: with the 0x1544e0 row order 105 at
+// 1664 B, aligned 73); a `long` parameter gives `movsx` (250), and casts at the call (`(word)`, `(short)(long)`, `+ 0`,
+// `& 0xffff`) fold to the plain load (246 each). On the 79-row form: the shared cross3f 246 (same code: the products'
+// operand order follows ranks, not the written order); the existing real_point3d_set for the position 259 (y and z
+// still computed one after the other, retail interleaves them in two registers); the 0x259d0 range helper for the six
+// draws 392 (1645 B: each draw then reads its own seed), for the three position draws 379; the clamps written with the
+// product inside the ternary 260 (1648 B, aligned 76), as `if (!(x > 0.0f))` 246, both products ahead of both clamps
+// 246; a named entry pointer for the two fade stores 248. On the 105 form: the priority read ahead of the elapsed
+// fraction 114, between duration and elapsed 114; the fade amount as one helper of (duration, remaining, curve,
+// priority) 263; the point through real_point3d_set 118; 0x1544e0's builder order swapped for `up.k` last 142. On the
+// 240 form: a named entry pointer for the two fade stores 242, with the shared cross3f as well 242; the clamps as
+// `if (!(x > 0.0f))` 240 (same code).
 // @retail 0x1546f0
 void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
 {
