@@ -1650,6 +1650,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // in-place desired 501 / reuse desired 442 / norm delta+original 428; high-norm / rot.y / cross3f swaps 198; low-norm
 // cross(up,forward) 379, 1f087b 383, cross before forward copy 351 (3070 B), no forward copy 497, dot kji 352, side.j first
 // 200; Arm 1 cross written out 545; mag kji 198; Arm 2 vx/vy 321/311, pluseq 448/275, drop last 543, k first 389, step<norm 471.
+// M3 lane 13 r162 (h2m fast with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 198, masked-aligned 143): the earlier
+// existing-helper forms re-measured on the 198 body: the input length through magnitude3d 297 (3036 B); both lengths
+// through magnitude3d 487; the general arm's output through vector3f_add(current, &limited, out) 542; the direct arm's
+// output as three statements (i, j, then k, retail's store order) 545; those two together 471 (masked-aligned 127, the
+// closest structure, but every row after the direct arm shifts). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

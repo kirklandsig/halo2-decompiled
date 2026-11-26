@@ -974,6 +974,11 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // first rotation, whose dot retail sums as (i + k) + j and ours as (k + j) + i, the copy's loads j, i, k against ours j,
 // k, i); the yaw sine and cosine named ahead of the first rotation 164; the planar members assigned as two statements 130
 // (same code); the planar i taken from the 3-D copy 292.
+// M3 lane 3 r314 (H2M_FAST with 0x29b990, 0x170d70, 0x11cc90, 0x11ce20 and 0x1e5450, all MATCH; control 130, masked 80):
+// both turn tests as `rate * angle >= 0.0f` 217 (1708 B); the second axis's products written forward-first 130 and the
+// two sign tests as `0.0f > k` 130 (both the same code: the second axis's four products still load the other operand
+// first); the rotation input copy through the existing vector3f_assign 191 (1679 B); the 3-D input copy at the top
+// through vector3f_assign 413 (1731 B). Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

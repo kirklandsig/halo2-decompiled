@@ -761,6 +761,11 @@
 // 0x54): the special arm's first cross renamed and declared at function scope, so it cannot share the input copy's home,
 // 536; renamed only 536; the two input copies renamed 536; the two perspective crosses renamed 536; `inv` declared after
 // the shape pointers 536 (each the same code: names and these scopes do not move the 12 missing frame bytes). Body unchanged.
+// M3 lane 4 r265 (fast screen, control 536): `w` initialised from the source's vector at its declaration (the
+// special arm then overwrites it) 678 (frame 0x60 as retail, first +0x6, the source pointer moves to EDI); the two
+// colour vectors read through their pointers at each scale 639 (2571 B); case 1's scale from `&v2` in place of the
+// selected up pointer 658 (2582 B); the side and vertical shifts passed as fields 537; the shape pointers'
+// declarations swapped 536 (same code). Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1060,7 +1065,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
-// score 285 (was 285): earlier 351, 233 and 250; frame 0xa8 versus retail 0xac (retail's u_step and V end sit in 8-byte spill slots at +0xa4/+0xac); half-width/first-edge XMM colouring and packer channel homes differ.
+// score 217 (was 285): earlier 351, 233 and 250; frame 0xa8 versus retail 0xac (retail's u_step and V end sit in 8-byte spill slots at +0xa4/+0xac); half-width/first-edge XMM colouring and packer channel homes differ.
 // MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
 // definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
 // slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
@@ -1724,6 +1729,20 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // 451 (449 with nbr+pixel, 223 on 219), case 4 normal before scale 328, source.uv point2f + definition.uv_scale vector2f 643 /
 // def only 634, state valid arm first 552, both case 1/2 and 4 scaled 444, case 0 pos ptr 482, typed tint fields 442, case 1/2
 // x-before-y on 219 335 / all-xyz-21 329 / all-xyz-12 296, case 0 struct copy 693.
+// M3 lane 4 r265 (fast screen, plain-check confirmed): lane GA r4's held form landed, since losing 0xc2d00 to the
+// whole-image link is now accepted: the three colour blends through a new three-caller interpolation helper with a
+// typed next colour 223 (2592 B), the packed pixel through a two-use `pixel` stored to vertex 0 then the outer vertex
+// 221, case 0's edges in x, y, z order 215 at 2596 B (frame 0xa8); without the pixel local 217 (it gains only 2). In
+// the whole image the helper (forceinline, inline, static, static inline alike) loses matched 0x1c4590 (5, +0x149)
+// and 0x24cf66 (2, +0x3bd); the same blends as typed field rows on the colours give the same 217 and lose nothing,
+// so that is the kept form (field rows, typed next colour, case 0 in x, y, z order). What is left
+// is mostly frame placement: retail keeps u_step and
+// the V end in two 8-byte XMM spill slots beside case 0's spill at the frame top (0xa4/0xac/0xb4, total 0xac), so
+// it allocated them to registers, where ours gives them 4-byte homes in the density-sorted locals. Tried on 215: both
+// as single-assignment ternaries 620 (2580 B); the negation as `0.0f - u_step` 215 (same code); the negation and
+// the V sum after both scalings 231; v read ahead of u_step 234; the outer vertex's u and v written first 219; the
+// source scale read once into a function-scope local 600. 1..9 unused initialised locals at the top 433..492,
+// 10..32 285 (measured on the 285 body).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1771,11 +1790,10 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
             if (state->flags & 0x10)
                 state_width *= point->scale;
             width = state_width;
-            real *lower = (real *)&state->lower;
-            real *upper = (real *)&state->upper;
-            real *out = (real *)&color;
-            for (long i = 0; i < 4; ++i)
-                out[i] = (upper[i] - lower[i]) * scale + lower[i];
+            color.alpha = (state->upper.alpha - state->lower.alpha) * scale + state->lower.alpha;
+            color.red = (state->upper.red - state->lower.red) * scale + state->lower.red;
+            color.green = (state->upper.green - state->lower.green) * scale + state->lower.green;
+            color.blue = (state->upper.blue - state->lower.blue) * scale + state->lower.blue;
             if (point->flags & 2)
             {
                 s_ribbon_state *next = &definition->states[point->state + 1];
@@ -1783,14 +1801,16 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                 real next_width = next->width;
                 if (next->flags & 0x10)
                     next_width *= point->scale;
-                real next_color[4];
-                lower = (real *)&next->lower;
-                upper = (real *)&next->upper;
-                for (long j = 0; j < 4; ++j)
-                    next_color[j] = (upper[j] - lower[j]) * scale + lower[j];
+                color4f next_color;
+                next_color.alpha = (next->upper.alpha - next->lower.alpha) * scale + next->lower.alpha;
+                next_color.red = (next->upper.red - next->lower.red) * scale + next->lower.red;
+                next_color.green = (next->upper.green - next->lower.green) * scale + next->lower.green;
+                next_color.blue = (next->upper.blue - next->lower.blue) * scale + next->lower.blue;
                 width = (next_width - state_width) * transition + state_width;
-                for (long k = 0; k < 4; ++k)
-                    out[k] += (next_color[k] - out[k]) * transition;
+                color.alpha += (next_color.alpha - color.alpha) * transition;
+                color.red += (next_color.red - color.red) * transition;
+                color.green += (next_color.green - color.green) * transition;
+                color.blue += (next_color.blue - color.blue) * transition;
             }
         }
         long object_index = source->object_index;
@@ -1815,7 +1835,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         switch (definition->mode)
         {
         case 0:
-            first.z = point->position.z + half_width; first.x = point->position.x; first.y = point->position.y;
+            first.x = point->position.x; first.y = point->position.y; first.z = point->position.z + half_width;
             second.x = point->position.x; second.y = point->position.y; second.z = point->position.z - half_width;
             if (input->normal)
             {

@@ -1043,6 +1043,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // a later declaration is match-only and the aligned distance rises 311 -> 329); two returns with field_48 read once
 // ahead of the test 615; two returns with the late flag 616; the arg_6 arm returning in its own block 650 (2877 B).
 // The aligned distance stays 308-311 on all of these.
+// M3 lane 2 r155 (fast; control 362): retail's rays 0 and 1 multiply angle x root (the angle copied ahead of the
+// square root) where rays 2 and 3 multiply root x angle; in the operand ranking the angle (one value for all four
+// rays) sits below all four roots, so every ray here puts the root first. On the 184 lead (rebuilt, 184 at 2896 B):
+// the shared root output declared ahead of the two angle totals 184 and the angle written as if/else 184 (same code
+// each); the helper storing the root through its out pointer and multiplying by that 287 (2872 B). On this body:
+// OBJECT_DATUM_GET with a named FLT_MAX constant 648; that with `return local_0;` closing the block and `return
+// true;` last 394 (2896 B). Body unchanged.
 // GB22 (32 fast trials with 0x1e5450/0x30bf0/0x1697c0 MATCH, control 362 at 2897/2886 B, body unchanged): on 362 base,
 // `local_18` declared before `local_17` 358 (-4, under keep bar); `local_6` before `arg_3 = 0` 643 (2886 B), with two
 // returns 610 (2886 B, +0x40, al 245, exact entry & both exits); existing `include/axis_rotation.h` `function_x84d9e8`

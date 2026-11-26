@@ -778,6 +778,15 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // vector3f_assign out 45; out before matrix/center 176/28; def/comp/active reorder 44/41/28; early return false 55;
 // cull via OBJECT_GET 164; real xyz 28; node_mat by idx 28; vector3d_from_points3d 38; moved else 28; swapped flags 37;
 // rad before add 36.
+// M3 lane 13 r162 (h2m fast with 0xbc820/0xbd020/0xb8600/0xb87b0/0x1d44f0 MATCH; control 19). Allocator reading: EBX
+// carries a 1200 score here, so of the definition and the index-times-12 web whichever is coloured first takes EBP. On
+// this body the index web ranks 99 and the definition 98 (retail's homes); with the secondary radius read at both uses
+// the definition rises to 106 (its secondary block counts four references) and the two swap. A forced-ranking search
+// on that form: the definition picked into EBX leaves 4 (only the secondary adds' operand order, retail primary first).
+// Forms: the radius field at both uses 30 (re-measured); one primary centre pointer declared at the top for the physics
+// call, the transform and the secondary block 202 (709 B: EDI formed once, retail forms it on each path); the centres
+// addressed from the object at each use 17 (the copy's load order becomes retail's, the adds unchanged; casts, under the
+// bar); the secondary adds spelled offset first 19 (same code); the radius at both uses with a const primary pointer 30.
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {

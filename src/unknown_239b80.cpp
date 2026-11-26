@@ -1026,7 +1026,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // EBX, and the loop rotated); the three exits as `goto finished;` to the one return 236 (759 B, rotated); the index
 // store as `indices[(short)hull_count++] = current;` in a `for (; ...; )` head 248 (same code); previous_angle zeroed
 // ahead of the lowest scan 270; the body ending in `return` with `if (!left_start) continue; if (differ) continue;` 357
-// (669 B, 0x239d50 8). A forced-decision search on the 236 form (40 single decisions) finds nothing below 236: the
+// (669 B, 0x239d50 8). A forced-ranking search on the 236 form (40 single decisions) finds nothing below 236: the
 // register exchange and the rotated loop are not one allocator decision away.
 // M3 lane 8 r234 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 137, masked 56; body
 // unchanged). Frame view: here the hull count (12 references) joins the dead indices argument home and the dword departure flag

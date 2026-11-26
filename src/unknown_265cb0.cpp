@@ -1100,7 +1100,7 @@ real function_30bf0(vector3f *vector);
 // order (facing maxima below scale, range above the motion/side cell) needs the facing maxima denser and the range
 // thinner than here. Tried: the delta as a brace initialiser 84; `real const` scaled range 84; `long const` vehicle
 // index 84; `short const` seat count 84; `real const` range alone, re-measured, 84 (an earlier round listed 81) and with
-// the scaled range const 84 (all the same code). A forced-decision search ran 10 of 45 decisions in 20 minutes on this
+// the scaled range const 84 (all the same code). A forced-ranking search ran 10 of 45 decisions in 20 minutes on this
 // loaded machine before it was stopped (none matched; the closest, the first delta row's register moved, 102). Body unchanged.
 // M3 lane 6 r240 (H2M_FAST with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84, aligned 55). Reading of the
 // operand ranks: in the second seat cross retail multiplies the stored side members by forward.k from memory, so there the
@@ -1187,6 +1187,13 @@ real function_30bf0(vector3f *vector);
 // sharing one `posture == 0 ? 0.3f : 0.7f` assignment 214 (1312 B); the posture tested by an `if` with that conditional
 // 181 (1311 B); the whole scale as one nested conditional at its declaration 219 (1308 B); an explicit `default: break;`
 // 84 (same code); the clip clamp as a conditional assignment 84 (same code). Body unchanged.
+// M3 lane 12 r193 (H2M_FAST with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84). Frame packer reading:
+// cells are packed by size, then references, and a joining value tries the newest cells first, so the clip amount (2
+// references) meets the seat loop's two compiler temporaries (3 references each, packed before it) and joins the newer
+// one; retail's pairing with the squared distance needs those temporaries to interfere with it or to pack after it.
+// Forms (all 84, the same code): the seat buffer declared at the top of the facing block; `side` and `up` declared
+// apart, up first; the occupant pointer to const; the two facing maxima declared ahead of the crosses; the facing flag
+// set by an `if`. Body unchanged.
 // GB22 (26 fast trials with 0x263740/0x26d370/0x25c9d0/0x263d70 MATCH, control 84 at 1310/1308 B; body unchanged):
 // nested 0x26d370/amount if 84 (on PIN+split with extra guard 247); inline pin_real helper 97 (1308 B, range->xmm0);
 // !(distance_squared >= limit) compares 89; parameter address reads (like file peers) actor_ref 152 (143 on PIN+split),

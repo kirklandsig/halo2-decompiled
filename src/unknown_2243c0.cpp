@@ -206,7 +206,7 @@ bool function_12de70(s_geometry_block_info *, dword);
 void function_1c590(s_shader_cache *, long, long);
 void function_1c620(s_shader_cache *, long, long, long, byte const *);
 void __stdcall function_1c710(void *);
-void function_1cdd0(real const *, byte);
+void function_1cdd0(real const *, long);
 void function_1bbf0(long, long, long, long, long, real);
 void __stdcall function_224fd0(s_draw_mesh_seed const *, s_draw_value_cache *,
 	point3f const *, vector3f const *, real, color4f const *, s_draw_mesh_context const *);
@@ -1030,6 +1030,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // on the stack into EBP, 0x224d90 36); the four cache zeros grouped after the material lookup, as 0x2243c0 groups them,
 // 120; both 151 (0x224d90 36); the group test through TAG_GROUP at each compare 165 (re-measured), that with the grouped
 // zeros 157. Body unchanged.
+// M3 lane 7 r233 (fast screen with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH; control 117): the head as the matched
+// 0xd4bc0 writes the same group test (a `dword` kind read once, `tag & 0xffff` fallback) 135, with the `(word)`
+// fallback 165; the first group word read straight from the block address 117; the material tag as
+// `((long const *)element)[1]` 117; the second group word as a direct word-array index 117 (same code each). Body
+// unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

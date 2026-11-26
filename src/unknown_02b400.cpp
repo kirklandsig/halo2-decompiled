@@ -733,6 +733,7 @@ struct s_27aa0_record
     real coordinates[8];
 };
 #include "filter_kernel_storage.h"
+#include "matrix_transform.h"
 s_filter_kernel_storage g_filter_kernel_storage;
 byte g_55e6c4;
 
@@ -742,15 +743,17 @@ PRIVATE __forceinline double filter_random_fraction(void)
     return (double)(g_4e7408->seed >> 16) * (1.0f / 65535.0f);
 }
 
+inline void point2f_set(point2f *point, real x, real y);
+
 PRIVATE __forceinline void filter_random_pair(point2f *point)
 {
     dword seed = g_4e7408->seed * 1664525 + 1013904223;
     *(dword volatile *)&g_4e7408->seed = seed;
     seed = seed * 1664525 + 1013904223;
     g_4e7408->seed = seed;
-    /* the high half of the stored seed, read back as a word */
-    point->y = (real)*((word const *)&g_4e7408->seed + 1) * (1.0f / 65535.0f);
-    point->x = (real)(seed >> 16) * (1.0f / 65535.0f);
+    /* y is the high half of the stored seed, read back as a word */
+    point2f_set(point, (real)(seed >> 16) * (1.0f / 65535.0f),
+        (real)*((word const *)&g_4e7408->seed + 1) * (1.0f / 65535.0f));
 }
 
 /* standard (frame alignment): retail's prologue realigns this frame itself
@@ -758,8 +761,8 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
    address escapes. It takes no arguments, so the marker changes no call.
    The body doesn't match yet, but with the marker its prologue is
    retail's; its caller 0x25a10 doesn't match yet either. */
-// score 597 (was 597): the aligned 0xb8 frame agrees. The exit displacement leads to a body 99 bytes
-// short, and the first cosine uses double immediates where retail uses floats. Float angle literal 593;
+// score 530 (was 597): the aligned 0xb8 frame agrees. The exit displacement leads to a body 80 bytes
+// short (the first cosine and the cube now take retail's float constants). Float angle literal 593;
 // float angle literal with promoted camera component 597; named double cosine 596; named double
 // turn increment 597; named distance span 596; plain phase pointer 597; direct phase field 597; double
 // bitmap phase terms 596. NOT kept: the float angle literal fixes the three operand widths for four points.
@@ -781,6 +784,21 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // it clamps the fraction inside each weights arm (stored to its home in each branch of the clamp) where ours hoists
 // the identical clamp above the test; it evaluates the heading's x argument first with left + up; and its two random
 // point arms keep separate tails (the second forms the point address late) where ours tail-merges them.
+// M3 lane 13 r162 (h2m fast, plain check 587 with the file's other functions and the caller 0x25a10 unchanged): kept
+// 597 -> 587: the blend's cosine as cosf of a float product with float constants (retail's dword pi, 1.0 and 0.5
+// operands; 593 alone, as the float angle literal) and the cube a real local (retail's `fst dword` and then `fsubr
+// dword` 1.0f ahead of the square's pow). Also: far and near read from their globals at each use 593 (same code); the
+// turned angle a real with cosf and sinf 593 (same code); the turned angle as `*angle -= -(...)` with cos and sin of
+// *angle 588; the heading delta a real 619 (2671 B: retail's fsubr from the angle field, but later sums move to SSE).
+// Then kept 587 -> 558: the heading through the existing matrix_transform_vector applied to a constant (1, 0, 0) axis
+// (retail's x row first with left + up, as the folded transform gives), and 558 -> 530: filter_random_pair storing
+// through the existing point2f_set (its arguments evaluated y first, so both stores follow x's unsigned fix-up as in
+// retail). Also: the loop's point transform through the existing transform4x3f_apply_point (0x142570) 663 (2610 B,
+// frame 0xb0: inlined, but two stack cells go); `*angle -= -(...)` on 558 558 (same code).
+// Left: the angle field is loaded ahead of the heading (retail subtracts from memory), the fraction clamp is hoisted
+// above the weights test, the crossing pairs tail-merge (the point address is formed early), the tail copies the
+// point through integer registers (retail loads it as a real ahead of the stores), and two 4-byte slots (the loop
+// index and the radius) are swapped.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -793,7 +811,7 @@ void function_27aa0(void)
     g_4b9a00 = g_485600;
     if (g_485607) g_4b9a00 = 4;
     /* retail takes the cosine of the unrounded product */
-    real blend = (real)((cos(g_485618.forward.k * 3.1415927410125732) + 1.0f) * 0.5f);
+    real blend = (cosf(g_485618.forward.k * 3.1415927f) + 1.0f) * 0.5f;
     g_4b9d8c = 19;
     g_4b9d90 = 0.5f;
     g_4b9d94 = *(real *)(definition + 0x20) * (1.0f - blend) + *(real *)(definition + 0x1c) * blend;
@@ -832,8 +850,10 @@ void function_27aa0(void)
     real largest_distance = 0.0001f > far_distance ? 0.0001f : far_distance;
     real radius = (real)(*(real *)(definition + 0x10) * 0.5f /
         (tan(g_485640 * 0.5f) * largest_distance * aspect));
-    double angle_delta = atan2(relative.forward.j + (relative.left.j + relative.up.j) * 0.0f,
-        relative.forward.i + (relative.left.i + relative.up.i) * 0.0f);
+    vector3f forward_axis = { 1.0f, 0.0f, 0.0f };
+    vector3f heading;
+    matrix_transform_vector(&relative, &forward_axis, &heading);
+    double angle_delta = atan2(heading.j, heading.i);
     real *angle = (real *)(state->field_00 + 0x3c);
     /* retail keeps the turned angle unrounded for the cosine and sine */
     double turned = *angle - -(angle_delta * *(real *)(definition + 4));
@@ -882,9 +902,8 @@ void function_27aa0(void)
         real fraction = (distance - g_4857dc) * inverse_span;
         real centered = fraction * 2.0f - 1.0f;
         real offset_from_center = centered >= 0.0f ? centered : 0.0f - centered;
-        /* retail subtracts the cube from 1 before rounding it to a float */
-        double cubed_offset = pow((double)offset_from_center, 3.0);
-        real weight = (real)(pow(1.0f - cubed_offset, 2.0) * g_4b9d98);
+        real cubed_offset = (real)pow((double)offset_from_center, 3.0);
+        real weight = (real)(pow((double)(1.0f - cubed_offset), 2.0) * g_4b9d98);
         real size = *(real *)(definition + 0x10) / (g_4857e0 < 0.0001f ? 0.0001f : g_4857e0) * distance;
         real x = 0.0f, y = 0.0f, z = 0.0f - distance;
         if (relative.scale != 1.0f) { x *= relative.scale; y *= relative.scale; z *= relative.scale; }
@@ -984,6 +1003,15 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // vertex ESI, the seed pointer EDI and the particle EBP; the link-time colouring here ranks the seed pointer 1272,
 // the particle 682, the vertex 492 and the state 185 (left with EBP, so it is passed on the stack), while a
 // compile-only first pass of this file already gives the state EBX.
+// M3 lane 13 r162 (h2m fast with 0x27aa0 and 0x22bbca; control 832, masked-aligned 462). The convention lever: the
+// vertex pointer declared in each arm of the age test (no shared web) drops it below the state, which then takes EBX
+// and the function returns `ret 4` as retail does: 858 (3504 B, masked 424; the extent and camera cells sit 8 and 4
+// bytes higher than retail's; a declaration moved into the branches, held as a lead). Retail's jitter draws are float
+// x87 math with the doubling as `fadd st0, st0` after the 1/65535 multiply: the file's existing
+// random_real_range_28580(-1.0f, 1.0f) gives exactly that block, 839 for the three jitter draws, 842 for all nine
+// plus-or-minus-one draws (3503 B, masked 431); the jitter field read into `varied` before the draw is added (retail
+// loads it ahead of the seed step) with the helper 869 (block exact, 3507 B); those with the per-arm vertex 908 (3532 B,
+// masked 381). The maximum speed read from the state at both uses 832 (same code). Body unchanged.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
