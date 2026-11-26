@@ -1788,6 +1788,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // default by value selection, on miss or before a hit replacement 962/930/939.
 // NOT kept: most forms grow the frame to 0x30. The default-first assignment
 // restores the initial class register but grows the body. All disturb callers.
+// M3 lane 7 r230 (h2m fast, both twins together with 0x1dc790, 0x1dc8c0 and 0x1dd9d0, all MATCH; control 812 each): the
+// per-pass candidate declared after the lookup pointer 812; the lookup pointer declared once beside the entry pointer
+// 812; the entry pointer declared ahead of the iterator and the outputs 812; the lookup pointer declared in the `if`
+// condition 812 (same code each); the three output stores after 0x1dd9d0 and both requests 1037 (2846 B). A
+// forced-ranking search (diagnostic, 16 decisions) found no single decision below 812. Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2488,6 +2493,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // The final two forms construct the result from that attempt with a do-while or pretest.
 // NOT kept: the frame grows and every form exceeds retail's length and the opening score.
 // The class/NONE registers, resolved-key homes and candidate slot remain open.
+// M3 lane 7 r230 (h2m fast, both twins together with 0x1dc790, 0x1dc8c0 and 0x1dd9d0, all MATCH; control 812 each): the
+// per-pass candidate declared after the lookup pointer 812; the lookup pointer declared once beside the entry pointer
+// 812; the entry pointer declared ahead of the iterator and the outputs 812; the lookup pointer declared in the `if`
+// condition 812 (same code each); the three output stores after 0x1dd9d0 and both requests 1037 (2846 B). A
+// forced-ranking search (diagnostic, 16 decisions) found no single decision below 812. Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

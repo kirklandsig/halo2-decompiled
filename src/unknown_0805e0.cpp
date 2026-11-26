@@ -968,6 +968,20 @@ void function_1537f0(s_profile_record *record);
 // described 46; the heads as two chained pairs in retail's order 46; the heads ahead of the counters 47; the links as one
 // element chain in retail's store order 46; the tail cleared ahead of the links 46. Wanted: about 6 less for the -1
 // outside the loop (two fewer head references) or one more reference of the record word inside it.
+// M3 lane 4 r262 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18; E = round 169's element-only
+// body, re-measured 46). Ledger on E: the -1 constant 102 = entry block 12 (four head stores, cost 1 each, three values
+// referenced there: the zero, the -1 and the entry pointer) - 6 (live through the loop's preheader, six constants
+// counted there) + 96 (four link stores, weight 2, twelve values); the record word 96 = its definition and its one use
+// (cost 2 each). It is a store-to-load forwarded copy of the zero the inlined record fill stores, so a head copied
+// the same way would cost the -1 nothing; but global-to-global copies fold first: the heads as `g_4cf980 = NONE;`
+// then the other three read from g_4cf980 46 on E and 18 on main, two pairs each read from its first 46, a chain of
+// reads 46, all four as one chained assignment 46 on E and 18 on main (same code each).
+// M3 lane 2 r153 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH; control 18): the element read at each use everywhere
+// (no entry local, not a mix) with the links as two chained pairs 46: retail's loop at base +0x4c with the -1 in EBP.
+// Ledger there: the -1 102 = heads 12 (four refs, three values in the entry block) - 6 (preheader) + 96 (four link refs);
+// the record word 96 with the later tie, so at 96 or below it would take EBP. Forms: a pointer loop over the entries 84
+// (270 B); the two tail zeros chained 46; the record declared above the loop 46; the second link pair copied from the
+// first pair's field 46 (folds); one four-link chain in retail's store order 46 at each use, 49 through an entry local.
 // @retail 0x7f930
 void function_7f930(void)
 {

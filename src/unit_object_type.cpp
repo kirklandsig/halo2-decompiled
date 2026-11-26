@@ -5745,6 +5745,14 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // was not ranked from that call. Also: the transform declared ahead of up and forward 169, the local vector declared
 // there 169 (same code each); up_scale computed ahead of the cosine 190 (778 B); `left` declared beside up and forward
 // (outside the aim branch) 169.
+// GB r17 (fast with 0xde190/0x1fe120 MATCH, 0xc60c0 172; control 169 at 768/767 B): on s_view_angles base, reusing local
+// for clamped direction 169; renaming up/forward/left/local/matrix 169/169; inline 0xb9fc0 wrapper 169; inline mat3 helper
+// 169; inline trig without scale locals 169; plain double trig scales 191 (776 B); double cosine+forward_scale with real
+// left/up 191 (774 B, all 26 row insns match retail, cosine spills to qword); direct cross3f_staged (both/first, with or
+// without s_view_angles) 169; inline orthonormalize_up helper using cross3f_staged first (both/first, static/forceinline,
+// vector3f* return, swapped params, HEAD/angles, kij/cb_kji/cb_kij) 156 at 768/767 B (delays up.i to retail's line after
+// left.i, matching lines 37-56 and the second cross, still 1 extra movaps for up.j*fwd.i; NOT kept: new one-caller helper);
+// helper with cross3f first or ijk/ikj staged 169, jki/jik 184 (774 B), reversed stores 181, by-value cross 358. Body unchanged.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5989,6 +5997,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // (!from_actor)` the default) 168 (812 B), with the velocity local 159; on the both-in-place form the rate block's
 // scaled limits as their own locals 170. Re-measured: a/b in place 168, c/d in place 61.
 // @retail 0xd0080
+// M3 lane GA r15 (35 fast trials with 0xc49b0, 0x1e3370, 0x1ecf50 all MATCH; control 58; plain verified 37, all file peers MATCH):
+// Not kept at review, 58 -> 37 (810/810 B, first diff +0x59 -> +0x1cf): shared 2-caller clamp_turn_bounds(real const *value, limit, scale, *high, *low)
+// computing above = limit - *value and below = *value + limit then scaling in each clamp test; matches lines 1-118 byte for byte
+// (xmm4/xmm5 clamps, shared xmm3 for pi/4 and 4.244, xmm6 for 2*pi, both clamp blocks and both random branches exact).
+// Also tried (not kept): clamp_turn_bounds with real value by value 57 (subss xmm0, xmm1); with scale = 1/(0.3*limit) 37; with below first 173;
+// with pre-scaled products 173; without above/below locals 81; with real const &value 37; with two-use turn_rate = unit->unknown2dc + turn 28
+// (and turn_rate = turn; turn_rate += unit->unknown2dc 25, matching rotate_direction lines 144-188: gains only inside unchanged rotate_direction);
+// include/axis_rotation.h function_x84d9e8 alone 100, with both clamp sums in place 70 (+0x1cf, lines 1-118 exact, tail 56 diffs from vector_k),
+// with c/d or a/b in place 97/84, with clamp_turn_bounds 100-130, with function_x82e52f 100, with swapped high/low 100.
+// Review: clamp_turn_bounds is a new helper used only by this function (two sites), match-only; body restored at 58.
 void function_d0080(long unit_index, vector3f *direction)
 {
 	s_unit *unit = UNIT_GET(unit_index);
@@ -9914,6 +9932,29 @@ struct s_unit_melee_collision
 // read the aim's j and k through the unit and the range from the weapon definition at each product. Forms: the NONE
 // defaults declared ahead of the weapon index 502, at the top 502; with the material index object ahead of them 532 (2216 B);
 // the melee entry selected ahead of the fan 551 (2259 B); the hit type as a long 518 (2224 B).
+// GB r14 (fast with 0xcfc90 and 0xcf040 MATCH; control 447 at 2229 B, fr 0x180, al 344, mk 181; 22 real trials):
+// dropping `aim` (`&unit->unknown168` in 0x11d000 and existing cross3f, direct unit->unknown168 in ray) + per-product
+// range + existing vector3f_scale (normalize3d.h) for across/up + existing TEST_FIELD_BIT on both seat-flag tests +
+// structured ifs (no goto impact): 390 (2219/2229 B, 520/522 insns, fr 0x17c, al 240, mk 100; plain check confirmed 390
+// with all 128 unit_object_type.cpp peers + 0xea090/0x1697c0 intact, BUT adding `#include "normalize3d.h"` or a local
+// inline scale helper to this TU triggers the known 2-point LTCG tie in matched 0x185be0 at +0x21c, confirmed even on
+// HEAD + `#include "normalize3d.h"` alone; NOT kept to preserve 0 lost). Tried and not kept: drop aim + live range
+// alone 532 (fr 0x17c, mk 109); + cross3f 551 (al 295); + split width/height mul-left + TEST_FIELD_BIT 546 (2203 B,
+// al 278, mk 117); + unit_at_masked_index (all/4/unit+post) 546/546/539 (2203 B, al 263); + vector3f_add_scaled ray
+// 548 (2187 B); + `+=` ray 539; + cross3f_staged 539; vector3f_scale without TEST_FIELD_BIT 397 (2214 B); damage_index
+// before weapon_index 428 (2230 B, 521/522 insns, al 185, mk 83; drops or esi,-1 in tail), with structured ifs 427
+// (al 183, mk 81), at very top 428, with flipped a76b0 test 426 (al 179, mk 76); all NONE defaults before weapon_index
+// 532; definition after weapon_index 425 (al 166, mk 87); s_record_pool *objects = g_4e0300 547/573 (fr 0x180);
+// damage_index before hit_index 501, before material_index 429; unit_at_masked_index on 390 form 390 (same code);
+// swapped ray operands/orders on 390 form 390 (same code). Body unchanged.
+// M3 lane 15 r149: a 390 form (was 447; frame 0x17c as retail's, 2219 B against 2229) is held as a patch, code back to
+// main, because it costs matched 0xc2d00 (0 -> 2, the /GL coin flip) with either scale helper: no aim pointer
+// (unit->unknown168 at each read), the cross product through cross3f, the range field read in each ray row, both
+// seat-flag tests through TEST_FIELD_BIT, the gotos replaced by nested tests, and across/up scaled through the existing
+// forced-inline direction_scale of src/unknown_24f590.cpp with the half width and half height passed straight in.
+// Variants: named width/height locals 546, gotos kept 390 (same code), without TEST_FIELD_BIT 397, without the scale
+// helper 551, the cross written out 530, a pool local for every unit lookup 547. The prologue still differs (retail
+// loads the unit index first, tag table in ESI, pool in EDI, NONE in EBP for the weapon slot's compare).
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

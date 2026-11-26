@@ -690,6 +690,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // 0.0f)` 2/2/2, under a repeated node-count test 96; `s_animation_state &animation = *state;` in the loop body or
 // ahead of the loop for the arms' reads 2/2; `s_graph_pair_iterator &pair = *iterator;` for the pair reads 2. Retail's
 // 0xb8ca0 (reached through the first query) passes 0x10cf50's argument in ECX, so it is link-time compiled too.
+// M3 lane 8 r240 (fast screen with 0x113ba0, 0x113c60, which stay matched), at 2. Reading: the back edge's two reloads have
+// equal scheduler height (a forced-ranking search that raises either one matches), so they come out in code-generation order: the
+// table's register candidate before the state's split piece, whose number comes from the free list after the pieces of
+// the NONE and 0xffff constants and so lands above the table's. Forms (all the same code): `found` declared once beside
+// the markers; the break braced; `graph` in the loop body (re-measured); the visited words ahead of the markers; the model
+// lookup after the markers and the visited words.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -3149,6 +3155,14 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // reassigned as the index 16; the request record at function scope with the default fill storing the flags first 17;
 // the index from a ternary with one NONE test and request priority as long 16; the default arm first (`if (!extra)`)
 // with the sound index stored before the delay 36; the default fill storing the object index first 16. Roles unchanged.
+// M3 lane 2 r152 (H2M_FAST): the allocator's ledger: the index ranks 48, the request priority 33 and the NONE constant 14,
+// which earns weight only from its four stores (B3 5, B4 5, the default arm 4: its two compares cost nothing), so it
+// colours last; a forced-ranking search finds one byte match, NONE moved to the top, and no single other decision (index
+// in ESI 12, index or request priority one rank down 12). Forms: the index as `short &` bound to entry_index 40 (248 B);
+// the 0x114520 result in a bool read through a `bool const &` 16; the fallback result bound to a `short const &` and
+// copied after its test 17; the request reached through a `s_request_114b60 *const` passed to memset and 0x114680 16; the
+// out value through a `long &definition_index` bound to the priority parameter 16. Re-measured: the request priority and
+// the out clear ahead of the fallback block 23, the extra arms inverted 29, entry_index reassigned 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

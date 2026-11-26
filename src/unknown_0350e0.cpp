@@ -3092,6 +3092,16 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // the setter 281/503, with the attenuation default at its original point or with the tint.
 // NOT kept: in-place doubling reaches the 2285-byte extent at a higher score. The camera
 // displacement registers and the early attenuation store still differ.
+// M3 lane 14 r157 (fast screens with 0x2f2d0, 0x2e3f0, 0x222d0 and 0x497a0; control 281 at 2286 B, aligned 143, masked 63).
+// Reading: our loop head carries a `jmp` and 9 pad bytes that retail's does not, because our code ahead of the loop is
+// about 10 bytes short (retail's four extra spills in the delta/forward/attenuation block), so the pad is a result, not a
+// cause. Retail's needed leaf ranks are the forward dot's six leaves read right to left (axis.k, delta.k, axis.i,
+// delta.i, delta.j, axis.j), as if the dot were their first reference. Forms: the three differences written inside the
+// forward dot with the delta vector filled after it 490; the axis read through a const reference to the camera's
+// forward 500; the attenuation default declared ahead of the delta (after the tint) 503 (2290 B), with the delta filled
+// i, j, k 504, with the delta through vector3d_from_points3d 518 (2302 B). A forced-ranking search (12 of 2692
+// candidates) found no single allocator decision that lowers 281: the first difference is in the scheduler, not the
+// colouring. Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -6217,8 +6227,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
         g_485a30 = g_485a34 = g_485a38 = g_485a3c = 1.0f;
         g_485a40 = 0.0f;
     }
-    function_0497a0(source, (s_view_result *)g_48597c, camera, flags, &g_485944, &g_485950, g_48595c,
-        &g_485a2c, (vector4f *)g_485a0c, (vector4f *)(g_485a0c + 4));
+    /* retail passes the light's frame in eax (read above) and its shape in ecx
+       (the short above); 0x497a0 takes the shape as its source (its kind at +0,
+       its extent at +0x38) and the frame as its camera (forward +0x28, up
+       +0x34) */
+    function_0497a0((s_view_source *)camera, (s_view_result *)g_48597c, (s_view_camera *)source, flags,
+        &g_485944, &g_485950, g_48595c, &g_485a2c, (vector4f *)g_485a0c, (vector4f *)(g_485a0c + 4));
     s_bounds3d bounds;
     if (resource)
     {
@@ -6714,7 +6728,13 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 #endif
 
-// score 43 (was 270): the three clamps use PIN, which reevaluates the
+// score 20 (was 43): retail's 647/647 B length and entire body (0x4ff72..0x501c5, including the pow -> xorps xmm2,xmm2 -> fstp [ebp]
+// -> movss xmm0,[ebp] -> comiss xmm0,xmm2 reload and strength guard) now match byte for byte after separating the projection phase into
+// `if (facing && *strength > 0.0f)`. All 20 remaining differences (prologue push order/state register ebx vs esi, 0x30830 call setup
+// order + test eax vs test al, and both epilogue pop orders) are caused solely by 0x30830's parameter order (`d` before `a`, BLOCKED-BY
+// contributor caller 0x4f7e0 in src/unknown_01cf50.cpp) and return type (`bool` gives 19 here and 189 on 0x30830, 0x4f7e0 unchanged at 325,
+// not kept for 1 pt across four files).
+// Earlier 43 (was 270): the three clamps use PIN, which reevaluates the
 // clamped expression as retail does (for the angle, function_50650 inlined
 // twice and then called), and the curve's base value is read where it is
 // used. What still differs: retail pushes ebx and edi after the first test and
@@ -6723,6 +6743,12 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 // function_30830's result as a byte. A pow on *strength or in double, and a
 // bool return for function_30830 (195 -> 189 for that function, 81 -> 80
 // here, across four files) were tried.
+// M3 lane GA r18 (21 compiled fast trials with 0x50650/0x13bb90 MATCH, 0x30830, 0x4f7e0; 43 -> 20 at 647/647 B):
+// Kept: separate `if (facing && *strength > 0.0f)` block for the 0x30830 projection (43 -> 20, 647/647 B; nested `if (facing) { if (*strength > 0.0f) ... }`
+// and dropping `real value` on it give the same 20). Tried on 43: bool return on 0x30830 42 (with split facing 19; 0x30830 189, 0x4f7e0 325);
+// no value local / pow(*strength) / if (*strength) before pow / combined if (*strength && 30830) / early return / double-cast pow / raw before PIN /
+// else-if (value > 0) all 43; assign *strength after if 191 (637 B); else { *strength = value; } 119 (659 B); else { *strength = 0.0f; } 118 (666 B);
+// exponent ternary 108 (664 B); 0.0f < value/strength 99 (632 B); nested if (curve) 55.
 // @retail 0x4ff50
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
     real cosine, real *strength, real *horizontal, real *vertical, real *out)
@@ -6743,16 +6769,16 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
                 else
                     *strength = 1.0f;
             }
-            if (*strength > 0.0f)
+        }
+        if (facing && *strength > 0.0f)
+        {
+            point2f projected;
+            if (function_30830((point3f const *)(state + 8), &g_4b9e14, (vector3f const *)(state + 0x14),
+                &g_4b9ecc, true, true, &projected) && (projected.x != 0.0f || projected.y != 0.0f))
             {
-                point2f projected;
-                if (function_30830((point3f const *)(state + 8), &g_4b9e14, (vector3f const *)(state + 0x14),
-                    &g_4b9ecc, true, true, &projected) && (projected.x != 0.0f || projected.y != 0.0f))
-                {
-                    double direction = atan2(projected.y, projected.x);
-                    *horizontal = (real)cos(direction);
-                    *vertical = (real)sin(direction);
-                }
+                double direction = atan2(projected.y, projected.x);
+                *horizontal = (real)cos(direction);
+                *vertical = (real)sin(direction);
             }
         }
         if (curve)

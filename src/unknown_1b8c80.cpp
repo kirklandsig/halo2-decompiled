@@ -559,6 +559,18 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // 11; the seats pointer as a reference in the loop 11; the whole tag as a const reference (`tag.` at every use, exclusive) 11.
 // Reading: in every exclusive form the first extended index's zero (EAX) is placed ahead of the guard, so the guard compare and
 // the NULL store take it; retail places that `xor eax, eax` after the guard, leaving the index's own zero (EBP) for both.
+// Round 191 (m3 lane 12, h2m fast; all on the exclusive bound unless marked): the index initialised ahead of the seat
+// pointer (`short i = 0; ... seat = NULL; for (; i < count; i++)`) 11, inclusive 8; the seat declared bare, then the
+// index, then `seat = NULL` 11; the same with the count in a local 11; a while loop with the index first 11; the index
+// first with `tag->seat_count > i` 12; the comma init `for (i = 0, seat = NULL; ...)` (diagnostic) 11. Reading of the
+// allocator's ranking on the exclusive form: the index ranks 18 (its guard-block def, the latch's increment at loop
+// weight 2 with three candidates there) and the count 16 (its load and guard compare, the latch compare), both minus 16
+// for the three body blocks they only cross, so the index takes ESI first; a forced-ranking search gives the index EBP
+// for 6, and what is left is the zero: the constant 0 piece over the guard and the preheader ranks 4 (only the seat's
+// NULL store to its stack home costs anything) and takes EAX, so `xor eax, eax` lands ahead of the guard and serves the
+// compare, the NULL store and the first extended index, where retail's zero is not a register candidate at all (the
+// compare and the store reuse the index's EBP, and the first extended index gets its own `xor eax, eax` after the
+// guard). The statement order inside the guard block does not move it (the index def first gives the same code).
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -1085,6 +1097,11 @@ extern "C" void _ReadWriteBarrier(void);
 // after the barrier, tested in the NONE block): the flags byte in a local 6; that with a `point3f const *` to the point
 // for the copy 6; the flags in a `long` 6; the test held in a bool 6 (all four the same code: the read sinks into the
 // NONE block with the slot load); the flags byte local with no barrier 44 (208 B).
+// M3 lane 2 r152 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6), each without the barrier: `__assume(slot !=
+// NULL)` as the first statement 44; the state as `slot ? (s_slot_4c *)slot : NULL` 44; the flags test held in a bool
+// inside the NONE block 44; the point bound by `point3f const &` at the top for the copy 44; the state declared inside
+// the NONE block 44 (all the no-barrier code, 208 B). The listed data-block form (FORMS-slot-data-block) does not fit:
+// retail reads +0x22 and adds 0x34 to the slot itself.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

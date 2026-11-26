@@ -52,12 +52,13 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision);
 void function_11bed0(s_location *location, point3f const *point);
 
+// score 141 (was 269): GA14's 140 form matches all 214 instructions through the hit material store and all 87 after the reflection (exact 1428/1428 B, 0x8c frame, spill slots [esp+0x10]/[esp+0x14]/[esp+0x18], mode movzx, single-exit epilogues, material_type store and dt/bounce order); review left out its two statement-order moves (match-only), 141; only the 47-instruction bounce reflection block differs (ours computes n*d in j,k,i using xmm4/5/6 for n.k/n.j/n.i and spills tangent.k to [esp+0x30]; retail computes d*n in k,i,j using xmm3/4/5, frees xmm6 for v.i and spills along.k to [esp+0x98], 3 B longer). GA14 (149 trials, 269->140 kept): single-exit result=0 with else/break 155 (1424 B); plus dword mode if/else 141 (1428 B); plus material_type before displacement and dt before bounce++ 140 (1428 B; match-only, not kept); reflection forms (all on 140 base unless noted): s_collision_result_1697c0 0x5c/0x60/0x64 166/156/156; single-expression dot 150-177 (1413 B); dot3f/dot_kji helpers 150-177 (1413 B); scalar along/tangent or no tangent 175 (1409 B); no along or tangent 193 (1392 B); tangent*keep-along*rest 140; scalar/two loops 157-204; by-value vector helpers 284 (1521 B); lincomb/scale-sub helpers 195-256; along=plane.n / tangent=*velocity copies 160-359; vector3d_from_points3d / vector3f_add_scaled 140; for loop 344. GA16 (49 fast trials, body unchanged at 141): 0x5c collision with vector3f_scale+vector3d_from_points3d/vector3f_subtract/vector3f_add_scaled/kij/top-decls/outside-loop/renamed-structs 166-177 (frame 0x80, collision at 0x34); 0x5c collision with aggregate copies (along=n 324 0x88, tangent=*v 177 0x80, both 359 0x94, n-copy 332 0x94, old_vel 178 0x8c, new_pos 198 0x8c, scale_val 200 0x8c, scale_val+sub_val 284 0xa4) all shift collision to 0x40; 0x5c reflection loops 167-205 (0x7c-0x80); 0x64 collision plain/kij/scale+sub/dot3f/scale_val 156-216 (0x84-0x94); on 0x68 base: normal ptr / n*d / n*v dot / scalar-along+vec-tan / along={d,d,d} / i+(j+k) dot / rename / decl order / diag /Ob1 all 140 (1428 B); CSE no-along 140 (1413 B); j+k+i and (k+j)+i single-expr dot 142; scalar tangent / inline tangent / retail-interleaved scalars 175 (1409 B, frame 0x88); scalar vi/vj/vk hoisted loads 93 (1413/1428 B, NOT kept: shortens body by 15 B and removes retail's velocity reloads, only re-aligning the 87-insn tail).
 // @retail 0x211060
-long function_211060(vector3f *velocity, dword flags, void const *mover_settings, s_location *location,
-	long cell_slot, point3f *position, vector3f const *force, vector3f *normal, short *material_type, real radius,
+long function_211060(dword flags, void const *mover_settings, s_location *location, long cell_slot,
+	point3f *position, vector3f *velocity, vector3f const *force, vector3f *normal, short *material_type, real radius,
 	real dt)
 {
-	long result;
+	long result = 0;
 	s_point_mover_settings const *physics = (s_point_mover_settings const *)mover_settings;
 
 	if (dt != 0.0f)
@@ -66,7 +67,11 @@ long function_211060(vector3f *velocity, dword flags, void const *mover_settings
 		real unit_mass = physics->unit_mass;
 		real radius_squared = radius * radius;
 		real radius_cubed = radius_squared * radius;
-		long mode = (physics->flags >> 3) & 1;
+		dword mode;
+		if (physics->flags & 8)
+			mode = 1;
+		else
+			mode = 0;
 		if (physics->flags & 0x10)
 			mode |= 2;
 		else
@@ -145,54 +150,54 @@ long function_211060(vector3f *velocity, dword flags, void const *mover_settings
 			function_11bed0(&new_location, position);
 			if (new_location.leaf_index != NONE)
 				*location = new_location;
-			return result;
 		}
-
-		short bounce = 0;
-		while (dt != 0.0f && bounce < 3)
+		else
 		{
-			vector3f displacement;
-			s_collision_result_1697c0 collision;
-
-			displacement.i = velocity->i * dt;
-			displacement.j = velocity->j * dt;
-			displacement.k = velocity->k * dt;
-			collision.material_type = NONE;
-			if (!function_1697c0(collision_flags, position, &displacement, NONE, NONE, &collision))
+			short bounce = 0;
+			while (dt != 0.0f && bounce < 3)
 			{
+				vector3f displacement;
+				s_collision_result_1697c0 collision;
+
+				displacement.i = velocity->i * dt;
+				displacement.j = velocity->j * dt;
+				displacement.k = velocity->k * dt;
+				collision.material_type = NONE;
+				if (!function_1697c0(collision_flags, position, &displacement, NONE, NONE, &collision))
+				{
+					if (collision.end_location.leaf_index != NONE)
+						*location = *(s_location *)&collision.end_location;
+					*position = collision.point;
+					break;
+				}
+
+				real offset = radius > 0.005f ? 0.005f : radius;
+				if (collision.type == 2)
+					result |= 8;
+				else if (collision.type == 1)
+					result |= 4;
+				if (normal)
+					*normal = collision.plane.n;
+				if (material_type)
+					*material_type = collision.material_type;
+
+				real d = velocity->k * collision.plane.k;
+				d += velocity->j * collision.plane.j;
+				d += velocity->i * collision.plane.i;
+				vector3f along = { d * collision.plane.i, d * collision.plane.j, d * collision.plane.k };
+				vector3f tangent = { velocity->i - along.i, velocity->j - along.j, velocity->k - along.k };
+				velocity->i = (1.0f - physics->tangential_loss) * tangent.i - physics->restitution * along.i;
+				velocity->j = (1.0f - physics->tangential_loss) * tangent.j - physics->restitution * along.j;
+				velocity->k = (1.0f - physics->tangential_loss) * tangent.k - physics->restitution * along.k;
 				if (collision.end_location.leaf_index != NONE)
 					*location = *(s_location *)&collision.end_location;
-				*position = collision.point;
-				return result;
+				position->x = collision.plane.i * offset + collision.point.x;
+				position->y = collision.plane.j * offset + collision.point.y;
+				position->z = collision.plane.k * offset + collision.point.z;
+				bounce++;
+				dt -= collision.t * dt;
 			}
-
-			real offset = radius > 0.005f ? 0.005f : radius;
-			if (collision.type == 2)
-				result |= 8;
-			else if (collision.type == 1)
-				result |= 4;
-			if (normal)
-				*normal = collision.plane.n;
-			if (material_type)
-				*material_type = collision.material_type;
-
-			real d = velocity->k * collision.plane.k;
-			d += velocity->j * collision.plane.j;
-			d += velocity->i * collision.plane.i;
-			vector3f along = { d * collision.plane.i, d * collision.plane.j, d * collision.plane.k };
-			vector3f tangent = { velocity->i - along.i, velocity->j - along.j, velocity->k - along.k };
-			velocity->i = (1.0f - physics->tangential_loss) * tangent.i - physics->restitution * along.i;
-			velocity->j = (1.0f - physics->tangential_loss) * tangent.j - physics->restitution * along.j;
-			velocity->k = (1.0f - physics->tangential_loss) * tangent.k - physics->restitution * along.k;
-			if (collision.end_location.leaf_index != NONE)
-				*location = *(s_location *)&collision.end_location;
-			position->x = collision.plane.i * offset + collision.point.x;
-			position->y = collision.plane.j * offset + collision.point.y;
-			position->z = collision.plane.k * offset + collision.point.z;
-			bounce++;
-			dt -= collision.t * dt;
 		}
-		return result;
 	}
-	return 0;
+	return result;
 }

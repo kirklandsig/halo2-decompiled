@@ -3218,28 +3218,32 @@ bool __stdcall function_20ba60(short arg_0, long arg_1, long arg_2, long arg_3, 
 // choice passed down back to NONE on every path that finds none, which the `local_11` branch
 // reproduces. Tried: the branch as a force-inlined helper (136), a choice variable with no gotos
 // (116-153), the index as a word local (122).
+// M3 lane 13 r160 (fast; control 107): the loop as a self tail call `function_202a00(next sibling, choice)` under
+// `if (group != NONE)` 187 (422 B: the prologue and back edge are retail's, but 0x291740 then stays a call); the group
+// through squad_group_get 107, the index masked at each use 107, the definition table through its typed entries 107
+// (all the same code). Kept: the loop over the parameter itself in place of pointers to both parameters 107 (same
+// code). A forced-ranking search: the group pointer in EBP (its priority 304 under the masked index's 232) leaves
+// only register names in six places; the choice in EBX and the inherited choice in ESI follow from that.
 // @retail 0x202a00
 void __stdcall function_202a00(long arg_0, long arg_1)
 {
-    long *local_0 = &arg_0;
-    long const *local_1 = &arg_1;
-    while (*local_0 != NONE)
+    while (arg_0 != NONE)
     {
         long local_2 = NONE;
-        long local_3 = *local_0 & 0xffff;
+        long local_3 = arg_0 & 0xffff;
         byte *local_4 = g_51e9dc->data + local_3 * 0x38;
-        if (*local_1 != NONE && (!local_4[0x16] ||
+        if (arg_1 != NONE && (!local_4[0x16] ||
             *(short *)(local_4 + 0x14) == NONE ||
             !((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_4 + 0x14) * 0x7c)[0x24] & 1)))
         {
-            *(short *)(local_4 + 0x14) = (short)*local_1;
+            *(short *)(local_4 + 0x14) = (short)arg_1;
             local_4[0x16] = false;
             *(long *)(local_4 + 0x18) = g_510c54->game_time;
             *(short *)(local_4 + 0x1c) = NONE;
             *(short *)(local_4 + 0x1e) = NONE;
-            if ((short)*local_1 != NONE)
-                function_291740((short)*local_1, local_3 | 0x40000000);
-            local_2 = *local_1;
+            if ((short)arg_1 != NONE)
+                function_291740((short)arg_1, local_3 | 0x40000000);
+            local_2 = arg_1;
         }
         else if (local_4[0x16] && *(short *)(local_4 + 0x14) != NONE)
         {
@@ -3254,7 +3258,7 @@ void __stdcall function_202a00(long arg_0, long arg_1)
             }
             else
             {
-                local_7 = function_290cd0(*(short *)(local_4 + 0x14), NONE, *local_0, &local_6, &local_5);
+                local_7 = function_290cd0(*(short *)(local_4 + 0x14), NONE, arg_0, &local_6, &local_5);
                 if (local_7 == NONE)
                     goto local_11;
                 if (local_6 > 0)
@@ -3268,7 +3272,7 @@ void __stdcall function_202a00(long arg_0, long arg_1)
             if (local_7 != NONE)
             {
                 local_2 = local_7;
-                function_202e30(local_7, *local_0, true);
+                function_202e30(local_7, arg_0, true);
                 if (local_5 != NONE)
                     function_20ba60(local_5, NONE, NONE, local_3 | 0x40000000, NONE, NULL);
             }
@@ -3286,7 +3290,7 @@ local_11:
             function_202be0(local_2, local_8);
             local_8 = *(short *)(local_9 + 0x74);
         }
-        *local_0 = *(long *)(local_4 + 0xc);
+        arg_0 = *(long *)(local_4 + 0xc);
     }
 }
 

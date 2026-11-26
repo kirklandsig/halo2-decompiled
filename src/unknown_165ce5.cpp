@@ -615,13 +615,13 @@ void first_person_weapon_sound_event(long user_index, long field_x11c898, s_firs
 }
 
 // @retail 0x166d50
-void __stdcall first_person_weapon_sound_event_right(long user_index, long unused, s_first_person_event const *event)
+void __stdcall first_person_weapon_sound_event_right(long user_index, real frame, s_first_person_event const *event)
 {
 	first_person_weapon_sound_event(user_index, 0, event);
 }
 
 // @retail 0x166d62
-void __stdcall first_person_weapon_sound_event_left(long user_index, long unused, s_first_person_event const *event)
+void __stdcall first_person_weapon_sound_event_left(long user_index, real frame, s_first_person_event const *event)
 {
 	first_person_weapon_sound_event(user_index, 1, event);
 }
@@ -2208,6 +2208,26 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // 172/383; both banks and count before lookup 361. NOT kept: the output bank
 // gains one and the early count changes its read phase. The byte offset grows
 // the frame to 0x30. The unit and mode slots remain exchanged.
+// M3 lane 16 r192 (H2M_FAST with 0x165dc1, 0x166561, 0x11eed0; control 172, aligned 76, masked 73): the exchanged
+// unit/mode homes against name order: `mode` renamed to a name sorting after `unit` 172, `unit` renamed to one sorting
+// before `mode` 172, both 172 (same code each: these homes do not follow names); the unit local replaced by a pointer to
+// its aiming velocity (the only member read) 562 (2189 B); the look angles read from the table at each use (no look
+// pointer) 408 (2208 B). Body unchanged.
+// GA16 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172, 2196 B, 50 trials):
+// LEAD, match-only (build/ga16/lead-0x166d75-score3.patch): on the r232 match-only lead, scoping
+// `s_animation_state *animation = &weapon->animation;` to 1..4 uses (`update`, `channels[0]`,
+// `overlay_get`, `channel_update`) moves `mov edi, [ebp - 0xc]` up to retail's exact 0x16710b
+// (keeping frame 0x2c) and replacing the embedded-assignment clear test with `bool should_clear` +
+// `long current_set` in the else branch hits score 3 (2199/2199 B, +0x593, masked 0: 576/579 insns
+// exact); 5+ uses of `animation` grow the frame to 0x30 (309..374); `should_clear` omitted 8,
+// plain `else` play 230 (2193 B). On the score-3 base, all +0xb8 pointer forms (`get_duration`/
+// `set_frame_position`, `overlay_play_for_class`, reference, top/pre-98 init, direct `&weapon->channelb8`)
+// stay at 3 (only `lea ecx/mov eax, ecx` x3 vs retail's `esi` across `call 0xb6760`, whose LTCG
+// register summary preserves ECX here); `channel++` from channel98 309 (frame 0x30), inverted
+// animation-name guard 65 (2195 B). On the 172 base, `s_animation_state *animation` (2..4 uses,
+// with or without `== 0 ? right : left`) fixes the 0x16710b reload cleanly at frame 0x2c (173,
+// 2196 B; 5+/all uses 374, frame 0x30); shift/bitfield/TEST_FIELD_BIT channel-byte tests all fold
+// to `test byte ptr [edi + 0x19], 0xa` (331..337, 2197 B). Body unchanged (score-3 lead is match-only).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

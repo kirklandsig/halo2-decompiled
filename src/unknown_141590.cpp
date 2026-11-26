@@ -1381,6 +1381,14 @@ void function_143250(
 // lack separate spill homes. Copy then multiply for either weighted pair, both, the
 // full axial or transverse family, either family plus the other pair, and
 // both full families all 939. The frame stays 0x2fc against retail's 0x300.
+// GB r17 (fast with 0x143250 MATCH, 0x22850 209, 0x23690 354; control 939 at 10777/10773 B): matrix3x3 const *rotation
+// param (updating 0x22850/0x23690) 939 (same code), + 0x143250 param order (n, a, b, out) 935 (-4, under bar); band-2
+// (real)(sqrt(15.0)*sqrt(5.0)) / reverse 1692 (10740 B); band-3 double s21_d = sqrt(21.0) with (real)(s21_d * s35) 1559
+// (frame 0x300, +0x39, 10739 B); inlining mid-matrix locals r4_r0_s105_s35_s2 / r5_r5_s21_s35 / r5_r2_s105_s2_s21 / all
+// 939/939/1563/1563; hoisting them to preamble 1528/1036/982 (frame 0x300, +0x3b)/1487 (frame 0x300, +0x3b); naming
+// r2_r2_s105_s21_s2 before matrix[19] / in preamble 1314 (10773 B) / 1563; unparenthesizing (r2_r2_s105*s21_s2) 1260;
+// dropping band-3 r5_r0/r5_r1/r5_r5 locals 1466; matrix[8] direct += accumulation 939 (same code); on 0x143250 param
+// order + matrix[28] T1-(T2+T3): matrix[25] sub-pair 1152, grouped 1225, matrix[28] factored 936. Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

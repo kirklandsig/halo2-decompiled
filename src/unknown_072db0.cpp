@@ -843,6 +843,21 @@ struct s_search_value_group
 	s_search_player_values players[16];
 };
 
+struct s_cache_property
+{
+	long unknown00;
+	long type;
+	long unknown08;
+	long unknown0c;
+};
+struct s_cache_property_record
+{
+	byte identity[12];
+	long type;
+	long count;
+	s_cache_property *properties;
+};
+
 /* the search value globals (0x509450, 0x70f8 bytes): set by the network
    initialize, cleared by the network dispose */
 struct s_search_value_globals
@@ -850,7 +865,26 @@ struct s_search_value_globals
 	bool initialized;
 	byte unknown01[3];
 	s_search_value_group groups[5];
-	byte unknown3010[0x70f8 - 0x3010];
+	long read_failures;
+	long read_state;
+	long read_time;
+	long read_task;
+	long read_record_count;
+	s_cache_property_record read_records[80];
+	long read_property_count;
+	s_cache_property read_properties[480];
+	long unknown55a8;
+	byte read_buffers[2048];
+	long write_state;
+	long write_time;
+	long write_task;
+	long write_record_count;
+	s_cache_property_record write_records[32];
+	long write_property_count;
+	s_cache_property write_properties[128];
+	long unknown68c0;
+	byte write_buffers[2048];
+	byte unknown70c4[0x70f8 - 0x70c4];
 };
 s_search_value_globals g_509450;
 #define g_509454 g_509450.groups
@@ -1561,20 +1595,6 @@ void __stdcall function_741f0(s_match_player_rating_collection *collection, s_qu
 }
 #pragma inline_depth(255)
 
-struct s_cache_property
-{
-    long unknown00;
-    long type;
-    long unknown08;
-    long unknown0c;
-};
-struct s_cache_property_record
-{
-    byte identity[12];
-    long type;
-    long count;
-    s_cache_property *properties;
-};
 void function_80940(long record_capacity, s_cache_property_record *records,
     long property_capacity, s_cache_property *properties, long buffer_capacity,
     byte *buffers, long *record_count, long *property_count, long *buffer_count);
@@ -1588,24 +1608,6 @@ bool online_stats_read_result(long task_index, XONLINE_STAT_SPEC *specs, word co
 long online_stats_write(XONLINE_STAT_SPEC const *specs, word count);
 bool online_stats_write_succeeded(long task_index);
 long online_task_poll(long task_index);
-
-long g_50c460;
-long g_50c464;
-long g_50c468;
-long g_50c46c;
-long g_50c470;
-s_cache_property_record g_50c474[80];
-long g_50cbf4;
-s_cache_property g_50cbf8[480];
-byte g_50e9fc[2048];
-long g_50f1fc;
-long g_50f200;
-long g_50f204;
-long g_50f208;
-s_cache_property_record g_50f20c[32];
-long g_50f50c;
-s_cache_property g_50f510[128];
-byte g_50fd14[2048];
 
 static __forceinline long query_time_now();
 
@@ -2420,6 +2422,28 @@ bool function_1900a5(long index);
 // copied after the properties 645; `team` computed ahead of `valid = true` 643 (same code); the variant loop's index as
 // `long` 714; the values' identity refreshed from the local identity 726; the variant test as nested ifs 643 (same
 // code). Body unchanged.
+// M3 lane GA r15 (24 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x80940/aa0/bf0/d70 all MATCH; control 643):
+// Lane form, 643 -> 623 (2878/2862 B, 773/772 insns, addr-aligned 631 -> 514, masked 680 -> 593, plain verified): consolidated
+// s_search_value_globals g_509450 (+0x3010..+0x70c4, restoring retail's [esp+0x13] flag slot and completion reloads), completion loop
+// reading g_509454[group] directly with loop-hoisted variant_type = variant->type (retail's [esp+0x30]) and named unknown10/&owner fields,
+// and range-first if (state < 0 || state > 1) read/write polls — keeping main's query_time_now(), fill store order and failed || update.
+// Also tried (not kept): carried record/properties pointers across request loop 679/687 (loose) and 687/690 (struct); typed XUID team 662
+// (loose) / 667 (struct); direct completion + variant_type 661 (loose) / 643 (struct, +last_write 665, +dup continue 658, +dup+lw 663,
+// +value-if+lw 664, +record_space/property_space 642 at 2862 B / addr-aligned 357); without variant_type 667 (read poll only 663, +space
+// 636 at 2862 B / addr-aligned 360); if (added >= 4) break 643 (loose) / 646 (struct); read-only struct 646; combined carried/typed/space
+// subsets 659-687.
+// Review: the range-first read/write polls are a condition-order change (match-only), so main's if (state == 2) / else-if
+// shapes stay; kept at 643 (unchanged): the g_509450 fields at +0x3010..+0x70c4 (0x8d9f0 and 0x8dd70 clear the whole
+// 0x70f8-byte block with memset, which now resets these counters and tasks as in retail), the completion loop's direct
+// g_509454[group] with the unknown10/&owner fields and the variant_type local. The fields alone 646; the range-first polls on
+// this form are the 623 lead.
+// M3 lane GA r18 (12 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50 all MATCH; control 643 at 2878/2862 B,
+// +0x1a; body unchanged): tested on the consolidated g_509450 + direct completion + variant_type base: variant->type read inside
+// completion record loop 667; completion if (variant) { ... } else player->state = 1; with in-loop variant->type 676 (2910 B);
+// request identity pointer (no local XUID copy) 661 (2846 B); request due byte flag (state==1 / state==4 elapsed) 648 (2894 B);
+// request properties pointer with literal 6 and += 6 after fill 696 (2910 B); users loop direct g_509454[group] 753; completion
+// property->type == 0 ? 0 : ... 643; two-use last_write local 664, nested 665; nested last_read local 643; both nested 665,
+// with in-loop variant->type 667. Blockers stand: 0x1900a5 cmovne needs /arch:SSE (file flag), users cursor needs inlined 0x647d0.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
@@ -2467,9 +2491,9 @@ void function_074aa0(void)
         if (g_4e6948 && g_4e6948->flag1120 && g_4e6948->state != 3)
             delay = 300000;
         else
-            delay = g_50c460 <= 3 ? 2000 : 300000;
-        if (!g_50c464 && g_47d8f4.count && (g_47d8f4.flags & 2) &&
-            (!g_50c468 || query_time_now() - g_50c468 > delay))
+            delay = g_509450.read_failures <= 3 ? 2000 : 300000;
+        if (!g_509450.read_state && g_47d8f4.count && (g_47d8f4.flags & 2) &&
+            (!g_509450.read_time || query_time_now() - g_509450.read_time > delay))
         {
             long records_used = 0;
             long properties_used = 0;
@@ -2493,8 +2517,8 @@ void function_074aa0(void)
                             memcpy(&identity, values->unknown10, 12);
                             for (existing = 0; existing < records_used; existing++)
                             {
-                                if (!memcmp(g_50c474[existing].identity, &identity, 12) &&
-                                    g_50c474[existing].type == variant->field_8)
+                                if (!memcmp(g_509450.read_records[existing].identity, &identity, 12) &&
+                                    g_509450.read_records[existing].type == variant->field_8)
                                     break;
                             }
                         }
@@ -2502,11 +2526,11 @@ void function_074aa0(void)
                             identity = values->owner;
                         if (existing == records_used)
                         {
-                            s_cache_property_record *record = &g_50c474[records_used];
+                            s_cache_property_record *record = &g_509450.read_records[records_used];
                             memcpy(record->identity, &identity, 12);
                             record->type = variant->field_8;
                             record->count = 6;
-                            record->properties = &g_50cbf8[properties_used];
+                            record->properties = &g_509450.read_properties[properties_used];
                             records_used++;
                             for (long j = 0; j < record->count; j++)
                             {
@@ -2523,54 +2547,54 @@ void function_074aa0(void)
             if (records_used < 80 && properties_used < 480)
             {
                 long records = 0, properties = 0, buffers;
-                function_80940(80 - records_used, &g_50c474[records_used],
-                    480 - properties_used, &g_50cbf8[properties_used], 32, g_50e9fc,
+                function_80940(80 - records_used, &g_509450.read_records[records_used],
+                    480 - properties_used, &g_509450.read_properties[properties_used], 32, g_509450.read_buffers,
                     &records, &properties, &buffers);
                 records_used += records;
                 properties_used += properties;
             }
             if (records_used > 0 && properties_used > 0)
             {
-                long task = online_stats_read((word)records_used, (XONLINE_STAT_SPEC *)g_50c474);
-                g_50c468 = query_time_now();
+                long task = online_stats_read((word)records_used, (XONLINE_STAT_SPEC *)g_509450.read_records);
+                g_509450.read_time = query_time_now();
                 if (task != NONE)
                 {
-                    g_50c46c = task;
-                    g_50c470 = records_used;
-                    g_50cbf4 = properties_used;
-                    g_50c464 = 1;
+                    g_509450.read_task = task;
+                    g_509450.read_record_count = records_used;
+                    g_509450.read_property_count = properties_used;
+                    g_509450.read_state = 1;
                 }
                 else
                 {
                     query_restore_pending();
-                    g_50c460++;
+                    g_509450.read_failures++;
                 }
             }
         }
-        if (g_50c464 == 1)
+        if (g_509450.read_state == 1)
         {
-            long state = online_task_poll(g_50c46c);
+            long state = online_task_poll(g_509450.read_task);
             if (state == 2)
             {
                 bool failed = false;
-                if (online_stats_read_result(g_50c46c, (XONLINE_STAT_SPEC *)g_50c474,
-                    (word)g_50c470, g_50e9fc, sizeof(g_50e9fc)))
+                if (online_stats_read_result(g_509450.read_task, (XONLINE_STAT_SPEC *)g_509450.read_records,
+                    (word)g_509450.read_record_count, g_509450.read_buffers, sizeof(g_509450.read_buffers)))
                 {
                     for (long group = 0; group < 5; group++)
                     {
-                        s_search_value_group *completed_values = &g_509454[group];
                         for (long i = 0; i < 16; i++)
                         {
-                            s_search_player_values *player = &completed_values->players[i];
+                            s_search_player_values *player = &g_509454[group].players[i];
                             if (player->state != 2 && player->state != 5) continue;
                             s_surface_description *variant = function_192e60(i);
                             if (!variant) { player->state = 1; continue; }
                             long received = 0;
-                            for (long record_index = 0; record_index < g_50c470; record_index++)
+                            long variant_type = variant->type;
+                            for (long record_index = 0; record_index < g_509450.read_record_count; record_index++)
                             {
-                                s_cache_property_record *record = &g_50c474[record_index];
-                                const byte *identity = (const byte *)completed_values +
-                                    (variant->type == 5 ? 0x10 : 4);
+                                s_cache_property_record *record = &g_509450.read_records[record_index];
+                                const byte *identity = variant_type == 5 ? g_509454[group].unknown10 :
+                                    (const byte *)&g_509454[group].owner;
                                 if (!memcmp(identity, record->identity, 12) && record->type == variant->field_8)
                                     for (dword property_index = 0; property_index < (dword)record->count; property_index++)
                                     {
@@ -2592,66 +2616,66 @@ void function_074aa0(void)
                             failed = failed || received != 6;
                         }
                     }
-                    function_80aa0(g_50c474, g_50c470);
+                    function_80aa0(g_509450.read_records, g_509450.read_record_count);
                 }
                 else { query_restore_pending(); failed = true; }
-                function_6b640(g_50c46c);
-                g_50c46c = NONE;
-                g_50c464 = 0;
-                g_50c468 = query_time_now();
-                if (failed) g_50c460++;
-                else g_50c460 = 0;
+                function_6b640(g_509450.read_task);
+                g_509450.read_task = NONE;
+                g_509450.read_state = 0;
+                g_509450.read_time = query_time_now();
+                if (failed) g_509450.read_failures++;
+                else g_509450.read_failures = 0;
             }
             else if (state < 0 || state > 1)
             {
                 query_restore_pending();
-                g_50c464 = 0;
-                function_6b640(g_50c46c);
-                g_50c46c = NONE;
-                g_50c468 = query_time_now();
-                g_50c460++;
+                g_509450.read_state = 0;
+                function_6b640(g_509450.read_task);
+                g_509450.read_task = NONE;
+                g_509450.read_time = query_time_now();
+                g_509450.read_failures++;
             }
         }
-        if (!g_50f1fc && (!g_50f200 || query_time_now() - g_50f200 > 300000))
+        if (!g_509450.write_state && (!g_509450.write_time || query_time_now() - g_509450.write_time > 300000))
         {
             long records = 0, properties = 0, buffers;
-            function_80bf0(32, g_50f20c, 128, g_50f510, g_50fd14, &records, &properties, &buffers);
+            function_80bf0(32, g_509450.write_records, 128, g_509450.write_properties, g_509450.write_buffers, &records, &properties, &buffers);
             if (records > 0 && properties > 0)
             {
-                long task = online_stats_write((XONLINE_STAT_SPEC *)g_50f20c, (word)records);
-                g_50f200 = query_time_now();
+                long task = online_stats_write((XONLINE_STAT_SPEC *)g_509450.write_records, (word)records);
+                g_509450.write_time = query_time_now();
                 if (task != NONE)
                 {
-                    g_50f204 = task;
-                    g_50f208 = records;
-                    g_50f50c = properties;
-                    g_50f1fc = 1;
+                    g_509450.write_task = task;
+                    g_509450.write_record_count = records;
+                    g_509450.write_property_count = properties;
+                    g_509450.write_state = 1;
                 }
             }
         }
-        if (g_50f1fc == 1)
+        if (g_509450.write_state == 1)
         {
-            long state = online_task_poll(g_50f204);
+            long state = online_task_poll(g_509450.write_task);
             if (state == 2)
             {
-                if (online_stats_write_succeeded(g_50f204))
-                    function_80d70(g_50f20c, g_50f208);
+                if (online_stats_write_succeeded(g_509450.write_task))
+                    function_80d70(g_509450.write_records, g_509450.write_record_count);
             }
             else if (state >= 0 && state <= 1) return;
-            function_6b640(g_50f204);
-            g_50f1fc = 0;
-            g_50f204 = NONE;
-            g_50f200 = query_time_now();
+            function_6b640(g_509450.write_task);
+            g_509450.write_state = 0;
+            g_509450.write_task = NONE;
+            g_509450.write_time = query_time_now();
         }
     }
     else
     {
         for (long group = 0; group < 5; group++)
             for (long i = 0; i < 16; i++) g_509454[group].players[i].state = 0;
-        if (g_50c464 == 1) { function_6b640(g_50c46c); g_50c464 = 0; }
-        if (g_50f1fc == 1) { function_6b640(g_50f204); g_50f1fc = 0; }
-        g_50c468 = 0;
-        g_50f200 = 0;
+        if (g_509450.read_state == 1) { function_6b640(g_509450.read_task); g_509450.read_state = 0; }
+        if (g_509450.write_state == 1) { function_6b640(g_509450.write_task); g_509450.write_state = 0; }
+        g_509450.read_time = 0;
+        g_509450.write_time = 0;
     }
 }
 

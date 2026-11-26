@@ -534,6 +534,13 @@ static inline word font_character_pixel(long alpha, long color)
 // score 41 (was 59): 508 B (retail 504); first difference at +0x24. With length = 1 written in each arm of the type test (a
 // statement written per arm, kept only with a byte match) it reads 12 at 504 B, where only the 4-instruction literal
 // assembly at 0x122744 differs (movzx eax/edx; shl; add vs retail movzx ax, [edi+2]; xor ecx, ecx; mov ch, [edi+1]; or eax, ecx).
+// M3 lane GA r16 (50 compiled trials on 41 and score-12 bases, 0x140960/0x122540/0x122570 MATCH; body unchanged): clean loop-end
+// step1 with literal continue / -= 2 / switch (long type) step1 84/88/84; switch (long type) with per-arm length=1 12 (504 B,
+// exact jle, not kept as per-arm length=1 is match-only); on score-12 base, source[1] nibble split <<8 | (word)source[2] and
+// 4-nibble both 11 (504 B, exact or eax,ecx), word nibble split on source[2] | (dword)source[1]<<8 30 (504 B, 32-bit movzx eax),
+// (word)source[2] + ((dword)source[1]<<8) 12 (word value 30 at 508 B), *16<<4 / <<4*16 / |*256 12, word ptr bswap 81, alpha/color
+// split 87-178, word-outside-nibble 102-106, mask f0|0f / ^ / &0xff / |0 / +0 / short / signed char / 2-step word |= / <<4<<4 /
+// &0xff00 / &0xffff / word:8 bitfield structs all fuse to 496 B (90).
 // MiniMax G (11-20): no new form, no lower score (59): the alpha parity is still masked in sixteen bits where retail masks it in a thirty-two bit register; the colour literal is still built with a shift and an add where retail keeps its two bytes apart; the run of two is still folded into the count as an immediate where retail adds the register.
 // Earlier 59 (was 85): The 0xc frame agrees. Dword opacity parity, literal two-byte assembly and the packed run
 // register still differ.
@@ -1096,6 +1103,13 @@ static inline word font_character_pixel(long alpha, long color)
 // with pair and fill windows 184/184/184/184; cursor distance with count-only
 // tally 220/287; count advanced at pair or all single stores 155/155.
 // NOT kept: all raise the score and change the matched pixel-copy caller.
+// GB15 (fast with 0x140960/0x122540/0x122570 MATCH; control 41 at 508/504 B, +0x24; 31 trials, body unchanged):
+// Clean control flow on score-41 base: type==3/else-if type==2 chain 191; type<=1 first 175; no length local with
+// remaining-=3/source+=3/continue 84 or -=2/+=2 88; type==2 before else 100. Literal probes on score-12 base (504 B):
+// source[1] shift-split <<8 outside + (word)source[2] 11 (504 B, movzx ecx/eax; shl; or); (word)source[2] + (dword)s1<<8
+// (either order) 12; source[1] mask-split, source[2] word mask-split / outer word cast, s1&0xff<<8, long s1<<8, word
+// ptr>>8, word value, (short)source[2] with dword/long/short s1, (word)s2|0, 2-step loop, and &0xff00 all fuse to 90
+// (496 B); 4-channel word ARGB 135; (word)/(short) over dword shift-split 102; color-then-pixel 178/192; &0xffff 82.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

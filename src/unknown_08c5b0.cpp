@@ -397,6 +397,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // cannot flip there. The r104 chain wins by ranking instead (kind 20 over request 16): its `kind == 0` compare is still
 // there when registers are chosen and goes when the arms merge afterwards. A second compare of the kind outside the
 // entry block is the only reference found that leaves no code, so a legal form needs arms that really differ.
+// M3 lane 6 r246 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with the existing kind read: the
+// selector as two early returns (`kind != 1`, then not available, then the payload setting) 40 (107 B); no
+// controller-index local, the lookup and the notify call reading the request's field at each use 23 (99 B); the
+// availability helper as one returned `&&` with `(flags & 2) != 0` 4; the kind compared at the call with the selector
+// taking a `bool` 4; the handler's request parameter `*const` 4 (the three 4s the same code). Re-measured: no
+// old-setting local, the stored setting compared in the test, 4.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

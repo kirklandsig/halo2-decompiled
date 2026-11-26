@@ -1001,6 +1001,31 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // translation of the position or displacement copy 719/737; completed planar request copy 588;
 // both planar points immutable 668. NOT kept: the naming forms tie, and the other forms
 // raise the score. The position output still needs ESP+0x80 with the query output at +0x8c.
+// M3 lane 14 r157 (fast screens with GB15's companion list; control 462 at 3504 B, aligned 193, registers and stack
+// offsets masked 66). Frame reading from the back end's packer: the position's 12-byte slot has 7 references (583 per
+// 1000 bytes) and the slot shared by the translated target (4), the pre-turn copy (3) and 0x1f9760's unused output (1)
+// has 8 (666), so the shared slot sorts nearer ESP; the frame is otherwise retail's slot for slot. Forms: the two velocity
+// dots axis first (`dot3f(local_4, &local_1->velocity)`, `dot3f(local_28, &local_1->velocity)`) 458; with both clamps
+// as `MIN(1.0f, ratio)` 457 (aligned 180, masked 58: the cross product's six products are left, retail a.j, a.k, a.k,
+// b.k, a.i, a.j first); on that, the override read straight into the result (`local_24 = override; if (local_24 ==
+// 0.0f) {...}`) 663 (3511 B); the velocity vector built member by member 457 (same code), with the override form 663;
+// local_6.i/.j set ahead of the k test 675 (3475 B, 839 instructions, aligned 123, masked 44); that with the override
+// test written `== 0.0f` and the override in the else arm 655 (3499 B, but 850 instructions). A forced-ranking search
+// on the 457 form found no single allocator decision that lowers it (12 of 2718 candidates). The middle dot axis first
+// too (all three) 663 (3499 B, first difference +0x60: the frame's homes move). NOT kept: 457 is a gain of 5, under
+// the bar.
+// GB15 (fast with 0x29b2e0/0x29b990/0x170d70/0x11ce20/0x11cc90/0x1e5450/0x1f9e70/0x110ab0/0x2922b0/0x22bbca/0x1f38c0;
+// control 462 at 3504/3499 B, +0x100, fr=0x88; 17 trials, body unchanged): scalar cx/cy if/else (no neg local) cy-first/
+// cx-first/sub/local-s 718/718/717/738 (fr=0x8c, moves pos below local_14 at +0x84 but spills cx/cy); direct vector2f
+// local_26 if/else 584 (fr=0x88); existing vector2d_from_points2d 665 (3499 B); vector2f perp + dot_product2d 660 (3499 B);
+// scalar cx/cy with local_24 ternary 686 (fr=0x8c); 4th else arm bool == / ternary / long same 661/663/628; tail dot3f
+// swapped 462; frame_velocity retail dot3f argument orders 458 (-4, matches lines 628-653; + cross3f_staged 458), + both
+// MIN(1.0f, ratio) clamps 457 (-5, al 336, mk 106; + tail dot3f / cross3f_staged 457; NOT kept: under 8-point bar).
+// M3 lane 16 r192 (H2M_FAST with GB15's companion list, control 462 as plain; with only 0x1f38c0 listed it reads 656):
+// the side point through the existing point2f_set after the side ternary (its arguments evaluate right to left) 467;
+// the turn weight's half factor folded into local_26 (`local_26 *= 0.5f;` ahead of the dot, then `local_24 *=
+// local_26;`) 476 (3507 B); both 479 (3507 B); the +0x7c axis pointer as a typed member address beside forward 462 and
+// as `&local_1->forward + 1` 462 (same code each). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

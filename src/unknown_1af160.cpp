@@ -374,6 +374,29 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // clear first 29; the 0x261280 result declared bare and assigned on its own line 12; both 0x1f4a20 flags declared ahead of
 // the 0x262b40 call 12 (same code each); the rounded delay stored into its own long instead of the long output 25; the
 // 0x2626b0 guard testing the 0x1f4a20 result first 15.
+// M3 lane 8 r239 (h2m fast with 0x1e1f20, MATCH; control 12). Frame packer (from a slot trace): the dword cells in
+// creation order are the 0x261280 result, the long output, the 0x265c30 flag with the 0x25d690 pointer, the actor, the
+// scratch pair, the offset temporary with the 0x262b40 result, the bool output, the saved reference group and the node;
+// the two ties (actor and temporary 4 refs each, bool output and node 2 each) leave the back end's middle-pivot sort the
+// other way round from retail. A replay of that sort gives retail's layout when the flag's cell is made after the
+// temporary's, when the bool output has no cell of its own, or when the node's cell is among the first six; making the
+// temporary's cell after the bool output's fixes both pairs but swaps the 0x261280 result with the flag's cell, which is
+// another tie. Retail's code is ours instruction for instruction, so the order comes from statement order that leaves
+// the code alone. Forms: round 164's lead (the clear after the if/else under `if (!local_5)`) re-measured 31 (homes
+// retail's; the clear becomes its own threaded block with the result store first); the clear written first under
+// `if (unknown227)` with the arms after it 205 (984 B); the result cleared first and the actor flag cleared from it 12;
+// the clear through a named actor pointer 12 (both the same code); the 0x265c30 flag declared after the 0x1e5280 lookup
+// 16, ahead of the 0x1e1f20 call 24; declared inside `if (local_24)` re-measured 19.
+// M3 lane 11 r170 (h2m fast with 0x1e1f20, MATCH; control 12). Frame packer reading: the 4-byte cells are founded in
+// order of IL references (more first; on a tie, the object that reached its count first), then sorted by density with
+// the back end's middle-pivot quicksort. A replay of that sort on this cell list gives retail's layout (both swapped
+// pairs) when the bool output founds its cell before the actor-offset temporary's: its second reference (the 0x2626b0
+// argument) ahead of the equal arm's flag clear, the clear's lookup after that argument, or a third IL reference on the
+// bool output with no code. Forms: the bool output read into a named copy right after the 0x261280 call and the copy
+// passed to 0x2626b0 12 (the copy is forwarded to its use, the read stays in the 0x2626b0 block); the same through a
+// `bool const &` bound right after the call 12 (same code); round 164's post-if clear (31) with the equal arm
+// assigning `local_5 = !unknown227` and testing it 199 (981 B), with the equal arm's test positive (`if (unknown227)
+// local_5 = false; else ...`) 43; the post-if clear written after the scratch release 233 (943 B).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

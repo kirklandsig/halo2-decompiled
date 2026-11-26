@@ -82,15 +82,21 @@ struct s_short_bounds_3f660
 	short top, left, bottom, right;
 };
 
-// score 33 (was 33): 0.5f in XMM4 (retail XMM5) and crop arm schedule; blocked by g_4ba019 not yet living in an
-// address-escaping render-globals aggregate (caller 0x13c20 passes global &g_4b9da0 as view, so volatile through view
-// is forbidden). Tried (22 trials, 14 matched peers MATCH): splitting `new_width = view->crop_scale * width;` and
+// The volatile crop pointer, the two volatile out[3] reads and the reference that delays the offset arm's out[1]
+// store stand for retail's reloads after the g_4ba019 store: in retail the flag lives in a larger address-taken
+// aggregate (0x13c20 copies 0x120 bytes to 0x4b9ef0, ending at 0x4ba010), so its store may alias view and out.
+// Without each of them: crop pointer 77, crop out[3] 30, offset out[3] 51, reference 19, all four 88 (492 B).
+// Earlier forms (score 33 before the match): 0.5f in XMM4 (retail XMM5) and crop arm schedule; caller 0x13c20 passes
+// global &g_4b9da0 as view. Tried (22 trials, 14 matched peers MATCH): splitting `new_width = view->crop_scale * width;` and
 // `new_height = view->crop_scale * height;` with `out[0..3] = x/y +/- new_w/h * 0.5f` fixes 0.5f in XMM5 and all crop
 // arithmetic/stores (6, first +0x106); ordering x before height and dropping crop_scale's volatile and right_result hits
 // 0 (MATCH, not kept: still uses main's volatile crop pointer through view); same clean body with zero volatile and a
 // diagnostic escaped g_4ba019 hits 0 (MATCH, not kept); clean body without escape 86-88 (492-494 B), only out[3]
 // volatile 77 (503 B, +0xbd); early return in crop 40; x-then-y crop 55; inline width/height 74; box2f view 55;
 // vertical_scale first 129; inline crop helper 61; local box2f copy 166; scenario helper 123 (loses 0x3f660).
+// M3 lane 15 r149 (MATCH): the crop sizes named once (new_width/new_height, each read twice) with the crop_scale volatiles
+// dropped 21; the half step parenthesised, `((center + 1.0f) * 0.5f) * size`, 9 (the chain no longer reassociates
+// the size ahead of 0.5f); the four outputs in index order 0 (every other order of the four 10-25).
 // @retail 0x2f970
 bool function_2f970(s_2f970_view const *view, real *out)
 {
@@ -110,14 +116,14 @@ bool function_2f970(s_2f970_view const *view, real *out)
     {
         real width = out[1] - out[0];
         real height = *(real const volatile *)&out[3] - out[2];
-        real half_width = *(real const volatile *)&view->crop_scale * width * 0.5f;
-        real half_height = *(real const volatile *)&view->crop_scale * height * 0.5f;
-        real x = (view->center_x + 1.0f) * 0.5f * width + out[0];
-        real y = (view->center_y + 1.0f) * 0.5f * height + out[2];
-        out[0] = x - half_width;
-        out[2] = y - half_height;
-        out[3] = half_height + y;
-        out[1] = half_width + x;
+        real new_width = view->crop_scale * width;
+        real new_height = view->crop_scale * height;
+        real x = ((view->center_x + 1.0f) * 0.5f) * width + out[0];
+        real y = ((view->center_y + 1.0f) * 0.5f) * height + out[2];
+        out[0] = x - new_width * 0.5f;
+        out[1] = new_width * 0.5f + x;
+        out[2] = y - new_height * 0.5f;
+        out[3] = new_height * 0.5f + y;
     }
     else if (view->offset)
     {
@@ -767,6 +773,14 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // signed-remainder wrap 638, local wrap passes 624, named integer advance 597.
 // NOT kept: independent tests repeat the sign check on the negative path; complete
 // points add temporary stack stores absent from retail.
+// M3 lane 5 r247 (fast screen; aligned rows against retail in brackets, main 269 at 2683 B): the weights arm's fraction
+// clamp after the three weights 654 (331); the other arm's fraction clamp after the weight clamp 600 (297); both 671
+// (342); the bitmap fraction part named once for its clamp 679 (310); the heading's two components in named floats,
+// x first, 597 (269, same code); re-measured: the float angle literal 593 (262). Leads from the aligned listing: retail
+// computes the far-near span three times (the quarter step, the floor test and its else value) where ours shares one;
+// it clamps the fraction inside each weights arm (stored to its home in each branch of the clamp) where ours hoists
+// the identical clamp above the test; it evaluates the heading's x argument first with left + up; and its two random
+// point arms keep separate tails (the second forms the point address late) where ours tail-merges them.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -961,6 +975,15 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // named live extent axes 858, explicit player divisor 857, explicit extent maximum 832,
 // shared scaled velocity update 831, staged velocity increment 885, array element
 // references 832. The scaled update gains one at the same extent; the stacked state remains.
+// M3 lane 5 r247 (fast screen; aligned rows against retail in brackets, main 745): retail references no double constant
+// here (one double global load) where ours has 41; its random fraction runs in x87 with float constants and doubles
+// by `fadd st0, st0` after the 1/65535 multiply. The file's random fraction returning real with float call sites
+// 854 (816; ours folds the doubling into the constant); the header's existing random real for every draw 853 (814);
+// the float helper dividing by 65535 854 (816, still folded); `2.0f * r` 854 (816); only the three jitter draws through
+// the header's random real 832 (736). Registers: retail keeps the state in EBX (register argument, `ret 4`), the
+// vertex ESI, the seed pointer EDI and the particle EBP; the link-time colouring here ranks the seed pointer 1272,
+// the particle 682, the vertex 492 and the state 185 (left with EBP, so it is passed on the stack), while a
+// compile-only first pass of this file already gives the state EBX.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1220,7 +1243,7 @@ void function_1cf80();
 bool function_143c0(long, short, short, real);
 
 
-// score 310 (was 344): initializing the draw result before the geometry check restores the early
+// score 189 (was 310): initializing the draw result before the geometry check restores the early
 // true byte and puts the failure exit after the draw exit. The state still arrives in EAX,
 // and the shader slot load and primitive submission differ. Short player sample 362; direct SDK
 // W-buffer state 365; separate primitive branches 421, with a fresh mode read 422; named partition
@@ -1258,6 +1281,21 @@ bool function_143c0(long, short, short, real);
 // the line arm's product order. On the 296 form: the line arm's products written scale first 296, the state factor
 // first 296, `(velocity * scale) * factor` 295; the zero `real const` 296; 1-12 dead longs at the top 296 each (not a
 // symbol-count state).
+// M3 lane 5 r247 (fast screen, plain 189; aligned counts against retail in brackets, main 168): kept: the begin call
+// through the SDK's force-inline member form in each arm of `if (lines)` (the line width read into a float local and
+// passed by its bits in the line arm, retail's stack copy), with the plain vertex cursor: both begin sites expand as
+// in retail and the state arrives on the stack in EBP, 310 -> 189 (102). On that form: the cursor volatile again 359
+// (1456 B); the width read straight as a dword 325 (1398 B, one begin site stays out of line); the arms tested on a
+// fresh mode-word compare 173 (92); the point arm first on `!lines` 206 (90), on a fresh `!= 2` compare 279 (80); the
+// player count as a short 204 (96), with the point arm first 216 (83), with that on the fresh compare 265 (73); the
+// existing 0x1cbe0(0, 0, 22) for the shader slot read 319 (106), with the point arm first and the short count 319
+// (62), on the fresh compare 252 (70); the member forms for every device call (same code); the point-scale zero for
+// A and B through a by-value float-bits helper 342 (62: both stored straight from XMM0 as retail); the particle
+// pointer declared ahead of the vertex pointer 266 (73, retail's load order, the stride homes still swapped). Left:
+// retail keeps the constant 2 in EDI from entry (both mode compares, the depth-buffer value, the line primitive),
+// which also gives retail's zero in ESI, the records pointer in EDI through the loop and the pop order. The allocator
+// ranks the second alpha (-6, created later) ahead of the constant 2 (-6 to -10 in these forms); a forced-ranking
+// search that puts the constant first gives aligned 34. 0x36b50 now pushes the state as retail (aligned 173 both).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
@@ -1295,15 +1333,23 @@ bool __stdcall function_391f0(void *state_address)
         D3DDevice_SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
         if (!lines) function_143c0(*(long *)(state + 4), 0, 3, 0.0f);
         function_1cf80();
-        if (lines) D3DDevice_SetRenderState(D3DRS_LINEWIDTH, *(dword *)(state + 0x7c));
-        D3DDevice_Begin(lines ? D3DPT_LINELIST : D3DPT_POINTLIST);
+        if (lines)
+        {
+            real width = *(real *)(state + 0x7c);
+            D3DDevice_SetRenderState(D3DRS_LINEWIDTH, *(dword *)&width);
+            D3DDevice::Begin(D3DPT_LINELIST);
+        }
+        else
+        {
+            D3DDevice::Begin(D3DPT_POINTLIST);
+        }
         long players = *(short *)((byte *)g_4e8c20 + 8);
         long divisor = players < 1 ? 1 : players > 4 ? 4 : players;
         long count = records->count / divisor;
         long first = g_485600 * count;
         for (long i = first; i < first + count; ++i)
         {
-            s_38450_vertex *volatile vertex = records->vertices + i;
+            s_38450_vertex *vertex = records->vertices + i;
             s_38450_particle *particle = records->particles + i;
             if (!(particle->age > 0.0f)) continue;
             if (!lines)

@@ -248,6 +248,15 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // body in the function 25, one result variable 23, *out stored before the test 39, a local for the table read 18.
 // b16K (11-17) fast build on r852: the tail as 0x15a60's (result and flag assigned in both arms, one store and one
 // return) gives 99 (was 103); the rest is still D3DDevice_CreatePalette2 kept out of line, as above.
+// GA14 (18 real + 2 diag, fast with 0x14a60..0x15cd0, 0x1d3f0): confirmed 0x15b10 is the sole caller of
+// D3DDevice_CreatePalette2 in our build (the library copy, 84 B, 0 data refs); removing __declspec(noinline)
+// (inlines 0x15b10 into 0x1d3f0, still calls CreatePalette2), size local, forceinline wrapper, direct return,
+// early return, const/enum g_43e8d8, param swap, direct *out, /Ob2, /arch:SSE, /Ox, and diag #pragma inline_depth(255)
+// all stay 99 (30 B); diag constant (D3DPALETTESIZE)0 still keeps CreatePalette2 out of line (104, 25 B). Wrappers
+// D3DDevice_CreatePalette (86-87), D3DDevice::CreatePalette (81) and IDirect3DDevice8_CreatePalette (76) only lower
+// score via spurious HRESULT (0x8007000e) length padding and worsen 0x1d3f0 (77-102), NOT kept. Body restored at 99.
+// GB r16: the D3DDevice_CreatePalette2 call wrapped in do { ... } while (0) MATCHES (95/95 B; 0x1d3f0 76 -> 65), not kept:
+// a dead loop whose only job is to change the compiler's inlining (the same class as a dead if (0) steer).
 // @retail 0x15b10
 bool function_015b10(
 	long index,
@@ -270,6 +279,18 @@ bool function_015b10(
 	return created;
 }
 
+// score 56 (was 56): retail keeps the palette count in a register through both loops and stores it to g_5093ac
+// once after the outer loop (the zero-trip path skips that store), compares the group count in memory against the
+// zero register, and keeps the palette definition in EAX (spilled, reloaded after the data store) with 0x30001 in EBP.
+// Lead: the count written as g_5093ac itself (no local, `g_5093ac++` in the inner arm, no copy after the loop) gives
+// all of that structure, 56 at 280 B with only register choice left (ours: EBP definition, EBX zero then 0x30001, ESI
+// count, EDI NONE then index; retail: EAX definition, EBP 0x30001, EDI zero and count, EBX NONE then index, ESI the
+// 0x400 step). On it the allocator ranks the palette pointer (288), the group (152) and the 0x400 step (96) above the
+// tag index (48); a forced-ranking search gives a byte match with the tag index ranked first (the definition then
+// claims EAX before the loop values pick) and with no other single decision. Forms on the global count: the definition
+// read through the tag table at each use 86 (283 B, reloaded every outer pass); the group pointer local dropped 97
+// (259 B); the palette pointer local dropped 65; the two global stores ahead of the tag read 56 (same code). With the
+// local count: the definition read at each use 79 (299 B).
 // @retail 0x15b70
 void function_015b70(void)
 {

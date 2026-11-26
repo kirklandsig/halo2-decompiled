@@ -1058,6 +1058,15 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `&collection->players[i]` as the copy's source 32, collection declared at function scope 221 (1088 B), the conflict
 // loop reading the collection pointer 264, collection declared inside the else arm (the first arm passing
 // `&watcher->players`) 32, declared just ahead of the slot search 32, both with the conflict loop on it 264.
+// M3 lane 12 r191 (h2m fast with 0x84e90/0x84c90/0x83c90, all MATCH each time; control 28): `occupied` initialised false
+// 137 (1066 B); `slot` initialised NONE 149 (1069 B); the swap test written slot-differs first (diagnostic) 322 (1091 B);
+// `occupied` declared ahead of `slot` 28; both declared ahead of the machine pointer 28 (both the same code). The key sum
+// is the same ranking as 0x81780's lone difference (src/unknown_081780.cpp): ours adds the compiler's stepped terms
+// first and the named base last, retail the base first; a compile-only screen of that loop over twenty-odd optimisation
+// and debug-information options never flips it.
+// Roasted-Codes (#1519 comment, 2026-11-26; fast reduced-image scores): the occupied key's index taken as a pointer
+// difference, `player - watcher->players.players`, 239 (1099 B; the exact division survives as a multiply by 0xb60b60b7
+// and a `sar`).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

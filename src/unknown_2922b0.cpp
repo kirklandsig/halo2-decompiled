@@ -32,15 +32,6 @@ bool __stdcall function_1697c0(long arg_0, point3f const *arg_1, vector3f const 
 	long arg_3, long arg_4, s_collision_result_1697c0 *arg_5);
 real function_30bf0(vector3f *arg_0);
 
-PRIVATE __forceinline void function_2922b1(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
-{
-	real local_0 = arg_0->j * arg_1->k - arg_0->k * arg_1->j;
-	real local_1 = arg_0->k * arg_1->i - arg_0->i * arg_1->k;
-	real local_2 = arg_0->i * arg_1->j - arg_0->j * arg_1->i;
-	arg_2->i = local_0;
-	arg_2->j = local_1;
-	arg_2->k = local_2;
-}
 PRIVATE __forceinline real function_2922b3(real arg_0, real arg_1, real arg_2)
 {
 	if (arg_1 > arg_0)
@@ -69,7 +60,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_1 * arg_0->k + arg_1->k * local_2 - cross_k * local_0;
 }
 
-// score 518 (was 521): The 0x108 frame agrees. First +0x31 stores success at ESP+0x13 instead of +0x17. The hit slots and inactive exit still differ.
+// score 362 (was 518): single exit, the four crosses through cross3f_staged and the clamp input as a division put the
+// success byte and hit flags at retail's homes; left: the success flag's entry piece takes EBX (retail returns a literal
+// 1 on the inactive path), the second cross folds the up axis's i, the per-point half-width reloads, the rotations' XMM
+// permutation and the tail.
+// Earlier at 518 (was 521): The 0x108 frame agrees. First +0x31 stores success at ESP+0x13 instead of +0x17. The hit slots and inactive exit still differ.
 // Earlier scores: 576, 592 and 618. Before round 111: 558.
 // Earlier scores 558, 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // Earlier at 521 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
@@ -1027,6 +1022,27 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // loop-entry pad. `FLT_MAX` from the standard header at both uses 518; the existing OBJECT_DATUM_GET for the object 518;
 // both with a file-scope named constant for the no-hit distance 515 (under the bar); that with the two angle totals
 // declared in the other order 515; the minimum's test written `local_19 < local_4` 518 (all the 518s the same code).
+// M3 lane 15 r148 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; control 518, aligned 361, masked 161). KEPT 518 -> 362
+// (2897 B; plain-confirmed, callers 0x29ab90 286 and 0x29bab0 462 unchanged): the four crosses through the existing
+// cross3f_staged (the private copy dropped) and the clamp input as `minimum / range` (the first output keeps the
+// reciprocal product, so the compiler shares one reciprocal as retail) 640 at 2886 B (aligned 272: success byte and hit
+// flags at retail's +0x17/+0x1c), then the single exit (`if (field_48 > 0.0f) { ... }` and the one `return local_0;`)
+// 362. On 362: without the division 627; without cross3f_staged 575; OBJECT_DATUM_GET 362 (same code); FLT_MAX from the
+// standard header 362 (same code); the range read once at the test 643 (2886 B); `return local_0;` closing the block
+// and `return true;` last 623 (2886 B, aligned 259); the point array at function scope 543 (aligned 218);
+// OBJECT_DATUM_GET with a file-scope FLT_MAX constant 648; both rotations through rotate_direction 465; the rotation
+// dot through dot3f either operand order 648/648, in plain i, j, k order 362 (same code). On GA r7's 184 lead (rebuilt
+// 184 at 2896 B): 0-7 unused initialised longs x 0-3 paren pairs on the first output's product, best 183, no phase
+// break; rotate_direction 314; renaming the success flag (sorts first / last) 518 / 518 on the old body. Reading: on the
+// lead the first rotation's inputs are created k, i, j and coloured j, i, k into XMM1/XMM3/XMM2 behind the second
+// rotation's copies (360 vs 320); a forced-ranking search found nothing below 184 in its first 24 decisions.
+// M3 lane 15 r149 (h2m fast with 0x1e5450/0x30bf0/0x1697c0 MATCH; control 362). Retail stores the flag's 1 as an
+// immediate, returns a literal `mov al, 1` on the field_48 <= 0 exit and never writes AL after its flag test; ours holds
+// the 1 in BL from entry to that exit. Tried: an early `return true` ahead of the main block 640; two returns re-measured
+// 623 (entry byte-exact); the flag declared after the 0x1e5450 lookup 348 (2886 B, but ESI then takes the early push;
+// a later declaration is match-only and the aligned distance rises 311 -> 329); two returns with field_48 read once
+// ahead of the test 615; two returns with the late flag 616; the arg_6 arm returning in its own block 650 (2877 B).
+// The aligned distance stays 308-311 on all of these.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -1038,9 +1054,7 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	real local_4 = 3.402823466e38f;
 	*arg_5 = 0.0f;
 	bool local_5[4] = { false, false, false, false };
-	if (!(local_2->field_48 > 0.0f))
-		return true;
-	else
+	if (local_2->field_48 > 0.0f)
 	{
 		arg_3->i = 0.0f;
 		arg_3->j = 0.0f;
@@ -1055,15 +1069,15 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 		{
 			local_10 = &local_1->forward;
 			local_11 = (vector3f const *)((byte *)local_1 + 0x7c);
-			function_2922b1(local_11, local_10, &local_9);
+			cross3f_staged(local_11, local_10, &local_9);
 		}
 		else
 		{
 			local_7 = *arg_2;
 			if (function_30bf0(&local_7) == 0.0f) local_7 = *g_4687a8;
-			function_2922b1(g_4687b0, &local_7, &local_9);
+			cross3f_staged(g_4687b0, &local_7, &local_9);
 			if (function_30bf0(&local_9) == 0.0f) local_9 = *g_4687ac;
-			function_2922b1(&local_7, &local_9, &local_8);
+			cross3f_staged(&local_7, &local_9, &local_8);
 			if (function_30bf0(&local_8) == 0.0f) local_8 = *g_4687b0;
 			local_10 = &local_7;
 			local_11 = &local_8;
@@ -1108,7 +1122,7 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 			if (3.402823466e38f > local_4)
 			{
 				*arg_4 = (1.0f / local_6) * local_4 * 0.7f + 0.3f;
-				*arg_5 = 1.0f - function_2922b3((1.0f / local_6) * local_4, 0.0f, 1.0f);
+				*arg_5 = 1.0f - function_2922b3(local_4 / local_6, 0.0f, 1.0f);
 			}
 			real local_20;
 			if (local_5[0])
@@ -1144,7 +1158,7 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 			vector3f_add_scaled(&local_17, local_11, arg_3->k, &local_17);
 			vector3f local_18;
 			vector3f const *local_19 = (vector3f const *)((byte *)local_1 + 0x7c);
-			function_2922b1(local_19, &local_1->forward, &local_18);
+			cross3f_staged(local_19, &local_1->forward, &local_18);
 			vector3f_assign(arg_3,
 				local_1->forward.k * local_17.k + local_1->forward.j * local_17.j + local_1->forward.i * local_17.i,
 				local_18.k * local_17.k + local_18.j * local_17.j + local_18.i * local_17.i,

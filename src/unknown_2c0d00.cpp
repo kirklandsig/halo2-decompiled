@@ -215,6 +215,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
 // score 838 (was 925): Gemini lane GB r8 (2026-11-25, 29 trials, plain-confirmed 838 at exact 3731/3731 B, +0x4a, exact retail frame 0x2cac, aligned 152, masked 109; all 15 file peers/callers MATCH, 0x29cbb0 378 and 0x2c41b0 675 unchanged): type-1 arm written as single-store `if (team == actor->unknown024 || !function_1df560(team, actor->unknown024)) skip_classification = true;` (retail 0x2c13a9 stores 1 only; alone 903), both one-use `velocity` field pointer locals dropped (together 851, flipping `physics` above `skip_classification` and recovering 0x2cac without moving `bool enabled`), `long type = (char)object[0xaa];` across the 4 type arms (retail 0x2c1020 movsx eax), `word` bitfield on `s_obstacle_definition_flags_2c` (matching `s_object_definition::flags` and retail `shr cl, 3; test cl, 1`), all 5 hand-written dot/sq sums replaced by existing `dot3f`/`length_sq3f` helpers. Ablations: without `long type` 877 (3697 B), without `word` 858 (3713 B), without 4 inner helpers 856 (3713 B), without dropping `velocity` 847 (3734 B), the vehicle index read at both uses (a reread, kept only with a byte match) gives nothing (838 either way at m3 review), so it stays a local, without entry `dot3f` 804 (3740 B, +9 B past retail so not kept), + `object_radius` before `offset` 837 (statement order, not kept), + `basis_dot_xzy` vehicle dot 855 (3713 B), `short sphere_count` 968 (3671 B), uninit `straight` + else 808 (3740 B). Match-only leads on GB6's 528: + `object_radius` before `offset` 509 (3731 B, al 130, mk 46; fixes all 24 object-distance insns), + reversed vel1 dot + `dot3f(&difference, direction)` + `(sphere_flags | obstacle_flags) | moving` 509 (3731 B, al 126, mk 42), + `basis_dot_xzy` 468 (3731 B, al 153, mk 67). Earlier (925): m3 lane 15 r144 unchanged (m3 review: its 859 needs `word filter_flags = sphere->flags;`, a three-use copy of a field retail tests in memory at each of the three sites, a form kept only with a byte match; without it 934, the existing-helper calls alone 933; code back to main, readings at the end of this note). r130, m3 lane 8 r220, m3 lane 11 r151, m3 lane 1 r154 and m3 lane 13 r149 unchanged (r220, r151, r154 and r149 at the end, lead below). After later merges the plain check reads 925 at 3725 bytes with frame 0x2cb0 (retail 0x2cac). Earlier 917 (was 920): the frame was retail's 0x2cac after m3 lane 4 r229 (below), the body 3676 bytes against 3731. Left: the entry's
+// GB r10 lead 791 HELD as a patch at m3 review (`previous_direction` reaches 0x2c0d60 in ECX, so
 // Earlier note (merged from stacked score line): GB r10 lead 791 HELD as a patch at m3 review: `previous_direction` reaches 0x2c0d60 in ECX, so
 // its slot in the parameter list is not shown by retail's pushes and was picked by score among slots 8/10/11, a
 // parameter order kept only with a byte match; the nested radius gates alone give 832, under the 8-point bar): Gemini lane
@@ -1015,6 +1016,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // helper gains four against the reduced control. The actor-absence form retains frame 0x2cac
 // but grows to 3736 bytes and exchanges the actor/unit registers. The other default forms grow
 // to 3752 bytes. The no-actor byte store and early dot operand loads still differ.
+// GB r13 (2026-11-25, 21 real trials + 3 dead-local diagnostics, fast with 0x29a190/0x29cbb0/0x2c41b0/0x2c0d00, control 838 at 3731 B, fr=0x2cac, al=180, mk=72):
+// clean `dot3f(direction, vel)` in vehicle block 838 (mk 66); + `!(d <= r*r)` both distance gates, `dot3f(&difference, direction)`, sphere `dot3f(direction, vel)` and `(sphere_flags | obstacle_flags) | moving` 832 (al 178, mk 52; NOT kept: -6 under gate); vehicle dot via `vector3d_from_points3d` 846.
+// Match-pursuit forms (with `else straight = true;`, early `bool enabled = true;`, dropped `vehicle_index` reread, `!(d <= r*r)` gates, direction-first dots): without `previous_direction` move 528 at exact 3731/3731 B (921/921 insns, al 133, mk 38; all 3 marker loops, vehicle tail and object-distance gate 100% byte-exact); with `previous_direction` at slot 9 (`0x2c41b0` 675 -> 661) 524 (+0x157, first 343 B byte-exact), + `moving |= (sphere_flags | obstacle_flags)` 523 (mk 42, fixes sphere moving dot), + `basis_dot_xzy` 390 (921/921 insns, 3738 B), + sphere `vector3d_from_points3d` 485 / flat squared 483, + explicit `dx/dz/dy` 501, + split `s_location` fields 842, + inverted `unit_index == NONE` 548; 1..3 dead locals diagnostic all 523 (confirms `+0x157` scratch `eax/edx` rotation is not symbol-count phase). Body unchanged.
 // M3 lane GA r11 (fast with 0x29a190/0x29cbb0/0x2c41b0 and 11 file peers, all matched peers MATCH; control 838 at
 // 3731/3731 B, +0x4a, fr 0x2cac; 18 compiled trials): nested object/sphere `d <= r*r` gates + `dot3f(&difference,
 // direction)` + `(sphere_flags | obstacle_flags) | moving` 832 (al 196, mk 60); + vehicle x-z-y dot 832 (mk 58),
@@ -1025,6 +1029,22 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `object_radius` first + nested gates + x-z-y + dir-first vel + moving dot/flags) 509 (3731 B, +0x91, al 126, mk 37),
 // + one-expr vehicle dot 509 (al 125, mk 42), + `basis_dot_xzy(direction, ...)` 468 (mk 64), + height `||` / nested 509,
 // + split `combined_flags` / swapped decl / nested type-11 510 (mk 38). Body unchanged.
+// M3 lane 13 r159 (H2M_FAST, control 845 there: the reduced image builds this function differently from the full build,
+// 838): slot map: ours keeps the actor pointer at +0x20 and the three entry flag bytes at +0x25..+0x27, retail a one-use
+// dword at +0x20 sharing with flag bytes at +0x21..+0x23 and the actor at +0x24. The previous-target flag renamed
+// (eight names sorting before and after the other locals) 845 each (same code: names do not place these homes); the three
+// entry flags declared first 852; that flag declared ahead of the self-unit and actor pointers 848; the actor pointer
+// declared ahead of the self-unit pointer 846; the flag left uninitialised and set false in an else of the actor test 819
+// (3745 B).
+// M3 lane 16 r192 (H2M_FAST with 0x2c41b0 and 0x29cbb0; control 838, difflib-aligned 180, registers and stack
+// offsets masked 72: the positional count is mostly the one-row shift of the missing no-actor store): the object's
+// position (+0x30) and velocity (+0x88) read through the existing s_ai_object view 838 (same code); `dword moving` 838
+// (same code); the combined flags as `moving | (sphere_flags | obstacle_flags)` 838 (same code); the object gate as
+// `if (distance_squared > object_radius * object_radius) continue;` 838 (aligned 188, masked 67); the sphere gate as
+// `if (squared > combined_radius * combined_radius) continue;` 833 (masked 65), both gates 833 (masked 60); either gate
+// as `r * r < d` 838. Diagnostics: 1..7 unused function-scope locals 717/717/862/862/862/862/843 (masked
+// 75/77/83/83/76/76/66, no phase near retail); 1..3 redundant float parentheses on the entry dot or on the type-0 offset
+// change nothing. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -1097,6 +1097,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 4 callee-saved registers to retail (`cursor=EBP`, `cluster_index=EDI`, `local_13=ESI`, `record=EBX`, `zero=XMM7`) at
 // 555 (mk=13), but spills `cluster_index` 4 B across `tag` (`frame=0x4824`, `+0x1`, 3824 B) and mixes local/field reads;
 // `static inline` full lookup + tag/fallback/palette block variations (`C00..C11`) 678..739 (mk 17..27; clean `C11` 704).
+// M3 lane 7 r230 (h2m fast with 0x12e5e0, 0x12e960, 0x12eb00, 0x130f60, 0x131030, 0x1317a0, all MATCH; control 607):
+// the slot read right after the lookup call, ahead of the flag and the three metadata stores 607 (same code); the lookup
+// call after the metadata stores 616 (3835 B); that slot read as a char local 700 (3828 B); the flag declared first 609;
+// the metadata stores in reverse order 607. The allocator ranks the lookup result (66, EAX preferred as the return
+// register) far above the NONE constant and the slot (24 and below), so the result keeps EAX where retail moves it
+// to EDX for NONE. Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

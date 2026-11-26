@@ -1910,6 +1910,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 158; velocity declared ahead of position 158; boost declared after facing 158 (the three the same code: declaration
 // order does not move the packing, as the frame reading above says); the animation-flags pointer declared after the
 // state pointer 174 (first +0x23); material declared after facing 159. Body unchanged.
+// M3 lane 15 r148 (h2m fast with 0xdfa60 and 0xe59e0, MATCH; control 158, aligned 90). Renaming facing, position, boost or
+// material so it sorts first or last 158 each (same code: names do not break these slot ties); 1-7 unused initialised longs
+// at the top 158/158/176/176/158/158/158; gravity read into a named real right before the 0x1e5bb0 call 158 (same code),
+// ahead of the turning test 536; the walking speed in 0xe4770's spelling (the +0x134 block in a named pointer, the call's
+// result first, then `(1.0f - *(real *)(globals + 0x78) * biped->unknown2e4) * speed_scale`) 137 (aligned 76; 0xe4770
+// still MATCH; the same lead as r141's, a one-use pointer read ahead of a call, so match-only). Body unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -7498,8 +7504,9 @@ struct s_biped_physics_move
 	vector3f up;
 	byte unknown30[0x54 - 0x30];
 	bool placed;
-	byte unknown55[0x64 - 0x55];
-	point3f position;
+	byte unknown55[0x58 - 0x55];
+	point3f placement;	/* where a mode 4/5 move puts the biped (0x1fc660 writes it with placed) */
+	point3f position;	/* +0x64 */
 };
 
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output);
@@ -7721,8 +7728,14 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 	function_e2e90(arg_159e6d, &names[0], &names[1], move.direction, move.value, (byte *)&names[2]);
 	if ((biped->physics_mode == 4 || biped->physics_mode == 5) && move.placed)
 	{
-		function_b75a0(arg_159e6d, &move.position, NULL, NULL, NULL, false);
+		/* retail (0xe2650-0xe2660) passes move + 0x58, the point 0x1fc660
+		   stores with the placed flag; +0x64 is never written in modes 4/5 */
+		function_b75a0(arg_159e6d, &move.placement, NULL, NULL, NULL, false);
 	}
+	/* the moving class is the requested animation's (retail keeps it in ebx),
+	   not the kept moving one's: otherwise a biped asked to idle while it
+	   moves keeps its moving animation forever */
+	long const requested = names[1];
 	if (names[1] == 0x400000c && biped->unknown34a == 1)
 	{
 		byte *idle = (byte *)biped + 0x3a8;
@@ -7747,7 +7760,7 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 			}
 		}
 	}
-	*((byte *)biped + 0x3a9) = function_dd300(names[1]);
+	*((byte *)biped + 0x3a9) = function_dd300(requested);
 	if (state->graph_tag_index != NONE && state->channels[0].graph_tag_index != NONE &&
 		state->channels[0].animation_id.index != NONE && state->unknown7c != 0xe0000c2 &&
 		(arg_159e6d == NONE || !(*((byte *)BIPED_GET(arg_159e6d) + 0xb3) > 0)))
@@ -8294,6 +8307,19 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 // pointer in ESI and calls function_e63b0 on current first. Tried: result as a reassigned parameter with the flag
 // before the unit lookup (391 bytes, 120), flat && conditions (127/132), inverted nesting (136/140), calls inside
 // the conditions (114, wrong: the second call becomes conditional).
+// M3 lane 8 r240 (fast screen with 0xe63b0 and caller 0x1515e0, which stay matched; this body measured 55 at 384 B, the
+// result now in the parameter's home and the candidate in EBP as retail). Left: our NONE is one EDX constant for the
+// home store and two compares where retail stores and compares immediates; ours keeps the object data field in ESI
+// where retail keeps the array global and re-reads the field inside the inlined weapon-flag lookup (0x1012c0's); the
+// two inside tests run current-first (the compiler reorders them to keep the first-tested result in AL). Forms: the NONE
+// store ahead of the flag 128 (382 B), ahead of the unit lookup 120 (391 B: the immediates and the store's place become
+// retail's, the data-field reload is still missing, so the rest misaligns); the flag before the unit local, the
+// candidate copy first, a named weapon index 55 each (same code); a named offset pointer for the three calls 133 (caller
+// 0x1515e0 69). On the early store: the inside results as initialisers, declared the other way round, the vectors
+// declared the other way round, the calls written current-first, 120 each (same code). Diagnostics (reverted): the
+// parameter's address stored to a probe global 84 (the field still kept, not an aliasing kill); a probe global store
+// inside 0xe63b0 gives retail's two-vector arm exactly; a self-copy through its aim parameter does not. BLOCKED-BY
+// 0xe63b0 (its call order needs it to look side-effecting to the optimiser).
 // @retail 0xe5bc0
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {

@@ -1841,6 +1841,21 @@ bool function_108530(long device_index, long name)
 // 127 (528 B: the tail then reloads the field and hoists 2.0 as retail, but the clamp keeps its register copy), with the
 // numerator swapped too 126; the deceleration distance read back from its field 116 (same code); the position stored to
 // start and position in one chained assignment 142 (509 B; callers 26/28). Body unchanged.
+// M3 lane 15 r148 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116). Reading: the position piece
+// (B12..B22) cannot take XMM3 because the half ramp-down holds XMM3 in the inner block while our position store comes
+// after the half times (retail stores target, position and start ahead of them), so the duration piece takes XMM3 and
+// position XMM5; a forced-ranking search's best single decision is the half ramp-up one priority lower, 81. Forms: the
+// position store moved up beside the start store 142 (509 B; callers 26/28); the inner stores in retail's order
+// (target, position, start, the halves, the acceleration and deceleration distances, velocity, cruise) 169 (486 B;
+// callers 19/34); the acceleration block reading the cruise-speed local 116, both blocks 116 (same code); the two half
+// times adjacent ahead of the acceleration zero, up first 116 (same code), down first 123 (525 B; callers 31/13).
+// M3 lane 7 r231 (H2M_FAST with 0x108600/0x108670, both MATCH in the control; control 116). Allocator reading: the two
+// half times tie at 146 (B22 +104, B23 +42 each) and the later-created half ramp-up colours first; a forced-ranking
+// search's best single decisions (69, 78, 81, 82) all move the initial velocity off XMM6. Forms: the half ramp-down
+// computed right after `distance` 142 (532 B; callers 31/13); the half ramp-up there 126 (529 B; its priority falls to
+// 84 and the half ramp-down, 138, colours first, but the position takes XMM6 ahead of the velocity; callers 31/13); both half times right after the ramp-down
+// minimum 133 (524 B; 31/13), right after `delta` 136 (527 B; 31/13); the cruise numerator named ahead of the
+// denominator test 116 (same code). Body unchanged.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

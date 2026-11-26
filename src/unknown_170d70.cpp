@@ -477,6 +477,16 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // `group >= 5` 216 (1395 B); the time step as `t = times[group]` then `t -= step` 134 (1403 B); the time table in a
 // `real const *` local ahead of the loop 103 (1395 B, first +0x18); the values array and its cursor declared after the
 // coefficient cursors 67; the copy loop's index declared ahead of its loop 64 (same code). Body unchanged.
+// M3 lane 16 r192 (H2M_FAST with 0x16fe90 and 0x170d70; control 64, aligned 65, masked 48): the powers as `t * t2`,
+// `t * t3`, `t * t4` 64; forward and up as `&state->current[10]` / `[13]` 64, forward only 64; the side vector declared
+// at the function top 64 (same code each); the count table read at each advance (no count local) 127 (1403 B).
+// Diagnostic grids (not source): on the explicit time cursor body (125 at 1413 B, aligned 35, loop exact), 0..7 unused
+// locals x the dot's terms parenthesised (none, k, i, j): the parentheses never change the aligned rows, best 91 (1399
+// B) at six locals; 0..7 unused locals x 0..3 no-op `(real)(x * 1.f)` on the forward length: best aligned 29 (masked 32,
+// 124 at 1401 B) at 0/2/7 locals with one no-op, retail length only at six locals with two (81, aligned 55); main's body
+// with the same two levers: best aligned 44 (masked 32, 86 at 1388 B) at six locals. With six locals the orthogonality
+// dot reuses up.k's register as retail does, but its other two terms stay exchanged, and no cell gives retail's cross
+// section schedule or first normalize. Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1260,6 +1270,22 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // result in a named bool 105; the camera table copied into a local at the loop body's top 105 (folds); the count store
 // as `(short)(volume_index + 1)` 105; the capacity test as `!(volume_index < 512)` 105; camera and rectangle pointers
 // both named after the volume address 22.
+// M3 lane 16 r192 (H2M_FAST with 0x1730a0; control 105, only 14 aligned rows, 10 masked: the call setup, the plane
+// lookup's schedule and a 2-byte filler, `lea ecx, [ecx]` against retail's `mov edi, edi`): the offset written
+// `0x1bc * entry->key` 105, parenthesised 105, the capacity test on the field ahead of the index local 105, the plane
+// lookup as `[portal_index * 9 + 1]` of a long array 105 (same code each); the plane store as one ternary 115 (425 B).
+// On the offset lead (re-measured 11) a forced-ranking search (40 builds) moves only the key to EDX (13): the camera
+// table is a scratch temporary, not a ranked candidate (its parameter has one reference). Body unchanged.
+// Roasted-Codes #1542 (released 2026-11-26; fast reduced-image scores with 0x1730a0 and 0x163db0, MATCH at every run,
+// control 105, 434 B unless stated). On the camera-address local (the 22 lead), the rectangle pointer assigned through a
+// non-const reference to a pointer local, the call taking the reference: 83, and from the key load to the call the code is
+// retail's (key EDX, table ECX, the add ahead of the key push, then lea ecx,[esi+0xc]); left: collection and entry_index
+// exchange EDI and EDX from the function top, and the table still loads after the count store (not keepable as written).
+// The same local with the rectangle bound as a const reference to the member, or the key copied into a local after the
+// camera address: 22; the volume pointer assigned inside the call's last argument: 13. The five pointer parameters as
+// references 105; __stdcall with a const cameras pointer, non-const lists and unsigned scalars, on the offset lead, 11;
+// function_163db0 declared with the rectangle after the identifier (0x163db0, 0x1733e0 and 0x441b0 stay matched) 105,
+// and 13 on the offset lead. The portal index test as a switch on NONE: 117 (423 B).
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1684,6 +1710,13 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // The fixed-axis unity register and two square spills still differ. Existing general builder for the fixed axis 386;
 // general forward/up/both transforms on the fixed axis 385/364/379, or general builder and both transforms 356;
 // general forward/up/both transforms on the moving axis 360/346/348. NOT kept: every form shortens the rotation and regresses.
+// M3 lane 14 r157 (fast screens with 0x1726d0, 0x170fd0, 0x172c70, 0x173910, 0x171d00 and 0x1701f0, all MATCH; reduced
+// control 337, plain 334, difflib-aligned 378 plain). Forms: the closing dot through dot3f 342 (1453 B); the matrix as
+// the existing matrix3x3 (forward, left, up) with the existing function_2477b1 transform 367 (1441 B), with
+// vector3f_rotate_into_axes 377 (1426 B); the matrix as matrix3x3 with this file's transform and sums unchanged 337 fast,
+// 334 plain (aligned 357 against 378: every matrix element then sits at retail's offset, tij - s * k at +0xc, but the
+// code is otherwise the same; held as a patch); on it tij formed first 348
+// (1455 B), with the shared (1 - c) * k named 357 (1431 B); tij first on main's matrix 348. Body unchanged.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2727,6 +2760,17 @@ struct s_camera_reference_171830
 // indexed products with the shared negate 391, first rear product negated after the others 45 at 1219 bytes.
 // On the opening plane path: all rear products then shared negate 158; three named rear products 264.
 // NOT kept: the 45 form still differs and uses the former one-use plane distance and grouped sample products.
+// M3 lane 14 r157 (fast screens with 0x170fd0, 0x171d00 and 0x16ebf0, both matched ones MATCH each run; round 154's lead
+// rebuilt, 9 at 1219 B). Rank reading on the lead (the reassociation sort's ranks): a parameter load at offset 0 weighs
+// 0x2000 per place counted from the last parameter plus 8 (point 0xa008, forward 0x8008, up 0x6008, distance 0x4008),
+// the +4/+8 loads through forward weigh 0xc008 and 0x0008 (the count wraps at 0x10000), and the named depth weighs 0x200
+// (0x20 per local). The centre's products then sort forward.i > depth, forward.j > depth, depth > forward.k; retail
+// needs depth above forward.i only, which no local's weight reaches. On the lead: forward read through a pointer local
+// in the three rear rows 154 (all three rear loads then come first, first difference back at +0x3c), with the pointer
+// declared at the top 154, used in the cross product too 261, as a const reference 154; forward.i copied into a local
+// ahead of the depth or after it 266 each (1222 B); the depth bound by const reference to the sum 263 (1223 B), or to
+// a sum local 263. Diagnostic only (unread parameters are not source): four unread longs after forward 27 (first
+// difference +0x92), at the end of the list 29. Body unchanged.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

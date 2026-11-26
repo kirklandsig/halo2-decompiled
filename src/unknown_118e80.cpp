@@ -1335,6 +1335,23 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // code). Reading: a forced-ranking search keeps two semantic rows in every forced decision (the force's byte spill and
 // its dword push), so register choice alone cannot reach retail while 0x1c4b00's formal is `long`. Still BLOCKED-BY
 // 0x1c4b00.
+// M3 lane 8 r239 (h2m fast with 0x119bc0, 0x1c4b00, 0x119020, 0x119c10 and 0x118e80, all MATCH each run; control 14):
+// the force bool declared bare at function scope and assigned at the call 14; the re-fetched object pointer declared bare
+// at function scope 14; the re-fetched pointer declared bare ahead of the 0x119bc0 call and assigned after the member
+// store 14 (the three the same code); the move output declared at function scope 19 (first +0x225, its homes move);
+// the +0x88 copy member by member through a pointer to the object's vector 40 (1046 B). Still BLOCKED-BY 0x1c4b00 (its
+// bool formal: one declaration sits in src/items.cpp, another lane's file this round, and contributor 0xe24f0 rises)
+// and 0x1ec690 (a stub; its disabled draft costs two matches) for the copy's hoisted loads.
+// M3 lane 4 r263 (h2m fast with 0x1c4b00, 0x119020 and 0xb77d0, all MATCH each run; control 14). Diagnostic, HELD
+// (held as a patch, code back to main; two of 0x1c4b00's declarations sit in other lanes' files this
+// round): 0x1c4b00's last parameter `bool` in its definition and all 13 declarations with the member store kept 90
+// (1038 B); that without the member store 40 (retail's byte spill at its own cell and the dword push, the copy's i load
+// not hoisted); with the lookup and copy as an inline helper as well 6 (only the copy's j and k loads, which retail runs
+// one store ahead). On that 6: the helper written in 0xb7740's spelling (masked index, pool local, copy apart from the
+// call) 6; with a dead update mask 6; the copy through memcpy 6; the angular store ahead of the linear 6; the copy member
+// by member 101 (1051 B). Without the bool formal: the helper with the member store kept 41; with the bool formal, a
+// named pointer to the move output's velocity for the copy and the call (no helper) 40. Still BLOCKED-BY 0x1c4b00 (its
+// bool formal) and the copy's j/k schedule.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

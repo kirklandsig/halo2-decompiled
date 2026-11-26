@@ -1924,6 +1924,15 @@ long function_2197f0(real gain);
 // `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
 // Staged release end with default result, exhaustive result, selectable endpoint, or elapsed fallback accumulator 92/92/155/157.
 // The same four with the quotient before the cap 148/148/153/97. NOT kept: duration reuse keeps the wrong XMM allocation.
+// Roasted-Codes #1535 (released 2026-11-26; fast reduced-image scores, the seven neighbouring functions unchanged at
+// every run, control 87). The simple same-ambience arm's interpolation bound to a const reference and then added: 80
+// (684 B); that arm's interpolation, sum and tail become retail's (result XMM0, zero XMM2), elapsed stays in XMM2 and the
+// fade-out time is still reloaded. The same binding on the overlap arm 157 (688 B); on the current-ambience arm on top of
+// the 80 form 99 (686 B); both same-ambience arms with a fade-out local for its three uses 161 (688 B), elapsed still in
+// XMM2. One-use references, not kept. The release contribution held in a local with a released flag and published once
+// after the previous-ambience block, with the current arm's clamp in place (t = ambience_fade / fade_in, then 1.0f unless
+// 1.0f > t): 54 (678 B), first difference +0x53; the gain bypass and the tail cross-jump are gone, elapsed is still in
+// XMM2 and the fade-out time is reloaded. Not kept (a one-use local and a flag).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4140,6 +4149,15 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // becomes `test byte [eax + 0xa], 0x20`, one candidate fewer in case 0's first block); the range written out at
 // both uses with no local 31 (559 B: the range is sunk below the flag test). On main's body: the mode if/else 8,
 // the flag test without the bool cast 79, the range at both uses 37 (559 B).
+// M3 lane 2 r152 (H2M_FAST, control 8; on the no-default form the sound index ranks 59 and the voice 60, and on a tie
+// the sound index colours first, so one point is the whole gap; the voice's blocks are all inside the loop and move
+// by even amounts, so the point must come from the entry join or the preheader, whose seven hoisted candidates are
+// six loop constants and the sound-system global): on the no-default form, the sound-group flag as a one-bit field of the
+// promotion-flags view (bit 5 of +0xa) through TEST_FIELD_BIT 78 (same code); the loop top reading the pool through
+// `sounds` 29 (index 67 over voice 60, so those two take retail's registers, but the pool is then a ranked user
+// value in ESI and its latch load moves ahead of the ternary again); only the sound pointer through `sounds` 163
+// (index 55); the entry reading the global with `sounds` set only at the latch 78; the first absolute index named
+// ahead of the datum 78 (ranks unchanged). All restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -5076,6 +5094,17 @@ struct s_128ca0
 // as signed char/short/long or byte 207/123/126/79. With a retained synchronization handle,
 // signed char/byte 207/79, and with both controller handles retained 207/79.
 // NOT kept: the signed byte moves the first difference to the pitch setup, and all forms regress.
+// M3 lane 7 r231 (H2M_FAST with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt, re-measured 17; Lc
+// = L with `char count = NONE`, re-measured 204). Allocator reading: L and Lc reference the same values at the same costs
+// in the entry block, and the first integer pass sees 20 values there in both (its only difference is the NONE constant
+// with 5 references in L and 6 in Lc, retail's count), but after it the char form keeps 19, so
+// each second-pass entry value scores 6 x 19 = 114 instead of 120 and one of them loses its tie with the pitch-bounds and
+// pitch-range values (EAX first in L, ECX after them in Lc); a forced-ranking search's best single decision on Lc (that
+// pick back) gives 43, leaving only the pitch-range block (retail forms the range pointer with `lea` and reads +8 and +2
+// through it) and branch offsets. Forms on Lc: without the decibel-local assignments 208 (1049 B), without the
+// TEST_FIELD_BIT pending test 209 (1049 B), with the voice pointer for the channel index 204; the pitch bounds read as
+// the record's two fields (no pointer) 207 (first +0x8f); the count extraction cast to char 204 (same code). Body
+// unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

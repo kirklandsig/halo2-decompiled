@@ -298,10 +298,24 @@ static __forceinline void network_memory_track(void *block, long size)
 // score 1 in a full build with stand-in SDK headers (was 22): each stream window's size is stored by the storage
 // constructor ahead of the shared window construct (which then stores head, count, valid and capacity), and the
 // connection count is assigned to both globals in one statement in each arm.
+// What is left: the first connection loop's address, retail `lea esi, [edx + edi]` (the table base reloaded after
+// each constructor call, first), ours `[edi + edx]` (the stepped offset first). Round 191 (m3 lane 12; fast unless
+// marked): through link_connection_get(i) 1; the table pointer read as the member of a file-local aggregate 1; a
+// running byte offset kept by hand (`offset += sizeof(s_link_connection)` after each construct) 7 (retail's lea, but
+// the offset is cleared ahead of the loop guard and stepped before the index, where retail clears it after the guard
+// and steps it after the index, as the compiler's own offset); 1..24 unused initialised locals at the top or after
+// `i` 1 each (no symbol-count tie). Compile-only (it reproduces ours, offset first): `&table[i]`, a pointer local, a
+// byte offset `i * sizeof`, a base local or a const reference to it, an index declared in the for statement, a while
+// or do-while loop, `i + table`, a long/dword/byte-pointer table global, a typed or array table, a member of an
+// aggregate, an inline accessor for the base, inline (base, offset) and (base, index, size) helpers, a macro, a
+// template construct helper, the result kept, an explicit NULL test and call, the address used twice, the index used
+// twice: all offset first; a pointer local bound by reference and `+=` gives `add base, offset` (two instructions).
+// Retail has no other loop of this shape (a reloaded base plus a stepped offset) to compare with: the one other,
+// matched 0xb3200, has the offset first.
+// Before that (22, from 74): in the first allocation the size and the block took edi
+// and esi the other way round, and the two stream constructors stored each
+// window's head before its count where ours stored the count first.
 // @retail 0x81780
-// score 22 (was 74): in the first allocation the size and the block take edi
-// and esi the other way round, and the two stream constructors store each
-// window's head before its count where ours stores the count first
 void __stdcall function_81780(long stage)
 {
 	long size;

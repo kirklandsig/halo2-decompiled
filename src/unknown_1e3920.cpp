@@ -1373,6 +1373,17 @@ void function_1e3b60(long actor_index);
 // 404; both flags at function scope, cleared at the loop top, 402. A first-pass (all-stack) compile of 0x262ba0 holds the
 // actor index in EDI but reloads it from its home five times after EDI goes to the view pointers, so link-time code
 // generation keeps it a stack argument. Still BLOCKED-BY 0x262ba0.
+// M3 lane 8 r239 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form): in 0x262ba0 (forms
+// and counts in its note) an all-stack compile-only screen that reads the actor index from its home once (the update
+// flag at function scope, cleared after its use) still leaves it a stack argument here (0x262ba0 431); a nested
+// 0x264b50 test 404, `actor[0x48] != 0` 404, the existing prop walk 446 and that with the function-scope flag 447.
+// Still BLOCKED-BY 0x262ba0 (0x2641c0's expansion; its noinline declaration is in another lane's file this round).
+// M3 lane 4 r263 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680 and 0x264210; 25 here in every form). In
+// 0x262ba0 with 0x2641c0's noinline declaration dropped (diagnostic: 0x264210 then 114 at 139 B): `sample` and `update`
+// declared bare at function scope and set false at the loop top 512 there (1696 B); `sampled_one` replaced by the
+// sampled prop's index (NONE until set) 505 (1688 B), and without the expansion 439 (1616 B, against 404); case 1's
+// 0x25c820 call jumping to the release pair's own 0x25c820 call 461 (1660 B); the 0x264b50 guard nested under
+// `if (sample)` 509. The actor index stays a stack argument in each. Still BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

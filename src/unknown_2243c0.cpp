@@ -1012,6 +1012,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // pass, material, shader/pass or all three 152 each. Word fallback continued
 // through all three 117. NOT kept: the word forms tie, and the full mask hoists
 // the directory load and raises the score.
+// M3 lane 11 r169 (h2m fast with 0x2243c0, 0x224d90, 0x173ba0, 0x173c10, 0x224550 and 0x175610, all MATCH unless given;
+// control 117). The tail is the value cache's existing method 0x173c10 written out (the masked 0x173ba0 call and the
+// mask OR), as matched 0x224550 calls it: local_1 typed as the particle value cache (this file's forward declaration
+// completed with 0x224550's layout) and `local_1.function_173c10(flags & 0x107f0)` in place of the call and the OR:
+// on main 149 (first +0x4, 0x224d90 36); on lane 1 r59's reference chain rebuilt here 8 (the same eight lines; the
+// method's argument now gives the chain's late +0xd8 read). On that chain with the method: the material tag read in
+// place 106, the fallback unbound 35, the head and stage unbound 152, the definition unbound 10. A forced-ranking
+// search on the chain (70 single decisions, scratch picks included) finds nothing under 8 (best 9). Body unchanged.
 // The dispatch span and the fallback EDX mask with the EDI directory still differ.
 // Existing typed group entry and direct indexed group reads, word/full mask
 // 117/152 and 165/135. Typed directory through fallback 117, through all
