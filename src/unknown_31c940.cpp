@@ -1368,69 +1368,6 @@ static __forceinline void update_linear_limit_values(float impulse, solver_linea
 	*result += impulse;
 }
 
-// Seven working vectors retain both projections until their scalar stores.
-// Reuse each input only after its final contribution to the two rows.
-static __forceinline void residual_pair_vectors_31c940(__m128 (&bank)[7],
-	__m128 &first, __m128 &second, __m128 *cursor,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
-{
-	solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)cursor;
-	// Retain the shared inputs across both projections.
-	// Reuse each input only after its final multiplication.
-
-	bank[3] = a->angular;
-	bank[5] = row[0].b;
-	bank[2] = b->linear;
-	bank[1] = row[0].a;
-	bank[0] = bank[3];
-	bank[0] = _mm_mul_ps(bank[0], bank[1]);
-	bank[1] = row[1].a;
-	bank[3] = _mm_mul_ps(bank[3], bank[1]);
-	bank[1] = a->linear;
-	bank[1] = _mm_sub_ps(bank[1], bank[2]);
-	bank[6] = bank[1];
-	bank[2] = b->angular;
-	bank[4] = bank[2];
-	bank[4] = _mm_mul_ps(bank[4], bank[5]);
-	bank[0] = _mm_add_ps(bank[0], bank[4]);
-	bank[5] = row[1].b;
-	bank[2] = _mm_mul_ps(bank[2], bank[5]);
-	bank[5] = row[0].linear;
-	bank[6] = _mm_mul_ps(bank[6], bank[5]);
-	bank[3] = _mm_add_ps(bank[3], bank[2]);
-	bank[0] = _mm_add_ps(bank[0], bank[6]);
-	bank[4] = row[1].linear;
-	bank[1] = _mm_mul_ps(bank[1], bank[4]);
-	bank[3] = _mm_add_ps(bank[3], bank[1]);
-	bank[1] = _mm_shuffle_ps(bank[3], bank[3], 0x55);
-	bank[1] = _mm_add_ss(bank[1], bank[3]);
-	bank[2] = _mm_shuffle_ps(bank[3], bank[3], 0xaa);
-	bank[3] = bank[2];
-	bank[3] = _mm_add_ss(bank[3], bank[1]);
-	bank[2] = bank[0];
-	bank[1] = _mm_shuffle_ps(bank[0], bank[0], 0x55);
-	bank[1] = _mm_add_ss(bank[1], bank[0]);
-	bank[2] = _mm_shuffle_ps(bank[2], bank[2], 0xaa);
-	second = bank[3];
-	bank[2] = _mm_add_ss(bank[2], bank[1]);
-	first = bank[2];
-}
-
-static __forceinline void update_residual_pair(__m128 *&cursor,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b,
-	float &scalar_a, float &scalar_b, __m128 (&vector_work)[7])
-{
-	__m128 first, second;
-	residual_pair_vectors_31c940(vector_work, first, second, cursor, a, b);
-	_mm_store_ss(&scalar_a, first);
-	cursor[0].m128_f32[3] -= scalar_a;
-
-
-	_mm_store_ss(&scalar_b, second);
-	cursor[3].m128_f32[3] -= scalar_b;
-	cursor += 6;
-}
-
 // Residual rows retain A's angular contribution before the linear product.
 static __forceinline void project_residual_linear_velocity(
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a,
@@ -2132,11 +2069,13 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 		// Save the first iteration's velocities, then accumulate later ones.
 		// Retail consumes consecutive kind-2 bodies before checking the sentinel.
 		solver_velocity_31c940 *body = bodies;
+		// Retain the captured type until advancing to the next body.
+		signed char body_kind = (signed char)body->kind;
 		if (state.solving.iteration == 0)
 		{
-			while ((signed char)body->kind != 3)
+			while (body_kind != 3)
 			{
-				switch ((signed char)body->kind)
+				switch (body_kind)
 				{
 				case 2:
 					do
@@ -2144,16 +2083,17 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 						body->accumulated_angular = body->angular;
 						body->accumulated_linear = body->linear;
 						++body;
-					} while (body->kind == 2);
+						body_kind = (signed char)body->kind;
+					} while (body_kind == 2);
 					break;
 				}
 			}
 		}
 		else
 		{
-			while ((signed char)body->kind != 3)
+			while (body_kind != 3)
 			{
-				switch ((signed char)body->kind)
+				switch (body_kind)
 				{
 				case 2:
 					do
@@ -2161,7 +2101,8 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 						accumulate_velocity_field_31c940(body->accumulated_angular,body->angular);
 						accumulate_velocity_field_31c940(body->accumulated_linear,body->linear);
 						++body;
-					} while (body->kind == 2);
+						body_kind = (signed char)body->kind;
+					} while (body_kind == 2);
 					break;
 				}
 			}
@@ -2175,7 +2116,7 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 			// Retail advances the impulse cursor with each residual row, while
 			// this pass writes the remaining errors back into the row stream.
 			result = impulses;
-			__m128 vector_work[7];
+
 			solver_impulse_cursor_31c940 result_cursor(result);
 			signed char residual_kind;
 			solver_header_31c940 *first_residual_header = (solver_header_31c940 *)op;
@@ -2198,11 +2139,113 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 				case 5:
 				{
 					// Consume up to two paired records, then join the friction path.
-					update_residual_pair(terms, a, b, projection_pool.residual_normal_first, projection_pool.residual_normal_second, vector_work); result_cursor.advance(2); op += op[1];
+					{
+						__m128 first, second;
+						{
+							__m128 bank[7];
+							solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+							// Retain the shared inputs across both projections.
+							// Reuse each input only after its final multiplication.
+
+							bank[3] = a->angular;
+							bank[5] = row[0].b;
+							bank[2] = b->linear;
+							bank[1] = row[0].a;
+							bank[0] = bank[3];
+							bank[0] = _mm_mul_ps(bank[0], bank[1]);
+							bank[1] = row[1].a;
+							bank[3] = _mm_mul_ps(bank[3], bank[1]);
+							bank[1] = a->linear;
+							bank[1] = _mm_sub_ps(bank[1], bank[2]);
+							bank[6] = bank[1];
+							bank[2] = b->angular;
+							bank[4] = bank[2];
+							bank[4] = _mm_mul_ps(bank[4], bank[5]);
+							bank[0] = _mm_add_ps(bank[0], bank[4]);
+							bank[5] = row[1].b;
+							bank[2] = _mm_mul_ps(bank[2], bank[5]);
+							bank[5] = row[0].linear;
+							bank[6] = _mm_mul_ps(bank[6], bank[5]);
+							bank[3] = _mm_add_ps(bank[3], bank[2]);
+							bank[0] = _mm_add_ps(bank[0], bank[6]);
+							bank[4] = row[1].linear;
+							bank[1] = _mm_mul_ps(bank[1], bank[4]);
+							bank[3] = _mm_add_ps(bank[3], bank[1]);
+							bank[1] = _mm_shuffle_ps(bank[3], bank[3], 0x55);
+							bank[1] = _mm_add_ss(bank[1], bank[3]);
+							bank[2] = _mm_shuffle_ps(bank[3], bank[3], 0xaa);
+							bank[3] = bank[2];
+							bank[3] = _mm_add_ss(bank[3], bank[1]);
+							bank[2] = bank[0];
+							bank[1] = _mm_shuffle_ps(bank[0], bank[0], 0x55);
+							bank[1] = _mm_add_ss(bank[1], bank[0]);
+							bank[2] = _mm_shuffle_ps(bank[2], bank[2], 0xaa);
+							second = bank[3];
+							bank[2] = _mm_add_ss(bank[2], bank[1]);
+							first = bank[2];
+						}
+						_mm_store_ss(&projection_pool.residual_normal_first, first);
+						terms[0].m128_f32[3] -= projection_pool.residual_normal_first;
+						_mm_store_ss(&projection_pool.residual_normal_second, second);
+						terms[3].m128_f32[3] -= projection_pool.residual_normal_second;
+						terms += 6;
+					}
+					result_cursor.advance(2); op += op[1];
 					// Redispatch the classification already read for this pair.
 					residual_kind = (signed char)op[2];
 					if (residual_kind != 5) continue;
-					update_residual_pair(terms, a, b, projection_pool.residual_bounded_first, projection_pool.residual_bounded_second, vector_work); result_cursor.advance(2); op += op[1];
+					{
+						__m128 first, second;
+						{
+							__m128 bank[7];
+							solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+							// Retain the shared inputs across both projections.
+							// Reuse each input only after its final multiplication.
+
+							bank[3] = a->angular;
+							bank[5] = row[0].b;
+							bank[2] = b->linear;
+							bank[1] = row[0].a;
+							bank[0] = bank[3];
+							bank[0] = _mm_mul_ps(bank[0], bank[1]);
+							bank[1] = row[1].a;
+							bank[3] = _mm_mul_ps(bank[3], bank[1]);
+							bank[1] = a->linear;
+							bank[1] = _mm_sub_ps(bank[1], bank[2]);
+							bank[6] = bank[1];
+							bank[2] = b->angular;
+							bank[4] = bank[2];
+							bank[4] = _mm_mul_ps(bank[4], bank[5]);
+							bank[0] = _mm_add_ps(bank[0], bank[4]);
+							bank[5] = row[1].b;
+							bank[2] = _mm_mul_ps(bank[2], bank[5]);
+							bank[5] = row[0].linear;
+							bank[6] = _mm_mul_ps(bank[6], bank[5]);
+							bank[3] = _mm_add_ps(bank[3], bank[2]);
+							bank[0] = _mm_add_ps(bank[0], bank[6]);
+							bank[4] = row[1].linear;
+							bank[1] = _mm_mul_ps(bank[1], bank[4]);
+							bank[3] = _mm_add_ps(bank[3], bank[1]);
+							bank[1] = _mm_shuffle_ps(bank[3], bank[3], 0x55);
+							bank[1] = _mm_add_ss(bank[1], bank[3]);
+							bank[2] = _mm_shuffle_ps(bank[3], bank[3], 0xaa);
+							bank[3] = bank[2];
+							bank[3] = _mm_add_ss(bank[3], bank[1]);
+							bank[2] = bank[0];
+							bank[1] = _mm_shuffle_ps(bank[0], bank[0], 0x55);
+							bank[1] = _mm_add_ss(bank[1], bank[0]);
+							bank[2] = _mm_shuffle_ps(bank[2], bank[2], 0xaa);
+							second = bank[3];
+							bank[2] = _mm_add_ss(bank[2], bank[1]);
+							first = bank[2];
+						}
+						_mm_store_ss(&projection_pool.residual_bounded_first, first);
+						terms[0].m128_f32[3] -= projection_pool.residual_bounded_first;
+						_mm_store_ss(&projection_pool.residual_bounded_second, second);
+						terms[3].m128_f32[3] -= projection_pool.residual_bounded_second;
+						terms += 6;
+					}
+					result_cursor.advance(2); op += op[1];
 					if (op[2] != 6) continue;
 				}
 				case 6:
@@ -2211,7 +2254,7 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 						// Own the pair temporaries until both projections are reduced.
 						// Advance the pair and angular row together after publishing both errors.
 						{
-							__m128 first, second;
+							__m128 first;
 							{
 								__m128 work_0, work_1, work_2, work_3, work_4, work_5, work_6;
 								solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
@@ -2248,20 +2291,37 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 								work_2 = work_0;
 								work_2 = _mm_shuffle_ps(work_2, work_2,0xaa);
 								work_3 = _mm_add_ss(work_3, work_1);
-								second = work_3;
+
 								work_1 = _mm_shuffle_ps(work_0, work_0,0x55);
 								work_1 = _mm_add_ss(work_1, work_0);
 								work_2 = _mm_add_ss(work_2, work_1);
 								first = work_2;
+
+								_mm_store_ss(&projection_pool.residual_circular_first, first);
+								terms[0].m128_f32[3] -= projection_pool.residual_circular_first;
+								_mm_store_ss(&projection_pool.residual_circular_second, work_3);
+								terms[3].m128_f32[3] -= projection_pool.residual_circular_second;
+								terms += 8;
 							}
-							_mm_store_ss(&projection_pool.residual_circular_first, first);
-							terms[0].m128_f32[3] -= projection_pool.residual_circular_first;
-							_mm_store_ss(&projection_pool.residual_circular_second, second);
-							terms[3].m128_f32[3] -= projection_pool.residual_circular_second;
-							terms += 8;
 						}
 						solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(terms-2);
-						subtract_angular_residual(spin, a, b, projection_pool.residual_spin);
+						{
+							// Retain the first axis with A's consumed angular contribution.
+							struct { __m128 axis, contribution; } angular_inputs;
+							angular_inputs.axis=spin->a;
+							angular_inputs.contribution=a->angular;
+							__m128 second_contribution=b->angular;
+							angular_inputs.contribution=_mm_mul_ps(angular_inputs.contribution,angular_inputs.axis);
+							angular_inputs.axis=spin->b;
+							second_contribution=_mm_mul_ps(second_contribution,angular_inputs.axis);
+							angular_inputs.contribution=_mm_add_ps(angular_inputs.contribution,second_contribution);
+							angular_inputs.axis=_mm_shuffle_ps(angular_inputs.contribution,angular_inputs.contribution,0x55);
+							angular_inputs.axis=_mm_add_ss(angular_inputs.axis,angular_inputs.contribution);
+							second_contribution=_mm_shuffle_ps(angular_inputs.contribution,angular_inputs.contribution,0xaa);
+							second_contribution=_mm_add_ss(second_contribution,angular_inputs.axis);
+							_mm_store_ss(&projection_pool.residual_spin,second_contribution);
+							spin->b.m128_f32[3]=spin->b.m128_f32[3]-((float const &)projection_pool.residual_spin);
+						}
 						result_cursor.advance(3);
 						op += op[1];
 					}
