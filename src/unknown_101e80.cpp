@@ -244,6 +244,12 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // 740 B), the getter for the object itself (87), named flag9/flag10 bools (87), the two attachment indices as
 // ternaries (159, 714 B), only the first (152), only the second (87, 711 B), the other index's first pick as a
 // ternary (94), the holder's flag through the file's flag12c_0 bitfield, with or without TEST_FIELD_BIT (87, 87).
+// Round 171: `real start = tag_link->start;` for the duration 180 (709 B), `real span = end - start` 87; the object's tag
+// index read into a local ahead of the other object's lookup 87 (still folded into the compare); a pointer to the
+// other object's link for its two tests 87; start local and tag index local together 180. Compile-only, the tag link
+// is folded into its first three reads and formed afterwards (retail forms it first, then copies it) for `tag->links +
+// link_index`, a links local, a reference, byte arithmetic, a long index, a const pointer and inline accessors taking
+// a short or long index.
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {
