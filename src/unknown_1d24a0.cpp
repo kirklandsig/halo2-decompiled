@@ -802,6 +802,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // on `fr=0x1d4` (al 222/226), 804 with `long object_type` (al 220, mk 104). Diagnostics (moved list local at removal on
 // 808): alone 757 (al 289, mk 89), + `fr=0x1d4` 738 (al 164, mk 82), + `local_18` first 724 (4239 B, fr 0x1d4, +0x14, al
 // 153, mk 76; + math/limit 724, al 151), + `long object_type` 800.
+// M3 lane 4 r265 (fast screen, control 808 at 4260 B, frame 0x1d8 against 0x1d4; 71 stack cells sit elsewhere
+// than retail's): the attachment offset through vector3d_from_points3d into local_31 with no local_75 909 (4218 B);
+// into local_75 then copied 808 (same code); local_31 written by three field rows with no local_75 912 (4216 B);
+// response_fraction declared above local_25 808 (same code); the body-slot clamp as `local_16 = field_1;` plus an
+// if / else-if pair 913 (4259 B); the marker declared at the top of the loop body 808 (same code). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
