@@ -948,7 +948,11 @@ inline void actor_274f30_update(long actor_index, bool flag)
 // % 65536 / padded 0x888 struct / work struct copy-vs-iter / direct iter erase / early return / do-while /
 // inverted erase branch all tie 47; (long)(short)&0xffff in update 15 (193 B, movzx, breaks 0x274f30 120) /
 // in erase 43 (196 B, breaks 0x274f30 132); direct (word) erase 43 (196 B); flag split 48; inverted if(!flag)
-// 53 (breaks 0x274f30 117); diag #pragma optimize("s") 190 (53 B).
+// 53 (breaks 0x274f30 117); diag #pragma optimize("s") 190 (53 B). GA20 (12 real trials + 1 diag, fast with 0x274f30 and
+// 7 peers MATCH): stored_actor_index to update 44 (extra reload of [esp+8], NOT kept); masked arg to update 50 (breaks
+// 0x2a55a0 10); update local masked index / commuted 0x888 mul / unsigned-vs-signed index either way / real s_actor_datum
+// in erase / work struct for-loop / work struct const-ref update (breaks 0x274f30 145) / work struct iter-update+ref-erase /
+// diag split mul shape / diag #pragma inline_depth(255) all tie 47.
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
