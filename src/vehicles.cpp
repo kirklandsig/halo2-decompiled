@@ -945,6 +945,16 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // selecting reciprocal or identity scores 285/291 in place, 308/304 with a pair,
 // 284/288 with scalar inputs, and 284/288 with both scalar products before the stores.
 // NOT kept: the scores rise, and retail skips scaling in the low-speed path.
+// M3 lane GB round 13 (38 trials: 35 real + 3 diag, fast with 0xef4f0/0x2053c0 both MATCH; control 107 at 1144 B,
+// al=67, mk=23, 1.0f in XMM2): vehicle_add_scaled2d(&heading, &forward, k, &blend) 217 (1145 B, mk=20: fixes the
+// reversing atan2 fxch and leaves 0 masked diffs across the last 159 instructions; b*s+a / y-first / norm_local_y /
+// dot_x_first / norm_ret_real_3 all 217, mk=20; with y*=inv;x*=inv 216, mk=20; + norm_ret_real_4 222, + flat_mag 222,
+// + no blend_left 107, mk=23); heading reused as blend (x-first/y-first/+=) 233 (1145 B, mk=20); blend=forward in-place
+// 338/324; scale_temp+add / scale2d+add2d 218 (mk=20); vehicle_normalize2d y*=inv;x*=inv 106 (1144 B, mk=23, -1 under
+// bar); normalize_vector2d returning real on 3/4 sites 107/222; full 2D helper suite 111; norm local y / x,y 107;
+// reversing atan2 operand/addend swaps and unary neg 107; non-interleaved input/forward 109/117; top declaration orders
+// 107; inline heading+forward*k 107; diag 1..3 dead real locals 107 each. 1.0f stays in XMM2 (retail XMM3, with
+// forward.y/x in XMM0/XMM1) across every trial. Body unchanged.
 // The early control sum still crosses the speed root and unity takes XMM2.
 // Start with one square at entry or after velocity capture and finish at the
 // normalization or rotation join: 141/142/141/142. Start with the planar sum
@@ -4073,6 +4083,22 @@ real g_47ff30 = 2.5f;
 // + 3 masses + force at 0x14..0x1f, up + rotation at 0x20..0x2f, linear_velocity + rotation_axis + torque at 0x40..0x4b, left + planar_velocity
 // at 0x54..0x5f and planar_facing at 0x68..0x6f (exact 0xfc); ours keeps masses outside angular_velocity and merges rotation with linear_velocity.
 // Body unchanged.
+// M3 lane GB round 13 (36 trials, fast with 0xef4f0/0x2053c0/0x2056e0 all MATCH; control 672 at 3244 B, fr=0x100,
+// al=720, mk=479): on GB7's 0xfc lead (V01 = statement-macro friction + vector3f_scale on vehicle->unknown25c + torque
+// in rotation_axis + 0.0f transform.position stores: 693, 3244 B, fr=0xfc, +0x66, al=694, mk=358): shared rates pointer
+// + ternary-first climb 693 (same code); boost init-1.0f/ternary/inline-helper 736/693/693; planar_facing/planar_velocity
+// before turn + existing cross_product2d 695 (fr=0x100, mk=358), + dot3f forward 695 (mk=357); existing dot3f on all 3
+// projected speeds (V08) flips 1.0f to XMM7 for the first time, moves acceleration_scale to +0x3c (rotation_axis/torque
+// at retail +0x40), and cuts mk to 290 (736, fr=0x100, al=671); without planar copies (W01) 698 (3248 B, fr=0xfc, +0x58,
+// al=671, mk=290, acc=+0x38, 1.0f=XMM7; swapped dot3f args identical 698); + transform between cos/sin (W09) 701 (mk=275),
+// + interleaved fractions (W11) 663 (3244 B, fr=0xfc, +0x58, al=656, mk=264, 1.0f=XMM7, el=XMM5 — not kept: relies on
+// macro friction, interleaved fractions and moved transform), + inline *unknown6c in friction macro / up-rot before
+// transform.left (X04/X05) 674 (3226 B, 755/756 insns, fr=0xfc, al=646, mk=266), + planar cross_product2d (X06) 666
+// (fr=0x100, mk=266). Also on V01: angular_velocity before linear_velocity 693 (mk=356), retail vector order 695,
+// transform builder helper 693 (mk=379), bank-rotate helper 696 (mk=351), force via vector3f_scale/add_scaled 711 (fr=0xf8,
+// mk=375; on V08/W01 836/808), single-expr k,j,i dots on W11 692 (mk=312, 1.0f back to XMM6). Clean on HEAD: dot3f all 3
+// 710 (fr=0x104, mk=433, 1.0f=XMM7; +0.0f pos 708, +vscale end 713/708 at fr=0x100, +force helpers 798/836); single-expr
+// dots (dot3f fwd + k,j,i up/left) 668 (-4, under keep bar; all k,j,i 721); rates+cross2d+dot3f fwd+0.0f pos 720. Body unchanged.
 // Directional force factors as compound stages by direction 672, after all the
 // mass products 672, with a separate final state factor 721, and all velocity
 // errors first 672. With independent final mass reads: 710/710/696/710.
@@ -7489,6 +7515,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // a distinct relative product these score 1130/1115/1094/1126. NOT kept:
 // the branch-produced axis with distinct output reaches 0xdc and 5095 bytes,
 // but raises the score and leaves the handle and stride reversed.
+// GB r13 (2026-11-25, 10 real trials + 2 diagnostics, fast with 0xf4360/0xf42f0/0xf4250/0xf1380/0x2056e0 all MATCH; control 959 at 5094 B, fr=0xfc, al=1033, mk=495):
+// on GB5's `b206` (`1027`, `1179/1179` insns, `fr=0xdc`, `al=834`, `mk=349`), slot map proves `0x10..0xe7` matches retail's exact 216 B (`0xd8`) of active slots with 4 dead unused bytes at `esp+0xe8`; plain `inline vehicle_round` 1058 (`5094/5094 B`, `1179/1179` insns, `fr=0xdc`), and diagnostic `(long)` cast without `__asm` (`1174`, `fr=0xdc`) still retains `0xdc` and unused `0xe8`, ruling out `vehicle_round`'s asm cell as the 4 B gap; `vector3f_add_scaled` + `vector3f_scale` helpers 1026 (`1179/1179` insns, `al=827`, `mk=350`); `vehicle->forward` direct pitch 1068 / late `forward` 1077; `word flags` 1062; all combined 1066; file-local `inline` flip-start + driver-check helpers 1027; diagnostic `idx_ref` 1027. On main (`959`): direct `vehicle->forward` pitch 978; `word flags` + vector helpers 1054 (`mk=478`). `vehicle_index`/`offset` remain EDI/ESI. Body unchanged.
 // Physics receiver, environment velocity snapshot, staged relative components,
 // or separate measured and relative velocities, with in-place and expired flip
 // matrix outputs: 959/1101/959/960/1009/1084/1009/1014. NOT kept: the expired flip output
