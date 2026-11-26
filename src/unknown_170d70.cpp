@@ -487,6 +487,15 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // with the same two levers: best aligned 44 (masked 32, 86 at 1388 B) at six locals. With six locals the orthogonality
 // dot reuses up.k's register as retail does, but its other two terms stay exchanged, and no cell gives retail's cross
 // section schedule or first normalize. Body unchanged.
+// M3 lane 11 r172 (reduced image with 0x16fe90 and 0x170d70, control 64). Frame reading: the frame is under 0x80 bytes, so
+// the slots keep packing order (size, then references, then whichever reached its count first); the group counter and
+// the compiler's time-step pointer both have four references and the counter reaches its fourth first (its latch update
+// precedes the pointer's), so it takes the lower cell; retail packs the pointer first. The explicit read-only time cursor
+// stepped last re-measured 125 (1413 B; the loop exact, aligned 35, all left in the tail); 1..8 unused locals between the
+// loop and the tail on it 121/121/123/125/127/91/92/125 (the same period-8 states as at the function top). Retail's
+// tail loads every product operand in this source's spelling order; only the numbering that picks the loaded operand
+// differs. The corrected up computed k, j, i and stored j, k, i 119 (1388 B), with up.i stored directly 120; on the
+// explicit cursor 128 and 118 (1413 B, aligned 40 and 32).
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1286,6 +1295,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // references 105; __stdcall with a const cameras pointer, non-const lists and unsigned scalars, on the offset lead, 11;
 // function_163db0 declared with the rectangle after the identifier (0x163db0, 0x1733e0 and 0x441b0 stay matched) 105,
 // and 13 on the offset lead. The portal index test as a switch on NONE: 117 (423 B).
+// M3 lane 11 r172 (reduced image with 0x1730a0 and 0x163db0, both MATCH each run; control 105, the one-use offset local
+// re-measured 11): the entry bound by reference (`s_pool_entry &entry = pool->entries[entry_index];`) 105, with the offset
+// local 11; on that, the volume address ahead of the count store as the matched 0x1733e0 writes it 84; that order alone
+// on this body 115. A forced-ranking search on the offset lead (30 decisions) gives at best 13 (the key in EDX): the
+// table load placed at the top of the admitted block is a scheduling choice, not an allocator decision.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

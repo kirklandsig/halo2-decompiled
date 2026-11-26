@@ -81,6 +81,12 @@ PRIVATE __forceinline long function_1d96d4()
 // `long local_7 = 0;` declared after the entry array 951 (lead: a declaration moved later); with local_8 there too
 // 951; the mass total assigned after its declaration 985; the object flag as `!(local_5[2] & 0x20)` 985; the inverse
 // mass computed once 1063.
+// M3 lane 6 r248 (H2M_FAST with the same ten callees, control 985 at 3660 B; plain control 1088): the entry count's
+// zero declared beside the second count, before it 951, after it 951 (plain 1072 at 3677 B: a declaration moved later,
+// so match-only, and the function cannot match while the iterator expands), both counts after the entry array 951,
+// after the object flag 951, just before the contact loop 1066. On the 951 forms the reduced image still differs
+// from the first instruction: frame 0xc60 against 0xc5c, the zero in EBP (retail EBX) and the component pointer's
+// home at the frame's bottom (retail 0xc above it). Body unchanged.
 // @retail 0x1d96d0
 void function_1d96d0(long arg_0)
 {

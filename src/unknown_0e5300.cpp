@@ -180,6 +180,11 @@ PRIVATE inline long e5470_unit_current_weapon(long unit_index)
 // the index after the second lookup; a dead second player lookup after the first weapon; the second lookup (or the
 // first) through the header's plain current-weapon inline in place of the file's twin. Diagnostic: the object getter
 // without its dead header address 140 (487 B: the object lookups merge), so that address is what keeps retail's reloads.
+// M3 lane 12 r193 (H2M_FAST with 0xe5300, MATCH; control 37): the second lookup's index through a small inline returning
+// a one-member record by value (the device held for 0x151b80) 37 (same code: the copy folds and the read still merges);
+// that index read again off the pool (`((player type *)g_4e8c24->data + index)->unit_index`) 111; the modes array
+// declared with the weapon results 37; the actor test through the plain object macro (no header address) 38; the weapon
+// helper reading the current-weapon byte at each use (no `weapon` local) 55 (495 B). Body unchanged.
 // @retail 0xe5470
 bool __stdcall function_e5470(long player_index, long unit_index)
 {

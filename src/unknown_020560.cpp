@@ -1589,6 +1589,13 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // 273, masked 262): scan 2's dot as dot3f(&offset, &delta) 418 (same code); delta from source->entries[nearest] 418 (same
 // code); scan 2's distance as distance_sq3f(position, sample) 541 (2122 B but frame 0x18); a per-sample pointer local
 // in scan 2 for the offset and the distance 593 (2076 B); scan 1's distance as distance_sq3f(position, sample) 448.
+// M3 lane 3 r314 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418, masked-aligned 262): reading
+// `source->entries` at every use as scan 1 does (no `samples` local) 549 at retail's 2122 B (masked-aligned 122, scan 2
+// gets retail's two induction pointers; frame 0x20 against retail's 0x2c, where offset and delta are two 12-byte homes
+// with delta.k spilled and offset.i stored each pass, and `nearest` leaves EDI in scan 1); that with `first` formed ahead
+// of scan 2 and the delta taken from it 554 (2112 B, masked 116); with `dot3f(&offset, &delta)` 549 and with `offset`
+// declared beside `delta` 549 (both the same code); with the scan-2 distance as `length_sq3f(&offset)` 628 (2057 B). A
+// forced-ranking search on the first form (30 single decisions) moved neither the frame nor the count. Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
