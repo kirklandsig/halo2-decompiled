@@ -1420,6 +1420,11 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // if/else step re-measured 0 (0x21be20 24); 0x21be20's element named ahead of its state test 24, its state test as
 // an early `continue` 24; 0x126df0's fade-in end time named 24. 0x21be20 needs one more candidate referenced in its
 // post-join store block (164 each, the element then wins the tie) or 22 fewer index points. All restored.
+// M3 lane 1 r170 (h2m fast with 0x21be20, 0x21b870, 0x126df0, 0x12a810 and 0x21b0e0; control 2; 0x126df0's file was held
+// by another lane, so only this body was respelled): the curve as `(flags & 0x400) != 0x400` 22 (293 B); const
+// definition and promotion pointers 2 (same code); a `dword` index 85 (298 B); the curve as `== 0 ? true : false` 2
+// (same code); the definition looked up by `(word)` index 49. By the free-number reading above, the order flips if the
+// curve's dropped AND-1 constant or the fade's index copy were not freed ahead of the first index.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {
