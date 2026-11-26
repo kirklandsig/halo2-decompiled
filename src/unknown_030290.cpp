@@ -779,6 +779,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // M3 lane 1 r143 (fast; control 195): the point helper's coordinates declared y, x, z 230 (982 B), as three declarations
 // 230, z, x, y 225 (974 B), x, z, y 227 (982 B) (the y, x, z order was measured before only on the held reorder); the
 // helper returning the point by value 308 (875 B); the point passed by const reference 195 (same code).
+// M3 lane 3 r313: declared (d, a, camera, ...) and returning bool with no placeholder locals, 195 -> 187 (fast and plain);
+// with 0x4ff50's double local removed that caller matches (HELD there: the call line in contributor 0x4f7e0).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

@@ -415,6 +415,7 @@ bool function_1d9320(s_1d9240 *slot);
 
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
+void bit_vector_fill(dword *vector, long count, byte value);
 
 // score 2 (was 2): only the back edge's two reloads differ (retail reloads the state, then the tag table; ours the
 // other way round). The entry's node count and the arms' graph now come from the existing state members (same
@@ -696,6 +697,16 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // the NONE and 0xffff constants and so lands above the table's. Forms (all the same code): `found` declared once beside
 // the markers; the break braced; `graph` in the loop body (re-measured); the visited words ahead of the markers; the model
 // lookup after the markers and the visited words.
+// M3 lane 3 r313 (fast, plain for the kept call; control 2): the clear through the existing bit_vector_fill (the memset
+// here was its body written out) 2, same code in the fast and plain checks: kept. Reading of the back edge: its two
+// reloads come out in piece-number order; the table is a temporary numbered 25, and the state's piece, made when the
+// iterator takes EBP, takes the free number 26 because the NONE and 0xffff constants' pieces are made first in that split
+// and take the free numbers 10 and 3. One piece fewer ahead of it, or one more number freed by the first split (it frees
+// the alternate flag's and a constant's), would number the state's piece below the table's (retail's order). Forms: both
+// arms' graphs passed in the calls 107 (526 B, listed); the plain truth tests as `!= 0` 2; the definition read through the
+// typed object definition header 2; the memset size as `sizeof(dword) * words` 2; the markers and visited words declared
+// in reverse 2. Diagnostics (semantics changed, reverted): the entry's target NONE test dropped 151 (no back-edge block);
+// the loop's target-name NONE test dropped 76 (the pair stays table first).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -711,7 +722,7 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 			s_object_marker marker;
 			s_object_marker target;
 			dword visited[8];
-			memset(visited, 0, ((state->node_count() + 31) >> 5) * sizeof(dword));
+			bit_vector_fill(visited, state->node_count(), 0);
 			for (;;)
 			{
 				bool found;
