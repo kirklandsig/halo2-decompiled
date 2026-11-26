@@ -2,6 +2,16 @@
 
 The newest entry comes first.
 
+## 2026-11-26: 10970 functions match
+
+```
+matched 10970 of 11326 game functions (2290027 of 2786206 bytes, 82.19%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+2 new matches, none lost:
+- Machine 3's batch 370 (#1573): `0xe5bc0` and `0x24ecae` match.
+
 ## 2026-11-26: 10968 functions match
 
 ```
