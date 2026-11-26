@@ -593,6 +593,10 @@ long g_55e6c0;
 // count ? 4 : count`) 29 (same code); the clamp stored right after the data store 33; the pitch named as a long and the
 // packing as one OR expression of `(x - 1) << n` terms, with the `< 4` middle test 98 (479 B), with the clamp after the
 // data store 101 (479 B). All restored.
+// M3 lane 2 r156 (h2m fast with 0x1dc40/0x1db10/0x1d770, all MATCH; control 29): the count parameter declared `long
+// const` 29; the format call given `entry->width, entry->height` 29 (forwarded); the entry pointer as `s_unknown_01dcc0
+// *const` 29 (the three the same code); the +0x7c clear after the two header zero stores 32; the linear flag stored right
+// after the data pointer 153 (484 B; 0x1d770 55, 0x1db10 4, 0x1dc40 1). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

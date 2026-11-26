@@ -982,6 +982,12 @@ void function_1537f0(s_profile_record *record);
 // the record word 96 with the later tie, so at 96 or below it would take EBP. Forms: a pointer loop over the entries 84
 // (270 B); the two tail zeros chained 46; the record declared above the loop 46; the second link pair copied from the
 // first pair's field 46 (folds); one four-link chain in retail's store order 46 at each use, 49 through an entry local.
+// M3 lane 12 r194 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18; E = round 169's element-only
+// body, re-measured 46). Ledger on E as round 262 reads it: the -1 at 102 against the record word's 96 (tie 58 against
+// 0), so it needs the entry block's head stores to count 6 or less (two head stores, or one value in that block). Forms:
+// on E, the two counters as one chained zero 46, the heads stored in the aggregate's field order 46; the record's source
+// typed as the source view (no byte array) 27 on main (the view's 8-byte member pads the record by 4: every frame slot
+// moves) and 51 on E; the identity and the source as two separate locals 81 (236 B) on main and on E.
 // @retail 0x7f930
 void function_7f930(void)
 {

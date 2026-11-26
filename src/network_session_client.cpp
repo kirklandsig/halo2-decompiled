@@ -1083,6 +1083,18 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // tie here: it is decided after colouring, together with the callers. On the pair + `for` + reference form: the pair
 // typed as the two buffers' types 36; the variant and the summary declared above the pair 45, the variant alone 36;
 // the pair declared above `result` 36 (callers 69/94 in each).
+// M3 lane 1 r173 (fast reduced-image screens with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22). Reading of
+// the allocator with those inlined callees kept in its reduced image (without them it builds a different body, which is
+// why round 312 saw one colouring for every form): the plain `for` copy with the reference-bound mask (8) ranks the player
+// index 90 above the session 89 (retail's registers); the NULL-preset pair on it ranks the session 99 above the index 90
+// (its flag arm references the session twice among four candidates), and a forced-ranking search moving either one past
+// the other gives a byte match. Only the player loop's latch references the index and not the session. On that pair + 8
+// form: the pair as two flag ternaries 156 (499 B); players assigned first 36; the pair tested positively with the work in
+// the else 36; the mask read through a field pointer set before the loop 36 (propagated back), without the reference-bound
+// copy 108; that pointer bound by a const reference 36 / 108; the players pointer formed from the machines pointer + 1 39;
+// the variant declared ahead of the pair or at the top 36; the variant preset NULL and set under the live test, also with
+// the pair under live && flag, 36 (session 99: the live test folds); the plain copy under `if (member_count > 0)` 36
+// (session 97: the guard's block deducts 2), the guard doubled 36 (folds); main's countdown copy loop 46.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

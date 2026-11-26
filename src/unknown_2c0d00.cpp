@@ -1066,6 +1066,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `vector3d_from_points3d` obj/veh/sphere+flat/all3 856 each (3713 B), `switch (type)` 868 (3748 B), one-expr x-z-y
 // vehicle dot 840 (mk 44). On `528` (`else straight = true;`, 3731 B, 921/921 insns, al 142, mk 37): `vector3d_from_points3d`
 // obj+sphere flat 529, veh+sphere ijk 527, one-expr x-z-y + obj + flat kji 490 (921/921), + `bool moving` 488 (920/921).
+// M3 lane 2 r156 (h2m fast with 0x29a190 and 0x2c0d00 MATCH, 0x2c41b0 675; control 718, 165 of 921 rows differ after
+// alignment): the entry dot's operands follow rank (the ECX parameter's loads outrank the direction's). Forms: the
+// object's squared distance named ahead of its radius sum 718; the classification test as `object_index !=
+// settings->unknown18` 718 (both the same code); the sphere add with the non-blocking arm first and the combined flags
+// declared in it 755 (3724 B); the combined flags declared in the non-blocking arm only 748; the self-unit pointer chosen
+// by a ternary 887. LEAD (a redundant store, kept only with a byte match): `else straight = true;` on the no-actor path
+// re-measured on this base 544 (+0x91, retail's store and jump). All restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

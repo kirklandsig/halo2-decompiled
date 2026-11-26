@@ -1856,6 +1856,12 @@ bool function_108530(long device_index, long name)
 // 84 and the half ramp-down, 138, colours first, but the position takes XMM6 ahead of the velocity; callers 31/13); both half times right after the ramp-down
 // minimum 133 (524 B; 31/13), right after `delta` 136 (527 B; 31/13); the cruise numerator named ahead of the
 // denominator test 116 (same code). Body unchanged.
+// M3 lane 11 r173 (H2M_FAST with 0x108600/0x108670, both MATCH unless noted; control 116, difflib-aligned 54). The
+// conditional-store clamps re-measured on this XMM6 body (earlier rounds measured them on the 121 body): the ramp-down
+// zero clamp as `if (!(ramp_down_time > 0.0f)) ramp_down_time = 0.0f;` 116, the ramp-down minimum as `if (!(remaining >
+// ramp_down_time)) ramp_down_time = remaining;` 116, both 116, all five clamps as ifs 116 (same code each: the clamp
+// piece still takes a register); the ramp-down minimum on `duration - ramp_up_time` with no remaining local 131 (528 B;
+// callers 31/13).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
