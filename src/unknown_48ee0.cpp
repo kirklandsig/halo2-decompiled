@@ -541,6 +541,15 @@ extern real g_4c9798[36];
 // the inverse for every direction read 326 (1483 B, first +0x2); the mode started at 0 with the else arm dropped 180; the
 // mode test as `!(bool)((flags >> 10) & 1)` 302 (1489 B); the mode's tag test as `!*(short const *)(tag + 0x14)` 174
 // (same code); the border as one conditional initialiser at its use 320 (1479 B, first +0x2). Still BLOCKED-BY 0x48e70.
+// M3 lane 5 r252 (H2M_FAST with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174; still BLOCKED-BY 0x48e70, whose
+// file is on this round's avoid list): the inverse preset to the negative limit and set under `distance != 0.0f` 315
+// (1484 B, first +0x38); the aspect's root taken just ahead of the two rounding calls 328 (1479 B, first +0x2); the two
+// constant stores after the size block's if/else instead of in each arm 254 (1443 B); the first plane's dot taken on
+// `normal` as the second plane's is 213 (1479 B, later blocks shifted); the origin reference declared ahead of the
+// direction reference 174 (same code). Reading: retail calls 0x48e70 from four sites only (here twice and 0x184440
+// twice, no address taken) and reloads the size and the aspect after each call, while this build keeps both in XMM
+// registers across the calls because the link sees 0x48e70's integer-only body; retail's link did not, as if 0x48e70
+// were built outside the link-time code generation (a lead for 0x48e70's own file). Body unchanged.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
