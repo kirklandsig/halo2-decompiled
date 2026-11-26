@@ -237,6 +237,13 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // child read through a local copy of the pool pointer (110), a forced-inline
 // slot-to-object helper (110), tag and tag link declared before the link
 // (179, 209, 211), the tag index comparison reversed (87).
+// Round 248: the object index times 12 and the link offset tie at register priority 76; the index wins the tie
+// (later created) and takes EDX, so the link offset gets ESI; a forced-ranking search lifting the link offset to 77
+// gives 24 (the tag link address and the tag index load still differ). Tried: a named minimum local for its test
+// (87), the not-blocked test folded into one condition (87), the accumulator written through a fresh lookup (153,
+// 740 B), the getter for the object itself (87), named flag9/flag10 bools (87), the two attachment indices as
+// ternaries (159, 714 B), only the first (152), only the second (87, 711 B), the other index's first pick as a
+// ternary (94), the holder's flag through the file's flag12c_0 bitfield, with or without TEST_FIELD_BIT (87, 87).
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {

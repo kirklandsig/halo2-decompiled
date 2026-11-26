@@ -643,6 +643,15 @@ void session_searches_dispose(void);
 // local, 0x70190 returning its state, owner->states[index] in
 // session_state_initialize, and linking network_session_client.cpp after this
 // file (all 51).
+// Round 248 (the reduced image with the four callees kept): 0x70190 returning its
+// state still gives `mov esi, eax` (51); the in-match time store moved after the
+// matchmaking call 51; a client pointer local for the five client stores and the
+// call 51; the owner local (still assigned after the first call) passed to the
+// joining, matchmaking and searches calls 51; the searches call reading the
+// matchmaking pointer back from the pre-game state 56 (a load, not forwarded).
+// A forced-ranking search (34 single decisions: priorities, picks, cuts) finds
+// no match, so the owner constant's register and the eax reuse after 0x70190 are
+// not a ranking choice on this body.
 // @retail 0x58ee0
 bool network_session_manager_initialize(long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b)
 {

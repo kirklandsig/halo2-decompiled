@@ -185,6 +185,14 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
     }
 }
 
+// score 46 (was 46): everything up to the wind call matches. Left: retail loads the clock's ticks into ECX and
+// its rate into XMM0 before `cvtsi2ss xmm1, ecx; mulss xmm1, xmm0` (six bytes longer than the folded loads, a
+// sequence no other retail function has), and in the velocity scale retail stores +0x34 first and forms the i row
+// as the scaled amount times wind.i (copy, then the memory operand) where ours loads wind.i and runs the j/k products
+// first. Tried: a file-local seconds helper taking the converted ticks (46), taking long ticks (46), fed by the
+// ticks getter 0x146650 (46), forceinline (46); the time computed before the wind call (51) or before the wind lookup
+// (62); compile-only, every spelling of the product (named ticks and rate, a clock pointer local, rate first, `*=`)
+// folds both loads.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {
