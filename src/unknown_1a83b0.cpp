@@ -877,6 +877,13 @@ s_1a8a10 g_4453c0[] =
 // stored after the copy's i 22 (j then loads twice, the folded reload first, but the copy's j load stays after the left
 // sum where retail loads it right after i); the negated j read through a `real const &` bound to the facing's j ahead
 // of the outer test 17 (same code); the negated j through a fresh in-place actor lookup 157 (548 B, the frame grows).
+// M3 lane 15 r150 (h2m fast with 0x1a8c30, MATCH each run; control 17), on the hypothesis that retail's IL has the
+// forward `i * x` product ahead of the left sum and the copy's j load after the negated read: the forward product named
+// first from the copy's i, the copy's j assigned after the left sum, forward = `j * y + product` 36 (first +0x6e); that
+// with the stores [3], [1], [2], [0] 36; the sums accumulated in the value array (`[2] = i * x`, `[0] = left`, copy's j
+// assigned, `[2] += j * y`, negations read back) 28 (the folded j reload and the left product on the original i appear,
+// but the copy's j loads after the left sum, x takes XMM3 and the left sum adds into the negated product); that with the
+// copy's j assigned first 30; both sums accumulated in the array in two steps each 92.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

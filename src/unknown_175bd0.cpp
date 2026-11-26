@@ -4116,6 +4116,17 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // re-measured 108 (0x176f60 25): its frame then has no argument home, so the tint and the flag that main keeps in the
 // effect index's slot (as retail) go to frame cells, and the effect index arrives in EAX with the system index in ECX;
 // with an unused initialised local at the top or in the block 108 each, with the colours B first 108. Body unchanged.
+// M3 lane 2 r154 (fast with 0x176f60; control 93, caller matched unless given). Match-only leads: both type queries as the
+// colour call's arguments with the second 0x1751d0 result named 68 (334 B; registers and convention retail's, left the frame
+// 0x4c against 0x54 and the cached word mode); that with the particle-location cursor as a spawn record's location index
+// 54 (334 B, frame 0x54 as retail: the record's 8 unused bytes are retail's gap at +0x14; only the cached mode is left,
+// retail spills the definition and reads the mode at each call). Queries as arguments without the named result 120 (325 B,
+// 0x176f60 25). On the 54 form, the mode read at each call 103 (331 B, 0x176f60 25): ranking reading, the effect index
+// (112, entry block of eight) is then coloured before the effect pointer (107: the colour block has ten candidates, not
+// the cached form's eleven, so the effect loses 6) and takes EAX, so LTCG passes it in a register; with an unused
+// initialised local at the top or in the block 103 each (diagnostic); with the tint named 126 (352 B, caller matched:
+// the convention returns but the definition takes EBX and the system EDI); with both queries named 127 (357 B).
+// Body unchanged.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
