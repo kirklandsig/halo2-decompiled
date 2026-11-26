@@ -3422,6 +3422,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // selection 30; the walk's call tested `!= false` 30 (all the same direct EBX load). Re-measured: the iterator's stores
 // pool, datum index, index 29; `return` at the hit 30; `if (map_id == NONE) return; else` 30; the iterator by
 // aggregate initialiser 13 (84 B, the extra datum store).
+// M3 lane 15 r150 (h2m fast with 0x2c9a58, matched in each; control 30). Allocator view: the id is one candidate (EBX,
+// priority 16) defined by the load itself, so no ranking choice gives retail's EAX temporary and copy. Forms: the id as
+// `coop ? NONE : field` 38 (89 B, the coop test stays); the field read, then `if (coop) map_id = NONE;` 42 (91 B); a
+// fallback to the saved block's copy of the field when the current one is NONE 41 (90 B: both loads straight into EBX);
+// the id NONE unless the preferences are initialised 36 (89 B, the flag test leads); the field read into a `dword` and
+// converted into the long id 30 (same code: the conversion is propagated).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
