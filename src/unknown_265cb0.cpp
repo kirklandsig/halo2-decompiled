@@ -1100,7 +1100,7 @@ real function_30bf0(vector3f *vector);
 // order (facing maxima below scale, range above the motion/side cell) needs the facing maxima denser and the range
 // thinner than here. Tried: the delta as a brace initialiser 84; `real const` scaled range 84; `long const` vehicle
 // index 84; `short const` seat count 84; `real const` range alone, re-measured, 84 (an earlier round listed 81) and with
-// the scaled range const 84 (all the same code). A forced-decision search ran 10 of 45 decisions in 20 minutes on this
+// the scaled range const 84 (all the same code). A forced-ranking search ran 10 of 45 decisions in 20 minutes on this
 // loaded machine before it was stopped (none matched; the closest, the first delta row's register moved, 102). Body unchanged.
 // M3 lane 6 r240 (H2M_FAST with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84, aligned 55). Reading of the
 // operand ranks: in the second seat cross retail multiplies the stored side members by forward.k from memory, so there the
