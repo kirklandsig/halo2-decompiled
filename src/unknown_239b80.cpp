@@ -1081,6 +1081,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // pointer-pair duplicate compaction alone and with minimum/candidate/both
 // scans 286/269/267/265. Candidate identity compared as a pointer 254.
 // Every cursor form raises the score and six change the matched hull caller.
+// M3 lane 16 r191 (h2m fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 137, masked 56).
+// Ranking read: every piece of the hull count has a weighted cost at or below zero (stored each pass, read at the end),
+// so the count's piece over the lowest scan keeps EBX. Forms: `current` declared at function scope (from the parameter)
+// 264 (762 B, 0x239d50 80); the lowest point as a point2f (copied whole on a new low) 244 (796 B); a pointer to the
+// scanned point in the lowest scan 144 (same code); the point2f with `current` at function scope 224 (784 B, aligned
+// 171, 0x239d50 80); the candidate offset through this file's point-difference helper into a vector2f 144 (same code).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

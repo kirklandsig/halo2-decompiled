@@ -991,7 +991,7 @@ void function_103f60(long weapon_index, short barrel_index)
 }
 
 // @retail 0x105dd0
-void __stdcall function_105dd0(long object_index, long unused, s_weapon_sound_event *event)
+void __stdcall function_105dd0(long object_index, real frame, s_weapon_sound_event *event)
 {
 	if (event->type == 1 && event->sound_index != NONE)
 	{

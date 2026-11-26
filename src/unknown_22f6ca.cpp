@@ -377,6 +377,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // `pane->text_count > i` 25; diagnostic, a trailing loop over the list count after the model loop 53 (431 B, the
 // model reset still the last use); a redundant `if (0 < pane->block_18_count)` around the block-18 loop 25, `if (0 <
 // pane->block_24_count)` around the block-24 loop 25 (the walk unchanged: EBX still free at the text guard).
+// Roasted-Codes (#1508 comment, 2026-11-26; fast reduced-image scores): `long i = 0;` above the pane lookup plus the model
+// loop as a guarded do/while over an explicit zero-initialised byte offset 24 (416 B); both resets are retail's (text `and`,
+// model `mov`) and the earlier loops keep retail's registers; left are the `xor ebx, ebx` ahead of the pane call and the
+// model loop's `mov eax, esi`. Without the byte offset 25 (model reset back to `and`); with the zero after the lookup 69 (418 B).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
