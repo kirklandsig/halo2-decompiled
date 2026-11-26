@@ -4772,6 +4772,13 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // with hoisted `owner`); on the exact 96 lead, end-of-function result tests after `if (acknowledge)`: `if (result) return result;
 // return result;` 364 (1242 B), `if (!result) return result; return result;` 356 (1247 B), `if (result) return true; return
 // result;` 377 (1225 B), `if (result) goto ok; return result; ok: return result;` 364 (1242 B). Body unchanged at 295.
+// M3 lane 8 r242 (fast screen with 0x5e3f0, MATCH each run; main 295; lane 1 r144's 44 lead rebuilt, 44). On the 44 lead:
+// the accept block as `return result = true;` 44 (same code); the kept arms as `if (same || better) return result =
+// true;` ahead of the plain store 244 (1248 B); the kept test inverted, `if (!same && !better) goto disconnected;` with
+// the arm falling to the accept jump, 44 (same code); the acknowledgement ending `result = true;` into the final return
+// with the accept block `return true;` 56 (+0x26); after the disconnect `if (!result) return result; goto accept;` 44
+// (same code). Retail's kept arms still need the result stored from AL with the return value already in AL. Body
+// unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
