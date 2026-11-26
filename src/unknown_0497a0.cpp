@@ -2177,5 +2177,3 @@ void __stdcall function_42b20(dword mask)
             data_find_index(g_4ea944, index == NONE ? 0 : (index & 0xffff) + 1));
     }
 }
-
-s_camera_storage g_camera_storage;

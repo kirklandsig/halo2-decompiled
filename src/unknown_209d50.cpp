@@ -373,6 +373,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // result copy kept 95 (266 B); a `long *const` copy of the pointer made just before the test, the result copied from it
 // 95; `return NULL;` in the arm 90 (277 B); a thread pointer local, the init block reading its frame field 95; `long
 // *result;` declared first and set in an else arm 90 (277 B). A forced-ranking search on the kept body: nothing below 12.
+// M3 lane 7 r232 (h2m fast with 0x2099f0, which stays matched; control 12): the result and the volatile home set by one
+// chained initialiser (`long *volatile arguments = result = ...`) 71 (277 B: the allocation computed straight into EAX, as
+// in the direct-allocation form); `long *result = &arguments[0];` 12; `++argument_index` 12; the element as `arguments +
+// argument_index` alone 12 (all three the same code); the count test as `parameter_count > argument_index` 14.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
