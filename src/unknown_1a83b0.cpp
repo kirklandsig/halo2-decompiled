@@ -857,6 +857,15 @@ s_1a8a10 g_4453c0[] =
 // the lead: both sums as plain dot products (`perpendicular.i * x + perpendicular.j * y`, `copy.i * x + copy.j * y`)
 // 29; that with the perpendicular's j from the copy's i 32; the perpendicular declared and set ahead of the copy 31;
 // stores in index order 33; both vectors brace-initialised 32. Body unchanged.
+// M3 lane 7 r229 (fast with 0x1a8c30, MATCH each time; control 17; round 115's lead re-measured 31). Allocator
+// reading of the lead: its join block references 10 float candidates (the two named sums are copies of the i and j webs
+// they accumulate in, and the perpendicular's j is a copy of i), main's 8; with 8 the numbering is retail's. The
+// negated j's load stays a folded memory operand only while the perpendicular is a two-member local set ahead of the
+// copy's j (a one-member one is forwarded past the copy and the load merges). Forms: the lead without the
+// perpendicular's j, the forward sum on the copy's i, 18 (8 candidates and retail's xmm numbering, but j merged and the
+// forward sum computed first); that with the copy assigned j first 21; the perpendicular's j from the copy's i 32; the
+// left sum on both perpendicular members with the forward sum on the copy 29, that with the copy set ahead of the
+// perpendicular 32.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

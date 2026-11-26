@@ -2091,6 +2091,10 @@ static inline bool unit_dual_wielding(long unit_index)
 // (unused expressions are dropped before the numbering). So retail evaluates two (or three) more live expression nodes
 // ahead of the first lookup's data load; the put-away lookup's data is a load seen once (the pool global is read again
 // after the animation call) and stays D in every form here.
+// M3 lane 3 r310 (fast screen with 0xc9d00, 0x1058b0, 0xfff40, 0x103e60 and 0xb7360, MATCH each time; control 17). On
+// main's body, the `volatile` compare's tail: the compare's sides swapped 17; the slot ternary negated (`slot == NONE
+// ? NONE : ...`) 17; the holder's unit index named for the unit lookup 17 (all the same code); the slot read at both
+// uses with no local 26; the slot as `long` 47 (527 B).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -3695,6 +3699,11 @@ struct s_ammo_conversion_entry
 // Accumulator after debit for the remaining reserve 236.
 // NOT kept: offer ties and the other forms raise the score. Destination and search register
 // homes still differ, and the debit-only and post-debit forms also grow.
+// Immutable capacity carried to a mutable offer 225. Separate capacity and selected offer 192.
+// Immutable tag/object pointers, conversion bound/entries/key, named ordinals and named conversion
+// offer 190 each. Existing reserve query with loaded first or unloaded first 190/190, with a
+// separate capacity 192. NOT kept: the immutable-capacity handoff grows to frame 0x24, the
+// separate offers raise the score, and the rest tie. The destination and conversion-search homes differ.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3811,6 +3820,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return result;
 }
 
+// GA r9 lead, held as a patch (not kept: the forms are kept only with a byte match): 2 against 593: Only two commuted SIB base/index encodings differ at +0x5cd (`[eax + edx + 8]` vs `[edx + eax + 8]`)
+// and +0x616 (`[edx + ecx + 0x1b8]` vs `[ecx + edx + 0x1b8]`) in the post-0x105fa0 recoil lookup; all 634 instructions,
+// 2533 bytes, frame 0x1c60, registers, and stack slots match retail.
 // score 593 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
 // where the volatile home is read at each use here; weapon/barrel and definition/holder homes remain.
 // MiniMax I (11-20): no new form, no lower score (636): the prologue keeps the barrel index in EBX where retail keeps the weapon index, reads the barrel's flag byte into CL where retail tests it in memory, and the definition sits at [esp+0x28] where retail has it at [esp+0x14], so the copy-out loop and the rest of the body differ as well.
@@ -4158,6 +4170,21 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // after debit: 593/593/590/593. With the ordinary owner index: 649/649/607/629.
 // NOT kept: the staged reload decision gains three at retail length but retains the 0x1c64 probe.
 // The ordinary-owner forms recover 0x1c60, shorten the body, and raise the score.
+// GA round 9 (lead held as a patch, not kept; the allowed forms alone, the volatile dropped, the existing
+// unit_get_player_index, one `if (fired)` call and the field names, give 667, so the body stands; plain verified 593 -> 2, 2533/2533 B, frame 0x1c60, 0 masked diffs, 0 peer losses): dropped volatile on
+// unit_index; replaced unit_player_index_102fb0 with existing unit_get_player_index (0x14de90); declared barrel right
+// after weapon, unit_tag_index before tag_index, rounds before burst, and magazine_definition before magazine; moved
+// `if (fired) function_a7cd0(weapon_index);` once after the magazine if/else (557 -> 302); formed effect entry before
+// barrel stores with lower == upper arms; named misfire `chance` (130 -> 117); set scale_a = 0.0f in !fired and mode = 2
+// before barrel flag6/7 (76 -> 35, killing g_4e7408 hoists); incremented value06 before storing burst (115 -> 76, restoring
+// `lea edx, [ecx + 1]`); typed weapon+0x16c as a word bitfield union on s_weapon and owner_unit via WEAPON_UNIT_GET
+// (35 -> 2); passed the 0x187510 kick through point2f (recovering frame 0x1c60 and [esp+0x44] spill; without it 159).
+// Tried for the last 2 SIB bytes (all score 2): offset+ptr, idx[arr], dword cast, header local, barrel inside if,
+// forceinline recoil helper before/after, function-scope updated/object_data, shadow block, no updated_definition local,
+// objects local; non-inline/deferred inline helpers stayed out of line (846-850); without chance 18.
+// Pre-heat loaded snapshot short/long 593/621; separate pre- and post-heat snapshots short/long 593/621;
+// post-heat short for the minimum and debit 593; one short refreshed across both samples 593; debit
+// through the post-heat short 593, with its clamp also 593 at 2521 bytes. The 0x1c64 probe and magazine spill remain.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -5449,6 +5476,11 @@ struct s_weapon_projectile_creation
 // clip and request position 1128, all four 1151.
 // NOT kept: the request pair retains retail length but the 0x1ea4 probe and distinct
 // point homes persist. The other transfers also raise the score.
+// The 0x1ea4 probe and the clipping and request homes still differ. Standard clip copy 1121,
+// named owner and wielder homes 1121, named speed and spread homes 1121, named first projectile
+// direction 1121, shared special-marker draw 1121, separate target outputs 1139 (0x1eac frame),
+// standard request copies 1121, interleaved request fields 1125 at 5215 B, standard motion copy
+// 1121, standard synchronization point clear 1130.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

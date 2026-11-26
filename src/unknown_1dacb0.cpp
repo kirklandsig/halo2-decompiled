@@ -1758,6 +1758,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Continue from the candidate or returned index, by assignment or explicit
 // branches: 1005/1016/1011/812 in both do and while forms. NOT kept: the only
 // retail-length form ties, and the class/NONE and resolved-mode homes remain.
+// Persistent candidate copied to result at the join, reset before lookup, on miss,
+// by whole-id selection, or by graph-word reset on miss: 923/1036/1012/994 with
+// candidate test, 1055/1071/1060/1031 with iterator test. NOT kept: frame grows
+// to 0x30/0x34, the score rises, and five forms disturb callers.
 // M3 lane GB r7 (fast with 0x1dbc80, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x1dd560, 0x2963f0,
 // 0x1cb230 and 0x1cc3f0, all 10 peers MATCH unless noted; control 812, al=578; 24 trials on both twins; body unchanged):
 // `long const *mode_reference = &mode;` (0x1dc8c0's form) 812, with 0x1dc8c0's iterator store order 812 (al=571), with
@@ -1771,6 +1775,19 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // after iterator setup 749 (+0x29, al=95); combining 732 with `if (out.id.index == NONE) return out.id;` 750 (al=83);
 // flag-free break/do-while/`while (out.id.index == NONE && entry)` on 732 1075/1034/1097; `if (graph->inheritance_count
 // > 0)` in `graph_resources_request` 1012 (loses 0x1dc8c0 and 0x1ddd00).
+// Resolved mode seeded from the requested mode, used to seed the iterator key, or copied from
+// the iterator at its mode, final key, or final field: 814 each. Aggregate iterator with request
+// seed, resolved seed, or seeded mode key: 812/812/814. Candidate and mode homes persist.
+// Attempt index seeded from the unresolved result before lookup, after it or
+// on a miss. Copy the unresolved id and clear its graph word at those three
+// points. Compare the carried unresolved word at the latch with default or
+// copied candidate: 973/978/1005/945/1003/918/988/927. NOT kept: all raise the score, and
+// the latch forms grow the frame to 0x30. Class/NONE and candidate homes remain.
+// Per-attempt default pointer by selection or redirection after or before lookup
+// 934/976/975; shared default pointer selection or redirection 962/971; shared
+// default by value selection, on miss or before a hit replacement 962/930/939.
+// NOT kept: most forms grow the frame to 0x30. The default-first assignment
+// restores the initial class register but grows the body. All disturb callers.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2445,6 +2462,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // resolved defaults: 812/811/812/812. Clear only the two cache entries with a
 // separate step assignment at those points: 919 each. NOT kept: the first
 // difference stays +0x4, the best form gains one, and the pair clear adds 12 bytes.
+// On a missing name clear the graph word and retain the already invalid index.
+// Whole id, miss-first continuation, member stores, or conditional graph word:
+// 993/993/968/991 with result test, 1020/1029/1053/1053 with iterator test.
+// NOT kept: scores rise, candidate and mode homes differ, and five forms disturb callers.
 // M3 lane GB r7 (fast with 0x1db170 and 10 matched peers, all MATCH unless noted; control 812, al=578; 24 twin trials;
 // body unchanged): `mode_reference = &mode` 812, + 0x1dc8c0 iterator order 812 (al=571), + two-caller `graph_named_entry_find`
 // 812 (al=571); flag-free `while`/`for` with `break` + early no-result return 1056, single exit 1049, early weapon_class+
@@ -2454,6 +2475,19 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // `graph_named_entry_find`, `urgent = (out.id.index != NONE)` all 732; `out.m/c/t` after iterator 749; + early no-result
 // return 750; flag-free break/do-while/`while (out.id.index == NONE && entry)` 1075/1034/1097; guarded inheritance loop
 // in `graph_resources_request` 1012 (loses 0x1dc8c0/0x1ddd00).
+// Shared resolved key captures for output stores and second request: mode, class, mode/class,
+// type, mode/type, class/type, all at their stores, and all before the first store: 812 each.
+// The resolved mode still takes the expired argument home.
+// Attempt index seeded from the unresolved result before lookup, after it or on a
+// miss. Copy the unresolved id and clear its graph word at those three points.
+// Compare the carried unresolved word at the latch with default or copied
+// candidate: 973/978/1005/945/1003/918/988/927. NOT kept: all raise the score. The latch
+// forms reserve 0x30, and the candidate and resolved-mode homes still differ.
+// Last attempt retained through search with a single result copy at search exit or after optional
+// outputs, reset before lookup, only on miss, or by conditional selection: 923/1036/1012/923/1036/1012/992/992.
+// The final two forms construct the result from that attempt with a do-while or pretest.
+// NOT kept: the frame grows and every form exceeds retail's length and the opening score.
+// The class/NONE registers, resolved-key homes and candidate slot remain open.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

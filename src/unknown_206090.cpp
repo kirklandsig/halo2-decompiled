@@ -1035,6 +1035,23 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1346; direct local_56 + early local_48 1387 (6208 B); split local_54 on the 1334 form 1390 (6238 B, al=1274); split local_13
 // square on the 1334 form 1420 (al=1277, mk=1095); all together 1461 (al=1231, mk=1041); dot3f(&local_42, local_76) 1334; direct
 // return on the 1334 form 1349; diagnostic `/Op` flag 1833 (6652 B).
+// The 0x5d0 frame, escaped velocity homes and ray setup schedule still differ.
+// Typed ray 1346; with point setter 1331, shared direction scale 1318, shared hit scale 1370, both scales 1357;
+// shared ray length 1370, with point setter 1375, shared hit-normal address 1340 at 6238 bytes.
+// Direction before origin with shared length 1367, origin memcpy 1346, in-place direction scale 1444, shared length
+// with shared direction scale 1389, copied hit normal 1379. NOT kept: the point setter uses SSE for retail's integer
+// origin copy. The direction scale still publishes the origin and tests admission before the first direction store.
+// The hit-normal address gains six at retail length, below the threshold.
+// The magnitude captures still displace the escaped velocity homes.
+// Individually captured coordinates with named squares, a planar subtotal,
+// or real or double running sums 1654/1612/1654/1613.
+// The same direct-field reducers 1612/1612/1612/1623.
+// NOT kept: removing the full input capture loses the retail extent.
+// The point loop still uses different relative-vector homes in the 0x5d0
+// frame. Typed point with vector pointers, direct fields, reference, or index
+// 1346/1394/1394/1372. Typed settings alone or with typed points 1346/1346.
+// Shared point difference or with k-first cross 1379/1415.
+// NOT kept: both retail-length forms raise the score and retain the frame gap.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

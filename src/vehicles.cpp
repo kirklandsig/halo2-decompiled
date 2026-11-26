@@ -929,6 +929,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // accumulated square 247/288, direct root 282/293, named products 256/297,
 // shared planar magnitude 252/293. NOT kept: every form raises the score.
 // The early SSE sum and unity register still differ.
+// The initial SSE square and x87 sum still trade order. Whole forward copy,
+// component copy, direct weighted pair, and weighted initializer followed by
+// translation score 338/112/112/112. Const weighted point, weighted scalars,
+// weighted point with component stores, and a heading destination copy score
+// 218/217/218/283. NOT kept: the best forms still diverge at +0x69 and score higher.
 // Unity still needs XMM3 at the first control sum. First velocity through the shared normalizer with its own
 // fallback: saved length test 570, early fallback 315, fallback alternative 315, combined short or zero guard
 // 317, staged normalized pair 570, saved fallback decision 222, named raw coordinates 570, short-input guard
@@ -940,6 +945,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // selecting reciprocal or identity scores 285/291 in place, 308/304 with a pair,
 // 284/288 with scalar inputs, and 284/288 with both scalar products before the stores.
 // NOT kept: the scores rise, and retail skips scaling in the low-speed path.
+// The early control sum still crosses the speed root and unity takes XMM2.
+// Start with one square at entry or after velocity capture and finish at the
+// normalization or rotation join: 141/142/141/142. Start with the planar sum
+// at those sites: 253/254/253/254. NOT kept: all move the difference to +0x50.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2051,6 +2060,11 @@ long function_10f5f0(long object_index);
 // conditional second store in rise/fall/both 561/561/561. Unconditional second
 // store in rise/fall/both 583/578/569. Updated flag word 560, or 565 with both
 // unconditional stores. NOT kept: one-point gain, and the flag still uses a mask.
+// The bounds and velocity homes still keep the frame at 0x1990. Names before
+// state, names then velocity after state, velocity then names after state,
+// bounds then names before state, or names then bounds before state all score
+// 561. Bounds-velocity-names and velocity-names-bounds before state, and
+// bounds-names-velocity after state also score 561. All keep separate homes.
 // Door handle, bounds handle and named physics record individually 567 each.
 // Handle pair, either handle with the record, all three, and reused handle 561 each.
 // NOT kept: the frame, predicate bytes and shared output home remain unresolved.
@@ -2058,6 +2072,10 @@ long function_10f5f0(long object_index);
 // and indexed prefix then final zero: 561/572/561/561. On shared bounds/velocity/names
 // storage: 556/568/557/557. NOT kept: the independent forms do not gain and the shared
 // frame requires equality. The native predicate byte stores still differ.
+// The bounds, velocity and request stack home still differs. Light records
+// indexed with direct/reused mask index 561/561, with bitfield admission
+// 571/571. A cursor to the array end gives 593/599 or 604/604 with bitfield
+// admission. NOT kept: the frame stays 0x1990 and the changed scores rise.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4001,6 +4019,10 @@ real g_47ff30 = 2.5f;
 // Named lateral determinant with direct inputs or scalar linear, facing, or both pairs 672 each.
 // Separate final mass scales on those four forms 710 each, frame 0xfc and first +0x66. NOT kept:
 // the 0xfc forms raise the score, and the acceleration spill and planar input homes still differ.
+// Force scaled after friction, inversion, relative-basis composition or quaternion conversion,
+// using components/helper with torque scaled from the mass field: 764/764, 685/685, 727/727, 727/727.
+// NOT kept: only the post-friction scale reaches frame 0xfc, and it shortens the body to 3184 bytes.
+// The acceleration spill stays at ESP+0x20 against retail's +0x34.
 // Linear query storage reused for axis, axis and torque, axis with angular output reused
 // for force, or both reuses: 676/676/676/676. With separate mass reads: 713/713/713/713.
 // NOT kept: the 0xfc forms retain retail length but raise the score and still spill
@@ -4031,6 +4053,11 @@ real g_47ff30 = 2.5f;
 // + 3 masses + force at 0x14..0x1f, up + rotation at 0x20..0x2f, linear_velocity + rotation_axis + torque at 0x40..0x4b, left + planar_velocity
 // at 0x54..0x5f and planar_facing at 0x68..0x6f (exact 0xfc); ours keeps masses outside angular_velocity and merges rotation with linear_velocity.
 // Body unchanged.
+// Directional force factors as compound stages by direction 672, after all the
+// mass products 672, with a separate final state factor 721, and all velocity
+// errors first 672. With independent final mass reads: 710/710/696/710.
+// NOT kept: shorter forms move away from retail length; the 0xfc frame forms
+// still spill acceleration at +0x20 against retail's +0x34.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5345,11 +5372,18 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // final or both left outputs score 183/161/212 through the staged cross and
 // 183/161/214 through the direct cross. Both with indexed projection 214/216.
 // NOT kept: the separate left outputs enlarge the frame and the body.
+// Scoped turn trig with shared up rotation. Grouped switch, side turn first, full turn first,
+// or explicit side angle, with direct/returned projection: 153/153, 160/160, 171/171, 133/133.
+// NOT kept: all recover the prefix through +0x107 but raise the score and move away from 806 bytes.
 // The last projection product still loads forward.i instead of up.i. Projection copied
 // from forward before or after the up copy, then scaled in place with the dot from
 // facing or the projection, and member or indexed removal: before 224/234, after
 // 215/225, each in both removal forms. NOT kept: the snapshots enlarge the frame to
 // 0x10 and the body to 822 or 832 bytes.
+// Shared scaled difference with the real scale, a named or returned projection,
+// and both dot argument orders: four at 134. The same choices with double
+// scale: four at 232. NOT kept: the real scale reschedules the forward preloads.
+// The double scale changes the prologue. The projection input and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6471,6 +6505,12 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // bounds for speed/turn/steering 765/758/758, speed-turn/speed-steering/turn-steering
 // 761/766/761, all pairs 758. With the entry definition 1020. NOT kept: the
 // one-point gains lengthen the body, and the entry definition merges the lookups.
+// The entry definition and zero/result registers still differ. A typed layout
+// at the original reads for all limits, directional limits, or kind and engine
+// scores 759 each. The typed layout with a separate entry definition for kind,
+// engine, both, or both plus angular ceiling scores 982 each. Acquiring that
+// entry through the existing accessor scores 941. NOT kept: the entry forms
+// merge later lookups and shorten the body.
 // Separate magnitude dispatch for unrestricted, guarded and derived paths, individually
 // 853/883/1108, paired 801/857/975, all 1117, magnitudes in the default switch 801.
 // NOT kept: the dispatch splits raise the score and leave the entry SIMD registers different.
@@ -6479,6 +6519,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // activity 767/783; upper-first bounds with sign or separate combined activity 767/774.
 // NOT kept: 751 restores the extent but tests raw positivity where retail tests the bounded
 // result. The entry definition and zero/result registers still differ.
+// Directional limits through the vehicle handle for steering/speed/turn
+// 767/819/786; steering and speed 827, steering and turn 777, speed and turn
+// 844, all 853, all with a separate entry definition 786. NOT kept: the
+// handle lookups enlarge the body and change the prologue. The zero and result registers still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7414,6 +7458,22 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // MAX/MIN lift + normalize_inline 1027 (fr=0xdc, 5097/5094 B, 1179/1179 insns, al=797, mask=622, saved
 // build/gb5/f4800-lead-b206.cpp), with MAX/MIN lift + no-dup up norm 1126 (al=709, mask=626). NOT kept: 0xdc stays
 // 4 B above 0xd8 and handle/offset remain EDI/ESI; body restored.
+// Aggregate force 959, lifted vertical scalar 1004, both 1004, and lift
+// at the final force multiplication 1004. With a separate scoped relative
+// output these score 1129/1096/1096/1096.
+// NOT kept: a distinct relative output reaches 0xdc but shortens the body
+// and raises the score. The handle and header-displacement registers still differ.
+// Frame 0xfc and the exchanged handle and displacement remain.
+// Quaternion vector in place 1042, axis copied after length 1048, axis produced
+// in the normalization arms 1003, axis copied after normalization 1082. With
+// a distinct relative product these score 1130/1115/1094/1126. NOT kept:
+// the branch-produced axis with distinct output reaches 0xdc and 5095 bytes,
+// but raises the score and leaves the handle and stride reversed.
+// Physics receiver, environment velocity snapshot, staged relative components,
+// or separate measured and relative velocities, with in-place and expired flip
+// matrix outputs: 959/1101/959/960/1009/1084/1009/1014. NOT kept: the expired flip output
+// shrinks the frame to 0xdc and raises the score. The handle and displacement
+// registers remain exchanged and retail reserves 0xd8.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
