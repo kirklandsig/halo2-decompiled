@@ -365,15 +365,11 @@ s_handler_object_view *swarm_creature_iterator_next(s_ai_object_iterator *iterat
 		object = handler_object_get(iterator->next_index);
 		iterator->index = iterator->next_index;
 
-		s_object_ai_data *creature;
-		if (!object->flags134 && (creature = (s_object_ai_data *)((byte *)object + object->ai_offset)) != NULL)
-		{
+		s_object_ai_data *creature = object_ai_data_checked(object);
+		if (creature)
 			iterator->next_index = creature->next_creature_index;
-		}
 		else
-		{
 			iterator->next_index = NONE;
-		}
 	}
 
 	return object;

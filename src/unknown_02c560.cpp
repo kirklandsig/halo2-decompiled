@@ -199,6 +199,9 @@ void __stdcall function_2c8a0(byte const *source)
     g_4ba030 = 0;
 }
 
+// Gemini GB r19 (held as a patch, coordinator review): the view fields stored in retail's groups (forward, up,
+// position and the flag; the clips, angle and 1.0f; left, top, right, bottom and the rectangle copy) score 4 (was 28).
+// Statement order is kept only with a byte match. Left: g_4ba010 = true sinks three instructions into the camera copy.
 // @retail 0x2c560
 void function_2c560(short left, short top, short right, short bottom,
     vector3f const *up, real angle, vector3f const *forward, point3f const *position)

@@ -720,6 +720,15 @@ long function_2273d0(
 	return result;
 }
 
+PRIVATE inline s_physics_model_shape_key physics_model_shape_key_make(short type, short index)
+{
+	s_physics_model_shape_key key;
+
+	key.type = type;
+	key.index = index;
+	return key;
+}
+
 // @retail 0x227990
 void impact_rigid_body_indices_get(
 	s_impact const *impact,
@@ -737,8 +746,9 @@ void impact_rigid_body_indices_get(
 		for (i = 0; i < component->unknown7c.size; i++)
 		{
 			s_havok_component_element0c *contact = &component->unknown7c.data[i];
+			s_physics_model_shape_key key = physics_model_shape_key_make(contact->unknown00, contact->unknown02);
 
-			if (contact->unknown00 == impact->shape.type && contact->unknown02 == (*(s_impact const *const volatile *)&impact)->shape.index)
+			if (key.type == impact->shape.type && key.index == impact->shape.index)
 			{
 				contact_index = i;
 			}
@@ -1490,6 +1500,20 @@ PRIVATE __forceinline byte *function_2284c1(long arg_0)
 	return impact_tag_get(impact_object_header_get(havok_component_get(arg_0)->object_index)->object->definition_index);
 }
 
+// score 81 (was 81): the impact arrives in EAX where retail passes it in ECX, and component_index then takes ECX
+// (retail ESI); every later difference follows. The allocator ranks the impact at 104 (three references in the
+// 12-candidate call block) above the four tag-lookup temporaries at 80 (cost 10 in 8-candidate blocks); ranked below
+// them (a forced-ranking search) the count is 34, with component_index still in EAX. Tried (M3 lane 1 r171): a
+// `has_component_b` bool for the test and the call 92 (279 B); the 0x2285d0 call written in each arm 146 (305 B); both
+// tag tests through the existing component_tag_index_get_2285d0 78 (270 B: its reference-bound locals add three
+// candidates to each lookup block, so the impact takes ECX as retail, but the component address is not folded,
+// `add eax, esi` where retail has `[eax + esi + 8]`); that with component_index assigned first in each arm 77 at 267 B
+// (lead, arm order by score); `*(long *)(impact_component_definition_get(x) + 0x58)` 125 (226 B); this helper
+// returning the +0x58 field 81 (same code), with object/bytes reference-bound locals 81; component_object_get_2285d0
+// plus impact_tag_get 91; the selection as a `use_component_b` bool and three conditional values 93; component_a
+// named once for the first lookup and the else arm 86; only the component_b lookup through
+// component_tag_index_get_2285d0 56 (268 B: entry and first lookup retail's; lead, parallel tests spelled differently),
+// only the component_a lookup through it 74.
 // @retail 0x2284c0
 void impact_material_effects_get(
 	s_impact const *impact,
@@ -2187,15 +2211,6 @@ void function_228770(
 	}
 }
 
-PRIVATE inline s_physics_model_shape_key physics_model_shape_key_make(short type, short index)
-{
-	s_physics_model_shape_key key;
-
-	key.type = type;
-	key.index = index;
-	return key;
-}
-
 // @retail 0x226a60
 void function_226a60(
 	long component_index)
@@ -2299,6 +2314,18 @@ struct s_impact_component_iterator
 
 s_impact_component_iterator g_5021bc;
 
+// score 162 (was 162): register roles. Retail keeps the component in EBP (copied to ESI for 0x1d1c10's argument) and
+// component_b in ESI; the allocator ranks the component (the iterator's datum) at 208 against 180 for component_b, so
+// the component takes ESI and component_b EBP; the outer loop's pool pointer is in ESI/EDI where retail has EDX. Two
+// spots also differ in form: retail tests the impact count as `movsx eax, word; cmp eax, 0xf` and forms the impact's
+// address before the constraint store. M3 lane 1 r171: the iterator as the real s_data_datum_iterator through the
+// existing data_datum_iterator_next_inlined 162 (same code; not kept: 0x1c2690's file declares the record too); the count test as matched 0x226f80's
+// `(component->unknown20 == NONE ? 0 : impact_array_get(component->unknown20)->count) < 15` 162 (retail's movsx form;
+// lead); the reference count bumped before the store 164 (673 B); that count form with matched 0x226a60's
+// `s_impact *impact = impact_get(impact_index);` ahead of the store 164 (both spots then retail's code; one-use pointer,
+// match-only; lead: a forced ranking of component_b above the component gives 69 on it, and of impact_index above the
+// constraint 42, both register permutations of the same allocation); the pointer form alone 164; component_b set by
+// an if/else on that lead 164.
 // @retail 0x226ce0
 void function_226ce0(void)
 {
