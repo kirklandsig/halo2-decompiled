@@ -3174,6 +3174,13 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // copied after its test 17; the request reached through a `s_request_114b60 *const` passed to memset and 0x114680 16; the
 // out value through a `long &definition_index` bound to the priority parameter 16. Re-measured: the request priority and
 // the out clear ahead of the fallback block 23, the extra arms inverted 29, entry_index reassigned 16.
+// M3 lane 5 r249 (H2M_FAST; control 16). Allocator ledger re-read: index 48 (B1 16, B2 12, B3 10, B4 10), request
+// priority 33, NONE 14 (its compares cost nothing, its stores 1 each); a forced-ranking search finds the index one rank
+// down or the request priority one rank up at 12 each, none at 0. Forms: the fallback result written back to entry_index
+// and the index declared after the fallback block 16 (same code); the default object index copied from the marker just
+// stored 16 (folded); the sound index stored first after the clear 24; the request priority declared first with the
+// default object index stored ahead of the marker 16; the lookup un-nested (`entry_index` reassigned, then `entry_index !=
+// NONE && 0x114520`, the index declared in the request block) 22.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

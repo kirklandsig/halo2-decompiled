@@ -1098,6 +1098,13 @@ struct s_physical_block_iterator
 // 0x1040 and the entry registers change); only the second age clamped that way 395 (1255 B); the take test as
 // `better || !have_best` 201, the scan loop as `for (long i = head, next; i != tail; i = next)` 201 and the default arm's
 // comparison written `candidate->pages * best_age < best.pages * age` 201 (all three the same code). Body unchanged.
+// M3 lane 16 r193 (H2M_FAST with 0x13d320, MATCH each run; lane 1 r124's 40 lead rebuilt, 40 at 1213 B, aligned 18, masked
+// 13). On the lead: `best` declared at the top of the function 40 (same code); the deletion walk on plain iterator/block
+// locals 55 (first difference +0x1); the first overlap test as `offset - best.offset < pages` 39 (best.offset now loaded
+// once into EDI as retail, but the second test still reads it from memory again where retail compares a register copy);
+// one to seven unused initialised locals at the top 40 each (no phase effect); the datum index read into a local ahead of
+// the overlap test 40 (same code). The allocator's ranking of the lead's walk
+// was read: the overlap sum is formed in the best-offset copy where retail forms it in the page count's register.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
