@@ -4779,6 +4779,17 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // with the accept block `return true;` 56 (+0x26); after the disconnect `if (!result) return result; goto accept;` 44
 // (same code). Retail's kept arms still need the result stored from AL with the return value already in AL. Body
 // unchanged.
+// M3 lane 16 r195 (H2M fast with 0x5e3f0, MATCH each run; main 295; round 208's 96 form and lane 1 r144's 44 form
+// rebuilt, 96 and 44). Reading of the 96 form: ours keeps two copies of the `result = true` store-and-reload exit (one at
+// the state-8 position, one at the end shared by the channel-7, acknowledgement and kept edges) where retail keeps only
+// the state-8 copy and every other accepting edge jumps into it, the kept arms past its reload with AL already 1; the
+// result byte is never a register candidate on that form (priority -58, its tail piece -7). On main: the peer reply time
+// through the file's existing time helper 309 (1240 B: the inline-depth region keeps it a call); diagnostic, restored at
+// once: the body outside the file's inline-depth region 419 (1309 B). On the 96 form: an `exit:` label after the state-8
+// arm's `result = true` (its own `return result;`), reached by the kept arms and by `if (result)` after the disconnect,
+// 345 (1244 B: that return folds to `mov al, 1`); the kept arms `return true;` with `if (result) return true;` after the
+// disconnect 56 (result byte +9, better +0xb); the range test as two arms (`state <= 2`, `state > 8`) 368 (1276 B); the
+// reason-1 test as two arms (`!state`, `state == 10`) 357, on the 44 form 355. Body unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
