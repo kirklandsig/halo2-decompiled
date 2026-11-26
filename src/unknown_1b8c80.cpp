@@ -1115,6 +1115,10 @@ extern "C" void _ReadWriteBarrier(void);
 // three-real point setter 42 (213 B); the second parameter typed as the state itself (no cast local, the table entry cast)
 // 6 (same code); the point copied ahead of the 0x420/0x41c stores 40 (207 B); the busy field read into a named long
 // between the lookup and the barrier, tested after it, 49 (210 B).
+// M3 lane 14 r161 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): no barrier, the pool pointer named first,
+// then the state, then the actor from the pool's data 44 (208 B); no barrier, the flags test written `!= 0` 44; no
+// barrier, the flags byte bound to a `byte const &` after the actor and state 44; the actor as the pool's data plus a
+// `(word)` index, no barrier 10 (205 B: `movzx` index load, register compare of 0x26c), with the barrier 48.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

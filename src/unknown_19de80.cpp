@@ -1094,6 +1094,12 @@ static inline bool teams_enabled_19e1c0()
 // negative result as `result = remaining;` like the other format arms 431 (1398 B: its tail then joins theirs); the local
 // team as a `long` (retail sign-extends it into EDI and jumps into the cause-team score arm's tail) 393; the fallback
 // clamp as one ternary 395; both 398; the event teams read at each use 394 (re-measured). Body unchanged.
+// M3 lane 1 r173 (fast with 0x19e0f0, 0x19ea60, 0x19eae0; control 390): with the plain result our build also merges the
+// two player-name arms' calls (arm 2 jumps into arm 1 with its index in EAX); retail keeps every arm whole, sharing only
+// the final wcsncpy call, and its arms differ in scratch choice (arm 1 stores text[0] from SI before `lea esi`, arm 2
+// stores an immediate after it). Forms: the clamps as `if (remaining < result)` 390 (same code), on the plain result 691;
+// the thirteen token compares through one file-local inline helper 390, on the plain result 691; the plain result with
+// the name arms' length in a named local and a one-ternary clamp 692.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

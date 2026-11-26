@@ -2183,6 +2183,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // minimum with 0xcbd50 and the short index 275. Retail's scheduler moves the third lookup's loads above the first
 // weapon's store, so that store is not what ends the cached lookup; diagnostic (reverted at once): each block's unit
 // assigned through a pointer to the local 298 on the 298 form (same code, the pointer is propagated away).
+// M3 lane 7 r234 (fast screen with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240, 0x1e5280 and 0x1e3b60, all MATCH;
+// control 251). Allocator reading unchanged: options 82 ahead of the actor 68, the pool never a candidate. Forms: one
+// `bool halved` for both halving tests, read ahead of the weapon loop, 278 (1197 B); block 1's first slot query
+// through the `unit` already looked up (the second through its own lookup) 340 (1191 B), the second only 337 (1191
+// B); the per-pass weapon read into `long weapon` 251 and the grenade reset test as nested ifs 251 (listed forms,
+// re-measured: same code); the fraction tests written `0.0f < x` 251 (same code).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

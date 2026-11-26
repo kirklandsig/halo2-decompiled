@@ -2457,6 +2457,11 @@ bool function_1900a5(long index);
 // on 643 base: real XUID/word fields on s_cache_property_record/s_cache_property (+ XUID team_owner, or + dword count) 643/643/643 (+ space 643 at 2862 B, aligned 359 / masked 261);
 // properties pointer with properties_used += 6 736 (2926 B, unrolled; + space 704, + XUID/word + space 704, + dup continue + space 730);
 // nested if (variant) + space 643 (2862 B, aligned 358 / masked 260); while duplicate scan 643; read_record_count > 0 guard + space 642; if (variant) ... else state=1 + guard 736 (2942 B).
+// M3 lane 12 r194 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x72700, 0x75890, 0x6c7e0, all MATCH;
+// control 633): the opening test through the existing logon helper 0x6c7e0 itself 763 (its /Ob1 file keeps it a call); the
+// request gate through the existing elapsed-time function 0x75890 itself 646 (a call, same file reason); the delay as one
+// conditional expression 633 (same code); the property value as `= 0` then `if (type)` 642; the team flag declared ahead of
+// the valid flag 633 (same code).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

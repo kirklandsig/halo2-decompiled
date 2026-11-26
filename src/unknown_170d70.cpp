@@ -1736,6 +1736,14 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // vector stored k, j, i 361 (1438 B); the clamp as a ternary 337 (same code); the deviation's squares accumulated into
 // a double local 341 (1448 B); the scaled original through vector3f_scale before the differences 354 (1448 B). The
 // allocator's first-rotation block has about forty XMM candidates in one ranking (a tracer run), not a single tie.
+// M3 lane 11 r173 (H2M_FAST with 0x171830/0x1726d0/0x170fd0/0x172c70/0x173910/0x171d00/0x1701f0, all MATCH but 0x171830;
+// reduced control 337 with a builds-differently caveat, so the best forms were re-measured plain; plain control 334).
+// Forms: the forward copy taken right before the first rotation (after both angles) 336 fast, 333 plain; the ratio
+// computed and stored ahead of the forward copy 336 fast, 333 plain; both together 336 fast; the copy declared const 337
+// (same code); the deviation terms written `dz * (double)dz` 337 fast, 334 plain (same code). Re-measured listed forms:
+// the ratio stored after the vertical field 337, the shared tangent named 385 (1428 B), the second axis declared beside
+// the matrix 337, the squares accumulated into a double 341 (1448 B). Retail's tail squares each difference as
+// `fld [d]; fmul [d]` right after storing it; ours loads all three and squares register copies.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2795,6 +2803,20 @@ struct s_camera_reference_171830
 // counter as `long` 130 positional at 1223 B but aligned 65 (retail keeps the 16-bit counter, `cmp bx, 4`, beside a
 // long index: not a gain); the radius computed ahead of the 0x171d00 call 281 (1235 B); the first offset copied
 // member by member 272 (1207 B, 0x170fd0 220).
+// M3 lane 11 r173 (H2M_FAST with 0x170fd0/0x171d00/0x171d90/0x1726d0, the matched ones MATCH each run; control 155, aligned
+// 36). Round 154's lead rebuilt from its description (the flagged arm first with the plane distance named through the
+// existing helper, the three sample-row products grouped): 9 at 1219 B, aligned 4, only the centre's i product and the loop
+// pad it shifts left. Rank reading (the reassociation sort, level then weight): depth is a level-1 leaf of 0x200 and
+// forward.i a load of 0x8008 (its parameter place), forward.j 0xc008 and forward.k 0x0008 (two address temporaries on
+// the 0x2000 grid, modulo eight); retail's sides need depth above 0x8008 and at most 0xc008. Measured on the lead: the
+// depth sum written in each row becomes a compiler temporary of 0x7d80 (0x7d40 on the control's body), 22 ordinals short,
+// unmoved by 1, 2, 4 or 8 dead locals at the top, but it renumbers the other temporaries: 118 at 1222 B (aligned 30); on
+// the control's body 183 (1222 B); in the i row only 277 (1238 B); the sum as `(offset + *distance)` the same 0x7d80; a
+// file-local inline returning the sum 9 (same code: depth stays 0x200); the depth through an inlined helper with the
+// scale at its fifth place and the vector at its fourth 9 (same code: inlined parameters take the caller's weights);
+// forward through a pointer local, declared at the rows or at the top, 154 (the pointer is propagated, the address
+// temporaries move); `real const &depth` bound to the sum 263 (1223 B, depth 0x220); the offset parameter accumulated 9
+// (same code, its value weighs 0x20). Not kept: the lead's forms still need the byte match.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
