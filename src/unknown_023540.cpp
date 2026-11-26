@@ -5036,7 +5036,6 @@ bool __stdcall function_26e50(void *context)
 
 
 // Construct a saved camera frame, then select and run its render passes.
-extern bool g_4ba010;
 extern long g_4ba038, g_46701c, g_4e9194, g_4e64a8, g_4e92e0;
 void __stdcall function_132d0(s_frame_view_2c560 const *frame);
 void function_13c20();

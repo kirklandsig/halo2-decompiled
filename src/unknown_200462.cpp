@@ -380,6 +380,14 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // Roasted-Codes (#1508 comment, 2026-11-26; fast reduced-image scores): the named advance with the pulse result bound by
 // `real const &` ahead of it 15 (849 B); the query and the centring match, so the named advance's 53 is the pulse query
 // sinking below the half extents. With the advance moved after the half height on that body: 12, the same XMM3/XMM4 pair.
+// M3 lane 1 r172 (h2m fast with 0x2008fc 0x200891, control 14; the bounds record through a one-use pointer re-measured 12):
+// on the pointer form the pair is an exact tie in the allocator: the half-height copy (first pass) and the draw block's
+// piece of the advance product (second pass) both rank 162 (a reference cost of 9 in a block of 18 candidates), and the
+// copy, coloured first, takes XMM3. A forced-ranking search over the two finds one match: the copy taking XMM4. So one
+// reference more for the advance piece, or one fewer for the copy, inside the draw block is what has to move. Forms, on
+// the pointer: the corners as four chained assignments (left, top, right, bottom) 87 (846 B), grouped x then y 87 (846
+// B); the bottom edge as `local_25 + local_14.y` 12, the right edge as `local_24 + local_14.x` 12; the second x step as
+// `local_14.x = local_24 * local_23 + local_14.x;` 12 (the 12s the same code). All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

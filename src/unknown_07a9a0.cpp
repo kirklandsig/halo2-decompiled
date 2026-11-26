@@ -1931,6 +1931,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // existing 0x192db0 923 (2732 B); the lower bound and the adjustment both through 0x1931a0 in one test 1000 (2652 B), as a
 // named lower bound 986 (2648 B: the two calls merge); the add-mask arm's inner `type == 3 || type == 4` written as the
 // `type == 4` it reduces to there 878 (2764 B). Still BLOCKED on the opening lookup's inline choice.
+// M3 lane 4 r264 (h2m fast with 0x73530, MATCH each run; control 871; body unchanged): retail's party histogram is 16
+// dwords at +0x44, the same cells as the machine id copies (both cleared with `rep stosd`). Forms: the opening test as
+// five separate early returns 908 (2752 B); as two early returns (summary tests, then variant tests) 871 (same code);
+// the machine scan's exit as `return false;` 871 (same code); the machine id copies in a block of their own around the
+// group loop 871 (same code, frame unchanged); both party scans as plain index loops 940 (2716 B), the first one only
+// 923 (2716 B).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
