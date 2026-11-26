@@ -263,6 +263,14 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // (2028 bytes); the scale as `(real)(1.0 / 32767.0)` 2; the maximum as an if/else local 2; the trig magnitudes written in
 // place in the maximum 2 (all three the same code). 1.0 still loads first; retail reloads only the scale (xmm7) near the
 // loop's end, 1.0 stays in xmm6, so the two entry loads are the only difference left.
+// Round 191 (m3 lane 12, h2m fast, on the kept 25 body): both magnitudes through the existing magnitude2d 26; the two
+// offsets in one declaration 25 (same code); each quadrant written as a sum `(x < 0) + 2 * (y < 0)` 347; each stick's
+// quadrant declared just ahead of its own offset 410 (2028 bytes); the table indexed by the quadrant expression with no
+// quadrant local 402 (2016 bytes). Diagnostic (reverted): the at-each-use 2 form with the scale as an extern constant
+// defined in an early-linking source 9 (an extern is no longer a known value, so each product multiplies by the scale
+// first). Link reading for the two entry loads: our 1.0 resolves to the graphics library's object and the scale to the first
+// LTCG object that uses it; with no data dependency between the two hoisted loads they keep the order their symbols
+// were created in, which source in this file cannot change.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
