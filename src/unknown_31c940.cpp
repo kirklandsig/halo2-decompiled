@@ -169,52 +169,22 @@ static __forceinline void project_second_linear_velocity(solver_linear_row_31e7b
 	sum_three_to_arena_31c940(work_0,projection_output);
 }
 
-static __forceinline void circular_first_projection_fields(solver_linear_row_31e7b0 const *row,solver_velocity_31c940 *a,solver_velocity_31c940 *b,__m128 *&angular_b,float &output)
+static __forceinline __m128 project_linear_axis_view_31c940(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 const &linear_b,__m128 const &angular_b, __m128 const &axis_linear);
+// Retain projection inputs before publishing the saved angular receiver.
+static __forceinline void circular_first_projection_fields(
+ solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a,
+ solver_velocity_31c940 *b, __m128 *&angular_b, float &output)
 {
-	__m128 work_0,work_1,work_2,work_3;
-	work_0=b->linear;
-	work_1=a->linear;
-	work_3=b->angular;
-	work_2=row->a;
-	work_1=_mm_sub_ps(work_1,work_0);
-	work_0=a->angular;
-	work_0=_mm_mul_ps(work_0,work_2);
-	work_2=row->linear;
-	work_1=_mm_mul_ps(work_1,work_2);
-	work_2=row->b;
-	work_3=_mm_mul_ps(work_3,work_2);
-	work_0=_mm_add_ps(work_0,work_3);
-	work_0=_mm_add_ps(work_0,work_1);
-	work_1=_mm_shuffle_ps(work_0,work_0,0x55);
-	work_1=_mm_add_ss(work_1,work_0);
-	work_2=_mm_shuffle_ps(work_0,work_0,0xaa);
-	work_2=_mm_add_ss(work_2,work_1);
-	angular_b=&b->angular;
- _mm_store_ss(&output,work_2);
+ __m128 projected = project_linear_axis_view_31c940(
+  row, a, b->linear, b->angular, row->linear);
+ angular_b = &b->angular;
+ _mm_store_ss(&output, projected);
 }
-static __forceinline void circular_second_projection_fields(solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, __m128 const &linear_b,__m128 *const &angular_b, float &projection_output)
-{
-	__m128 w[5];
-	w[0]=linear_b;
-	w[1]=a->linear;
-	w[2]=row->a;
-	w[3]=row->b;
-	w[1]=_mm_sub_ps(w[1],w[0]);
-	w[0]=a->angular;
-	w[0]=_mm_mul_ps(w[0],w[2]);
-	w[2]=*angular_b;
-	w[2]=_mm_mul_ps(w[2],w[3]);
-	w[3]=row->linear;
-	w[1]=_mm_mul_ps(w[1],w[3]);
-	w[0]=_mm_add_ps(w[0],w[2]);
-	w[0]=_mm_add_ps(w[0],w[1]);
-	w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
-	w[1]=_mm_add_ss(w[1],w[0]);
-	w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
-	w[2]=_mm_add_ss(w[2],w[1]);
-	_mm_store_ss(&projection_output,w[2]);
-}
+
+static __forceinline void project_second_pair_second_row(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 const &linear_b, __m128 const &angular_b, __m128 const &axis_linear,float &projection_output);
+
 
 
 static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 const *row,
@@ -306,10 +276,11 @@ static __forceinline __m128 const *apply_circular_first_fields(float impulse,
 	*result=accumulated;
 	return inverse_b;
 }
-static __forceinline void apply_circular_second_fields(float impulse,
+// This second row completes the shared two-impulse result stream.
+static __forceinline void complete_circular_pair_31c940(float impulse,
  solver_linear_row_31e7b0 const *const &row_home,__m128 *&row_cursor,__m128 *&terms,
  solver_velocity_31c940 *a,__m128 &linear_b,__m128 *const &angular_b,
- __m128 const *inverse_b,float *result,float &simd_scratch)
+ __m128 const *inverse_b,float *&result_base,float &simd_scratch)
 {
 	__m128 w[5];
 	w[2]=a->inverse_inertia;
@@ -347,7 +318,10 @@ static __forceinline void apply_circular_second_fields(float impulse,
 	w[0]=*angular_receiver;
 	w[0]=_mm_add_ps(w[0],w[1]);
 	*angular_receiver=w[0];
-	*result+=impulse;
+	// Complete the pair cursor before publishing its final accumulation.
+	float accumulated = result_base[1] + impulse;
+	result_base += 2;
+	result_base[-1] = accumulated;
 }
 
 
@@ -545,7 +519,7 @@ __forceinline spin_projection_output_31c940(spin_projection_output_31c940 const 
 // The first reduction keeps its own consumed projection values. Capture B's
 // angular receiver after those inputs and before publishing its linear receiver.
 // Later projections retain their separate body reads and scalar publications.
-static __forceinline __m128 project_spin_axis_view_31c940(solver_linear_row_31e7b0 const *row,
+static __forceinline __m128 project_linear_axis_view_31c940(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, __m128 const &linear_b,__m128 const &angular_b, __m128 const &axis_linear)
 {
  struct projection_view {
@@ -576,7 +550,7 @@ static __forceinline void project_spin_contact_rows_31c940(solver_linear_row_31e
 	spin_projection_output_31c940 output,solver_scalar_arena_31c940 &pool)
 {
  {
-  __m128 projected=project_spin_axis_view_31c940(rows,a,body_b->linear,
+  __m128 projected=project_linear_axis_view_31c940(rows,a,body_b->linear,
    body_b->angular,rows[0].linear);
   angular_home=&body_b->angular;
   output.store(projected);
@@ -1696,7 +1670,7 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 					float target_a = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 					__m128 *linear_b=&b->linear;
 					circular_first_projection_fields(((solver_linear_row_31e7b0*)terms),a,b,scalar_work.angular_b,projection_pool.circular_first);
-					circular_second_projection_fields(((solver_linear_row_31e7b0*)terms)+1,a,*linear_b,scalar_work.angular_b,projection_pool.circular_second);
+					project_second_pair_second_row(((solver_linear_row_31e7b0*)terms)+1,a,*linear_b,*scalar_work.angular_b,((solver_linear_row_31e7b0*)terms)[1].linear,projection_pool.circular_second);
 					// Both projections finish before these shared parameter reads.
 					solver_step_31c940 *parameters = step;
 					scalar_work.fallback_scalar = target_a * parameters->friction_scale - projection_pool.circular_first * parameters->velocity_scale;
@@ -1730,8 +1704,8 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 						((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
 					}
 					__m128 const *inverse_b=apply_circular_first_fields(impulse_a,((solver_linear_row_31e7b0*)terms),a,scoped_b,*linear_b,scalar_work.angular_b,scalar_work.inverse_b,scalar_work.next_circular,result,scalar_work.simd_scalar);
-apply_circular_second_fields(impulse_b,scalar_work.next_circular,normal_axes,terms,a,*linear_b,scalar_work.angular_b,inverse_b,result+1,scalar_work.simd_scalar);
-result+=2;
+complete_circular_pair_31c940(impulse_b,scalar_work.next_circular,normal_axes,terms,a,*linear_b,scalar_work.angular_b,inverse_b,result,scalar_work.simd_scalar);
+
 					op += 20;
 					normal_axes = (__m128 *)((unsigned long)terms + 5 * sizeof(__m128));
 					continue;
