@@ -682,7 +682,7 @@ static __forceinline unsigned long apply_spin_second_fields(double impulse,
 	w[0]=angular_b;
 	w[0]=_mm_add_ps(w[0],w[1]);
 	angular_b=w[0];
-	float accumulated=*result+impulse;
+	double accumulated=*result+impulse;
 	// Keep the SIMD bits even when the result store replaces the spin source.
 	unsigned long spin_bits;
 	memcpy(&spin_bits,&spin_source,sizeof(spin_bits));
