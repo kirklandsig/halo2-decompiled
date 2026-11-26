@@ -1101,6 +1101,12 @@ void __stdcall function_25eea0(
 // declared ahead of the early return 353 (1337 B). The first difference is the weight's colour (ours XMM1, retail
 // XMM2 with the 12.0 kept in XMM0); retail's induction pointers sit at position z (leader loop) and at the score
 // (cover loop) where ours use x and the tested byte.
+// M3 lane 15 r151 (H2M_FAST with the same callees, MATCH throughout): the leader distance converted implicitly
+// (`distance = sqrt((double)...)`) 253 (same code); the root taken on the float sum (no double) 300 (1353 B); the
+// weight loop's quotient named 253; the leader bonus summed as `bonus + score` 253 (same code); the leader bonus as
+// one conditional expression 266. Readings: the cover loop's EBX goes to the moving counter (-38) over the line index
+// (-44); a forced-ranking search lowering the counter gives only 252, so that contest is not the main cause; retail
+// keeps the unrounded root on the x87 stack for the inner compare (`fstp st(3)` ... `fst`), ours stores and reloads.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

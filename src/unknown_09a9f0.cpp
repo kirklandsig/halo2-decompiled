@@ -1161,6 +1161,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the re-read field 42; the header test on the re-read field with that call 77; that call, then the second store 72.
 // Reading: retail keeps the table global in EDX but reloads the data field and recomputes the index from EAX, so at the
 // merge the object read uses a value the header test does not share; no form here does that.
+// M3 lane 15 r151 (H2M_FAST with 0xbb780, MATCH throughout; control 8; R = retail's shape, no second store): one
+// `valid` bool (`object_index != NONE && !(flags & 0x10)`) with the valid block under `if (valid)` and the clear in
+// `else if (object_index != NONE)` 77 (160 B: the test is threaded before the lookups are merged); R with the owner
+// value read into a local ahead of the store 77; this body with the object read and the attach both through the
+// entity's re-read field 46; R with the flag test inverted (clear arm first) and 0xbb780 given the local and the
+// entity's first field 75; R with only the object read through the entity's re-read field 77 (the re-read is
+// forwarded before the merge when no store lies between). Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1782,6 +1789,14 @@ bool c_projectile_type::v8(long a, long b)
 // `(dword)index << 16 >> 16` 12 (each still one shared constant); the volatile copy typed as the derived type 12; the
 // power value named once for the 0x400 compare and copy 19. Diagnostic (removed at once): a compiler barrier between the
 // NONE test and the mask 9 (190 B: object ESI and flags EDI as retail, but the NONE test compares memory and reloads).
+// M3 lane 15 r151 (H2M_FAST with 0xa5e70, MATCH each time; word read 5, mask 12), all with the full-width mask: the
+// index reference bound between the two arms (ahead of the 0x800 test) 12; the index as a `dword const &` compared
+// with `(dword)NONE` 12; the index read into a two-use value local between the arms, ahead of the 0x800 test, 2 (the
+// object takes ESI and the flags EDI as retail, with the mask: the only difference left is the load, which now sits
+// between `test edi, 0x800` and its `je` where retail loads after the branch; the allocator then ranks the object 42
+// against the flags 41, the object being referenced in the 0x800 test's block); that local with the 0x800 and NONE
+// tests combined 2; that local read right after the a5e70 call 49 (188 B). Lead: the object needs one reference in
+// the 0x800 test's block (or the 0x800 constant unshared there) while the load stays after the branch.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
