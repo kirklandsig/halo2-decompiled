@@ -1066,7 +1066,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // cross3f_staged 1421 (6238 B); the centre (+0x60) typed as a point with both lever arms through the existing
 // vector3d_from_points3d 1344 (1455 instructions like retail, masked-aligned 946). Retail's contact loop recomputes its
 // three element addresses with `imul` from the counter each pass and reloads the state pointer from its argument slot,
-// where ours steps induction pointers.
+// where ours steps induction pointers. On the point-typed centre form (1344): both base-velocity adds through vector3f_add
+// as well 1344 (same code); every call of this file's scale helper through the existing vector3f_scale 1425 (6211 B);
+// both end-of-loop torque crosses through cross3f 1378 (6238 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
