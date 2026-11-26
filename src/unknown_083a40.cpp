@@ -1058,6 +1058,9 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `&collection->players[i]` as the copy's source 32, collection declared at function scope 221 (1088 B), the conflict
 // loop reading the collection pointer 264, collection declared inside the else arm (the first arm passing
 // `&watcher->players`) 32, declared just ahead of the slot search 32, both with the conflict loop on it 264.
+// Roasted-Codes (#1519 comment, 2026-11-26; fast reduced-image scores): the occupied key's index taken as a pointer
+// difference, `player - watcher->players.players`, 239 (1099 B; the exact division survives as a multiply by 0xb60b60b7
+// and a `sar`).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

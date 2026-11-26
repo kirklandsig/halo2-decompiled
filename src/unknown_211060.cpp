@@ -53,8 +53,8 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 void function_11bed0(s_location *location, point3f const *point);
 
 // @retail 0x211060
-long function_211060(vector3f *velocity, dword flags, void const *mover_settings, s_location *location,
-	long cell_slot, point3f *position, vector3f const *force, vector3f *normal, short *material_type, real radius,
+long function_211060(dword flags, void const *mover_settings, s_location *location, long cell_slot,
+	point3f *position, vector3f *velocity, vector3f const *force, vector3f *normal, short *material_type, real radius,
 	real dt)
 {
 	long result;

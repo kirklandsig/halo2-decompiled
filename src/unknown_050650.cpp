@@ -1098,6 +1098,36 @@ struct s_collision_result_buffer_1697c0
 // order 292 (270 on base), axis-first crosses / cross j,k,i / proj-first rows / named versine 292 (mask=46–52), dot k,j,i 293.
 // Also on base: cross3f local_up 425, cross3f in rotate_in_place 329 (312 on lead; 0x297d30 58), norm fabs>=0.0001f 328,
 // dropping __forceinline on actor_looking_rotate 270 (0x297d30 468). Body unchanged.
+// M3 lane GB r15 (fast with 0x2967b0 (336), 0x297660 (MATCH), 0x297d30 (23 unless noted), 0x24590 (MATCH), 0x2980d0 (MATCH),
+// 0x297a50 (MATCH); control 270, al=220, mk=115; 78 trials across 5 fast batches + 3 full-link ripple checks; body unchanged):
+// LEAD (saved build/gb15/lead-0x296e60-direct-sc-vassign.patch): actor_looking_rotate passing `(real)sin(angle),
+// (real)cos(angle)` directly into actor_looking_rotate_in_place (dropping the two one-use trig locals) +
+// `vector3f_assign(&pitch_axis, -forward->j, forward->i, 0.f)` drops 0x296e60 270 -> 239 plain (-31, 1427/1423 B, fr=0xa8,
+// al=198, mk=79, 0x297660 MATCH, 0x297d30 23, all 17 file functions intact), recovering pitch-axis j*scale, pitch-rotation
+// dot/cross order, and byte-identical clear-path and best-direction normalize tails; NOT kept because adding the first call
+// to `vector3f_assign` in this TU shifts whole-program /GL symbol numbering and triggers 2-pt tie flips in unrelated matched
+// 0x0c2d00 (unknown_0bffa0.cpp +0x12e) and 0x185be0 (unknown_185be0.cpp +0x21c) (confirmed on vector3f_assign alone, and
+// persisted with inline/__forceinline/dot3f variants; direct `(sin, cos)` alone 269 keeps both matched). On the 239 lead:
+// best_direction declared before best_fraction 236 plain (al=195, mk=74; + NONE-before-ray or ray-scale return passed to
+// 0x1697c0 236, mk=68), early-return actor_looking_normalize3d 244 plain (1428 B, fr=0xa8, al=157, mk=33; + best_direction
+// first 244, mk=28; + NONE-before-ray 244, mk=22: 325/347 insns match masked incl. full yaw rotation, shifts result/+4 B),
+// single-exit normalizer or header normalize3d 265 (1433 B), dot3f in rotate_in_place 249 (0x297d30 144), cross j/k/i,
+// proj-first rows, (1-cos)-first, clear after pitch_axis, dot3f/length_sq3f normalizer, one/both __forceinline, best_fraction
+// after axis, `!test_collision` continue 236 each (same code), manual `*=` normalizer 293 (fr=0xb0), fallback/candidate
+// vector3f_assign 342/290 (fr=0xb0), candidate fields 295, pitch_axis fields 266, best before result 266, axis first 261,
+// inline fraction 265 (252 with early return). Other trials: direct `(cos, sin)` on base/B3_02/B3_03/oldn-B3_03
+// 273/275/256/251 (fcos first, 0x297d30 41); merged `sine, dot3f, cosine` rotate on base/B3_02/oldn-B3_02/B3_03/oldn-B3_03
+// 273/274/270/290/292 (0x297d30 23 -> 6); merged inline-cross/staged/jki/out-vec 361/317/329/322/290/438 (0x297d30 129-203);
+// in-place staged/out-vec 329/304/434 (0x297d30 153-203, 0x297660 1); `0.f - forward->j` on B3_02 273 (mk=62); member-wise
+// ray `* 3.f` / `3.f *` on B3_03 303 (fr=0xa8, 1451 B); header normalize_inline 340 (fr=0xb0).
+// M3 lane 3 r311 (fast screen with 0x297d30 (23), 0x297660 (MATCH), 0x2967b0, 0x24590, 0x2980d0 and 0x297a50; control
+// 270). Rank reading: the normalizer's three products sort the reciprocal (a temp) above the pitch axis's i and j, which
+// are member symbols of the brace-initialised local; retail's `j * scale` needs j ranked above the reciprocal, which only a
+// load at an offset of a memory object gives (the setter form re-measured 296: normalizer products and registers' roles
+// then as retail, zero still in XMM1, frame 0xb0); 1-7 unused locals at the top move nothing (270 each, diagnostic).
+// Forms: the attempt counter as long 269 (1430 B; retail compares it as a word, so short is right); the collision step as
+// `if (!test_collision) continue;` 270 (same code); the success exit copying the candidate out and normalizing the output
+// in place 288 (1426 B); the same at the trailing exit 348 (1400 B, 0x297660 4); at both 376 (1388 B, 0x297660 40).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

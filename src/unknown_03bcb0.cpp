@@ -866,6 +866,32 @@ struct s_41490_record
 // callers get no register summary for 0x40e10. `inline` on it alone still expands here (131 plain delta, 75).
 // Tried with the call expanded: the flag arguments as `? true : false` 72 or `!= 0` 72 (same code), the position
 // address read 72, the aggregate copy 75, both 75.
+// M3 GB r14 (fast with 0x40e10, 0x41040, 0xd4cf0, 0x244630, 0x2be670, 0x40e30; control 72). Match-pursuit lead (NOT kept:
+// requires moving 0x40e10 out of line, uses position_reference, raises 0x41040 300 -> 335 though cutting 0x41040 mk 74 -> 65,
+// and still 8 away from a byte match): putting 0x40e10 as an `inline` function in its own `/O2 /Ob0 /Gr` LTCG file keeps it
+// out of line with no XMM register summary (so plain non-volatile `vector3f delta` spills cleanly across `call 0x40e10` and
+// folds `[esp+0x10]`/`[esp+0x14]` into `mulss`) AND keeps LTCG `(first, second)` order (`and cl, 1` before `and dl, 1`);
+// combining that with `*(word *)(definition + 0x16)` bit tests (fixes both `ebx=definition`/`ebp=position` and the double
+// `mov cl/dl, [ebx+0x16]` loads), `position_reference` (`ret 0x20`, all 3 callers MATCH), and `record->position = *point`
+// reaches 8 at retail's exact 426/426 B and 117/117 insns (first diff `+0x13e`, `al=3`, `mk=4`: only `movss xmm0, [esp+0x18];
+// mulss xmm0, [0x48562c]` vs `movss xmm0, [0x48562c]; mulss xmm0, [esp+0x18]` remains). With `/GL-` `__fastcall(second, first)`
+// instead: plain delta + `position_reference` 34 (`+0x8`), + `*(word *)(definition + 0x16)` + staged depth 10 (`+0x12e`, `al=5`,
+// `and dl, 1` before `and cl, 1`), + `dot3f` 11, + `word` bitfield `TEST_FIELD_BIT` 10, `dword` flags 12, `vector3d_from_points3d`
+// 10, `basis_dot_xzy` 10, 3 scalar `real` deltas 119-120; on the 8 lead: `depth` before `flags`/`callback` 11, flat dot / `dot3f`
+// / `k,j,i` / `-dot3f` 9, `i,k,j` / `basis_dot_xzy` / `delta` at top / `delta[3]` / init-list / `delta.k` first / 1..4 unused
+// locals 8, `delta.k` after `tag` 15, `delta.k *=` 15; `#pragma inline_depth(0)` around 0x41490 stops `record_format_groups`
+// inlining (196/224), around 0x40e10 in unknown_03f2b0.cpp still expands 0x40e10 (131); 0x40e10 moved into this `/Ob1` file
+// keeps the register summary (154). On HEAD (call expanded): `*(word *)(definition + 0x16)` 70 (-2, under bar), flat dot 72.
+// M3 GB r17, NOT KEPT (moving a function into a file with other flags is kept only with a byte match of the target; the
+// same body without the move is 73; the 12 form is held as a patch). Fast and plain checked with 0x40e10, 0x41040, callers
+// 0xd4cf0/0x244630/0x2be670 and all file peers:
+// moving 0x40e10 into this `/Ob1` file (next to its retail neighbours and its only two callers 0x41040/0x41490) + `*(word *)(definition + 0x16)`
+// + `record->position = *position` + `0.0f - (delta.i * forward.i + delta.j * forward.j + delta.k * forward.k)` keeps `position`
+// on the stack (`ret 0x20`, no `position_reference`), keeps `0x40e10` and all 3 callers MATCH and `0x41040` unchanged at 300,
+// and drops 0x41490 72 -> 12 at retail's exact 426/426 B (`+0x12d`; only `delta.k` spill order before `and cl/dl, 1` and
+// volatile `delta.i/j` non-folded `mulss` remain). Also tried on HEAD (call expanded): word+aggpos 73, plain v3d+dot3f 131,
+// word bitfield / nested if / neg dot / dword flags 70, scalar volatile deltas 127, `depth = delta.k; depth *=` 75; with 0x40e10
+// moved here: main body 127 (breaks callers), word+aggpos+staged depth 17 (kij/kji/ijk/neg/bitfield 17, flat kij 13, sym ijk 12).
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
@@ -1068,6 +1094,25 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // shows the same mixed x87/SSE sine products. Tried: the angle as a real 179 (852 bytes, rounded); plain sine/cosine
 // locals 130 (retail's two cells, view_forward one cell higher); the sine products as one vector in j,k,i order 142,
 // in i,j,k order 195, and in i,j,k order with plain trig locals 170; a search over 60 allocation choices: best 83.
+// GB r14 (fast with 0x3bf00 and 0x4d640, both MATCH; control 84 at 845/845 B, al=63, mk=40; 50+ trials): plain real
+// sine/cosine locals (no trig struct) with vector3f squares + vector3f sine_axis and 0x1544e0's store order recovers
+// retail's 0x14 frame, [esp]=sine/[esp+4]=cosine/[esp+8]=xs/[esp+0xc]=ys, SSE ys/zs + x87 xs, and post-fcos 1.0f load:
+// direct with `inverse = 1.0f - cosine` 67 (847/845 B, al=49, mk=36); without `inverse` local mk=33 (849 B, 0 tail diffs);
+// direct with squares in k,j,i order 64 (845/845 B, 189/187 insns, al=39, mk=26). Dropping redundant `(double)` casts on
+// `atan2(view_forward.i, view_forward.j)` on that form makes the first 136 bytes (+0x0..+0x87) byte-exact at 845/845 B
+// (115, al=17, mk=16: stage 1 flips g_4c1b9c ahead of state); adding a two-level inline rotation helper (matching 0x17fd20)
+// without a state alias hits 39 (845/845 B, 187/187 insns, al=34, mk=30; new one-caller helper, not kept; calling 0x17fd20's
+// existing decal_transform_rotation_17fd20 directly gives 190-198 at 859-861 B because its j*i product order differs);
+// match-only lead with `real const *values = (real const *)state;` (parameter rename) + up.j before left.k hits 14
+// (845/845 B, 187/187 insns, +0x88, al=12, mk=12: only 2-insn movss [esp+4] and subss shifts + stage 2 [esi+0x6c] order
+// left; `real const *state` param 115, `values` after angle 115, `scales = (real const *)(state + 0x68)` 90/202,
+// `scale = 1.0f` after rotation 81, 1-7 dead locals 115-150). None passes keep rules without a byte match; body unchanged.
+// M3 GB r17 (fast with 0x3bf00 and 0x4d640 MATCH; control 84; 34 real trials): HEAD with no `(double)` casts on atan2 88,
+// `transform4x3f g_4c1b9c` 84, typed `s_3c650_state const *state` param across 0x3c650/0x3bf00/0x4d640 84, plain `sine`/`cosine`
+// + scalar squares/sine_axis 134; plain `sine`/`cosine` + `vector3f` squares/sine_axis without shared xy/xz/zy 190-222 (861-886 B),
+// `0x1544e0`-style scalar squares + `vector3f sine_axis` 165 (851 B), direct `D3DDevice_SetTextureStageState` 189 (858 B),
+// `kji` squares + `ijk`/`jki` `sine_axis` + shared xy/xz/zy with/without `inverse` and swapped bump operands 76-177 (with
+// typed `s_3c650_state const *water` matching `values` at 76/86, confirming bump operand order is symbol-canonicalized). Body unchanged.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1160,6 +1205,20 @@ s_3c9a0_matrix g_4c1b68;
 // two-multiply angle): tangent2 computed ahead of the near corner 239; the width scale in one expression 239; no casts
 // 239; the `!(... > 1.0f)` test 249; bare top declarations with the two-multiply angle 229. Reading: retail keeps one
 // home for corner_x across its near (x87) and far (SSE copy) values, ours splits the two.
+// GB r14 (fast with 0x3c9a0 MATCH and 0x3c3c0 74; control 291 at 1330/1387 B, fr 0x60, al 283, mk 169; 23 real trials + 1 diag):
+// retail's corner transform computes all four .x, then all four .y, then all four .z (hoisting g_4c1b38[row][2] * 0.0f
+// once per axis): nested `for (row 0..2) for (i 0..3)` recovers exact fr 0x4c but does not unroll (630, 996 B); three
+// separate 4-corner axis loops (x, y, z) cut mk 169 -> 136 (al 240, fr 0x54, 325 at 1297 B); with near corners stored
+// ahead of far (separate locals) 285 (1338 B, 278/280 insns, fr 0x54, al 235, mk 103); with r151's reused x/y + `-12.0f *`
+// 247 (1402 B, 281/280 insns, exact fr 0x4c, al 224, mk 143); with `point2f corner` + `real_point3d_set` 256 (fr 0x50).
+// Diagnostic (reverted): `volatile tangent` + `volatile view_tangent` on the 247 form 215 (1396 B, 279/280 insns, exact
+// fr 0x4c, al 210, mk 132: recovers retail's `fstp` + `divss` + `comiss` across 0x3cb75..0x3cc5c). Also tried (none kept):
+// tangent before aspect 291 (same code), + z,x,y,scale position order & camera.x/y in g_4c1b38 291 (al 280); `real_point3d_set`
+// 291; 2-caller `half_tan` inline helper 293 (mk 162); column-order matrix fill + row loop 630; 2-row `x_values[2]` loop
+// 457 (fr 0x4c); `point3f const *p` loop 291; `(real)tan(...) * scale` with tangent first 291; `for` copy in place of
+// memcpy 298; `if (width_scale > 1.0f)` clamp 306; `fabs` distance 347; `1.0f >= width_scale` 291; `real (*matrix)[4]`
+// pointer 260 (1402 B, 292 insns, mk 215 worse: indirect loads); constant-LHS clamps 291; `transform_point_3x4` helper 291.
+// Body unchanged.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
