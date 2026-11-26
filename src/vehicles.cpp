@@ -1436,6 +1436,17 @@ __forceinline long vehicle_round(real value)
 // at both 4 (the other two products flip); plain cross3f at both with the up pointer at the side cross 94 (735 B); the
 // side scale as `-vehicle->forward.k` 4 (same code); the rate as `up->k / rate` then `rate *= -2.0f` 6; `strength =
 // rate * strength` 4 (same code). All restored.
+// M3 lane 13 r159 (H2M_FAST; S = cross3f_staged at the first cross, re-measured 4 at +0x1e1): S with the projection's dot
+// named (`real speed = dot3f(...)` in the projection block) 2 (only the side cross's forward.j * up.i is left; a one-use
+// call result, kept only on a match); on it: the dot as (velocity, forward) 2, through basis_dot_xzy 8, the rate on
+// vehicle->up.k 4, a plain side cross 11, the vectors declared angular/linear/axis or axis/linear/angular 2/2, `side`
+// with the vectors 2, the side scale as `-k` 2, byte_flags_set for the clear 2, `result = true` before the increment
+// 2, `speed` declared with the vectors 2, De Morgan tests 5; diagnostics (reverted at once) with 1-3 dead inline-helper
+// locals after the velocity call 6/6/6, after the strength update 4/6/4, in the side block 4/4/4, after the side block
+// or before the set call 2 each (the dead-local lead of the S form does not carry over). The named dot alone 13, with a
+// plain side cross 4. Also: S with the side scale read from the axis copy (`0.0f - axis.k`) 47; the strength select as
+// one expression times the clamped rate (`(... ? 0.3 : -0.3) * rate`) 137, on S 137; S with the side scale named ahead
+// of the side cross 78; the strength select as an if/else 141.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2676,6 +2687,15 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // 2's speed fraction named 13; the forward speed as its i term then `+=` the j and k terms 9; the state's graph index
 // named for the update test and the store 13; vehicle_speed_fraction reading the forward limit first 21, choosing one
 // limit by the speed's sign 331 (2007 B). All restored.
+// M3 lane 13 r159 (H2M_FAST), at 9. Reading (operand ranks): both dots' sums follow the velocity components' first-reference
+// order in overlay 1's dot (k, j, i there); arm 3's i term loads forward.i first because its field address outranks the
+// velocity local, and through a pointer local the offset-0 load ranks by that pointer's ordinal (high unless it is a
+// multiple of 8). Forms: overlay 1's dot written i, j, k 11 (arm 3's k and j terms become retail's, overlay 1's sum
+// flips) and j, k, i 21; arm 3 through `vector3f const &forward` 15, a `vector3f const *forward` 15 (also with `speed`
+// declared first, or as dot3f(&linear_velocity, forward) / dot3f(forward, &linear_velocity), with or without the i, j, k
+// overlay dot: 15 each); arm 2's fraction or overlay 1's value named 13 each; either named with the forward pointer 13
+// (arm 3's i term then retail's; left the k/j order and two of overlay 1's cross products); on those, the model local
+// folded into the graph lookup, both names, and the overlay dot in k,j,i / i,j,k / j,k,i / j,i,k orders 13-25.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

@@ -1029,6 +1029,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `object_radius` first + nested gates + x-z-y + dir-first vel + moving dot/flags) 509 (3731 B, +0x91, al 126, mk 37),
 // + one-expr vehicle dot 509 (al 125, mk 42), + `basis_dot_xzy(direction, ...)` 468 (mk 64), + height `||` / nested 509,
 // + split `combined_flags` / swapped decl / nested type-11 510 (mk 38). Body unchanged.
+// M3 lane 13 r159 (H2M_FAST, control 845 there: the reduced image builds this function differently from the full build,
+// 838): slot map: ours keeps the actor pointer at +0x20 and the three entry flag bytes at +0x25..+0x27, retail a one-use
+// dword at +0x20 sharing with flag bytes at +0x21..+0x23 and the actor at +0x24. The previous-target flag renamed
+// (eight names sorting before and after the other locals) 845 each (same code: names do not place these homes); the three
+// entry flags declared first 852; that flag declared ahead of the self-unit and actor pointers 848; the actor pointer
+// declared ahead of the self-unit pointer 846; the flag left uninitialised and set false in an else of the actor test 819
+// (3745 B).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

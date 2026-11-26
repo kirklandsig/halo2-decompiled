@@ -1910,6 +1910,10 @@ long function_1e4a10(long index);
 // shield (piece 34) ahead of zero; retail needs the scaled shield numbered after the zero constant. Forms: the
 // six-name set re-measured 4; on it `shield_damage *= multiplier` 4, the absorbed product's operands swapped 4, both
 // 4; on main `shield_damage *= multiplier` 8 (same code), the clamped vitality named alone 8. All restored.
+// M3 lane 2 r152 (H2M_FAST, 8): the inverse maximum as a zero default then a conditional reciprocal 150 (880 B); the
+// in-radius flag read once into a bool for its three tests 222 (896 B); the six-name set re-measured 4, with the actor
+// index declared inside the type test and tested in a nested if (no assignment in the condition) 4; on it the shield
+// damage renamed, and the body and shield damage both renamed, 4/4 (names do not reorder the split pieces). All restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
