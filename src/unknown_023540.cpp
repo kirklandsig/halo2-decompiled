@@ -374,7 +374,7 @@ static inline bool structure_has_matching_samples(void)
         *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
 }
 
-// score 209 (was 226; earlier 223, was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
+// score 194 (was 209; was 226; earlier 223, was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
 // false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
 // rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
 // Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22889);
@@ -412,6 +412,21 @@ static inline bool structure_has_matching_samples(void)
 // used by 0x23690) 252 -> 223 plain, kept. Left: frame 0x64 against 0x68 and 18 bytes short (969/987).
 // M3 lane 14 r116: `inline` on 0x22750's definition (kept for 0x22cf0) gives this function retail's reload of the
 // fraction into XMM0 before each 0x22750 call: 226 -> 209 at retail's 987 bytes (plain).
+// M3 lane 1 r170 (h2m fast with 0x22750, 0x143600, 0x12a50, 0x2ca00 and 0x23690; aligned counts in brackets): kept
+// 194 = the three coefficient calls written out with their copy back as retail has them (0x12a50 152 and 0x2ca00
+// MATCH in the fast, --fast and plain checks; 214 alone, aligned 187 -> 153), plain `(long)` casts in place of the asm
+// truncation helper (retail converts straight from XMM0/XMM3; 229 alone, 203 with the calls), and the phase stored and
+// the stored value clamped (retail's store, compare, second store; 195 fast, 194 plain). Left: frame 0x60 against 0x68
+// (retail has an untouched 8-byte home between the scalars and the two arrays), the angle test's zero held in a
+// register (retail compares with the constant in memory) and the rotation's schedule. On the kept form: a samples
+// pointer shared by both tail branches 215 (972 B), in the interpolation branch only 195 (same code); the angle in a
+// named local 205; the angle tested without `!= 0.0f` 195 (same code); the period test written `0.0f <` 195 (same code).
+// Rotation forms: named sine products after the cosine 186 (974 B; three new names, not kept), after the complement 211
+// (996 B), after the squares 211 (1002 B; retail's x87 i product and SSE j/k products, but the k complement is then
+// computed early and spilled), after the k complement 225 (1013 B); named i/j/k off-diagonal products 203 (995 B),
+// with named sine products 211/232/228; the rotation as matrix3x3 211 (same code as the array). LEADS (match-only
+// forms): the k complement written at each use with named sine products ahead of the squares and the complement
+// after the squares 157 (987 B, aligned 114), the sine products declared j, i, k 151 (988 B).
 // @retail 0x22850
 void function_22850(void)
 {
@@ -452,13 +467,13 @@ void function_22850(void)
             rotation[6] = k_complement * axis->i + axis->j * sine;
             rotation[7] = k_complement * axis->j - axis->i * sine;
             rotation[8] = (1.0f - square_k) * cosine + square_k;
-            for (real *coefficients = (real *)(sample + 0xc);
-                coefficients != (real *)(sample + 0x78); coefficients += 9)
-            {
-                real result[9];
-                function_143600(rotation, 3, coefficients, result);
-                memcpy(coefficients, result, sizeof(result));
-            }
+            real result[9];
+            function_143600(rotation, 3, (real *)(sample + 0xc), result);
+            memcpy(sample + 0xc, result, sizeof(result));
+            function_143600(rotation, 3, (real *)(sample + 0x30), result);
+            memcpy(sample + 0x30, result, sizeof(result));
+            function_143600(rotation, 3, (real *)(sample + 0x54), result);
+            memcpy(sample + 0x54, result, sizeof(result));
         }
         --remaining;
     }
@@ -467,10 +482,11 @@ void function_22850(void)
         real previous = g_5093ec;
         g_5093ec = (real)g_4858a0;
         real phase = (g_5093ec - previous) / *(real const *)((byte *)g_4e0344 + 0x34) + g_5093f0;
-        phase -= real_truncate(phase);
+        phase -= (long)phase;
         g_5093f4 = true;
-        if (phase < 0.0f) phase = 0.0f;
         g_5093f0 = phase;
+        if (g_5093f0 < 0.0f)
+            g_5093f0 = 0.0f;
         if (count == 1)
         {
             byte *samples = *(byte **)(source + 0x3c);
@@ -482,8 +498,8 @@ void function_22850(void)
         {
             real step = 1.0f / (count - 1);
             real inverse = 1.0f / step;
-            long index = real_truncate(phase * inverse);
-            real fraction = (phase - index * step) * inverse;
+            long index = (long)(g_5093f0 * inverse);
+            real fraction = (g_5093f0 - index * step) * inverse;
             byte *sample = *(byte **)(source + 0x3c) + index * 0xdc;
             function_022750((real *)(sample + 0xe8), 3, (real *)(sample + 0xc), g_4b8940, fraction);
             function_022750((real *)(sample + 0x10c), 3, (real *)(sample + 0x30), g_4b8964, fraction);
@@ -3605,6 +3621,22 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // it one place early). On that form: `/ 2.0f`, `/ 2`, `+ 1`, the three commuted spellings: same code; a double 0.5 or 1.0:
 // all x87 (113 to 115); the finished value through a named local before its store, or through value-returning helpers:
 // same code or other instructions (102 to 108). Body unchanged.
+// The x87 coordinate store still precedes the SSE subtraction. Existing point setter for every pair with
+// direct expressions 95; both rotation, scale or bias parts named, in all seven subsets, 321 each. NOT
+// kept: the direct form moves the first difference back to +0x50f, and the named stages shorten the body to
+// 1914 bytes.
+// Gemini lane GB r10 (2026-11-25, 18 source trials + 1 diagnostic, fast control 54 at 2022/2022 B, al=27, mk=22, 480/480 insns; 0x144f0/0x1cc30/0x2a2f0 MATCH):
+// Diagnostic (reverted): `/G7` in `@flags` under LTCG 54 (identical code, so `/G7` does not widen `fmul->fstp` from 3 to 4 insns).
+// Source trials: 4-corner `for` over static `cx/cy` or `point2f` or inside quad helper 334 each (1927 B); 2-pass `for` loop 544 (1762 B);
+// 4-vertex `for` loop 509 (1890 B); macro `TEXTURE_CORNER_ROTATE` 54 (same code); `x*cosine + (-y)*sine` 486 (1784 B);
+// product parens stmt 1 only 54 (same code), both stmts 244 (1988 B), stmt 2 first/second product 234/210 (1996/2014 B);
+// asymmetric `scale*`, `0.5f*`, `1.0f+` on stmt 1 or stmt 2 54 each (same code); `*coordinates++` 320 (1914 B);
+// `const real one/half` 54 (same code); earlier `#pragma inline_depth(0)` 542 (1724 B). Body unchanged.
+// Rotate into the output pair, then use component loops for all scale/bias steps,
+// scale only, bias and half-scale, scale and bias, half-scale only, separate scale
+// and bias/half-scale loops, separate scale/bias and half-scale loops, or three loops:
+// 339/333/333/339/339/333/339/339. NOT kept: the loops shorten the body and raise the score.
+// The x87 store still leads the SSE subtraction in the restored form.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -4398,6 +4430,14 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // `(real)(1 << exponent) < inverse_span` 4 (same code); the offset clamp as an if/else 1072; `maximum` bare with a
 // `default: maximum = 1.0f;` case 1174 (4856 B); a named `real power = (real)(1 << exponent);` for the seven later uses
 // 885; the small-span exit ahead of the width and the clamp 10.
+// M3 lane GA r5 (38 fast trials on r155's 4 form and r205's B+4 form; control 9 at 4828/4828 B, +0x42e; body restored):
+// filter_output_shift/first_shift as macros 4 (B: 4; with offset after maximum 5), plain inline 1068 (4620 B); FILTER_PIN
+// as inline / __forceinline 735 / 735 (4788 B; B: 735); FILTER_QUANTIZED_BYTE(false) via inline helper 831 (B: 829); second
+// mode dispatch as switch(mode) 885; shared __forceinline gain helper 4 (B: 4); typed mode 1/2/3 config structs 4 (B: 5,
+// cfg1 alone moves 1.0f ahead of 0.0f at mode 1's reload group); two 0-arg blending helpers 4 (B: 4); gain via scale_a/scale_b
+// locals 80 (B: 80); two-use scaled_high local 4 (B: 4); mode-1 4-use alpha local 696 (B: 696); offset after inverse_distance
+// 11 (B: 10), after switch 44, inside if(high>low) 103, after inverse_span 103; span_scale at mode 0 4 (with scaled_high 4);
+// PS_COMBINERINPUTS on stage 1/2 4; B + mid / span / inv_65536 4 each. None flips the float-split 1.0f/span reload tie.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

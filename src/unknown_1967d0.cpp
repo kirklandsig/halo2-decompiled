@@ -504,6 +504,13 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 	}
 }
 
+// score 3 (was 3): Exact 1839/1839 B (+0x2de); only SIB operand order [edi+eax] vs [eax+edi] in the
+// first group loop and add edx,ecx / lea [edx+eax+0xc6c] vs add edx,eax / lea [edx+ecx+0xc6c] at +0x417
+// differ. GB20 (16 fast trials, 0x85e70/0x198540 MATCH): typed 874-byte group_records[16] struct 3;
+// 438-counter union 7 (0x198540 3); flat 1D statistics.all 3; (i+update)->flag 3; short loop/count 804;
+// template<long> count 1110; macro apply 4; non-const update 3; (counters,update,count) param order 3;
+// flat ptr arith 3; signed short test 215; continue 3; ulong helper 3; do-while helper 804; dest before
+// src in earlier loops 5; inline parenthesized offset 3.
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {
@@ -1124,6 +1131,33 @@ static inline long team_score_195ed0(long team)
 // Read the source team inside mode guard, after address publication, after copy or before copy:
 // 295/297/297/150 with either memcpy or typed assignment. NOT kept: all regress.
 // The teams flag still leads the copy and the final score query still expands.
+// M3 lane GB round 5 (fast with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310 all MATCH; control 100, al=71, mask=49):
+// nested outer guards 100, with native value arm 191; nested if inside team_is_active_195ed0 100, 3-level nested if 151 (1210 B);
+// team range before function_x340af0 102; function_x340af0 before statborg 169 (1221 B); inner-flipped <= 0x7fff PIN
+// inline/mixed/native 100/191/192; if/else-if/else stores with native else 192; nested >=0/<=0x7fff with native innermost 211;
+// statborg local with native value arm 191; team_count != 0 guard inline/mixed 161 (1210 B)/173 (1197 B). Diagnostics (reverted):
+// dropping /Ob1 on this TU (native/current) 192/100 (same code), #pragma inline_depth(1) 100. Body unchanged.
+// Configuration receiver from the existing entry's active member 100, word-sized team rank
+// with/without signed count sample 160/160, one-based comparison 187. Inclusive negative/upper/
+// both score boundaries 101/100/101, both with the native query on admission 191.
+// NOT kept: the ties leave the flag read early and the other forms grow the body or raise the score.
+// M3 lane 11 r169 (h2m fast with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310, all MATCH; control 100). The team
+// test's mask written bit first, the mask word or the bit in a named local, the clamped score in a named local stored
+// after, the team rank in a named local: 100 each (same code). Diagnostics (byte offsets off the results block, not
+// keepable): the flag read as the block's byte +0x12b in both loops 100 (the same code as main: the player loop still
+// reads it ahead of the copy); in the player loop only 333 (the player loop unchanged, the first loop then carries the
+// flag in BL from ahead of the loop to a store after it). So the first loop reloads the flag only while its references
+// form one web with the player loop's; retail's player-loop read after the copy needs the record stores to reach the
+// flag, which splits that web unless the first loop's own team-entry stores reach it too (r125's 328 form).
+// Signed-byte team/player/both rank ordinals 181/165/196, with matching signed
+// count snapshots 181/165/196. Separate unsigned bytes 198, shared signed byte 196.
+// NOT kept: narrow team ordinals compare to an immediate and add a byte spill
+// where retail uses BP. The early teams load and final score call still differ.
+// Address reset before copy 150; counter before copy, between copy and address,
+// or before teams update 378/376/376; address reset after teams update with
+// either counter order 276/276; counter-address-copy or address-counter-copy
+// 329/329. NOT kept: early counters cache the teams byte, and the address-first
+// form hits retail length while reading the teams byte before the copy.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

@@ -421,7 +421,8 @@ static inline vector3f *transform4x3f_apply_normal(transform4x3f const *matrix, 
 	return out;
 }
 
-static __forceinline void plane_negate_168b40(plane3f const *plane, plane3f *out)
+/* out = -plane, normal and distance; 0x1652e0 (src/unknown_163110.cpp) negates its two clip planes with it as well */
+PRIVATE __forceinline void plane_negate_168b40(plane3f const *plane, plane3f *out)
 {
 	out->i = 0.0f - plane->i;
 	out->j = 0.0f - plane->j;
@@ -1468,6 +1469,14 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // condition (no found local) 41; the first test on `flags & 1` with the dword mask declared in the block 41 (same
 // code); the instance's mark through a `long &` to the table entry 57; the cluster mark test as a `!=` block around
 // the instance and object parts 23 (same code).
+// M3 lane 1 r170 (h2m fast over this file's markers, 23). Allocator reading of the dword mask: its 44 is the entry block
+// (cost 6 x 8 candidates, the integer parameters all counting there) less the call block it only lives through; the
+// pointer's 22 is the two call blocks; the pointer would win an equal priority (it was created later). The instance
+// tick's increment and its in-loop load are separate pieces when the tick is split, and the in-loop piece covers only
+// the compare and the store, so it never spans the loop's back edge. Forms: an explicit `if (0 < entry->instance_count)`
+// guard around the instance loop 26 (with the dword mask 44); the cluster entry taken from the BSP global at its use,
+// no bsp local, 23 (same code); a `long *` to the instance's mark for the test and the store 57; the instance element
+// read at each use 157; the mask as a long from the flag-test macro 41.
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)
@@ -2376,6 +2385,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // point y after the y term 565. Those four with a shared displacement 596 each. NOT kept:
 // the captures lengthen the body and raise the score. The count and clearance slots and
 // signed admission before the radius square still differ.
+// M3 lane 12 r189 (reduced-image screen with 0x16a440, 0x120790, 0x2469b0, 0xc2d00 and 0x17a380; control 551 at 2877 B).
+// plane_negate_168b40 is now called from 0x1652e0 too (same text, external linkage; 551 here, 0x168b40 and 0x1697c0
+// still match).
+// Diagnostic grid on main's body, 0-7 unused initialised locals ahead of the two sums x 0-3 redundant float pairs on the
+// squared radius (32 builds; the grid that found 0x1652e0's rank phase): 551/545/547/547, 558/565/567/567 at one, two and
+// three locals alike, 555/553/555/555, 554/555/557/557, 553/555/557/557 at six and seven. No cell drops: the ranks of
+// this body's loads move only between two states with the local count and one step with the pairs, so the leftover
+// here is the frame cell and the loop forms of the earlier leads, not a rank phase. Body unchanged.
 // Lane AO r3 (fast with 0xc2d00/0x17a380/0x2469b0, all MATCH; control 551 at 2877 B): the projection through
 // vector_products.h's vector3f_add_scaled 604 (2906 B); the candidate through it 582 (2892 B); both 597 (2899 B); the
 // opposite radius as `-radius` 551 (same code); the cap as `point_count <= 8 ? point_count : 8` 551 (same code); the
@@ -2383,6 +2400,17 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // B); both averages through vector3f_scale 551 (same code). Reading: retail's four count/radius homes pair as count +0x88
 // with radius +0x94 (one arm) and radius +0x8c with count +0x90 (the other), nested, where ours keeps both radii below
 // both counts. Body unchanged.
+// The acceptance counts and clearance homes differ. Retail loads the normal's j coefficient twice before projection.
+// Plane/normal address 560/561, normal vector snapshot 764, and single j coefficient shared across the two stages 581.
+// Shared projection offset with scalar coefficients/normal vector/normal address/plane address 543/760/611/601;
+// normal snapshot and shared scaled addition 760. NOT kept: the 543 form merges the coefficient reads, moves the
+// prism cursor from plane.j to plane.k and still squares radius before the nonempty prism branch.
+// M3 lane 7 r231 (H2M_FAST with 0x120790/0x2469b0, both MATCH, and 0x16a440; control 551): the four tallies renamed so
+// their names sort in retail's address order (face count, edge radius, edge count, face radius) and in the reverse order
+// 551 both (same code: this frame is density-sorted, names do not break the ties); the averages written `inverse * sum`
+// 551 (same code); as three divisions by `(real)count` 578 (2891 B); that with the tallies declared edge count, edge
+// radius, face count, face radius 577; that with the normal-ray arm first (`if (use_normal)`) 536 at 2882 B (an arm swap:
+// lead only, held as a patch); that with `radius * radius` at its one use 543 (2886 B). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

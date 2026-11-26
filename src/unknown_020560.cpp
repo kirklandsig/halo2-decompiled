@@ -837,9 +837,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // score 418 (was 418; 439 earlier): The 0x1c frame lacks the second scan's offset spill and pass counter at retail's 0x2c.
 // M3 lane GB r3 (fast with 0x22750, 0x22c30, 0x24550, all MATCH unless noted; control 418, 2094/2122 B, +0x2, frame 0x1c; 18 compiled trials, body unchanged): real_point3d_set for delta/offset on 418 base 418/418 (same code), for delta on source->entries + first ahead 554 (2112 B, frame 0x20); union .n[0..2] for delta on entries 554, for offset on 418 base 433 (2122 B, frame 0x28); direct delta members on entries + first ahead 554; entries + first ahead + second=NULL then if 554; shared 2-caller forwarding helper point3f_difference with 0x22c30 (breaks 0x22c30 at 36, diagnostic only) on entries + first ahead 401 (2124 B, +0x9, frame 0x2c, al 119), with samples for delta/first/second and entries in scan 2 401 (same code), with late first 564 (2130 B, +0x9, frame 0x2c, al 117), on 418 base 417 (2112 B, frame 0x28), with length_sq3f of second diff 550 (frame 0x20: loses offset home when distance_sq3f is replaced by local length_sq3f); nested count==1 else + vector3f_assign fallback 419; typed s_light_sample_source count read 418; first from entries before samples 439; opposite before scan 1 on 418 572; consistent samples before count==1 625; entries + distance_sq3f(position, sample) 561.
 // MiniMax A (11-20): no new form, no lower score (418): the fast check's reduced image leaves two of this function's calls unresolved, so it builds 1121 bytes against retail's 2122 and cannot measure the body at all - the plain score stays 418 with the 0x18 frame against retail's 0x2c (retail's homes: the opposite sample, the nearest index, a pass counter, the sample list, the offset vector and the delta vector), the query input, the native vector and ordinal and the fraction homes, and the scans' registers; the position input still arrives in EAX where retail's caller sets it in EDX, a parameter order that may not change here.
-// Earlier header (merged r240): 418 (was 418, 439 earlier):
-// Earlier header (418, was 418, 439 earlier):
-// Earlier score 418 (was 418, 439 earlier):
+// Earlier (418, was 418; 439 earlier):
 //
 // Frame 0x1c/0x2c (r116); scan 2 walks one sample pointer where retail walks two with a spilled pass counter, and the
 // offset vector has no home (retail stores offset.x at +0x24 each pass); delta takes XMM6/spill/XMM7 where retail has XMM5-7.
@@ -1523,6 +1521,70 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the top of the sample branch 418 (same code); the samples local declared ahead of scan 1 and used there too 623 (2071 B);
 // scan 2's offset built through the existing vector3f_assign 418, the delta through it 418 (same code each). A forced-
 // decision search (14 links) gives at best 409 (one pick), the frame staying 16 bytes short.
+// M3 lane GA r7 (fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418 at 2094 B, fr 0x1c, al 137, masked 197; 22
+// real trials). New structural findings: (1) nested `if (opposite != NONE) { second = &samples[opposite]; if (second)
+// fraction = ...; }` matches retail's exact double-`je` tail block (eliminating `xor ebx, ebx; test ebx, ebx`): 440 (2088 B,
+// al 137, masked 181), with `closest_distance` before `nearest` 438 (al 136, masked 179). (2) Existing `scaled_difference3f`
+// (vector_products.h) for `delta` naturally delays delta.i without a one-caller wrapper, recovering retail's `delta` k/i/j
+// loads, single delta.k spill, `other_distance` in the source arg slot, and `offset.i` store before `jb`: on `samples` 443
+// (2111 B, fr 0x24, nearest stays in EDI), with `first` ahead + nested second 438 (2112 B, fr 0x28, masked 178, nearest in
+// EDI), + second diff + length_sq3f 440 (2112 B, fr 0x28, masked 179: also retail's (k+j)+i sum with nearest in EDI), +
+// `closest_distance` before `nearest` 442 (fr 0x24); on `source->entries[i]` + `first` ahead 582 (2140 B, +0x9, exact fr
+// 0x2c with both scan-2 pointers and spilled pass counter, but nearest drops off EDI), with ternary second 582, with
+// `samples` outside scan 2 582, with second diff + dot3f(&d,&d) 584 (fr 0x2c), mixed entries/samples 702/693. Also tried:
+// `dot3f(&offset, &offset)` on samples 646, on entries 635, reversed dot + self-dot + nested second 655; `first` after
+// `samples` 439, + delta k/i/j 463, + offset j/k/i 436 (2128 B, fr 0x28, masked 184); `opposite` before `samples` 596;
+// `fraction` ternary 439; `sample` ptr in scan 2 439; `vector3f_add_scaled` for delta 418 (same code). Body unchanged.
+// Opposite result using the count as sentinel 420/438, the nearest ordinal as
+// sentinel 418/443, a one-based ordinal 281/407, or the distance improvement
+// 427/426 (late/early anchor). NOT kept: the one-based form changes the retail
+// NONE test and ordinal, and all forms retain frame 0x1c without the X spill.
+// The second scan still needs the 0x2c frame and the candidate X store. Short-circuit projection and retained
+// displacement norm 646, with the squared-length helper 646 or a second dot 646; cutoff on rejection 590;
+// conditional winner and cutoff updates 646; named squares 646, named projection products 646; nearest skip
+// and named projection 646. NOT kept: the reused displacement shortens the loop and drops the needed home.
+// The second scan still lacks its candidate-X store and second induction address. Shared nearest and fallback
+// direction with component stores, setter, entry default or initialized value 418/419/593/389. Earlier anchor
+// with component stores or setter 439/439, also with a scoped opposite search 439/439. NOT kept: the 389
+// form reaches retail length and frame 0x28, but adds a second fallback vector and copy absent in retail.
+// The second scan still lacks the 0x2c frame and its distinct offset X spill.
+// Anchor X before two- coordinate subtraction with the cached sample array 433, anchor X before two-
+// coordinate subtraction with live entries in the opposite scan 555, anchor X after two-coordinate
+// subtraction with the cached sample array 433, anchor X after two-coordinate subtraction with live
+// entries in the opposite scan 555, complete anchor setter from X and pair with the cached sample array
+// 579, complete anchor setter from X and pair with live entries in the opposite scan 578, complete
+// anchor initializer from X and pair with the cached sample array 433, complete anchor initializer from
+// X and pair with live entries in the opposite scan 555.
+// NOT kept: The cached-entry forms retain 0x1c. Live entries reach 0x20 and one family reaches 2122
+// bytes, with higher scores.
+// M3 lane GA r11 (fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418 at 2094/2122 B, fr 0x1c; 14 trials):
+// struct-copying delta (`delta_raw` -> `delta`) on samples 439 (2122 B, fr 0x24, mk 152; recovers retail's `offset.i`
+// dead store before `jb` without a one-caller helper, though all 3 delta components spill), with first ahead + nested
+// second + closest first 443 (fr 0x24, mk 143), on entries + first ahead (copy/assign) 572/572 (fr 0x28), member copy
+// on samples/entries 439/554 (folds); `point3f first_pos = first->position` copy on samples/entries 417 (fr 0x28)/572
+// (fr 0x2c, +0x9); `*position` copy for delta on samples/entries 418 (fr 0x28)/575 (fr 0x2c, +0x9); existing
+// `vector3f_negate_ab` on samples/entries 400 (2122 B, mk 119, non-retail `0.0f -` ops)/569; existing
+// `particle_direction_squared_2b` on offset 646, on dvec + delta_raw copy 442 (fr 0x24). Body restored at 418.
+// M3 lane GA r13 (40 compiled trials across 3 batches, fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418 at
+// 2094/2122 B, fr 0x1c, al=256, mk=255; body unchanged): short-circuit `if (!second || (fraction = ...) <= 0.0f)` 426 on
+// base, 425 first ahead, 545 on entries (fr 0x20, 2p); `scaled_difference3f` for offset 1231/1203 (suppresses unroll), for
+// delta on entries 582 (fr 0x2c); `s1_samples` in scan 1 + entries in scan 2 602 (fr 0x24, edi=1 & 2p=1, changes ABI to
+// ret 0x14); `vector3f_scale(1.0f)` after delta 545; `basis_dot_xzy` 449. New lead (zero new helpers, NOT kept unmatched
+// because `(vector3f const *)` casts with `-1.0f` only steer): existing `vector3f_add_scaled(position, &first->position,
+// -1.0f, &delta)` delays `delta.i` by one pass (folding `-1.0f` to `subss`) and on `source->entries[i]` + `first` ahead
+// matches retail's exact `0x2c` frame, `delta` k/i/j loads (`xmm7/5/6`, only `delta.k` spilled at +0x38), scan-2 dot
+// operand sides, dead `offset.i` store at +0x24 before `jb`, dual induction pointers, and spilled pass counter: 401
+// (2124/2122 B, +0x9, al=169, mk=75; nested/one-idx/frac-before-second/count1-else 401 each; short-circuit 530; closest
+// first 402; first after 549; `count >= 1` 345 at mk=65; `length_sq3f(&offset)` 635), with second diff + `length_sq3f` 402
+// (al=139, mk=60: entire scan 2 and tail match retail except `nearest` staying off EDI; `nearest != i` / `if (opposite !=
+// NONE)` / while / `count1` else / `samples` for first+second / `if (count > 0)` / dot swap 402 each; late assign 403
+// mk=58; mixed offset/diff 644/661); on `samples` + `first` ahead 406 (2108 B, fr 0x28, mk=65, edi=1, ox=1; nested 429;
+// with second diff 399, mk=50; first after 418); `opp` before scan 1 502 (2122 B, fr 0x2c, edi=0 in unrolled scan 1).
+// M3 lane 7 r230 (h2m fast with 0x22750, 0x22c30, 0x24550, all MATCH, and the caller 0x23690 at 354; control 418):
+// scan 2 skipping the nearest sample with `continue` 418; scan 1's distance declared once ahead of the loop 418; the
+// offset declared once with delta ahead of scan 2 418; both 418 (same code each); scan 1's distance as
+// distance_sq3f(position, sample) 448. A forced-ranking search (diagnostic, 12 decisions) moved the aligned distance only
+// 448 -> 433, so no single allocator decision gives retail's 0x2c frame. Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

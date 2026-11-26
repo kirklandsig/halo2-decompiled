@@ -44,6 +44,29 @@ bool function_7af40(s_type_99af70 const *address);
 // matching. More if-form spellings, all unchanged or worse: result as byte (58) or long (61); (short) length cast,
 // result declared first, a copy of address, a byte local for the low byte, empty-if/else, "!(word)(output << 8)"
 // (all 14); "!(output << 24)" (28); the value swapped in a local then stored (29); "address &&" first (86).
+// GA14 (40 real + 1 diag, fast with 0x783d0/0x784a0/0x7ab60/0x7acc0/0x7acf0/0x7af40/0x7af80): if-form variants without
+// output ref, *(byte *)ipv4_address, ((byte *)&output)[0], commuted swap operands, 0x7af40 defined above 0x7aec0,
+// (byte)output == 0, (char)output, renamed params/locals, nested if without ref, embedded assign, goto done, addr ref
+// inside, inline/forceinline byte-check or convert wrapper, (word)address_length, (byte)(*ipv4_address & 0xff), shared
+// header include, valid local, and 0x7af40 long i / case order all hit 14 (113/113 B, identical tail, ECX/EDX swapped
+// in inlined 0x7af40 prefix, breaking 0x783d0/0x784a0/0x7ab60); inline/forceinline bswap 16; ternary / if-else false
+// 26; local union 28 (spills out); if-ret-false 42; 4-term bswap 45; switch length 46; early ret false 49; MSB/mask
+// check 54; diag #pragma optimize("s") 92. Body restored at 26.
+// GB r16 (fast with all 10 callers/peers MATCH; control 26; 28 real trials): moving 0x7af40 above 0x7aec0, dropping
+// `dword &output`, 4 byte-swap commutative orders, `!(char)output`, `!(bool)(byte)output`, 2-var swap splits, `low_zero`
+// bool, local inline 0x7af40 copies (single-exit, early-return, case4-first, while-loop) all hit 14 (113/113 B, breaking
+// 0x783d0/0x784a0/0x7ab60); 4-term swap 45; `v` local / `bswap` inline helper 16 (and 25 on sete-form, wrong and/shl
+// order, not kept); test-before-store 44; if-chain inline 0x7af40 44; short loop index 88; early-return if-form 49;
+// `(output & 0xff) == 0` 28 (keeps ECX/EDX in prefix but spills `ipv4_address` to stack, breaking 4 callers); sete
+// ternary / no-ref / if-else true-false all tie 26. Restored at 26.
+// M3 lane 13 r160 (fast with the five callers/peers above; control 26): reading from the allocator's ranking, the
+// address takes ECX only while its priority (32 here) beats the inlined 0x7af40 loop counter's 31; the if-form tail
+// moves the result's last reference out of the swap block, one candidate fewer there, so the address drops to 30 and
+// the counter takes ECX first (14, the address in EDX). Tried: `result = false;` again in the arm ahead of the if-form
+// test 20 (the address in ECX and every caller matching, but the swapped value moves to EAX; a dead store, not kept);
+// `result` declared bare and set false in both arms 48 (callers lost); `result` initialised from the two tests and
+// reused for the low-byte test 48 (114 B); `if ((byte)output == 0) result = true;` 14 (as the if-form); a `dword
+// swapped` local stored and tested 28 (four callers lost). All restored.
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

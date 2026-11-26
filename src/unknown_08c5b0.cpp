@@ -372,6 +372,37 @@ static inline long bungienet_user_voice_setting(short kind)
 // read from the message header global in place of the request 11 (101 B): the request still takes EAX and dies at the
 // kind's load, so the kind lands in AX only because EAX is free again; retail's ECX request means the kind was given
 // EAX before the request was placed, which here only the two late-merged compares of r104 reproduce.
+// M3 lane 13 r157 (fast with 0x8c5b0, MATCH each run; control 4): allocator trace of the volatile-read body: the
+// request and the kind rank equal (20 each: two references apiece in the entry block) and the request wins the tie, so
+// it takes EAX; one more kind reference that survives to allocation, or one fewer request reference, gives retail's pair
+// (forced, never source). The kind by a two-byte memcpy (no volatile) 4 with the same ranking; that with the index declared
+// first 4; both fields by memcpy 4; the controller accessor taking `long const &` 4; 1-3 dead locals leave the ranking as it
+// is. The r104 identical-arm chain (diagnostic) ranks the kind 20 over the request 16.
+// M3 lane 7 r229 (fast with 0x8c5b0/0x8c660, both MATCH each time; control 4). Allocator reading: the entry block
+// holds the request's two uses and the kind's load and compare, both 20; the request wins the tie because its first
+// reference comes first (it is created last), and one point less for the request is a byte match (a forced-ranking search).
+// Neither has a reference outside the entry block, so only a kind reference that survives in another block, or a
+// request live through a block without a use, can break the tie. Forms: the index read after the selector 23; the
+// changed flag declared ahead of the selector with the stored setting compared in place 33 (94 B); the availability
+// tested ahead of the kind in the selector 16 (first difference +0x0, the global test leads); the controller looked up
+// ahead of the selector 15 (the tie stays: 24 each); diagnostic, a plain read with `__assume(kind >= 0 && kind <= 2)`
+// in place of the volatile read 4 (same code; the range is not known to hold).
+// M3 lane 6 r245 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): the body inside `do { } while (false)`
+// 96 (150 B: the 0x18fe9e call is then expanded in place; the pair stays EAX/CX), inside `for (;;) { ...; break; }` 4,
+// inside `while (true) { ...; return true; }` 4 (both the same code: no block boundary is left ahead of the kind's load);
+// plain reads of the result word as the high half of the header's `unknown0c` dword, `(short)(unknown0c >> 16)`, the same
+// through a dword cast, or from a named long copy 32/32/32 (95 B each: narrowed to the same folded word compare).
+// Allocator reading: an equal ranking is decided by where each value was last defined, later blocks first and, inside
+// one block, the earlier definition first; the request's load always precedes the kind's in the entry block, so the tie
+// cannot flip there. The r104 chain wins by ranking instead (kind 20 over request 16): its `kind == 0` compare is still
+// there when registers are chosen and goes when the arms merge afterwards. A second compare of the kind outside the
+// entry block is the only reference found that leaves no code, so a legal form needs arms that really differ.
+// M3 lane 6 r246 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4), all with the existing kind read: the
+// selector as two early returns (`kind != 1`, then not available, then the payload setting) 40 (107 B); no
+// controller-index local, the lookup and the notify call reading the request's field at each use 23 (99 B); the
+// availability helper as one returned `&&` with `(flags & 2) != 0` 4; the kind compared at the call with the selector
+// taking a `bool` 4; the handler's request parameter `*const` 4 (the three 4s the same code). Re-measured: no
+// old-setting local, the stored setting compared in the test, 4.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

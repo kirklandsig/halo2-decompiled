@@ -2254,6 +2254,22 @@ void function_27dd10(void)
 // merged) 153 (0x281b60 199, 0x285750 75, 0x288570 101, 0x289580 78, 0x28aaa0 82); only the shift in each arm, the output
 // step after the test, 153 (199, 75, 310, 270, 82). The loop is the same shape, but the flags then outrank the count
 // for their register and every home moves, so the tail is not reached that way. All restored.
+// M3 lane 4 r261 (fast screen with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2): in function_288572 the group end as `arg_5 + 8 < arg_7 ? arg_5 + 8 : arg_7` 53 (0x281b60 53, 0x285750
+// 53, three siblings 9); the output target as an if/else 2; the bit-flag pointer by an if/else-if chain 2;
+// function_288573's destination index as `arg_1 != 0 ? local_4 : arg_5` 2; the saved frame fraction read ahead of the
+// two saved indices 2 (all four the same code everywhere). All restored.
+// M3 lane 5 r247 (fast screen with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2): node_destination_get's map-flag test through node_flags_test (defined ahead of it) 2 (0x289580 78);
+// node_destination_get as one bool result set in each arm 2 (same code everywhere); both 2 (0x289580 78); the walk's
+// bit test as `(local_2 & 1) != 0` 2; quaternion_blend's three parameters const 2 (same code). All restored.
+// M3 lane 6 r246 (fast over all 78 functions of the file, control 76 of 78; this function and 0x281b60 2 throughout):
+// the pass counter chain through a new inline step helper taking the component, like component_decompress 2; the
+// walk's bit-flags local as `int` 2; the flags read as `arg_6[0]` with the pointer step as its own statement 2 (the
+// three the same code everywhere); re-measured the chained counter resets 2 (0x288570 120) and the bit test as
+// `(local_2 & 1) == 1` 2 (0x288570 3, 0x289580 78). quaternion_multiply's sign mask as a float array (a float
+// constant in the intermediate code) 2 here, 0x281b60 245, 37 matched samplers lost; the mask as `{ 0 }` with its
+// last element stored after 2 here, 0x281b60 297, 37 lost. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2558,6 +2574,15 @@ void function_2818e0(void)
 // M3 lane 8 r236 (H2M_FAST with 0x27dff0 and the six matched walk users; control 2): in function_288572 the output step
 // and the flags shift written in each arm of the bit test 199 (0x27dff0 153, 0x285750 75, 0x288570 101, 0x289580 78,
 // 0x28aaa0 82); only the shift in each arm 199 (153, 75, 310, 270, 82). All restored.
+// M3 lane 1 r169 (h2m fast with 0x27dff0 and the four matched walk users; control 2): a forced scheduling search
+// matches with either of the two reloads' heights moved by one (equal heights, so the code-generation order of the
+// split pieces decides, as round 163 read it). Respellings of function_288573 arms this function never runs (the
+// numbering is taken before dead arms go): blend 4's scale arm with no locals 2 (0x288570 3, 0x289580 2); its
+// `*=` form 2; blend 4's translation arm through `g_5044c0` with no local 2 (0x288570 3, 0x289580 78); blend 3's
+// scale as `*=` 2; blend 3's translation as `+=` 2 (all controls matched in the last three). All restored.
+// M3 lane 6 r246 (fast over all 78 functions of the file, control 76 of 78; 0x27dff0 2 throughout): the walk trials
+// listed above 0x27dff0's marker, all 2 here; quaternion_multiply's sign mask as a float array 245 (1685 B) and as
+// `{ 0 }` with its last element stored after 297 (1685 B), each losing 37 matched samplers. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

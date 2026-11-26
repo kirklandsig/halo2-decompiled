@@ -570,6 +570,23 @@ long g_55e6c0;
 // range keeps EAX to the push at rank 48, so the clamp takes EDX as retail), the count copied and clamped in place 166
 // (497 B: the count's whole range then ranks 55 and takes EBP ahead of the data pointer).
 // On the lead, the header pointer formed between the packing and the levels store 29 (484 B, the lead's score).
+// M3 lane 12 r191 (h2m fast with 0x1dc40/0x1db10/0x1d770, all MATCH; control 29): matched 0x1ddd0's own packing (`long
+// pitch = width * sizeof(dword) / 64; ((pitch - 1) << 24) | ((height - 1) << 12) | (width - 1)`, round 51's lead) 29 at
+// 484 B, the packing then retail's instruction for instruction (a compile-only screen shows why: `(h - 1) << 12` is
+// distributed to retail's `shl; sub`, while `(h << 12) - 0x1000` is factored to `(h + 0xfffff) << 12`, and the long pitch
+// keeps `lea; shr 6; shl 0x18` unfolded); on it the packed word as a dword 97 (479 B), the pitch as a dword 29, the pitch
+// named at the else arm's top 155 (495 B), the width and height parameters typed dword (declaration, definition) 32, the
+// same on main's packing 32 (483 B). Reading of the allocator's ranking on the lead: the height's whole range (store,
+// packing, the level loop's shifts) is not worth a register in the first pass, so only its top piece is tried, in the
+// fourth pass, after the merged clamp value (36: three definitions in two-candidate blocks, one store in the join block)
+// has taken EAX in the first; a forced-ranking search that puts the clamp in EDX leaves 7 (`sub eax, 0x1000` scheduled
+// after the pitch terms and EDX for the `width - 1` term), the same 7 with the height term written first in the OR.
+// No statement order in the source moves the clamp's pass.
+// Roasted-Codes (#1515 comment, 2026-11-26; fast reduced-image scores): the primary header writes and the Register call
+// addressed through `g_4b4b58[index]`, with the entry pointer kept for the other fields, 167 (507 B; the scaled index
+// stays live and the stores take the global's displacements); only the common-word store so addressed 161 (528 B).
+// Register's data argument read as `entry->data` (on the signed-packing, late-levels, header-pointer form) 152 (499 B;
+// the height takes the data's EBP and a real field load follows the format call).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

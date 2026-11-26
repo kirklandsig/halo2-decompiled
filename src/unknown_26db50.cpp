@@ -448,7 +448,9 @@ struct s_record_collision_view
 	long type;
 	real fraction;
 	point3f point;
-	byte field_14[0x5c - 0x14];
+	byte field_14[0x24 - 0x14];
+	short unknown24;
+	byte field_26[0x5c - 0x26];
 };
 
 
@@ -1271,6 +1273,20 @@ struct s_record_collision_view
 // `0.5f * g_4687b0->n[component]` 26; the endpoint as `origin->x + direction.i * trace_distance` 26 (all the same code: the
 // dot order follows statement order, not operand order); the rotation's axis through a named `vector3f const *` local 42; the
 // direction copied member by member through a `vector3f const *` source local 232 (1081 B). All restored.
+// M3 lane 2 r152 (fast; control 26): the rotation through src/unknown_170d70.cpp's existing rotation (no named k, the
+// first cross term ahead of the projection) 26 (same code: every spelling of the helper gives this function the same
+// dot, so the order is set by the function around it); the 0.1 offset reading the collision point through a
+// `point3f const &` 42, on M (the marker store and the entry pointer between the endpoint and the lift, entry first)
+// 38; M with the entry first re-measured 22 (only the entry lea and the marker store swap outside the rotation). Kept:
+// the collision record's +0x24 short as a typed field (same code, 26; on M 22).
+// M3 lane 13 r160 (fast with 0x26d100, MATCH each run; control 26; M re-measured 20). Reading from the compiler's
+// commutative-operand ranking: the dot's three products sort by the axis load's rank plus twice the direction
+// component's; the axis j and k loads rank by address temporaries that the offset block's axis reads share with the
+// rotation, numbered by the offset's y/z statement order (z ahead of y gives the axis j load the higher rank and
+// retail's (j + i) + k, as the listed x, z, y forms show; the args of real_point3d_set do not move it). Tried: the 0.1
+// offset through the existing vector3f_add_scaled 71 (1085 B: the axis j load turns into a memory operand), that with
+// the 0.5 lift as three `+=` statements 77, on M 65; the trace endpoint through vector3f_add_scaled 45, on M 39. All
+// restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
@@ -1310,7 +1326,7 @@ long function_26d570(long object_index)
 					s_location_entry_view *entry = (s_location_entry_view *)&record->entries[record->count];
 					point3f world;
 					s_record_collision_view collision;
-					*(short *)((byte *)&collision + 0x24) = NONE;
+					collision.unknown24 = NONE;
 					if (!function_2104b0(record->point.output_index, &point, &world))
 						world = point;
 					s_pathfinding_data *volatile saved_pathfinding = NULL;

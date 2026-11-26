@@ -1794,6 +1794,34 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Existing in-place vector scaler for primary/secondary/both/ambient/primary and ambient/
 // secondary and ambient/all colors 534/529/524/529/534/529/524; all with constant returns 565.
 // NOT kept: 524 gains five and grows two bytes. Constant returns recover the frame only.
+// M3 lane 8 r237 (h2m fast with 0xd4080 378 and 0x3db00 MATCH throughout; control 529). Frame packer reading: the result
+// byte (two references) takes record's dead argument home first, so the length gets a cell of its own (the extra frame
+// word); retail keeps the result in AL with constant exits and homes the length in record's slot. Retail also computes
+// scale0's falloff (1 - (0.1 length + 0.6)) ahead of the second luminance and keeps it in lightmap's dead slot. Forms: the
+// falloff as scale0's first factor with the second luminance written as the call's argument 529, the falloff first with
+// the luminance statement kept 529, the luminance as the argument with the falloff second 529 (identical code each: the
+// order is the scheduler's); the square right after direction1's negate with the lightmap pin ahead of the base pin 547;
+// the lightmap pin ahead of the base pin alone 560 (2193 B). Body unchanged.
+// M3 lane 16 r190 (fast screen with 0xd4080 378 and 0x3db00 MATCH unless said; control 529; body unchanged). Allocator
+// reading of the entry: the query is ranked last of the integer values (live from the entry across the scan with no
+// reference there, its sum goes negative) and the block late with only EDX and EBX free (the count took EAX first), so
+// the block arrives in EDX and the query in EAX; retail's entry zeroes the result in AL first, so its block cannot stay
+// in EAX and moves to EBX. A forced-ranking search over 24 single decisions: best 523 (the third flag-header value in
+// EBX), none flips the entry. Forms: the query's normal pointer declared at the top of the body 529 (same code); that
+// with constant exits (`if (!parameters) return false; ... return true;`) 568 (2168 B, frame 0x28, entry exact to
+// +0xc, block/query still swapped), with the count declared ahead of the parameters pointer as well 568 (same code);
+// the constant exits with the count first, pointer in place, 568 (same code); the pointer at the top with `bool result
+// = false;` first and `result = true;` last 573 (0x3db00 lost, 8; 0xd4080 508). The pair with 0xd4080 stays the blocker.
+// The selected-result byte and the exchanged block/query carriers still differ.
+// Shared curve range mapping for output luminance/primary/secondary/ambient
+// 526/533/529/539, both length curves 533, both luminance curves 542,
+// all four 546, and all four with constant success/failure returns 587.
+// NOT kept: the output luminance gains three points; the others tie or regress.
+// M3 lane 16 r191 (h2m fast with 0xd4080 378 and 0x3db00 MATCH unless noted; control 529, aligned 527, masked 281): the
+// count read ahead of the selection pointer's declaration 529 (same code); the type mask computed at the top of the body
+// 569; a pointer to the scanned entry for the two flag tests and the selection 530; no result local (the found block
+// under `if (parameters != NULL)`, `return parameters != NULL;`) 570 (first +0x9); the normal copied as one aggregate
+// 578 (2172 B, 0x3db00 8, 0xd4080 508). Body unchanged; the pair with 0xd4080 stays the blocker.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2202,6 +2230,12 @@ real function_30bf0(vector3f *vector);
 // 463/382; local direction and axis value 474/503; local direction with live axis and direct trig 486; record
 // output with shared negation and live axis 484. Live-axis forms recover frame 0x40 and shorten past retail, while
 // the exact-length form leaves frame 0x44.
+// M3 lane 14 r155 (H2M_FAST with 0xd37f0 and 0x3db00; control 378, 0x3db00 MATCH and 0xd37f0 529 unless given; body
+// unchanged). The frame's extra 12 bytes are the rotation helper's axis copy (retail reads the axis through the pointer
+// and rotates direction2 in place). The squared length spelled `(k*k + i*i) + j*j` 372 (x87 then squares i, k, j as
+// retail; 6, under the bar), as `i*i + j*j + k*k` 483 (1894 B); `mobile` started false and set by an `if` 362 (retail
+// stores the zero in the entry block; match-only, the direct test is main's), with the k, i, j spelling 356; the shared
+// rotation helper reading the axis through `vector3f const &` 515 (1837 B, 0xd37f0 610, 0x3db00 lost).
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

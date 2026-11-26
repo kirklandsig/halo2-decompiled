@@ -1003,6 +1003,17 @@ extern point2f *g_468778;
 // main 266 at 1561 B, aligned 101 / masked 44 as main: positional only, and an initialiser moved into a branch, so
 // match-only); the facing pointer formed right after the view with the dot through it 407 (frame 0x44; on main 406).
 // Body unchanged.
+// M3 lane GA r12 (fast with 0x265d30 and 5 matched file peers, all MATCH; control 280 at 1557/1549 B, al 101, mk 36; 34
+// distinct trials, body unchanged): on main (280): 0.8-arm `local_7->unknown2c` copy 280, `memcpy` planars 280, `dot3f` at
+// 2nd/3rd dots 280, zero-goto `bool submit` 280 (all same code); planar1/planar2 member-wise 313/304; `field_15` if/else
+// 294; `vector3d_from_points3d` prediction helpers 342; arm-1 view reads 387 (mk 32). On `dot3f` lead (377 at 1549 B, fr
+// 0x44, al 214, mk 44): `0.8`-arm view copy / `memcpy` planars / all-3 `dot3f` / all-3 view copies / zero-goto 377 each;
+// `i,j,k` pred 376 (al 205); `vector3d_from_points3d` pred helpers 376 (al 198, mk 38); single planar1/planar2 member-wise
+// 386/386; both planars member-wise 310 (1553 B, +0x14, fr 0x40, al 180, mk 43: recovers `prop=EBX`, `arg_0=EDI`,
+// `facing=EDI` with `add edi, 0x2c`, swapping only `actor=ESI`/`slot=EBP`); `0.8`-arm member-wise copy 407 (1551 B, al 191,
+// mk 29); `field_15` if/else 377; arm-1/arm-1+2 view reads 435/435 (mk 32); no `local_8` 384 (+ all-3 `dot3f` 431); late
+// `local_8` in `else` 429; no `local_20` 414 (1525 B, fr 0x40); early return 394; `field_12`-only `unit_index` + `0.8` view
+// / `memcpy` / `field_15` if/else 400/400/387; main `unit_index` + `dot3f` + `memcpy` 410; pointer dot + view / `memcpy` 410/410.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1634,6 +1645,12 @@ static __forceinline long real_to_long(real value);
 // the rejection as `return false;` with the result returned after the body 508; `return true;` at the end of the body
 // and `return false;` after it 508; `return local_2;` at the end of the body and `return false;` after it 508 (each
 // 1904 B with 0x25d740 expanded, the listed 508 code). Still BLOCKED-BY 0x25d740's expansion at this site.
+// M3 lane 15 r146 (H2M_FAST with 0x25d740, MATCH each run; control 382 at 1904 B, 21 calls). Ours is retail's
+// instruction for instruction up to the first goto arm's jump; retail then places the false exit (`xor al, al`, its
+// own epilogue) there and ours places it last, so every later row is four off. Forms: the entry test as `!(f13 || f14
+// || f2d)` 382, the far-limit flag declared ahead of the limit 382, the result declared ahead of the slot pointer 382
+// (same code each); `local_2 = true` after the two lookups 389; the prop pointer declared ahead of the tag lookup 496
+// (1913 B). Still BLOCKED-BY 0x25d740's expansion at this site.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -781,6 +781,12 @@ PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b);
 // axis.i in place by the dot where retail copies the dot, the row-i cross term loads axis.k and multiplies by limited.j
 // from memory where retail loads limited.j, and the allocator still ranks the row-i result first (it takes XMM0 where
 // retail has the row-k result, the dot in XMM1 and the row-i result in XMM4), so up stays in XMM4-6.
+// M3 lane 15 r148 (h2m fast with 0x30bf0 and 0x1e5af0, both MATCH; control 235). Reading: up's three components (live
+// from the copy to the forward crosses) colour after every rotation-block value and take XMM4-6 from the free list. The
+// rotation dot unparenthesized: i, j, k 251 (1247 B); k, j, i 175 (1233 B, but it compiles to (i + j) + k, not retail's
+// (k + j) + i, so the parenthesized form stays for the sum order); axis-first i, j, k 253 (1248 B). `angle` declared
+// ahead of `limited` 245; the rows stored i, j, k 233 (1239 B, under the bar). Lane 2 r145's 166 lead (cross terms in
+// the rows) re-measured 166 at 1231 B. Body unchanged.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -1615,6 +1621,17 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // test (no `limited_step` flag) 549 (3049 B); the speed-band reads through one `real const *` to the settings at +0x4c
 // 466; `magnitude *= state->speed` 234, the low arm's offsets as `-shape_dot(...)` 234, the flying arm's length tests
 // as `!function_30bf0(&left)` 234 (same code each). Body unchanged.
+// The damping register, gravity store order and both raw/bounded vector homes differ.
+// Fixed declarations before the input pointer 246; constant planar rotation 234;
+// constant planar delta 234; raw spatial delta setter 505; history offset/relative
+// setters 234/234, both 234; in-place scaled normal correction 232.
+// NOT kept: the last form gains two points and adds three bytes.
+// M3 lane 12 r190 (h2m fast with 0x1f0450, 0x30bf0 and 0xa75d0; control 234). Reading: in the general arm's side cross
+// retail loads up.k ahead of facing.j and facing.i (the operand ranks of offset loads), ours the reverse; its last k row
+// leaves the out.k store to the shared join. Forms: the direct arm's speed read at each use (no `speed` local) 429; the
+// three flag bits as `(state->flags >> n) & 1` without `!= 0` 232 (not kept: two points), only damping so 590, only direct
+// and gravity so 594; the input pointer declared after the flying test 248; the side vector through the existing cross3f
+// 234 (same code), through cross3f_staged 501; cross3f on the 232 form 232. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -2155,6 +2172,11 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // normalize's three scalings, the inner loop's candidate pointer (retail keeps it in [esp+0x20] and steps it in EBX), the
 // dot's first product (retail's accumulator holds the j product), the count-2 arm's address forms and cross operand
 // sides, the final loop's height sum (retail loads the request height first) and its projection's first product.
+// M3 lane 15 r148 (h2m fast with 0x1f19c0, 0x1f2e60, 0x1f2a80, all MATCH unless noted; control 413). The keepable parts
+// of lane 2 r145's 279 lead alone on this body: the file's bit-3 helper at both settings tests 464 (2105 B); the
+// one-contact arm's scaled normal named through vector3f_scale 435 (2109 B, a re-measure); both 462; that arm as
+// vector3f_add_scaled(&desired, normal, -minimum, &direction) 475 (2109 B); a plain `long count = 0;` between the two
+// NONE stores 530 (2092 B; 0x1f19c0 drops to 11). Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

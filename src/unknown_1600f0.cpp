@@ -1800,6 +1800,35 @@ PRIVATE inline long score_string_list_1608e0()
 // Panel time, score and alternate-score field references singly, in pairs,
 // or all together 679 each; pointers to all three fields 679. NOT kept:
 // the field bindings leave frame 0x798, viewer EDI and the origin homes unchanged.
+// M3 lane 1 r168 (fast with 0x161420, 0x1600f0 and 0x1603f0; control 679): the player row's masked index named once
+// for the player pointer and both score reads 684; the scroll element bound to a `real &` for the clamp and y 755
+// (2824 B); the header advance stored right after the title call 685; the team colour initialised at its declaration
+// 679; the player flags word read at each of its three uses 679. Body unchanged.
+// The 0x798 frame, EDI viewer and independent origin home still differ.
+// Title coordinate and caption names 679; viewport and content-height names 679;
+// native signed count snapshots 678, also for the team gap 678; common column
+// options record 679; branch-selected score/time widths 679/684; score flag
+// feeding alternate visibility 709. NOT kept: the count forms gain one point.
+// The separate origin word and viewer register remain different.
+// Origin memmove at completed coordinates, staged horizontal coordinate,
+// or caption setup, far edges or all edges and advance 690/720/690/672/726/721.
+// Row-cursor memmove into the title origin 689/679.
+// NOT kept: the best transfer scores 672 with frame 0x7a0.
+// the separate origin copy requires a byte match.
+// The 0x798 frame and independent origin still differ. Signed scroll extent
+// with separate or shared row heights 740/746/746, admitted extent first 742,
+// late limit 740, range bounds 741, existing height 740, and one scroll read 757.
+// NOT kept: the signed extent moves subtraction ahead of the fit test,
+// shortens the body and retains the four-byte frame gap.
+// M3 lane 16 r191 (h2m fast; control 679, aligned 597, register-masked 227): a two-short origin set from x and y with
+// the row position copied from it element by element and the title's far edges and the header advance read from it
+// 679 (same code: the copies are forwarded); the row position filled from the origin by a 4-byte memcpy (retail's dword
+// copy) 677 (masked 211: the viewer moves to EBX at entry as in retail, x to EDI); that with x stored into the origin
+// ahead of the scroll clamp and y after it (retail's store order and branch placement) 675 (masked 209, four points,
+// under the bar; the origin homes at +0x34 and is still not re-read after the title-text call); the far edges and the
+// advance read from the row position instead 677; the 675 form with the height plain 737 (2840 B, aligned 567, masked
+// 203); main's body with the height plain 737 (aligned 561). Retail also divides by the fade count at each fade (0/n,
+// 1/n, row/n read from its stack cell) where this build shares one reciprocal. Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

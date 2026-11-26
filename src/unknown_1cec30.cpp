@@ -3236,6 +3236,26 @@ struct s_1cf531
 // read of one only bound by reference is. So retail's folded 0x30 read is of an object whose address reaches no call,
 // and the final vector shares its slot; what gives the final four packing references with one store and one `lea`
 // emitted is not found.
+// M3 lane 4 r261 (fast screen, 2): the frame packer's order for the 16-byte objects: local_7 (7 references), local_13
+// (4), the rsqrt temporary (3), then the 2-reference objects, each joining the newest slot it does not interfere with;
+// the named corrected vector interferes with local_13 and joins the temporaries' 0x40. Forms: the final scale through
+// the file's existing component_bounds_splat with corrected named 2 (same code); with the correction unnamed inside
+// the final product 2 (same code: the spilled temporary also joins 0x40); the copy as a separate `__m128` or a
+// non-address-taken hkVector4 with local_13 written only by the final product, at the block top or in an inner block,
+// 94/94/94/94 (910 B, the copy forwarded from local_7); those four with the direction normalized in place in local_7,
+// the correction named or unnamed, 62 each of six (915 B, the subtraction sinks past the scale call); re-measured:
+// corrected in place in local_13 with `splat * local_13` 23 (908 B), with the splat bound through `__m128 &` 5 (905 B,
+// the local_13 load hoisted above the fstp). All restored.
+// M3 lane 15 r147 (fast screen, 2; the 7 form re-measured 7): on the 7 form, the final declared first in the
+// length-test block and written only at the end 8 (frame 0x64, the final takes a new 0x60 slot); the final product
+// named outside the final's block, the block holding only the store and the call 7 (same code); local_13 declared
+// with local_7 in the outer block 7; local_14 declared ahead of local_13 7. On the kept body: the copy written through
+// a reference to local_13 with the corrected vector a value 2 (same code). All restored.
+// M3 lane 2 r152 (H2M_FAST, 2): the contact point named once as `hkVector4 const &point` for both calls 2; the
+// direction as an hkVector4 object 2; the velocity product as an hkVector4 object 2; the velocity local_14 in a block
+// that ends after the speed is taken 2 (all the same code); lane 14's 7 form with that velocity block 7 (905 B: the
+// block-local final then joins the freed velocity slot 0x50 in place of 0x40, so it takes the newest slot free of
+// interference, and 0x30 needs every newer slot busy while the final is live). All restored.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

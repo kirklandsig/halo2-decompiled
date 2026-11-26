@@ -857,6 +857,26 @@ s_1a8a10 g_4453c0[] =
 // the lead: both sums as plain dot products (`perpendicular.i * x + perpendicular.j * y`, `copy.i * x + copy.j * y`)
 // 29; that with the perpendicular's j from the copy's i 32; the perpendicular declared and set ahead of the copy 31;
 // stores in index order 33; both vectors brace-initialised 32. Body unchanged.
+// M3 lane 7 r229 (fast with 0x1a8c30, MATCH each time; control 17; round 115's lead re-measured 31). Allocator
+// reading of the lead: its join block references 10 float candidates (the two named sums are copies of the i and j webs
+// they accumulate in, and the perpendicular's j is a copy of i), main's 8; with 8 the numbering is retail's. The
+// negated j's load stays a folded memory operand only while the perpendicular is a two-member local set ahead of the
+// copy's j (a one-member one is forwarded past the copy and the load merges). Forms: the lead without the
+// perpendicular's j, the forward sum on the copy's i, 18 (8 candidates and retail's xmm numbering, but j merged and the
+// forward sum computed first); that with the copy assigned j first 21; the perpendicular's j from the copy's i 32; the
+// left sum on both perpendicular members with the forward sum on the copy 29, that with the copy set ahead of the
+// perpendicular 32.
+// M3 lane 8 r239 (h2m fast with 0x1a8c30, MATCH each time; control 17): the outer test split into two nested ifs 17;
+// both sums with `(real)(...)` around each product, main's term orders 17 and retail's (`i * y` first, `j * y` first) 17;
+// `(real)(0.0f - j)` around the negation alone, main's term orders 17 and retail's 17 (all five the same code: the casts
+// are no-ops under SSE and do not make the negation a separate leaf, and j is still read once).
+// M3 lane 11 r170 (h2m fast with 0x1a8c30, MATCH; control 17): the rotated y carried in a scalar through the switch
+// and stored to the point after the facing copy, with the final switch reading the point through a `point2f const *`
+// 24 (the point's y store is forwarded into the scalar's 0x50 home, j still folded); the rotated x carried the same way
+// and stored after the copy 24; the copy's j assigned between the sums with the rotated y carried in a scalar and
+// stored after the copy's i 22 (j then loads twice, the folded reload first, but the copy's j load stays after the left
+// sum where retail loads it right after i); the negated j read through a `real const &` bound to the facing's j ahead
+// of the outer test 17 (same code); the negated j through a fresh in-place actor lookup 157 (548 B, the frame grows).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

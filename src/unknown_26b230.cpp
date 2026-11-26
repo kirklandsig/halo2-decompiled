@@ -1537,6 +1537,10 @@ long function_269040(point3f const *center, short team)
 	return result;
 }
 
+#ifndef PIN
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
+#endif
+
 // @retail 0x26a4f0
 long function_26a4f0(s_clump_activity_view *clump, short priority)
 {
@@ -1551,43 +1555,22 @@ long function_26a4f0(s_clump_activity_view *clump, short priority)
 			long selected;
 			do
 			{
-				s_clump_pool_iterator iterator;
+				s_clump_datum_walk iterator;
 				real best_score = 0.0f;
 				selected = NONE;
-				if (g_4f55d0->active)
+				clump_datum_walk_new(&iterator);
+				s_clump_activity_view *other;
+				while ((other = (s_clump_activity_view *)clump_datum_walk_next(&iterator, g_4f55d0->active)) != NULL)
 				{
-					iterator.pool.data = g_502420;
-					iterator.pool.index = NONE;
-				}
-				for (;;)
-				{
-					iterator.current = NULL;
-					if (g_4f55d0->active)
-						iterator.current = (s_clump *)data_iterator_next_inlined(&iterator.pool);
-					s_clump_activity_view *other = (s_clump_activity_view *)iterator.current;
-					if (!other) break;
 					if (other->update_state >= 4 || (other == clump && priority <= other->update_state + 1))
 						continue;
-					real score;
-					if (!other->active)
-					{
-						score = (real)(time - other->active_time) * g_510c54->rate * 0.0033333334140479565f;
-						if (score < 0.0f) score = 0.0f;
-						else if (score > 1.0f) score = 1.0f;
-						score = score * 10.100000381469727f + 8.0f;
-					}
-					else
-					{
-						score = (real)(3 - other->state) * 0.3333333432674408f;
-						if (score < 0.0f) score = 0.0f;
-						else if (score > 1.0f) score = 1.0f;
-						score *= 2.0f;
-					}
-					score = (real)(3 - other->update_state) * 5.0f + score;
+					real score = (real)(3 - other->update_state) * 5.0f + (!other->active
+						? (PIN((real)(time - other->active_time) * g_510c54->rate * 0.0033333334140479565f, 0.0f, 1.0f) * 10.100000381469727f + 8.0f)
+						: (PIN((real)(3 - other->state) * 0.3333333432674408f, 0.0f, 1.0f) * 2.0f));
 					if (score > best_score)
 					{
 						best_score = score;
-						selected = iterator.pool.datum_index;
+						selected = iterator.clump_index;
 					}
 				}
 				if (selected != NONE)

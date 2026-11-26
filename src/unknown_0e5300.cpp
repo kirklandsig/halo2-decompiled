@@ -10,6 +10,7 @@
 #include "unknown_1cec30.h"
 #include "unknown_1eb550.h"
 #include "unknown_1e1f20.h"
+#include "unknown_0259d0.h"
 
 /* an object header of g_4e0300 (12 bytes) */
 struct s_e5300_object_header
@@ -150,15 +151,26 @@ PRIVATE inline long e5470_unit_current_weapon(long unit_index)
 /* whether a player's unit and an AI unit next to it could swap the weapons
    they hold: both hold one, they stand less than 1.0 apart, the player's
    unit aims at the other and the other faces it, and each accepts the
-   other's weapon (inferred).
-
-   Near: the object lookups go through e5470_object_get, which reads
-   g_4e0300's data pointer again for each object (0xe54bc, 0xe54e2) as
-   retail does. Retail also reads the player's unit again for each use
-   (0xe551f, 0xe5595, 0xe5638), which only a volatile player pointer
-   reproduces here (11 instructions left with it); not kept. Re-measured on
-   r809: adding `volatile` to the player pointer in the current body gives 121,
-   so the 11 form above was a different body; the 47 body stays. */
+   other's weapon (inferred). */
+// score 37 (was 47): vector3d_from_points3d + dot3f(&direction, &aim) + dot3f(&forward, &direction)
+// match retail's 502 bytes and all FP instructions (+0x4a first diff). Earlier: e5470_object_get
+// keeps g_4e0300->data reloads at 0xe54bc/0xe54e2; volatile player on r809 body gave 121 (on this
+// 37 body, diagnostic volatile player matches 0/502B). Remaining: our compiler CSEs
+// player->unit_index in eax across e5470_unit_current_weapon to 0xe551f (putting player in ebp and
+// player_weapon_index in edi), where retail reloads [edi+0x2c] at 0xe551f (player in edi,
+// player_weapon_index in ebp). Tried (fast): aim*dir 47;
+// player macro each use 155; byte* player 47; __forceinline helpers 47; weapon ternary 127; nested
+// weapon if 47; split cd7b0 modes 47; player_unit local 151; decl-then-assign weapons 47; clean
+// header get 139; k+j+i dot 56; player_get/pool local/unit_weapon_in_slot/decl top/modes struct/
+// unit local/player ref 37; unit_weapon before player 121; weapon if/else 128; header
+// unit_get_current_weapon 99; non-inline helpers after 37 (clean 140); player_unit helper 33 (NOT
+// kept: 1-caller helper); byte cast/ptr arg/two player ptrs/player_weapon helper/rename 37;
+// player_unit ref/ptr 145; function_cbd50 forms 99-145; /Ob1, const player, nested weapon if 37;
+// early return 134; player_weapon inside if 131; direct return weapon 128. GB20 (18 fast trials + 1 diag,
+// 0xe5300 MATCH): const ref arg / both const ref 37; &player->unit_index at all 4 sites 145; s_player_datum
+// type 37; dword unit_index 37; function_cbd50 inlined (direct or objget) 145 (519 B); two modes / nested
+// weapon if / split pos decls / mask at call / player_get like objget / player method / actor local 37;
+// char weapon 55; record pool lookup 121; header-first objget 140; inline_depth(1) diag 37.
 // @retail 0xe5470
 bool __stdcall function_e5470(long player_index, long unit_index)
 {
@@ -179,21 +191,19 @@ bool __stdcall function_e5470(long player_index, long unit_index)
 
 			function_caf60(player->unit_index, &player_position);
 			function_caf60(unit_index, &unit_position);
-			direction.i = unit_position.x - player_position.x;
-			direction.j = unit_position.y - player_position.y;
-			direction.k = unit_position.z - player_position.z;
+			vector3d_from_points3d(&player_position, &unit_position, &direction);
 			distance = function_30bf0(&direction);
 			if (distance > 0.0f && distance < 1.0f)
 			{
 				vector3f aim;
 
 				function_cb7e0(player->unit_index, &aim);
-				if (direction.i * aim.i + direction.j * aim.j + direction.k * aim.k > 0.8f)
+				if (dot3f(&direction, &aim) > 0.8f)
 				{
 					vector3f forward;
 
 					function_118e80(unit_index, &forward);
-					if (forward.i * direction.i + forward.j * direction.j + forward.k * direction.k < 0.0f)
+					if (dot3f(&forward, &direction) < 0.0f)
 					{
 						bool modes[4];
 

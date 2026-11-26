@@ -534,6 +534,13 @@ static inline word font_character_pixel(long alpha, long color)
 // score 41 (was 59): 508 B (retail 504); first difference at +0x24. With length = 1 written in each arm of the type test (a
 // statement written per arm, kept only with a byte match) it reads 12 at 504 B, where only the 4-instruction literal
 // assembly at 0x122744 differs (movzx eax/edx; shl; add vs retail movzx ax, [edi+2]; xor ecx, ecx; mov ch, [edi+1]; or eax, ecx).
+// M3 lane GA r16 (50 compiled trials on 41 and score-12 bases, 0x140960/0x122540/0x122570 MATCH; body unchanged): clean loop-end
+// step1 with literal continue / -= 2 / switch (long type) step1 84/88/84; switch (long type) with per-arm length=1 12 (504 B,
+// exact jle, not kept as per-arm length=1 is match-only); on score-12 base, source[1] nibble split <<8 | (word)source[2] and
+// 4-nibble both 11 (504 B, exact or eax,ecx), word nibble split on source[2] | (dword)source[1]<<8 30 (504 B, 32-bit movzx eax),
+// (word)source[2] + ((dword)source[1]<<8) 12 (word value 30 at 508 B), *16<<4 / <<4*16 / |*256 12, word ptr bswap 81, alpha/color
+// split 87-178, word-outside-nibble 102-106, mask f0|0f / ^ / &0xff / |0 / +0 / short / signed char / 2-step word |= / <<4<<4 /
+// &0xff00 / &0xffff / word:8 bitfield structs all fuse to 496 B (90).
 // MiniMax G (11-20): no new form, no lower score (59): the alpha parity is still masked in sixteen bits where retail masks it in a thirty-two bit register; the colour literal is still built with a shift and an add where retail keeps its two bytes apart; the run of two is still folded into the count as an immediate where retail adds the register.
 // Earlier 59 (was 85): The 0xc frame agrees. Dword opacity parity, literal two-byte assembly and the packed run
 // register still differ.
@@ -1059,6 +1066,50 @@ static inline word font_character_pixel(long alpha, long color)
 // Long opacity 192/240/192/240, byte opacity 192/183/192/183.
 // NOT kept: all raise the score. Subtraction also changes the pixel-copy caller.
 // Lane GA r3: word-returning font_character_pixel without (byte) cast + word pixel at ordinary fill + run scoped to type==2 (count += 2 in type!=2, goto-free switch with if (run > 0 && output), case 1 run before pixel) + length = 1 per arm -> 12 at retail's 504 B (machine 3 review: length = 1 back after the type test, as before, gives 41 at 508 B; the per-arm form is not kept) (matches all 4 pixel sites, EBX/EBP fill registers, switch, jump table and exits byte-for-byte; only the 4-instruction literal at 0x122744 differs). Tried on score-12 base: switch(type) 13; word color 51; run=0 init 176; run!=0 41; word switch pixel 41; split count+=2 155; direct/masked/word byte-swap macros 76-125; bitfield/union/MAKEWORD/shift-or/inline-helper/nibble-split literal forms 90-97 (all fuse to 8-byte mov ah/al, even with count++ between 76, or under /G6 /G7 /Ox /Ob1 90); word-bitfield read p->lo|(p->hi<<8) 89 (emits movzx ax, [edi+2]; mov ah, [edi+1]); color-first then &=0xfff 37; no value local 180; (word)source[2] | (word)(source[1]*256) 30; (dword)source[2] | ((dword)source[1]*256) 12; ((word)source[2] & 0xfff) | ((dword)source[1] << 8) 81 (breaks fusion -> movzx ax, [edi+2] + xor/mov dh, [edi+1] + and 0xfff); diagnostic (word)source[2] ^ ((dword)source[1] << 8) 4 at 504/504 B (breaks OR fusion -> movzx dx, [edi+2]; xor eax, eax; mov ah, [edi+1]; xor eax, edx; not kept since retail uses or).
+// The shared packed length changes the count join, and the literal still assembles in different registers.
+// Word halves with wide OR, wide high half with word result, separate color and literal consumers,
+// or color after the optional store: 95/95/106/192. With per-arm length: 90/90/91/183.
+// NOT kept: the word forms reach retail length only with the shared length, and all forms raise the score.
+// The packed count join and separate literal loads still differ. Signed high-byte
+// add/OR, narrowed at the complete pixel or at the high contribution, each 45.
+// Each with per-arm length reaches 30. NOT kept: the per-arm forms still differ,
+// and the signed conversion leaves a 508-byte body with different literal loads.
+// Extending the literal from its decoded header by shift/OR, byte places, base-256
+// addition, or a word accumulator: 103/103/103/95 with the shared length,
+// 84/84/84/90 with per-arm lengths. NOT kept: the word form reaches 504 bytes
+// with the shared length but still fuses the literal byte loads, and the packed count join differs.
+// M3 lane GA r5 (93 fast trials on score-41 and score-12 bases with 0x140960/0x122540/0x122570 MATCH; body restored):
+// Clean length=1 on score-41 base: long length = 1 at loop top 182 (516 B); if/else-if/else chain with length=1 at top 119 (512 B).
+// Literal hunt on score-12 base (504 B): 3-part nibble split ((dword)(source[1]>>4)<<12)|((dword)(source[1]&0xf)<<8)|(word)source[2]
+// and 4-nibble ARGB4444 in dword both break OR-fusion to 11 at 504/504 B (movzx ecx,[edi+1]; movzx eax,[edi+2]; shl ecx,8; or eax,ecx);
+// source[2] nibble split in dword (((dword)(source[2]>>4)<<4)|(dword)(source[2]&0xf))|((dword)source[1]<<8) (either operand order) breaks
+// OR-fusion with zero extra instructions -> movzx eax,[edi+2]; xor edx,edx; mov dh,[edi+1]; or eax,edx (30 at 504 B, 1 B shorter from 32-bit
+// movzx eax vs retail's 16-bit movzx ax, shifting trailing pad/jump table; casting to word inhibits the nibble collapse -> 102-106 at 520-524 B).
+// Other forms on score-12 base: word/short/dword/long/maskff00/shl24>>16/two-step/shift-assign/s_pix_bf_only/maskf0|0f OR forms all fuse to
+// 496 B (90); & 0xffff / & 0xfff / dword union bitfield write break fusion but keep `and` -> 82 (508 B); word union bitfield write spills to
+// stack -> 33 (508 B); byte union -> 92 (512 B); word ptr bswap -> 82 (504 B); word+mul256 / word+word<<8 -> 30 (508 B); color-first alpha|color -> 182 (512 B).
+// The 0xc frame agrees. The packed length/count join and literal low-word/shifted-high OR still differ.
+// Common nonliteral count with zero header, nested tests or dispatch switch, branch or selected span 188/187/188/179;
+// with zero type and payload 176/181/183/193. NOT kept: an early literal branch changes the prologue and the caller.
+// The pair count load still precedes the last pixel store. Descending bit offsets,
+// upper boundaries, post-tested offsets and pre-stepped boundaries score
+// 175/192/175/196 with shared length and 175/192/175/196 with per-arm length.
+// NOT kept: the offset loops change the pair layout. The boundary walks also
+// change the matched pixel-copy caller.
+// The packed pair count is still loaded early and the literal uses shift/add.
+// Radix-16 accumulation across the low byte with add or OR 129/129,
+// across the high byte 129/130. With per-arm lengths 114/114/114/115.
+// The pair count load still precedes the second pixel store. Fixed output base
+// with pair and fill windows 184/184/184/184; cursor distance with count-only
+// tally 220/287; count advanced at pair or all single stores 155/155.
+// NOT kept: all raise the score and change the matched pixel-copy caller.
+// GB15 (fast with 0x140960/0x122540/0x122570 MATCH; control 41 at 508/504 B, +0x24; 31 trials, body unchanged):
+// Clean control flow on score-41 base: type==3/else-if type==2 chain 191; type<=1 first 175; no length local with
+// remaining-=3/source+=3/continue 84 or -=2/+=2 88; type==2 before else 100. Literal probes on score-12 base (504 B):
+// source[1] shift-split <<8 outside + (word)source[2] 11 (504 B, movzx ecx/eax; shl; or); (word)source[2] + (dword)s1<<8
+// (either order) 12; source[1] mask-split, source[2] word mask-split / outer word cast, s1&0xff<<8, long s1<<8, word
+// ptr>>8, word value, (short)source[2] with dword/long/short s1, (word)s2|0, 2-step loop, and &0xff00 all fuse to 90
+// (496 B); 4-channel word ARGB 135; (word)/(short) over dword shift-split 102; color-then-pixel 178/192; &0xffff 82.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

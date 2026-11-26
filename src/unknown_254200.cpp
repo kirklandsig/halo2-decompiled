@@ -398,6 +398,14 @@ void function_254200(void)
 // three reloads, all at the same scheduling height, so the scheduler keeps their insertion order (x, y + size, depth);
 // one forced decision, the y + size reload's height lowered by one, gives retail's order in the first of the two
 // groups (4 -> 2). No source form here changes that height or the insertion order.
+// M3 lane 2 r153 (single-address H2M_FAST, control 4): the bitmap choice as an if/else assignment 4; the two dimension
+// locals as `short` 224 (1113 B); the dimensions read straight into their stores 8 (width loaded first); the readiness
+// tests held in a named bool 4; the point copied member by member 88 (1117 B).
+// Roasted-Codes #1524 (released 2026-11-26; fast reduced-image scores, control 4): the four corners as a counted
+// loop with the per-corner expressions and calls unchanged 607 (766 B; the loop stays rolled and the top edge is
+// recomputed each iteration); only the two top-edge corners as a counted loop, the two bottom submissions unchanged,
+// 379 (1000 B; still rolled, the top moves ahead of its texture reservation and the function returns with ret 0x10
+// for retail's ret 0x14); the permuter on the whole image, 113 tries, best 4.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -900,6 +908,24 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // `short stage` shared with the 0x14390 call 465 / 465 (a local stage is folded before the updates are merged), the
 // stage local with the by-reference helper 2 (same code); the eleven types read from a file-scope constant table
 // through the inline setter or through 0x224f0 465 / 465 (a constant table element is folded as early as a literal).
+// M3 lane 16 r189 (single-address H2M_FAST, control 2): the first quad's colour copied by value into a `color3f` 392 (2238 B,
+// the frame grows), as a `color3f const` value 392, bound to a `color3f const &` 2 (same code); the colour read through the
+// getter's own dword view with each component read as a real 2; one `real const` zero shared by both readiness tests and
+// both 0x14390 calls 2 (same code each).
+// M3 lane 3 r309 (H2M_FAST with 0x254490 4 and 0x254200 MATCH; control 2): the float-valued texture stage states
+// written as float bit patterns (a named real read through a dword view), as the platform's interface takes them: the
+// first block's LOD bias 443 (2271 B, first +0x83: the real takes a frame home), the second block's 160 (2263 B), the
+// first block's 0x46000000 value as 8192.f 463 (2265 B); the first block's LOD bias as `(dword)0.f` 2 (same code: the
+// conversion folds before the reload numbering); the colour fetched ahead of the first pixel-shader clear 292 (2260 B).
+// The two reloads stay swapped.
+// M3 lane 4 r262 (H2M_FAST, control 2). Position scan of the two-real-copy ruler (diagnostic stores to a probe array,
+// removed): retail's order at every one of 13 places tried, from the top of the success block to the last quad's end
+// (after the pair too), and ours with a single copy; so the body is two real values short anywhere in the function,
+// not ahead of the pair. The last quad's centre copied by value into a `point2f` (two real copies) gives retail's order
+// but 161 (2194 B, frame 0x14: the copy keeps a home); the centre as two named reals 122 (2222 B, pair unchanged); the
+// fields read in place with no pointers 18 (pair unchanged); a `point2f const &` with the two pointers 2; the alpha
+// product written scale-first 2; the alpha named ahead of the product 2; the colour through a `real const *` to its
+// first component 2; the size local const 2 (same code each).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

@@ -185,6 +185,25 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
     }
 }
 
+// score 46 (was 46): everything up to the wind call matches. Left: retail loads the clock's ticks into ECX and
+// its rate into XMM0 before `cvtsi2ss xmm1, ecx; mulss xmm1, xmm0` (six bytes longer than the folded loads, a
+// sequence no other retail function has), and in the velocity scale retail stores +0x34 first and forms the i row
+// as the scaled amount times wind.i (copy, then the memory operand) where ours loads wind.i and runs the j/k products
+// first. Tried: a file-local seconds helper taking the converted ticks (46), taking long ticks (46), fed by the
+// ticks getter 0x146650 (46), forceinline (46); the time computed before the wind call (51) or before the wind lookup
+// (62); compile-only, every spelling of the product (named ticks and rate, a clock pointer local, rate first, `*=`)
+// folds both loads.
+// 664/664 B (+0xc9, 5 int3 pad); prologue, cache, both property loops and wind lookup match retail
+// byte-for-byte. Two remaining sites: (1) retail unfolds g_510c54->game_time into ecx and rate into xmm0 before
+// cvtsi2ss xmm1, ecx / mulss xmm1, xmm0 (ours folds both memory loads); (2) retail copies linear amount into xmm1 and
+// folds wind.i (`movaps xmm1, xmm0; mulss xmm1, [esp+0x28]`) after storing +0x34 and before mulss xmm2/xmm3.
+// GB r18 (22 fast trials): function_146650() inlined ticks*rate 46, rate*ticks 46; amount/linear_amount declared before
+// wind 46/46, with 0x146650 46/46; vector3f_add_scaled 61 (647 B); scale_particle_vector_2b in place + vector3f_add 58
+// (677 B, dead wind stores); direct velocity+= without delta 61 (647 B); prop[0] before prop[2] 61 (647 B); delta=wind
+// + scale_particle_vector_2b 225 (735 B); vector3f_scale before +0x34 store 48, +0x34 after velocity 62; delta k/j/i
+// order 46; vector3f_scale + vector3f_add 47 (matches +0x34 store ahead of mulss xmm2/xmm3); swapped phase sum 46;
+// double time 70 (637 B); separate linear local 47; inline ticks-to-sec with local rate 46; repeated linear expr 55;
+// wind pointer 46; vector3f_scale with inline linear expr 47.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {
@@ -1086,6 +1105,13 @@ real g_55e618;
 // the existing vector3f_add_scaled 193 (1540 B); the tangent as member statements through the pointer 108 (1538 B, masked
 // 48; lane 12 r155's form re-measured); the dot named once ahead of vector3f_scale with the helper tangent 194; the member
 // tangent with the vector3f_add_scaled position 193. BLOCKED-BY 0x169510 and 0x244980 (the record's capture) stands.
+// M3 lane 5 r246 (H2M_FAST with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102). Operand ranks (a diagnostic print
+// of the back end's reassociation sort): the normal's components read through `normal` number after `dot` (0x12740+
+// against 0x11fc0), so each perpendicular row copies the normal component where retail copies the dot; retail's rows
+// need dot above the three normal reads. A forced-ranking search (16 single decisions) found none below 102. Forms: the
+// normal copied into a local vector for the dot and the rows 229 (1564 B); the perpendicular through vector3f_scale 102
+// (same code); the velocity copy as one assignment 223 (as listed); the perpendicular rows k, j, i 103; the tangent rows
+// k, j, i 102. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

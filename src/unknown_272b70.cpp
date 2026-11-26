@@ -353,11 +353,6 @@ inline void ai_script_object_set_flag10a_14(long object_index, bool flag)
 
 /* sets a flag of the unit of every actor an ai index names, or of the objects
    of its perception when it has no unit */
-// score 7: the swarm loop's ECX/EDX trade places, as in 0x2732e0 (its note
-// lists the forms tried there, all tied). Ours keeps the object table base in
-// ECX and the creature in EDX; retail keeps the base in EDX and the creature
-// in ECX. Permuter on this function: 147 tries, best 7, no improvement; the
-// rest of the body is identical. Needs the callers and 0xdc310 in a fast check.
 // @retail 0x273200
 void function_273200(long ai_index, bool flag)
 {
@@ -389,21 +384,6 @@ bool function_dc310(long object_index);
 
 /* whether every actor an ai index names (or every object of the perception of
    one without a unit) is dead */
-// score 15 (was 15): the code is the same instruction for instruction; only ECX and
-// EDX trade places in the swarm loop. Retail keeps the object data base (and
-// the object function_dc310 reads) in EDX and the creature in ECX; ours does
-// the reverse. 0x273200 shows the same swap in the same loop. Needs the
-// callers and 0xdc310 in a fast check. Tried (all 15 unless noted): the
-// returned object kept in a local; if (!(result = ...)); a separate bool;
-// the iterator's fields set in the other order; the iterator declared at the
-// top; result declared last; while ((actor = next) != NULL); a local copy of
-// the creature iterator (also with the ternary form); index set before the
-// object get 118; while (result && ...) loops 71 (inner) and 155 (both); a
-// for loop 167; the unit test inverted 112.
-// P419: Returned-object for traversal 151; actor initialized at its producer
-// 15; iterator scoped to one actor 15; result between startup calls 17;
-// target inline/__forceinline 15/15; signed-byte result 45; iterator memset
-// 15. All forms restored; inner ECX/EDX exchange remains at native length.
 // @retail 0x2732e0
 bool function_2732e0(long ai_index)
 {
@@ -960,6 +940,15 @@ inline void actor_274f30_update(long actor_index, bool flag)
 	}
 }
 
+// score 47 (was 47): frame (0x34), dead actor_index store and length (192/192 B) match retail; only the shared lookup product differs (ours shares imul eax, eax, 0x888 between update and erase as matched 0x274f30 does; retail computes imul ecx, ecx, 0x888 and imul eax, eax, 0x888 from the one masked eax). GA14 (35 fresh trials, all keeping 0x274f30 and peers matched unless noted): same-TU non-inline static/extern/stdcall/cdecl erase or update 110-175 (fail to inline under /Ob1, break 0x274f30); cross-TU LTCG inlining of erase/update from unknown_1e1f20.cpp (/O2 /Gr, fastcall/stdcall/cdecl, with 0x1e3240 sharing erase, with volatile/record/plain) 47/59; signed/unsigned byte-offset products 47; s_actor_view in erase 47; pointer/const-ref/param-ref index without volatile 59; direct erase with iterator.actor_index 47 or stored_actor_index 49 (201 B); g_4f55f0/data/slot locals 47; inverted if (!flag) 53 (breaks 0x274f30); (word) only in erase 43 or only in update 15 (193 B, movzx, breaks 0x274f30); short *value pointer 65 (breaks 0x274f30/0x2a55a0).
+// frame (0x34), dead stack store and length (192/192 B) match; only the shared
+// `imul ..., 0x888` differs (while matched 0x274f30 shares it). GB r16 (fast with 0x274f30 and 7 peers
+// MATCH, 25 real trials + 1 diag): &actor_index / erase taking long const* (no volatile) 59 (176 B);
+// actor_datum_get in each branch 41 (192 B, breaks 0x274f30 149); 0xffffu / byte-offset mul / shift mask /
+// % 65536 / padded 0x888 struct / work struct copy-vs-iter / direct iter erase / early return / do-while /
+// inverted erase branch all tie 47; (long)(short)&0xffff in update 15 (193 B, movzx, breaks 0x274f30 120) /
+// in erase 43 (196 B, breaks 0x274f30 132); direct (word) erase 43 (196 B); flag split 48; inverted if(!flag)
+// 53 (breaks 0x274f30 117); diag #pragma optimize("s") 190 (53 B).
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {

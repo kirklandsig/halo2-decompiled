@@ -17,6 +17,7 @@
 #include <xtl.h>
 #include "globals.h"
 #include "geometry_cache.h"
+#include "unknown_044e90.h"
 
 void function_3c650(byte const *state);
 void function_3d000(real const *state);
@@ -521,8 +522,9 @@ void function_3b950(void)
 	}
 }
 
+// Returns bool: its one caller (0x2bcd0) stores AL straight to a byte slot (0x2c10e) with no 0/1 normalisation.
 // @retail 0x3ba90
-long function_3ba90(long bit, s_record_sources const *data)
+bool function_3ba90(long bit, s_record_sources const *data)
 {
 	long result;
 	/* Retail keeps the source-table pointer on the stack. */
@@ -856,6 +858,41 @@ struct s_41490_record
 // distance at the 0x40e30 call (83; group then travels in ecx), that plus a volatile read of group (113), (void)&position (no change).
 // Permuter (25 min on r643): 8 below its own baseline, only with a float product truncated through a word and
 // 0x40e10's two flags swapped (a behaviour change); not kept.
+// With 0x40e10 kept out of line as a trial (noinline at its definition, or /Ob1 on its file: same code), reading
+// position once through its address (`point3f const *const *position_reference = &position;`, then
+// `point3f const *point = *position_reference;`) keeps it on the stack (ret 0x20, 426 bytes, 51), and with the
+// position copied as one aggregate 40; left: point and definition swap ebx/ebp, the flag byte is read once (retail
+// twice), and the volatile delta reads turn the depth products (retail folds the spilled delta as memory operands).
+// Retail spills the delta across the call where ours keeps it in xmm0-2 (the plain delta then gives 148): retail's
+// callers get no register summary for 0x40e10. `inline` on it alone still expands here (131 plain delta, 75).
+// Tried with the call expanded: the flag arguments as `? true : false` 72 or `!= 0` 72 (same code), the position
+// address read 72, the aggregate copy 75, both 75.
+// M3 GB r14 (fast with 0x40e10, 0x41040, 0xd4cf0, 0x244630, 0x2be670, 0x40e30; control 72). Match-pursuit lead (NOT kept:
+// requires moving 0x40e10 out of line, uses position_reference, raises 0x41040 300 -> 335 though cutting 0x41040 mk 74 -> 65,
+// and still 8 away from a byte match): putting 0x40e10 as an `inline` function in its own `/O2 /Ob0 /Gr` LTCG file keeps it
+// out of line with no XMM register summary (so plain non-volatile `vector3f delta` spills cleanly across `call 0x40e10` and
+// folds `[esp+0x10]`/`[esp+0x14]` into `mulss`) AND keeps LTCG `(first, second)` order (`and cl, 1` before `and dl, 1`);
+// combining that with `*(word *)(definition + 0x16)` bit tests (fixes both `ebx=definition`/`ebp=position` and the double
+// `mov cl/dl, [ebx+0x16]` loads), `position_reference` (`ret 0x20`, all 3 callers MATCH), and `record->position = *point`
+// reaches 8 at retail's exact 426/426 B and 117/117 insns (first diff `+0x13e`, `al=3`, `mk=4`: only `movss xmm0, [esp+0x18];
+// mulss xmm0, [0x48562c]` vs `movss xmm0, [0x48562c]; mulss xmm0, [esp+0x18]` remains). With `/GL-` `__fastcall(second, first)`
+// instead: plain delta + `position_reference` 34 (`+0x8`), + `*(word *)(definition + 0x16)` + staged depth 10 (`+0x12e`, `al=5`,
+// `and dl, 1` before `and cl, 1`), + `dot3f` 11, + `word` bitfield `TEST_FIELD_BIT` 10, `dword` flags 12, `vector3d_from_points3d`
+// 10, `basis_dot_xzy` 10, 3 scalar `real` deltas 119-120; on the 8 lead: `depth` before `flags`/`callback` 11, flat dot / `dot3f`
+// / `k,j,i` / `-dot3f` 9, `i,k,j` / `basis_dot_xzy` / `delta` at top / `delta[3]` / init-list / `delta.k` first / 1..4 unused
+// locals 8, `delta.k` after `tag` 15, `delta.k *=` 15; `#pragma inline_depth(0)` around 0x41490 stops `record_format_groups`
+// inlining (196/224), around 0x40e10 in unknown_03f2b0.cpp still expands 0x40e10 (131); 0x40e10 moved into this `/Ob1` file
+// keeps the register summary (154). On HEAD (call expanded): `*(word *)(definition + 0x16)` 70 (-2, under bar), flat dot 72.
+// M3 GB r17, NOT KEPT (moving a function into a file with other flags is kept only with a byte match of the target; the
+// same body without the move is 73; the 12 form is held as a patch). Fast and plain checked with 0x40e10, 0x41040, callers
+// 0xd4cf0/0x244630/0x2be670 and all file peers:
+// moving 0x40e10 into this `/Ob1` file (next to its retail neighbours and its only two callers 0x41040/0x41490) + `*(word *)(definition + 0x16)`
+// + `record->position = *position` + `0.0f - (delta.i * forward.i + delta.j * forward.j + delta.k * forward.k)` keeps `position`
+// on the stack (`ret 0x20`, no `position_reference`), keeps `0x40e10` and all 3 callers MATCH and `0x41040` unchanged at 300,
+// and drops 0x41490 72 -> 12 at retail's exact 426/426 B (`+0x12d`; only `delta.k` spill order before `and cl/dl, 1` and
+// volatile `delta.i/j` non-folded `mulss` remain). Also tried on HEAD (call expanded): word+aggpos 73, plain v3d+dot3f 131,
+// word bitfield / nested if / neg dot / dword flags 70, scalar volatile deltas 127, `depth = delta.k; depth *=` 75; with 0x40e10
+// moved here: main body 127 (breaks callers), word+aggpos+staged depth 17 (kij/kji/ijk/neg/bitfield 17, flat kij 13, sym ijk 12).
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
@@ -960,6 +997,7 @@ void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 void function_14bc0(short index, short element, bool use_depth);
 void function_12d50(bool scaled, real const *projection, real *output);
+dword function_1cbe0(long mode, dword index, long slot_index);
 point3f g_4c1b08[4];
 
 #pragma inline_depth(0)
@@ -978,20 +1016,12 @@ PRIVATE __forceinline void submit_quad_vertices(void)
 }
 #pragma inline_depth()
 
-// score 182 (was 192): size equals retail (837) and every instruction after the first shader lookup is the same; the score is the
-// one-instruction shift of that lookup. Retail reads the tag as `mov eax,[eax+0x5c]; add eax,0x10; mov eax,[eax+4]` (slot 2 of an
-// 8-byte table; the same separate add is at 0x26c6b, 0x34d5a, 0x35097, 0x3923d, 0x5261b), ours folds it to [ecx+0x14], which also
-// puts the 0x14bc0 index in edx instead of ecx. Tried (all 182): slot struct + &slots[2], same through a __forceinline accessor
-// taking the slot pointer / the index / a void* element helper / a tag-block helper, a 16-byte slot, tags[1] through a long
-// pointer, struct copy of the slot (scalarized), memcpy of the slot, an unused first-word read. Stage addresses are written
-// through sampler_state_write (retail ORs the dirty flags once per call) and the quad through a file-scope inline_depth(0) helper
-// (the old whole-function pragma plus the in-body pair left the SetRenderState/SetTextureStageState wrappers out of line: 192).
 // @retail 0x3bf20
 long __stdcall function_3bf20(s_slot *slot, byte *data)
 {
     g_4670bc = true;
     function_16b10((s_render_reset_state *)g_485b48);
-    function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x14), 0);
+    function_1cbe0(0, 0, 2);
     function_1c710(g_51f0f0);
     function_14bc0((short)g_4858b8, 0, true);
     D3DPIXELSHADERDEF program;
@@ -1059,6 +1089,44 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // (116-189), inverse first (117), ys,zs computed right after sin and before cos (195), xs as (double) cast / plain / swapped operands (all 84).
 // Permuter (25 min on r643): 24 below its own baseline, only with a volatile xs and a float term truncated through
 // a long; not kept.
+// Retail's frame puts sine and cosine in the two lowest cells ([esp], [esp+4]) and the xs/ys spills in view_forward's
+// dead slots, the layout of plain locals (aggregates sort above the cells), and computes ys and zs in SSE from an xmm
+// copy of sine with only xs on x87 (ours sends ys and xs to x87: register pressure). The 0x1544e0 builder (matched)
+// shows the same mixed x87/SSE sine products. Tried: the angle as a real 179 (852 bytes, rounded); plain sine/cosine
+// locals 130 (retail's two cells, view_forward one cell higher); the sine products as one vector in j,k,i order 142,
+// in i,j,k order 195, and in i,j,k order with plain trig locals 170; a search over 60 allocation choices: best 83.
+// GB r14 (fast with 0x3bf00 and 0x4d640, both MATCH; control 84 at 845/845 B, al=63, mk=40; 50+ trials): plain real
+// sine/cosine locals (no trig struct) with vector3f squares + vector3f sine_axis and 0x1544e0's store order recovers
+// retail's 0x14 frame, [esp]=sine/[esp+4]=cosine/[esp+8]=xs/[esp+0xc]=ys, SSE ys/zs + x87 xs, and post-fcos 1.0f load:
+// direct with `inverse = 1.0f - cosine` 67 (847/845 B, al=49, mk=36); without `inverse` local mk=33 (849 B, 0 tail diffs);
+// direct with squares in k,j,i order 64 (845/845 B, 189/187 insns, al=39, mk=26). Dropping redundant `(double)` casts on
+// `atan2(view_forward.i, view_forward.j)` on that form makes the first 136 bytes (+0x0..+0x87) byte-exact at 845/845 B
+// (115, al=17, mk=16: stage 1 flips g_4c1b9c ahead of state); adding a two-level inline rotation helper (matching 0x17fd20)
+// without a state alias hits 39 (845/845 B, 187/187 insns, al=34, mk=30; new one-caller helper, not kept; calling 0x17fd20's
+// existing decal_transform_rotation_17fd20 directly gives 190-198 at 859-861 B because its j*i product order differs);
+// match-only lead with `real const *values = (real const *)state;` (parameter rename) + up.j before left.k hits 14
+// (845/845 B, 187/187 insns, +0x88, al=12, mk=12: only 2-insn movss [esp+4] and subss shifts + stage 2 [esi+0x6c] order
+// left; `real const *state` param 115, `values` after angle 115, `scales = (real const *)(state + 0x68)` 90/202,
+// `scale = 1.0f` after rotation 81, 1-7 dead locals 115-150). None passes keep rules without a byte match; body unchanged.
+// M3 GB r17 (fast with 0x3bf00 and 0x4d640 MATCH; control 84; 34 real trials): HEAD with no `(double)` casts on atan2 88,
+// `transform4x3f g_4c1b9c` 84, typed `s_3c650_state const *state` param across 0x3c650/0x3bf00/0x4d640 84, plain `sine`/`cosine`
+// + scalar squares/sine_axis 134; plain `sine`/`cosine` + `vector3f` squares/sine_axis without shared xy/xz/zy 190-222 (861-886 B),
+// `0x1544e0`-style scalar squares + `vector3f sine_axis` 165 (851 B), direct `D3DDevice_SetTextureStageState` 189 (858 B),
+// `kji` squares + `ijk`/`jki` `sine_axis` + shared xy/xz/zy with/without `inverse` and swapped bump operands 76-177 (with
+// typed `s_3c650_state const *water` matching `values` at 76/86, confirming bump operand order is symbol-canonicalized). Body unchanged.
+// M3 lane 15 r149 (h2m fast; control 84). Lead, match-only: plain `real sine`/`cosine` locals, `vector3f squares` and
+// `vector3f sine_axis` filled i, j, k, `(1.0f - cosine)` written in each shared product (xy = (1.0f - cosine) * axis->i *
+// axis->j, xz, zy), 0x1544e0's store order (scale, forward.i, left.i, forward.j, left.j, up.i, forward.k, up.k, up.j,
+// left.k) and atan2 without the `(double)` casts: 18 at 845/845 B (first +0x88; the head, frame and x87/SSE split are
+// retail's). Left there: the xy/xz chains sorted j before i (retail i, j: four more symbols ahead of `axis` fix both, 14
+// with four unused longs), stage 3's state load ranks below the matrix (one grouping pair in any stage 1 or stage 2
+// product fixes it: 10, or 6 with the four longs), then two schedule spots (the cosine load ahead of the x87 sine
+// product; up.j's subtract ahead of the left.k store). Not kept: `(1.0f - cosine)` at each use replaces a named local
+// (with `inverse` named it measures 115-165), and the grouping pair and the longs only steer. Also on the 18 form:
+// squares k, j, i 169-174; product text orders 18 (canonical); `inverse` after forward.i 164, after axis 115; axis
+// declared at the top 66-70, after view_forward 18, read through g_4687b0 18; the parameter alias `values` 18 (119 with
+// the grouping pair); the angle offset named 164; the two vectors declared ahead of axis 10 (same); position zeroed z, y,
+// x or x, y, z 18; stage 2 as unary minus 18; sine_axis in every order 6-7 or 185, placed after scale 31 or forward.i 38.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1105,16 +1173,71 @@ void function_3c650(byte const *state)
 
 
 
-extern byte g_485ac2;
+byte function_016a90();
 s_3c9a0_matrix g_4c1b68;
 
-// score 315 (was 315): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
+// score 229 (was 291): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
 // 1.0, 1.13, 1.5, 0.0001); no behaviour difference found. Retail spills tangent and view_tangent to float stack slots and
 // divides with divss, ours keeps them on the x87 stack (fdiv st(1)); retail also keeps the near_x/near_y/z stores to
 // g_4c1b08 and reloads them in the corner sums, ours forwards them and drops the stores (1330 vs 1387 bytes), and its
 // frame is 0x4c, ours 0x60.
 // Tried: store order z,x,y,scale (291 -> 291), volatile tangent (-6), volatile tangent+view_tangent (-6), writing only
 // g_4c1b08[3].y and keeping the other corners in locals (same code).
+// The shared tangent for the near/far rows is a real local, not a double: retail keeps it unrounded on the x87 stack
+// for both rows, which a real held in a register also gives (same code here but one fadd), and a double local made
+// the caller 0x3c3c0 pad its frame for 8-byte stack parity, which retail's 0x3c3c0 does not (315 -> 291 in the full
+// build, 0x3c3c0 150 -> 136 with it).
+// M3 lane 2 r151 (fast screen; 291 at 1330 B before; the reused pair and the `-12.0f *` form are HELD as a patch at
+// m3 review: computing the far corner after the near stores is statement order and `-12.0f * (angle * 0.04f)` is
+// operand order, both kept only with a byte match; the 0x16a90 call is kept, same code): one pair of corner_x/corner_y locals reused for the near and then the
+// far corner (retail's shared cells: the near values are re-read from g_4c1b08 in the corner sums once the far ones
+// overwrite the locals) 239 at retail's 1387 B; the hand-written aspect test replaced by the existing 0x16a90, which
+// retail expands here, 239 (same code); the near angle as `-12.0f * (angle * 0.04f)`, so the two constant products stay
+// apart as in retail (`angle * 0.04f * -12.0f` folds them into one), 229 (1388 B); without the reused pair that form
+// measures 287 (1336 B). Lead, not kept (0x3c9a0 matches in every order, so only this caller's count moves): 0x3c9a0's
+// parameters as (matrix, forward, up), the order retail's register setup implies (EAX before EBX, last to first), 237 on
+// the 239 form and 227 on the 229 form; (matrix, up, forward) and (up, matrix, forward) also 237. Left: retail rounds the
+// first tangent and the view tangent through stack cells and divides and compares in SSE (1.0 held in XMM0, the
+// distance in XMM5); ours keeps both on the x87 stack (fdiv st(1), fcompi) and keeps the near corner_x there too, where
+// retail stores it at once; frame 0x54 against 0x4c.
+// Tried, none lower: the half-angle local reused for the view tangent 291 (same code); on the 239 form, the width scale
+// as a copy then `/=`, the view tangent as tan then `*=`, the tangent as tan then `*=`, the width scale computed in place
+// of the view tangent, the tangent and corner_x as one local, the aspect and corner_y as one local, 239 each (same code);
+// corner_x/corner_y as members of a point2f local 242; the near angle as `angle * 0.04f * -12.0` 230 (1388 B), as
+// `angle * 0.04 * -12.0` 242, through a named `angle * 0.04f` step 227 (the kept form's code with the lead reorder); on
+// the 227 lead form, position stored z, x, y, then the scale 226; the camera
+// local's z rewritten and copied as a whole, scale first or last, 281 (1408 B); the view tangent through the float tan
+// overload 227, the first tangent through the double overload 227. Diagnostic (reverted): a float-consistency pragma around
+// the body 433 (1545 B: tan becomes a library call, so retail is not built that way, though the divide and compare then
+// turn SSE).
+// M3 lane 3 r309 (H2M_FAST; 0x3c9a0 MATCH and 0x3c3c0 74 throughout; control 291 at 1330 B). Retail gives the first
+// tangent, the view tangent and the near corner_x memory homes (the x87 result stored as a float, then an SSE divide and
+// SSE/integer copies); ours keeps them on the x87 stack. None of these moves it: the tangent or the view tangent as a
+// real product `(real)tan(...) * x` 291 / 291, both 291 (same code); both with no casts 291; every local declared bare
+// at the top 291; the clamp's first test as `!(width_scale > 1.0f)` 306 (1321 B: the second compare folds away, so the
+// `<=` / `>` pair is retail's). On the reused corner pair (r151's held form, re-measured 239 at 1387 B, 229 with the
+// two-multiply angle): tangent2 computed ahead of the near corner 239; the width scale in one expression 239; no casts
+// 239; the `!(... > 1.0f)` test 249; bare top declarations with the two-multiply angle 229. Reading: retail keeps one
+// home for corner_x across its near (x87) and far (SSE copy) values, ours splits the two.
+// GB r14 (fast with 0x3c9a0 MATCH and 0x3c3c0 74; control 291 at 1330/1387 B, fr 0x60, al 283, mk 169; 23 real trials + 1 diag):
+// retail's corner transform computes all four .x, then all four .y, then all four .z (hoisting g_4c1b38[row][2] * 0.0f
+// once per axis): nested `for (row 0..2) for (i 0..3)` recovers exact fr 0x4c but does not unroll (630, 996 B); three
+// separate 4-corner axis loops (x, y, z) cut mk 169 -> 136 (al 240, fr 0x54, 325 at 1297 B); with near corners stored
+// ahead of far (separate locals) 285 (1338 B, 278/280 insns, fr 0x54, al 235, mk 103); with r151's reused x/y + `-12.0f *`
+// 247 (1402 B, 281/280 insns, exact fr 0x4c, al 224, mk 143); with `point2f corner` + `real_point3d_set` 256 (fr 0x50).
+// Diagnostic (reverted): `volatile tangent` + `volatile view_tangent` on the 247 form 215 (1396 B, 279/280 insns, exact
+// fr 0x4c, al 210, mk 132: recovers retail's `fstp` + `divss` + `comiss` across 0x3cb75..0x3cc5c). Also tried (none kept):
+// tangent before aspect 291 (same code), + z,x,y,scale position order & camera.x/y in g_4c1b38 291 (al 280); `real_point3d_set`
+// 291; 2-caller `half_tan` inline helper 293 (mk 162); column-order matrix fill + row loop 630; 2-row `x_values[2]` loop
+// 457 (fr 0x4c); `point3f const *p` loop 291; `(real)tan(...) * scale` with tangent first 291; `for` copy in place of
+// memcpy 298; `if (width_scale > 1.0f)` clamp 306; `fabs` distance 347; `1.0f >= width_scale` 291; `real (*matrix)[4]`
+// pointer 260 (1402 B, 292 insns, mk 215 worse: indirect loads); constant-LHS clamps 291; `transform_point_3x4` helper 291.
+// Body unchanged.
+// M3 lane 15 r149 (h2m fast; 0x3c9a0 MATCH, 0x3c3c0 74; control 291). Retail stores the first tangent as a float at
+// once and divides and compares in SSE; ours keeps it on the x87 stack across the inlined 0x16a90 test. Tried: the clamp
+// as one ternary 306 (1321 B); the near angle through the float tan overload 291; the tangent without casts with the view
+// tangent folded into `tan(half_angle) * aspect / tangent` 291; the field of view (+0x7c) named for its five reads 333;
+// the tangent scale (+0x80) named for its two reads 313.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1133,7 +1256,7 @@ void function_3ca90(byte const *state)
 	g_4c1b68.position.z = height - distance * offset;
 	real aspect = ((real)(short)g_48564e - (real)(short)g_48564a) / ((short)g_48564c - (short)g_485648);
 	real tangent = (real)(tan(*(real const *)(state + 0x7c) * 0.5f) * *(real const *)(state + 0x80));
-	if (!(g_4e6948 && g_4e6948->flag && g_4e6948->index != NONE && g_4e6948->state == 3) && g_485ac2)
+	if (function_016a90())
 		aspect *= 1.5f;
 	real half_angle = g_485640 * 0.5f;
 	if (!(half_angle < 0.7806857824325562f)) half_angle = 0.7806857824325562f;
@@ -1155,7 +1278,7 @@ void function_3ca90(byte const *state)
 	g_4c1b38[2][2] = g_4c1b68.up.k;
 	g_4c1b38[2][3] = g_4c1b68.position.z;
 	real near_x = (real)tan(*(real const *)(state + 0x7c) * 0.04f * -12.0f);
-	double tangent2 = tan(*(real const *)(state + 0x7c) * 0.5f) * *(real const *)(state + 0x80);
+	real tangent2 = tan(*(real const *)(state + 0x7c) * 0.5f) * *(real const *)(state + 0x80);
 	real near_y = (real)(sqrt(near_x * near_x + 1.0f) * tangent2);
 	real far_x = *(real const *)(state + 0x88);
 	real far_y = (real)(sqrt(far_x * far_x + 1.0f) * tangent2);
@@ -1200,7 +1323,7 @@ struct s_render_part_context
 extern real g_4670e4;
 long function_40de0(long index, bool first, bool second);
 
-// score 300 (was 296): logic matches retail block by block. The two parameter volatiles stay: without them 0x44ac0 (a caller)
+// score 189 (was 300): logic matches retail block by block. The two parameter volatiles stay: without them 0x44ac0 (a caller)
 // stops matching because index/part_index leave edx/ecx. Retail takes index raw from edx (`or ebp, edx` at 0x410ed), ours
 // zero-extends it ((word)index); the signature is short in every declaring file, so not changed here. Still differs: register
 // allocation (retail keeps g_4e3b44 in ebx and spills entry/part to [esp+0x1c]/[esp+0x10]), retail re-reads *part for kind
@@ -1208,6 +1331,29 @@ long function_40de0(long index, bool first, bool second);
 // ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
 // Also tried (@coldspear, #104 2026-11-02): index as long in all five declarations: 0x41040 315, and the matched caller
 // 0x44ac0 stops matching (137), 0x44c90 107 -> 149. Not a lead.
+// M3 lane 3 r309 (H2M_FAST with 0x44ac0, 0x44c90 and 0x402b0, MATCH throughout; control 300). Retail ORs the incoming
+// index register into the handle raw (`or ebp, edx`) and sign-extends it only for the entry lookup (`movsx esi, dx`); its
+// callers pass 32-bit loop counters in EDX. Index as `long` in the definition and all four declarations, the three
+// `(short)` casts dropped at the calls, the entry read as `g_4ba138[(short)index]` and the handle OR-ing `index` 315
+// (1076 B: retail's raw `or`, every caller still MATCH); on it a local copy of the tag table for the two lookups ahead
+// of the first call 314, `long kind` 309, the material as a ternary 302 (cmove), all three 316. On the short form: the
+// tag-table local 301 (1079 B: the table load moves to the entry as retail's, the registers stay ours), `long kind`
+// with the material ternary 305, the tag-table local with the ternary 307.
+// M3 lane GA r15 (46 fast trials with 10 peers MATCH; plain confirmed 300 -> 248, 308/308 insns, aligned 163 -> 43, masked
+// 72 -> 30): GA's form, existing visible_entry_geometry(index) (unknown_044e90.h) + direct *(word const *)part + material ?: +
+// *(word const *)(definition + 0x16) + if (record->active), matching retail lines 7-50 and 287-313 verbatim, all callee-saved
+// registers (ebx=g_4e3b44->definition, ebp=handle, edi=material) and all 4 non-delta stack slots ([esp+0x10..0x1c]). Also
+// tried (not kept): without visible_entry_geometry: TFB 305, TFB+no_sec 304, +part direct 315, +ternary 319, +word16 287,
+// +active local 283, +dot jki 283, +entry late 287, +tag first 290/287, +tag table 280, active only 314, word16 only 310,
+// record->active only 314, mat+active 314, mat+word16 310, long kind combos 312/311/308/279, vec helpers 302, member pos
+// 337 (breaks callers), first/second TFB 303, nested if 281, override via material 284 (breaks callers), direct+word16 only
+// 291; with visible_entry_geometry: alone 277 (breaks callers), +part 313 (breaks callers), +mat 313 (breaks callers),
+// +word16 272, +record->active 287, +long kind check 251 (aligned 38), keeping word/long kind local 192/194 (1062/1060 B,
+// 303 insns, aligned 99/98, wrong part/kind spill), dot jki 248, active local 248, entry before geom 248.
+// Review: kept only the existing visible_entry_geometry(index) and the word read of definition + 0x16, with the `kind` local,
+// main's material lines and context->active: 189 (1065/1089 B; 0x44ac0, 0x44c90 and 0x402b0 MATCH). The kind re-reads and
+// record->active are second reads (match-only) and the ternary changed nothing; byte reads of +0x16 on this form give 277
+// and 0x44ac0, 0x44c90 and 0x402b0 stop matching.
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -1220,26 +1366,7 @@ void function_41040(short index, long part_index, long group, byte weight,
     (void)&group; (void)&weight; (void)&context; (void)&material_override;
     (void)&force; (void)&and_mask; (void)&or_mask;
     s_44940_entry const *entry = &g_4ba138[index];
-    byte const *geometry;
-    if (entry->tag != NONE)
-    {
-        byte const *definition = g_4e3b44[entry->tag & 0xffff].bytes;
-        byte const *section = *(byte **)(definition + 0x28) + ((entry->flags >> 9) & 0x1ff) * 0x5c;
-        geometry = *(byte **)(section + 0x34);
-    }
-    else
-    {
-        byte const *structure = (byte *)g_4e0348;
-        byte const *section;
-        if (!(entry->unknown00 & 0x1000))
-            section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
-        else
-        {
-            byte const *instance = *(byte **)(structure + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
-            section = *(byte **)(structure + 0x13c) + *(short const *)(instance + 0x34) * 0xc8;
-        }
-        geometry = *(byte **)(section + 0x50);
-    }
+    byte const *geometry = visible_entry_geometry(index);
     byte const *part = *(byte **)(geometry + 4) + part_index * 0x48;
     dword handle = (((dword)weight << 16) | (word)index) << 8 | part_index;
     real priority = weight * context->priority * g_4670e4 * 4.0f;
@@ -1282,7 +1409,7 @@ void function_41040(short index, long part_index, long group, byte weight,
             delta.k = context->position.z - g_485618.position.z;
             record->tag = material;
             record->context = (void *)handle;
-            record->type = function_40e10((bool)(definition[0x16] & 1), (bool)((definition[0x16] >> 1) & 1));
+            record->type = function_40e10((*(word const *)(definition + 0x16) & 1) != 0, ((*(word const *)(definition + 0x16) >> 1) & 1) != 0);
             record->flags = 0;
             record->callback = function_41020;
             real depth = delta.k * g_485618.forward.k;
@@ -1304,6 +1431,26 @@ void function_41040(short index, long part_index, long group, byte weight,
 // tricks (none), statement-order permutations of result/out/key/index (305-360), key as long (341), group as switch or
 // if-chain (switch gives sub/dec instead of test/cmp; the nested != 1 form gives retail's cmp), selection as byte with one
 // movsx (closer to retail, score 340-361 only because the size changes: 1196 vs 1204 bytes).
+// M3 lane 15 r147 (fast screen, 305): retail splits the tag parameter: its early uses (the 0x15d70 call, the case 18
+// and 19 definition reads) come from ebp, the override in cases 18/19 is stored to the parameter's own slot and the
+// material lookup reads it back from there; stage is in edi only up to the switch, pass stays in its slot. Ours keeps
+// one tag web in edi to the material lookup, pass in ebp, stage in memory. Forms: the source fields for the 0x15d70
+// call read as g_4ba138[index] with the pointer formed after the call 376 (1248 B, the pointer is never formed); the
+// override in a separate `material_tag` local initialised from tag 316 (1204 B, retail's length: pass now stays in its
+// slot as retail, but tag takes edi and stage ebp, and the copy is stored to tag's slot); (void)& on tag/pass/stage
+// 305 (same code), with the separate local 316; the 0x4cbb0 call reading out->value10 as retail does 305 (same code:
+// the stored value is forwarded); the selection switch's default listed with cases 1-3 365 (1164 B). Retail's primitive
+// switch shares one block for cases 1-3 and the default (same register), and tests the 0x4cbb0 result as a byte.
+// M3 lane GA r15 (34 fast trials with 8 peers MATCH; control 305 at 1196/1204 B, aligned 181, masked 80; body unchanged).
+// `(byte)function_4cbb0(...) != 0` gives retail's `test al, al` (304, -1 under bar); dropping the `material` local and
+// reading `out->value10` for 0x1cb20/0x4cbb0 puts `tag` in EBP (+0x1b), reproduces retail's 2-block primitive switch and
+// its `out->value10` reload after 0x1cb20 (334, with `case 4/5` first 320, with 449e0-shape inline geometry helper 329 at
+// +0x31 matching lines 8-22 verbatim incl. `lea esi, [esi+0x4ba138]`, with `material_tag` 340/351); existing
+// visible_entry_geometry(index) 332 (1208 B), with material_tag 357 (aligned 140, masked 69); 449e0-shape helper alone
+// 308 (1204 B); `(byte)mode * 0x132` first 305; value0c order swap 305; out late/in if 305; pass=0 after object 304;
+// shared override ptr/ref helpers 305; primitive init-before 356, signed char/long 305; result in else 364; stage/tag
+// locals 305/328; g_4ba138[index] in 15d70 args 376; out->value08 in 4cbb0 304/334. Left: splitting `tag` at switch
+// without an extra stack slot so stage takes EDI and pass stays on stack.
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
@@ -1679,7 +1826,7 @@ bool __stdcall function_1c8a0(D3DPRIMITIVETYPE type, word const *indices, long c
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 bool __stdcall function_3bd00(real height, dword color);
 
-// score 150 (was 150): logic walked against retail, no logic or behaviour difference (calls, argument order, 0x7c==0 test,
+// score 74 (was 150): logic walked against retail, no logic or behaviour difference (calls, argument order, 0x7c==0 test,
 // 0x100000 and >>19 flags, 12de70/3c270 order, both loops match). What differs is the frame: retail has none (push ebp after
 // the first test, push ebx/esi/edi after the second, three epilogues, spills in the render/clear argument slots [esp+0x14]/
 // [esp+0x18]); ours reserves one local slot (push ecx) so everything is pushed up front, shifting the rest. Retail also
@@ -1688,6 +1835,14 @@ bool __stdcall function_3bd00(real height, dword color);
 // record_format_groups(tag) for the table walk, tag re-read from state at each use (183, no spill), tag initialised
 // before the 3c270 call (150, but moves the load before the call: not retail's order).
 // Permuter (25 min on r643): best 139, only with the tag read as a short (a behaviour change); not kept.
+// The frame was a stack-parity pad for 0x3ca90's double local (gone with its tangent as a real: 136); with the
+// prologue retail's, the 0x100000 test as (bool)((flags >> 20) & 1) gives retail's shr/test al,1 (74). Left: the clear
+// call's flags go in eax in retail (BLOCKED-BY 0x14b60, a stack-convention stub; with its real body this function gets
+// a parity pad again, 194), and that 3-byte shift moves both loop pads; the outer loop adds the spilled i * 12 as a
+// memory operand where ours loads it into ecx. Tried: the overlay bit in its own local in place of render (same code)
+// or tested at its use 220; the depth argument as 0 (same code); a copied tag for 0x1bbf0 (same code); the element
+// read as i * 12 + base or as a long array with [i * 3] (74, same code); the NONE test as an if around the inner loop,
+// the bitmap pointer typed at its definition, the second tag read at both uses (all 74, same code).
 // @retail 0x3c3c0
 bool __stdcall function_3c3c0(bool render, bool clear)
 {
@@ -1720,7 +1875,7 @@ bool __stdcall function_3c3c0(bool render, bool clear)
         long shader_index = *(long *)(shader + 0x100);
         dword flags = *(dword *)(shader + 0x118);
         render = (bool)((flags >> 19) & 1);
-        if (flags & 0x100000) function_3bea0();
+        if ((bool)((flags >> 20) & 1)) function_3bea0();
         if (render) function_3bd00(*(real *)(state + 0x84), pack_color3f((color3f const *)(state + 0x58)));
         if (clear) function_14b60(0x10, 0xffffff, 0.0f, 0);
         byte *geometry = *(byte **)(state + 0xc);
@@ -1814,6 +1969,25 @@ extern long g_485a60;
 // slot is stored as a dword), values 0..255 so no behaviour change. 0x100000 test: retail `shr edx,0x14; test dl,1` but
 // every spelling (TEST_FIELD_BIT, bool local, (x >> 20) & 1) folds to `test [mem],0x100000` here (380 in all four).
 // Also tried: definition first then part_index/value/index (402), index kept as long raw_index + short (393), value first (404).
+// M3 lane 3 r309 (H2M_FAST; control 380). Retail decodes part_index as `xor ecx, ecx; mov cl, al; ... and ecx, 0xff`
+// and reads it back as a short (`movsx eax, word ptr [esp + 0x34]`): `short part_index = (short)(packed & 0xff);` gives
+// that exact sequence but 417 (part_index stays in EDI where retail spills it); with it, the definition lookup first
+// 414, the definition and the tag store first 414, definition/part/value/index 406, definition/index/part/value 406.
+// Other spellings: `short part_index = (byte)packed;` 401 (1399 B, `movzx di, al`), `(byte)packed & 0xff` into a long
+// 401 (1400 B, `movzx ecx, al`), `(short)((byte)packed & 0xff)` 401 (1399 B). Lead: the short form plus whatever makes
+// part_index spill.
+// M3 lane GA r15 (49 fast trials, control 380, all 13 peers MATCH; plain verified 360, all 35 file peers + callers/callees MATCH):
+// Not kept at review, 380 -> 360 (1399/1418 B, 418/420 insns, aligned 343 -> 299, masked 333 -> 277): short part_index = (short)(packed & 0xff) (retail's
+// xor/mov cl,al/and 0xff/movsx word), existing visible_entry_geometry(index), and 2-caller prepare_mask_stream(buffer, size) (retail's NULL
+// init + unconditional mask store in both mode==3 arms). Single-change fast scores: visible_entry_geometry 424 (aligned 243),
+// prepare_mask_stream 413 (aligned 237), short part_index 417 (aligned 200), definition first 405, direct shader 378, arm1+arm2 texture first
+// 349, 0x100000 TEST_FIELD_BIT/shift 380/380, short i prefetch 380, bit-4000 nested 380, compound/prefetch/tail order variants 380-433.
+// Leads (not kept without a byte match: statement-order move or extra local): moving definition first on the 360 body gives 344 (1399 B,
+// aligned 284, masked 99; direct shader 344 at 1398 B, aligned 261, masked 94; arm2 texture first 341; arm1+arm2 texture first 402 tail-merged;
+// size before buffer 344); adding a 32-bit entry_index local gives 381/382 at exact 1418 B with first diff +0x47 (lines 1-22 byte-for-byte
+// match) and masked 86; long index without extra local 407-429.
+// Review: prepare_mask_stream is a new helper used only by this function (two sites), match-only; without it the
+// short part_index and visible_entry_geometry(index) give 420, so the body stays at 380.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

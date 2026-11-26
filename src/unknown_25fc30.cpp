@@ -1086,6 +1086,15 @@ void __stdcall function_25eea0(
 }
 
 #pragma inline_depth(0)
+// score 253 (was 253): the cover loop's line index stays in memory where retail keeps it in EBX (sharing the zero
+// register); the allocator ranks the moving counter (-38) above the index (-44) for EBX. Also the weight block's
+// quotient and weight colours (retail quotient XMM1, weight XMM2), retail keeping the leader distance on the x87 stack
+// (`fst`), and the 0x1df560 argument loads. The fast screen needs 0x1e1f20 0x1e5240 0xb9dd0 0x1b0710 0x1df560
+// 0x267a80 listed. Round 158 (m3 lane 14, fast): the line type read in the test 253; counters declared exposed,
+// behind_cover, moving 253; `short j;` with the counters 253; `short j = 0;` with the counters and `for (; ...)` 318;
+// the band test as `inner <= distance` 252; distance defined where computed 253; delta through
+// vector3d_from_points3d 262 (with length_sq3f too 262 at 1306 bytes, frame 0x30); length_sq3f alone 275; the factor
+// clamp as a conditional expression 253; `weight *= ...` 253.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

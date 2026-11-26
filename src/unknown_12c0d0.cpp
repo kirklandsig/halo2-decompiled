@@ -1201,6 +1201,15 @@ bool g_46883d;
 extern long g_4e6470, g_4e6474;
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// score 193 (was 193): the bitmap is coloured into ESI and the result lives in memory, where retail keeps the
+// bitmap in EBP (cut before the block loop; the switch re-reads the parameter slot) and the result in ESI with slot
+// stores; retail also keeps a zero register (EBX) after the load call. Round 158 (m3 lane 14, fast): the priority as
+// an else-if chain with a `restricted` arm and a final `else priority = 2` 214 (sbb on the last arm); as one
+// conditional expression 214; the parameter used directly (no address-read copy, `view` renamed) 193 (identical
+// code); the block loop as `for (long i = 0; i < 3; i++)` 299 (unrolled); the time store indexed by
+// `(word)block_index` 194; the entry through `(word)block_index` 195; the switch reading the parameter while the body
+// reads the copy 193. Lead: the shared-texture getter (0x12c960, still matched) assigning its result before the build
+// call gives retail's inlined block (`xor edi, edi` ... `mov edi, eax` ahead of the call) but 220 here.
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

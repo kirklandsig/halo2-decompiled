@@ -185,6 +185,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 }
 
 // score 567 (was 603): GB r1 plain-confirmed 603 -> 567 (2877/2881 B, exact 734/734 insns, all 17 other file functions MATCH): void return, s->counter++ with closing test reading the field, inline PIN((double)s->alignment * 1.5, 0.75, 3.5) inside step (moves pops ahead of closing test), g_510c54 read consistently at every use (no globals local), one-use ticks dropped at all three vector3f_scale calls, and existing vector3f_add_scaled(&qr, &nq, back, position) at both settle arms. Still differs: q vs d in EBX at entry, 12/8 factor selected before t at the three clamps, and output ramp schedule.
+// M3 lane GA r16 (42 fast trials with 0x1eb6f0, 0x1ed4a0, 0x30bf0; control 567, 2877/2881 B, +0x9, al 698, mk 419; body unchanged): MAJOR STRUCTURAL LEAD (b2_06/b4_03/b4_07): __forceinline 3-call ease_step_speed(bool fast, real dist) + 2-call ease_ramp_ticks + direct s->limit + vector3d_from_points3d(pos, b, &delta) + vector3f_scale impulse + vector3f_add delta + target ptr + vector3d_from_points3d refreshes + active vector3f_add_scaled + unfolded 3.0f/0.5f + `vector3f qr = *(counter == 0 ? g_4687a4 : q);` recovers ALL THREE retail callee-saved entry homes (`sub esp, 0x24`, `q` in EBX, `pos` in EBP, `g_510c54` in EDI) WITH `0x1eb6f0 MATCH`, `+0x28` first diff, exact `cmove ebx`, exact `k`-first + `neg cl`, exact `mov ebx, [esp+0x40]` reload after first 0x30bf0, and byte-identical epilogue WITHOUT any component-copy `*position = *q`! Scores: b2_06 644 (2858 B, +0x28, al 488, mk 172); + `!(0.001f < e3)` + early-ret step + `delta *= dt/len` (b4_03) 720 (2870 B, al 480, mk 148); + `rate` local + `dot3f(&s->direction, q)` + `!(4.f >= ...)` (b4_07) 718 (2875 B, al 463, mk 152); minimal cmove subset (b4_08) 622 (2863 B, al 510, mk 181, all 3 entry regs + 0x1eb6f0 MATCH); without volatile cnt (b3_06) 758 (al 485, mk 152). Remaining shifts on lead: hoisted `xorps xmm6, xmm6` (0.0f outranks 3.0f by 1 ref), 1-2 insn extra in clamp `e`, and 3-4 insn `movaps` in delta scaling. Other trials: up/down half sep 609 (mk 271); unfolded 3/0.5 + e3 inv 625 (novol 690); active vector3f_add_scaled 659 (al 603, mk 262); + target/dir 688 (mk 231); non-forceinline ramp_ticks 1024-1040 (2576 B); impulse scale+add+target+active_as 600 (mk 210); PIN step / comp_qr without cmove_qr lose 0x1eb6f0 (662-746, mk 162-179).
 // M3 lane GB r3 (fast with 0x1eb6f0, 0x1ed4a0, 0x30bf0; control 567, 2877/2881 B, +0x9, aligned 698, masked 419; 31 trials, body unchanged): 3-caller forceinline step helper (if-form) + vector3f_scale impulse + component-copy *position = *q 730 (+0x11, al 563, mask 426, 0x1eb6f0 MATCH: q takes EBX, pos EBP, frame 0x24); plus direct s->limit, vector3f_add impulse, vector3d_from_points3d dir refreshes, vector3f_scale qr and !(0.001f >= e3) 704 (2854 B, +0x11, al 483, mask 310, 0x1eb6f0 MATCH; d takes EDI instead of g_510c54, epilogue byte-identical); step helper without component copy breaks 0x1eb6f0 (score 22: 708/656/759/704/743, best al 470, mask 306). Individual on 567 base (all companions MATCH): direct s->limit 681; unfolded 3.0f/0.5f remain schedule 689 (recovers xmm7=3.0f, xmm6=0.5f), with direct limit 685, dw/de only 673, ramp/round helpers 696; vector3f_scale impulse 613; vector3d_from_points3d dir refreshes 678 (al 575, mask 401); retail e3/duration compares 641/647; vector3f_add_scaled ramp 681; inline settle one-use locals / drop back only 586 (2880 B, al 656, matches settle arm 2), + !(0.001f >= e3) 634; vector3f_scale qr 701 (+ settle 698); dot3f both/second 682/568; component-copy *position = *q 662; magnitude3d/vector3f_scale/vector3f_add_scaled on delta & target 668/668/688/653; direct s->counter / length before nq 567 (same code).
 // Earlier 603 (was 603): r131, m3 lane 1 r154 and lane 16 r179 unchanged (delta helper forms below; r154 and r179 just above the marker). M3 lane 14 r105 put the settling align through the existing dot3f
 // r131 and r232 unchanged (delta helper forms below). M3 lane 14 r105 put the settling align through the existing dot3f
@@ -1005,10 +1006,59 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Both remainders from two subtractions 602, with named halves 613. Activation and
 // live fall stages 700, explicit duration arms 678, admitted remainder clamp 693.
 // NOT kept: the one-point gain is below the threshold; sampled velocity still lacks the EBX home.
+// M3 lane 16 r188 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 567, aligned 709). Reading: the
+// first row is EBX's parameter: retail loads q (the fourth stack argument) into EBX at entry, keeps it on the path that
+// skips the update, reloads it after the update block and picks the zero vector with `cmove ebx`; ours gives EBX to d
+// across the update block (the allocator ranks d's range there; q's range starts only at the output copy) and stores
+// the zero-vector pick into q's argument slot. Forms: the pick into a new `vector3f const *input = counter == 0 ?
+// g_4687a4 : q;` read for the three components 664 (2871 B, aligned 705: the `cmove` appears, into EAX), the same as
+// `input = q; if (counter == 0) input = g_4687a4;` 662 (2872 B); `vector3f qr = *(counter == 0 ? g_4687a4 : q);`
+// 684 (2853 B); the unlimited target's three products written `dt * s->direction.n` 567, with the alignment term's
+// three as `w * s->direction.n` as well 567 (same code each: the product operands sort by rank). Body unchanged.
 // The clock and 0x24 frame agree, with direction still in EBX. Named square before the root
 // for initial, impulsed, both, sample, initial/sample, impulsed/sample or all
 // 679/679/668/565/679/679/668. Named i/k sum at both activation roots 666.
 // NOT kept: the sample-only gain is two points. Activation forms raise the count.
+// The 0x24 frame agrees, but EBX still holds the supplied direction instead of the sample.
+// Descriptive names for initial timing, capped timing, movement workspace, output sample,
+// output ramp, settling, both timing blocks and all six groups score 567 each.
+// Cold-branch active reload, reload only after activation, short-circuit active test,
+// and activation success result: 659/654/659/687. With the initial speed factor before
+// the time product: 680/698/680/716. NOT kept: the reload and result forms retain the
+// supplied direction in EBX. The early factor forms shrink the frame and lose the caller match.
+// M3 lane 1 r168 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 567): the duration sum written
+// `n2 + (s->fast ? 7 : 1)` 567 (same code); the settle length through the existing magnitude3d 567 (same code); the
+// closing test as `s->duration + 6 > s->counter` 568; the 12/8 factor written inside the cap at all three clamps (no k
+// locals) 567 (same code); both activation step counts as one conditional expression each 677 (2879 B). Body unchanged.
+// M3 lane 12 r190 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 567, aligned 709). Reading: retail
+// forms `&s->target` once (`lea eax, [esi + 0x30]`) ahead of the activation's target branch, writes both arms and reads
+// the direction refresh through it, and forms `&s->direction` (`lea edi`) before the refresh's stores; it also reads
+// s->limit from memory at the length cap, the limited flag and the distance pick. Forms: a `point3f *target = &s->target`
+// local for both arms and the activation refresh 567 (aligned 708, same count); that with the activation refresh through
+// the existing vector3d_from_points3d(pos, target, &s->direction) 576 (aligned 622, semantic rows 96 against 122: the
+// branch, copy and refresh are retail's but for registers), with the active block's refresh through it too 597 (aligned
+// 615); both refreshes through the helper without the pointer 678 (re-measure); s->limit read at each use (no `limit`
+// local) on the 576/597 forms 681/661 (aligned 583/611); the 12/8 factor selected before t at the first clamp on the
+// 576 form and on its each-use-limit form 673/741 (frame 0x20). Lead (not kept, the count rises): the 576 form is the
+// closest aligned shape so far. Body unchanged.
+// EBX still takes the supplied direction. Staging the first displacement endpoint
+// in the vector, in three coordinates, as a point copy or as a point initializer
+// scores 570/670/716/651 with the alignment scale before those reads and
+// 567/670/716/648 after them. NOT kept: the staged vector ties at best, and
+// the coordinate and point forms move the frame or vector schedule away from retail.
+// GB15 (fast with 0x1eb6f0/0x1ed4a0/0x30bf0 MATCH; control 567 at 2877/2881 B, +0x9, fr=0x24, al=727, mk=408; 18 trials,
+// body unchanged): 3-use `real ticks = (real)g_510c54->field_2_3; position->i/j/k *= ticks;` at all 3 scale sites 565
+// (-2, 2877 B, al 723, mk 404, 0x1eb6f0 MATCH; NOT kept: under 8-pt bar); direct field_2_3 *= 659 (mk 367); `vector3f qr
+// = *q;` struct copy 661, + single `qr_rate` scale 602, + ticks *= 602, + `!(0.001f >= e3)` 664, + w*rate before if 657,
+// + unfolded 3.f*0.5f/remain 692 (all 0x1eb6f0 MATCH). Inline `k` before `t` at all 3 clamps (no helper) recovers `q=EBX`
+// and `cmove ebx` without touching `*position = *q`, but shrinks frame to 0x20 and breaks 0x1eb6f0 (score 22, pushes `b`
+// instead of EDX): with `PIN` 726 (+ qr_rate/ticks 693, mk 311; + unfold/dir/cmps 736, al 646, mk 301); with original `if`
+// 718 (+ ticks 718, + qr_rate/ticks 749, + unfold 740, + direct limit 762, + unfold/cmps 742, mk 306).
+// M3 lane 16 r192 (H2M_FAST with 0x1eb6f0, 0x1ed4a0, 0x30bf0; control 567, aligned 681, masked 268): `cnt` as a plain
+// real 709 (2849 B); the output written through `out->position` at each use (no position pointer) 653 (2887 B);
+// `s->limit` read at each use (no limit local) 681 (2879 B); the activation displacement through the existing
+// vector3d_from_points3d(pos, b, &delta) 665 (2880 B; aligned 629, masked 246, both below main's: a part for a combined
+// form only); both activation step counts as `e > 0.001f ? rem / e + 6.f : 6.f` 677 (2879 B). Body unchanged.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

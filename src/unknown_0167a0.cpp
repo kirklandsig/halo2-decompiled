@@ -956,6 +956,17 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // 16 and 15/19); 12 above 11 6; 16 first 31; 16 after 10 21; 13 above 12 6; cases 5-8 as one label group 6; `return
 // true;` in place of `break;` in case 10, in 12 and 13, or in 14 and 18, 6 each (same code); in every case 36 (the
 // merged blocks then sit at 14's and 15's places and cases 9, 11, 16, 17 keep source order), in every case but 10 36.
+// M3 lane 6 r244 (h2m fast with 0x19ca0/0x19be0, both MATCH unless stated): cases 9-20 stored through the four named
+// members of the existing four-float vector type 2 (same code); `default: break;` in the mode switch 2 (same code);
+// `return true;` closing the size branch 2 (same code); case 4 as one colour aggregate copy 131; the size pair read
+// through a `long const *` local 47 (708 B, 0x19ca0 130).
+// M3 lane 8 r239 (h2m fast with 0x19ca0/0x19be0, both MATCH each time): `default: __assume(0);` placed first in the
+// component switch 2; `__assume(component <= 20);` ahead of the switch 2 (both the same code); the sizes set to 1.0f in
+// an else arm of the texture test 117 (708 B); `component - 5` written at each use in cases 5-8 (no output_component
+// local) 229 (724 B; 0x19be0 58, 0x19ca0 259); `real height = width;` 2 (same code); the sizes chained `width = height =
+// 1.0f` 4 and height declared first 4 (both only swap the two default copies' registers); the sizes as two ternaries on
+// the texture 142. On the every-case-ascending form (6, re-measured): ternary sizes 140, height declared first 8, height
+// from width 6, the else-arm sizes 115.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

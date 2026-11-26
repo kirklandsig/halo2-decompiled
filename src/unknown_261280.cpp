@@ -219,50 +219,56 @@ struct s_reference_filter_view
 	bool allow_any;
 };
 
-// score 65 (was 102): retail extracts the flag with a 32-bit shift but a byte and, tests allow_any before
-// negating the flag, and lays out the return-true path and the final return-false block differently.
+// score 6 (was 65): only the six-instruction allow_any/!flag polarity inside the out-of-line else block differs
+// (jne/!flag/true vs retail je/true/!flag); single-exit bool result = true with s_type_d4fbfa::flags0e & 0x20 != 0
+// matches bytes 0..+0xfc and retail's 295 B; else-if allow_any inlines the else block (66, 285 B); orig else 29;
+// inverted !require_flag 67; boolean/ternary/or forms 66-136.
+// M3 lane 13 r160 (fast; control 6): the else arm as `if (!require_flag) { allow_any ? true : !flag } else flag` 67;
+// the else arm as `result = allow_any ? true : !flag` 66; one ternary `require_flag ? flag : allow_any || !flag` 103 (256 B);
+// `result = flag;` then the else arm under `if (!require_flag)` 91 (282 B); else arm `result = true; if (!allow_any)
+// result = !flag;` 82 (283 B), `result = !flag; if (allow_any) result = true;` 29 (295 B); the three tests as an
+// early-return inline predicate 66 (the same code as the else-if allow_any form: every true-first spelling lays the
+// else block inline). All restored.
 // @retail 0x2623a0
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference)
 {
+	bool result = true;
 	if (filter)
 	{
-		bool result;
-		s_262b40_result *entry = function_262b40(reference);
-		if (!entry || (!filter->allow_a && !filter->allow_b &&
-			(*(long *)((byte *)entry + 0x14) == NONE || !(entry->flags & 0x60))))
-			return false;
-		long flag = (entry->flags >> 5) & 1;
-		if (filter->require_flag)
+		s_type_d4fbfa *entry = (s_type_d4fbfa *)function_262b40(reference);
+		if (entry && (filter->allow_a || filter->allow_b ||
+			(entry->unknown14 != NONE && (entry->flags0e & 0x60))))
 		{
-			result = (bool)flag;
-		}
-		else
-		{
-			result = flag == 0;
-			if (filter->allow_any)
+			bool flag = (entry->flags0e & 0x20) != 0;
+			if (filter->require_flag)
+				result = flag;
+			else if (!filter->allow_any)
+				result = !flag;
+			else
 				result = true;
-		}
-		if (result)
-		{
-			long other_index = function_262a30(reference);
-			if (other_index != actor_index && other_index != NONE)
+			if (result)
 			{
-				s_actor_view *other = actor_get(other_index);
-				if (other->unknown024 == actor->unknown024)
+				long other_index = function_262a30(reference);
+				if (other_index != actor_index && other_index != NONE)
 				{
-					point3f point;
-					function_210850((s_type_c3b527 *)entry, &point);
-					real distance = distance3d((point3f *)((byte *)other + 0x238), &point);
-					if (distance < 1.0f || distance3d((point3f *)((byte *)actor + 0x238), &point) * 2.0f > distance)
-						return false;
-					return result;
+					s_actor_view *other = actor_get(other_index);
+					if (other->unknown024 == actor->unknown024)
+					{
+						point3f point;
+						function_210850((s_type_c3b527 *)entry, &point);
+						real distance = distance3d((point3f *)((byte *)other + 0x238), &point);
+						if (distance < 1.0f || distance3d((point3f *)((byte *)actor + 0x238), &point) * 2.0f > distance)
+							result = false;
+					}
+					else
+						result = false;
 				}
-				return false;
 			}
 		}
-		return result;
+		else
+			result = false;
 	}
-	return true;
+	return result;
 }
 
 struct s_candidate_range
@@ -427,6 +433,8 @@ struct s_candidate_positions_block
     s_candidate_range *ranges;
 };
 
+void function_270590(s_path_source *source, s_type_c3b527 const *point, long node_index);
+
 // @retail 0x2601f0
 bool function_2601f0(long actor_index, s_type_c3b527 const *point, long sector, real radius, real path_distance)
 {
@@ -444,14 +452,13 @@ bool function_2601f0(long actor_index, s_type_c3b527 const *point, long sector, 
             s_path_source source;
             memset(&source, 0, sizeof(source));
             source.radius = *(real *)((byte *)function_1e4a50(actor->unknown054) + 4);
-            memset(&source.object_index, 0xff, sizeof(source.object_index) + sizeof(source.unknown0c));
-            memcpy(&source.point, point, sizeof(source.point));
             source.unknown04 = true;
-            source.has_point = true;
-            source.unknown24 = sector;
+            source.object_index = NONE;
+            source.unknown0c = NONE;
+            source.unknown4c = 0.0f;
+            function_270590(&source, point, sector);
             source.unknown45 = true;
             source.unknown48 = path_distance;
-            source.unknown4c = 0.0f;
             s_path_settings settings;
             function_1f9240(actor_index, &settings);
             function_271300((s_type_f17a25 *)buffer, NULL, &settings, &source, 0);
@@ -459,7 +466,7 @@ bool function_2601f0(long actor_index, s_type_c3b527 const *point, long sector, 
         }
         s_squad_iterator iterator;
         function_204ec0(&iterator, (short)actor->unknown030, 15, actor->unknown26c != NONE);
-        while (function_205010(&iterator) != NONE)
+        while (!result && function_205010(&iterator) != NONE)
         {
             s_candidate_positions_block *block = &(*(s_candidate_positions_block **)((byte *)g_4e0350 + 0x16c))[(word)iterator.palette_index];
             s_candidate_range *range = &block->ranges[iterator.current];
@@ -468,17 +475,23 @@ bool function_2601f0(long actor_index, s_type_c3b527 const *point, long sector, 
                 if (index >= 0 && index < block->count)
                 {
                     s_candidate_position *candidate = &block->positions[index];
-                    vector3f delta;
+                    real distance_squared;
                     if (point->output_index == candidate->point.output_index)
+                    {
+                        vector3f delta;
                         vector3d_from_points3d(&point->point, &candidate->point.point, &delta);
+                        distance_squared = (delta.j * delta.j + delta.k * delta.k) + delta.i * delta.i;
+                    }
                     else
                     {
                         point3f start, end;
+                        vector3f delta;
                         function_210850(point, &start);
                         function_210850(&candidate->point, &end);
                         vector3d_from_points3d(&start, &end, &delta);
+                        distance_squared = (delta.j * delta.j + delta.k * delta.k) + delta.i * delta.i;
                     }
-                    if (radius * radius > delta.k * delta.k + delta.j * delta.j + delta.i * delta.i)
+                    if (distance_squared < radius * radius)
                     {
                         if (*((bool *)actor + 0x229))
                         {
@@ -488,29 +501,28 @@ bool function_2601f0(long actor_index, s_type_c3b527 const *point, long sector, 
                             if (function_29e050((byte *)&raised, actor->unknown018, (s_type_d4fbfa *)candidate, g_470fa0, NULL))
                             {
                                 result = true;
-                                goto done;
+                                break;
                             }
                         }
-                        else if (path_distance <= 0.0f)
-                        {
-                            result = true;
-                            goto done;
-                        }
-                        else
+                        else if (path_distance > 0.0f)
                         {
                             real distance;
                             function_270750(buffer, candidate->sector, (s_actor_point_target *)candidate, &distance, 0, 0);
                             if (path_distance > distance)
                             {
                                 result = true;
-                                goto done;
+                                break;
                             }
+                        }
+                        else
+                        {
+                            result = true;
+                            break;
                         }
                     }
                 }
             }
         }
-done:
         ai_scratch_buffer_release(buffer);
     }
     return result;

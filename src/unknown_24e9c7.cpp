@@ -773,6 +773,40 @@ struct s_24e9c7_points
 // In-place perpendicular scaling after one upper corner with reverse scalars, direct negation,
 // reverse scalars at first use, or subtraction 172/152/163/152. After both upper corners
 // 154/151/142/151. NOT kept: the return slot stays high or the frame grows.
+// M3 lane 14 r155 (H2M_FAST; control 125; body unchanged). Reading: in this build's code-generation order the two across
+// products already come after the height and width chain, so the single-use across locals are forwarded into the side
+// computation; retail generates them where they are written (right after the size, across j stored to [ebp-8] at once).
+// Diagnostics, match-only: both across products read through `real const &` locals at the side computation 144 (746 B;
+// the products are then generated early, as retail); only across j bound 125; the side point set to the across products
+// and scaled in place through a reference 139 (742 B); the first form with across i as `size * (0.0f - forward_j)` 139,
+// plus forward_i in a local for across j and up x 141, with only across j bound 138; that 139 form with the first
+// corner's base copy right after the across terms 141, with the products written forward first 139 (same code). Left
+// on the early-product forms: the products formed in forward's register (retail copies the size and multiplies by the
+// forward value, with forward_i loaded once for two products) and the result still at [ebp-8].
+// Corner origin component copies by memcpy or memmove (X/Y/both) 253/300/337 each.
+// Saved Y/whole origin with library copies 333/286. NOT kept: the copies grow the frame
+// and body and change the matched caller. The early across-Y spill and return home still differ.
+// The across-Y spill and the returned-height home still differ.
+// Named upper/lower/all rectangle endpoints live from selection 160/178/197,
+// the same endpoint subsets captured at bitmap admission 125/125/125,
+// and chained default stores for upper/all endpoints 161/198.
+// NOT kept: bitmap-admission reads tie, and the producer forms grow the body.
+// M3 lane 11 r169 (h2m fast with 0x22a664 and 0x24e59f, both MATCH; control 125). Retail's [ebp-8] holds the early across
+// product `size * forward_i` and later the scaled side's j, so one variable carries both (the side pair built from the
+// across products and scaled in place), with the side's i never stored ([ebp-0xc] untouched). Frame packing on main:
+// the four 4-byte homes first (first bitmap 4 refs, result 3, kind 2, bitmap index 2), then the 8-byte `back` below
+// them; retail's 8-byte cell sits between the first bitmap and the result, so it joins a 4-byte cell made before the
+// result's, which none of these forms makes. Forms: across as `size * (0.0f - forward_j)` 138 (739 B, listed); that with
+// `back` as two scalars 146; `back` as two scalars alone 133 (frame 0x44); no `back` (the side subtracted) 167 (722 B),
+// with `0.0f -` 170; the side pair built from the across products and scaled in place 139 (742 B, listed), its j built
+// first 138, `forward_i * size` 139, scaled with `*=` 139, with `back` as scalars 139; the side as two scalars scaled in
+// place 138, with `back` as scalars 146. Body unchanged.
+// The returned-height home and the early across-Y spill still differ.
+// Complete upper/lower/all corner expressions 157/164/229, aggregate 229.
+// Native draw quad with staged/full/aggregate corner updates 191/229/229,
+// and aggregate with native draw rectangle 243.
+// NOT kept: complete expressions shorten the frame and body; the typed
+// rectangle also changes the matched caller.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

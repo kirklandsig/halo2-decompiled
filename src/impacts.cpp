@@ -720,6 +720,15 @@ long function_2273d0(
 	return result;
 }
 
+PRIVATE inline s_physics_model_shape_key physics_model_shape_key_make(short type, short index)
+{
+	s_physics_model_shape_key key;
+
+	key.type = type;
+	key.index = index;
+	return key;
+}
+
 // @retail 0x227990
 void impact_rigid_body_indices_get(
 	s_impact const *impact,
@@ -737,8 +746,9 @@ void impact_rigid_body_indices_get(
 		for (i = 0; i < component->unknown7c.size; i++)
 		{
 			s_havok_component_element0c *contact = &component->unknown7c.data[i];
+			s_physics_model_shape_key key = physics_model_shape_key_make(contact->unknown00, contact->unknown02);
 
-			if (contact->unknown00 == impact->shape.type && contact->unknown02 == (*(s_impact const *const volatile *)&impact)->shape.index)
+			if (key.type == impact->shape.type && key.index == impact->shape.index)
 			{
 				contact_index = i;
 			}
@@ -1490,6 +1500,20 @@ PRIVATE __forceinline byte *function_2284c1(long arg_0)
 	return impact_tag_get(impact_object_header_get(havok_component_get(arg_0)->object_index)->object->definition_index);
 }
 
+// score 81 (was 81): the impact arrives in EAX where retail passes it in ECX, and component_index then takes ECX
+// (retail ESI); every later difference follows. The allocator ranks the impact at 104 (three references in the
+// 12-candidate call block) above the four tag-lookup temporaries at 80 (cost 10 in 8-candidate blocks); ranked below
+// them (a forced-ranking search) the count is 34, with component_index still in EAX. Tried (M3 lane 1 r171): a
+// `has_component_b` bool for the test and the call 92 (279 B); the 0x2285d0 call written in each arm 146 (305 B); both
+// tag tests through the existing component_tag_index_get_2285d0 78 (270 B: its reference-bound locals add three
+// candidates to each lookup block, so the impact takes ECX as retail, but the component address is not folded,
+// `add eax, esi` where retail has `[eax + esi + 8]`); that with component_index assigned first in each arm 77 at 267 B
+// (lead, arm order by score); `*(long *)(impact_component_definition_get(x) + 0x58)` 125 (226 B); this helper
+// returning the +0x58 field 81 (same code), with object/bytes reference-bound locals 81; component_object_get_2285d0
+// plus impact_tag_get 91; the selection as a `use_component_b` bool and three conditional values 93; component_a
+// named once for the first lookup and the else arm 86; only the component_b lookup through
+// component_tag_index_get_2285d0 56 (268 B: entry and first lookup retail's; lead, parallel tests spelled differently),
+// only the component_a lookup through it 74.
 // @retail 0x2284c0
 void impact_material_effects_get(
 	s_impact const *impact,
@@ -1633,6 +1657,24 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 // which also moves the store order ahead of both calls here (the allocator ranks its impact parameter 104 against 80
 // for its four lookup temporaries; ranked below them it scores 34); `!continuing` read into DL ahead of the push;
 // one address formed a step early before the orientation call.
+// M3 lane GA round 8 (plain-checked across all 34 impacts.cpp functions + 0x206090; 586 -> 495 at 2987/2994 B, +0x95,
+// aligned 406 -> 36; all 27 matched impacts.cpp peers MATCH): replaced the hand-written s_effect_new_data /
+// s_impact_effect_location / function_2294a1 duplicates with include/effects.h's s_effect_parameters / s_effect_marker
+// and a verbatim copy of the existing matched effect_parameters_initialize_inline (src/unknown_175bd0.cpp;
+// src/projectiles.cpp keeps its own) plus by-value c_type_47f957(impact->material_a/b) copies (dropping the local_3 union and
+// local-bound size reference); 495 (-91 points, no statement order picked by score), but HELD as a patch: on main the whole-image check then loses the
+// matched 0x185be0 (src/unknown_185be0.cpp), as 0x228770's helper forms did (m3 review). Also tried: cross-TU calls to
+// matched 0x176a50 (1263-1335, 2422-2487 B, stays out of line); vehicles.cpp init order 501; scale ahead of the four
+// continuous NONE outputs alone 495 (al 28); single-field tick-counter / type-slot classes on s_impact 495 (493 with
+// impact->type field reads); 2-byte pending sub-struct with plain field stores 495, with constructor 627 (3016 B).
+// Leads (not kept: one-caller method / field pointer / declaration order without a byte match): 2-byte pending sub-struct
+// method `pending.reset(type)` with `previous_type` local 68 at 2994/2994 B (al 32, no pointer local); 2-byte
+// s_impact_state (active_state + pending_state) `.set()` 109, with scale before NONE outputs 69 (67 with field type);
+// 2-use pointer/reference or memset(&unknown20, 0, 1) with `previous_type` 68 at 2994 B (al 32), plus scale before NONE
+// outputs 28 (al 24), plus r307 fill order and name-before-forward 20 at 2994 B (+0x199, al 16: only 0x2284c0 EAX/ECX,
+// 2 jump targets, `!continuing` dl/al, and 2 lea order before 0x227af0). Still BLOCKED-BY 0x2284c0 (contributor code).
+// m3 review: the shared helper moved to include/effects.h is not inlined here (1187), nor is that copy as plain
+// inline (1197); with impacts.cpp at HEAD the same tree keeps 0x185be0 (0 lost).
 // @retail 0x2294a0
 void function_2294a0(
 	long impact_index,
@@ -1891,7 +1933,10 @@ void function_2294a0(
 	impact->unknown11 = false;
 }
 
-// score 485 (was 485): walked statement by statement against retail 0x228770-0x228f2a (2026-11-05): fields, offsets,
+// score 231 (was 485): the midpoint through the existing vector3d_from_points3d + real_point3d_set (Gemini lane GA
+// round 5, cut down at coordinator review 2026-11-25): retail's 0x70 frame and EBX = &impact->position come back;
+// 1988 B against retail's 1981, first difference +0x248; whole-image check on main 12,400 matched, nothing lost.
+// Earlier 485 (was 485): walked statement by statement against retail 0x228770-0x228f2a (2026-11-05): fields, offsets,
 // condition directions, callee arguments and loop shape all agree; the remaining difference is register allocation
 // and block layout. Retail keeps &impact->position in ebx for the whole function (lea ebx,[edi+0x68] at 0x228803,
 // [ebx] in the constraint loop) and spills component to [esp+0x18] (frame 0x70); ours folds the address into
@@ -1923,6 +1968,74 @@ void function_2294a0(
 // pointer like B's 485; `position.x *= inverse_count;` 485. LEAD (not kept, the component fetched again only to move
 // loads): the two rigid-body-A velocity calls given `havok_component_get(impact->component_a)` 351 at 2050 B, aligned
 // 121: with fewer uses in that block the component loses EBX and much of the body becomes retail's.
+// Not kept beyond the midpoint (coordinator review 2026-11-25, Gemini lane GA round 5): 228 at retail's 1981 B (first
+// difference +0x248; all 27 matched impacts.cpp peers MATCH) from existing helpers only: the midpoint as
+// vector3d_from_points3d + real_point3d_set (retail's 0x70 frame and EBX = &impact->position come back), the
+// constraint position sum through vector3f_add, the average through vector3f_scale (dropping the one-use
+// inverse_count), the relative velocity computed into velocity_a through vector3d_from_points3d (dropping the
+// relative_velocity copy and its else arm) and its tangent part as dot3f + vector3f_scale + vector3d_from_points3d,
+// and rigid_bodies[i] for .data[i]; without the two velocity forms 234 at 1994 B. On main the whole-image check then
+// loses the matched 0x185be0 (2, +0x21c) and 0xc2d00 (2, +0x12e); the midpoint alone (kept, 231) loses nothing, and
+// the other forms alone score 502 at 1960 B and lose both, so they wait for a form that keeps them. The lane's 76
+// added statement order (unknown44 and unknown40 zeroed between the normal and the position), a local keep predicate,
+// scoped locals for the two dead point-velocity calls and a new three-caller vector3f_sub (kept only with a byte
+// match); its match-only leads: a new one-caller helper for the point along a line plus a one-use pointer to the
+// first rigid body, 2 at 1981 B (only position.x + constraint->position.x at +0x43e), the position sum as a
+// three-element loop 8 at 1982 B.
+// Codex lane F round 514 (2026-11-25): no kept change (231). The default position copied after the two field clears
+// gives 221, as do the copies as initializers at the declarations or the two clears chained; each moves a statement
+// or a store, kept only with a byte match, so the code stays as main has it (lead only). The vector setter 288; a typed
+// point advance 485 (it loses retail's frame and position base), with the clears separated 485, a named acceptance
+// 482, a shared normal sum 486. Left: the midpoint still groups its coordinate calculations ahead of the stores (+0x248).
+// GB12 (99 fast trials with 0x2281a0/0x228f30/0x2277b0/0x2266a0, all MATCH, control 231 at 1988/1981 B; body unchanged):
+// on the match-only helpers + first-body-pointer base, existing `vector3f_add_scaled` + `vector3d_from_points3d` +
+// `vector3f_add` + `vector3f_scale` (no new helpers) reaches 9 at exact 1981/1981 B (488/488 insns, +0x40b; only four
+// offset-0 commutative float pairs); manual normal sum (`B04`) reaches 2 at 1981/1981 B (486/488 insns exact; only
+// `position.x + constraint->position.x` at +0x43e; `component->rigid_body_mass_get`, in-place init, `vector3f` position,
+// `+=` normal, `for (long i)`, no matrix scope, rename all tie at 2); symmetric `vector3f_add` for both normal and
+// position + three `component_b` locals (`D09`) fixes +0x43e and reaches 2 at 1981/1981 B (486/488 insns exact; only
+// `dot3f(&impact->normal, &constraint->normal)` i-term at +0x3d5; reversed `dot3f` 4, `rigid_body_mass_get`/`rigid_bodies[]`/
+// `for (long i)`/in-place init/split keep/sub helper tie at 2, 2-use constraint normal/position pointers 7-18);
+// `B04` + 3 `component_b` locals (`D08`, 14) matches through +0x4ef (only tangent `vector3f_scale` i-term left);
+// `basis_dot_xzy` 13-20; `rigid_bodies[]` without the first-body pointer 486; `havok_component_rigid_body_linear_velocity_get`
+// 495 (1965 B); no `constraint` pointer 475-476; `if` max 246-250; dead-local phase scan (diagnostic, removed) confirms
+// all five offset-0 pairs follow the function's mod-8 symbol-count phase. Body restored at 231.
+// Existing typed point advance 485 at 1981 B, with interleaved midpoint stores but a 0x6c
+// frame. Scaled separation and shared sum 382, scaled midpoint result 485, standard default
+// copies 231, conditional mass ratio 457, shared constraint position sum 237, tangent setter 231,
+// staged normal projection 233, reversed admission operands 231. The midpoint setter still
+// preserves the 0x70 frame and the position base while grouping all three calculations.
+// Sequential midpoint assignments 231 and compound additions 231, both first +0x24f
+// at 1989 bytes. A transform-scope position pointer with stores or setter 485 each.
+// Common transform for both endpoints or its returned second endpoint 781 each.
+// Endpoint and separation names 231, original point snapshot at publication 519.
+// M3 lane GA r13 (59 compiled fast trials with 6 matched peers all MATCH; control 231 at 1988/1981 B, +0x248; body unchanged):
+// on the zero-new-helper score-2 base (vector3f_add_scaled + vector3d_from_points3d + vector3f_add + vector3f_scale + match-only
+// a first-body local/bool keep/reset order/scoped dead vel): existing havok_component_rigid_body_matrix_get x2 reaches 2 (1981/1981 B,
+// +0x3d5 dot3f i-term only) with zero extra component_b locals (1-site mat_a/mat_b 7/18; mass method 9; rigid_bodies[] 9/4);
+// dot3f arg swap fixes +0x3d5 while flipping .k/.j (4); function_227811 on constraint dot 4/18 (2 on manual normal);
+// late/reordered normal/position/for-i/scoped velocity_a/b tie 2; single dead velocity local 164; squared_length_kij 50/28;
+// linear_velocity pointer locals 66; manual position.x += 96-98; plain position.n[k] loop + inverse_count (or + midpoint
+// component_b, or + position.n[k] *= loop) matches all 5 pairs A-E simultaneously at 8 (1982/1981 B, only +0x67a position.x *
+// inv_count left; manual position scale 17). Clean mod-8 phase scan confirms A, B/C, and D/E intervals have empty intersection
+// on this helper set.
+// M3 lane 7 r230: a byte MATCH (fast, plain and full check), NOT kept: the whole-image check then loses matched
+// 0x185be0 (2, +0x21c) and 0x24cf66 (2, +0x3bd), which flip with the whole image. The matching form, on the earlier
+// lead of existing helpers: the keep test's dot through a new file-local inline helper taking the impact and the
+// constraint (`return dot3f(&impact->normal, &constraint->normal);`), the test held in `bool keep`; unknown44 and
+// unknown40 cleared between the normal and the position defaults; the midpoint through vector3f_add_scaled; the normal
+// sum written out as now and the position sum through vector3f_add; the average and the tangent's scale through
+// vector3f_scale (normalize3d.h included); the relative velocity formed in velocity_a and the tangent and linear-velocity
+// differences through vector3d_from_points3d; the two dead point-velocity calls into scoped locals; the first rigid body
+// through a pointer local. Dead-local scans and a link-time lab showed the five offset-0 float pairs follow the
+// function's symbol count (no count fixes all five) and change with the inlined helpers' shapes; the one-caller helper
+// is what moves the keep test's dot i-term alone. Ablations (lab, exact rows against retail): without the helper 2,
+// without the bool 12, without the pointer 40, the midpoint as now 11, any one velocity/average block as now 8-15; the
+// earlier lead's three one-use component_b locals are not needed (0 with none, or with one or all three). Whole-image
+// diagnostics: normalize3d.h's include alone loses 0x185be0 and the accepted 0xc2d00; the midpoint helper alone or the
+// position-sum helper alone does the same; every matching variant tried (none, one or three component_b locals, either
+// normal-sum spelling, a scale-only header instead of normalize3d.h) loses 0x185be0 and 0x24cf66 and keeps 0xc2d00.
+// Body unchanged (231).
 // @retail 0x228770
 void function_228770(
 	long impact_index,
@@ -1950,12 +2063,15 @@ void function_228770(
 		if (impact->component_b != NONE)
 		{
 			point3f position_b;
+			vector3f delta;
 
 			havok_component_get(impact->component_b)->rigid_body_matrix_get(rigid_body_index_b, &matrix);
 			function_2281a1(&matrix, &impact->local_position_b, &position_b);
-			impact->position.x += (position_b.x - impact->position.x) * 0.5f;
-			impact->position.y += (position_b.y - impact->position.y) * 0.5f;
-			impact->position.z += (position_b.z - impact->position.z) * 0.5f;
+			vector3d_from_points3d(&impact->position, &position_b, &delta);
+			real_point3d_set(&impact->position,
+				impact->position.x + delta.i * 0.5f,
+				impact->position.y + delta.j * 0.5f,
+				impact->position.z + delta.k * 0.5f);
 		}
 	}
 	normal = *g_4687a4;
@@ -2095,15 +2211,6 @@ void function_228770(
 	}
 }
 
-PRIVATE inline s_physics_model_shape_key physics_model_shape_key_make(short type, short index)
-{
-	s_physics_model_shape_key key;
-
-	key.type = type;
-	key.index = index;
-	return key;
-}
-
 // @retail 0x226a60
 void function_226a60(
 	long component_index)
@@ -2207,6 +2314,18 @@ struct s_impact_component_iterator
 
 s_impact_component_iterator g_5021bc;
 
+// score 162 (was 162): register roles. Retail keeps the component in EBP (copied to ESI for 0x1d1c10's argument) and
+// component_b in ESI; the allocator ranks the component (the iterator's datum) at 208 against 180 for component_b, so
+// the component takes ESI and component_b EBP; the outer loop's pool pointer is in ESI/EDI where retail has EDX. Two
+// spots also differ in form: retail tests the impact count as `movsx eax, word; cmp eax, 0xf` and forms the impact's
+// address before the constraint store. M3 lane 1 r171: the iterator as the real s_data_datum_iterator through the
+// existing data_datum_iterator_next_inlined 162 (same code; not kept: 0x1c2690's file declares the record too); the count test as matched 0x226f80's
+// `(component->unknown20 == NONE ? 0 : impact_array_get(component->unknown20)->count) < 15` 162 (retail's movsx form;
+// lead); the reference count bumped before the store 164 (673 B); that count form with matched 0x226a60's
+// `s_impact *impact = impact_get(impact_index);` ahead of the store 164 (both spots then retail's code; one-use pointer,
+// match-only; lead: a forced ranking of component_b above the component gives 69 on it, and of impact_index above the
+// constraint 42, both register permutations of the same allocation); the pointer form alone 164; component_b set by
+// an if/else on that lead 164.
 // @retail 0x226ce0
 void function_226ce0(void)
 {

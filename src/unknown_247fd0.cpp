@@ -1120,6 +1120,53 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // not retail's test-first shape: not kept. Without V: D 335 (1654 B), RCD 353 (1658 B), LD 375, LRD 376, LCD 393, LRCD
 // 393 (1696 B, aligned 187, register-masked 78: the closest natural structure so far, 44 bytes long from the blend and
 // draw stores). LRCV with the `(short)` ordinal, `!local_3->unknown0c` or the sibling's record index 327 each (same code).
+// Typed cursor advance at the gate, velocity, particle and child lookups 443/367/442/354.
+// Gate/velocity, gate/particle, velocity/particle and all three 459/446/460/462.
+// Direct cursor updates at the gate, velocity, particle and both effect reads 334/348/334/350.
+// NOT kept: the library advance adds calls and bytes. Direct updates retain 1652 bytes,
+// but the gate still folds the address and uses AL, with its spill at +0x1f.
+// The effect load still folds the base addition. Mask then shift (byte/word) 334/334;
+// low-nibble threshold 403/403; rejection-path flag store 426/426; admission-first
+// flag stores 440/440. NOT kept: the best forms tie and the split stores grow.
+// Nullable velocity receiver by ternary/branch 353/353. Nullable gate by ternary/branch
+// 421/421, each with the two nullable velocity forms 424/424. NOT kept: the nullable
+// gate gives the separate address add and DL but adds a null branch, grows to 1665
+// bytes and leaves the gate byte at +0x1f.
+// Combined short-circuit gate/allocation test and conditional allocation result:
+// byte 334/334, word mask 334/334, word shift 334/334, bitfield 344/344.
+// NOT kept: the effect load and gate spill remain in AL and ESP+0x1f.
+// Single failure exit with a typed byte shift, word mask, named bit or named
+// low byte: 334/334/344/334. Enclosing admission with the same first three
+// projections: 334/334/344. Both admission-result arms before allocation 425.
+// NOT kept: the address remains folded. The result arms add 13 bytes.
+// M3 lane 1 r168 (fast with 0x247fd0 and 0x248cc0, both MATCH each run; control 334): the final call's tag index read
+// from a fresh getter call without re-assigning the definition pointer 334 (same code); one tag index local read before
+// the child loop for both lookups and the spawn call 375 (1658 B); the age copy moved up beside the field_08 clear 390
+// (still an integer move); the second rotation call through a file-local inline helper taking the record 334 (same
+// code: the +0x28 address stays shared in EDI); the collision normal bound as a `vector3f const &` 334 (same code). A
+// forced-ranking search over 40 single decisions found nothing under 334. Body unchanged.
+// Gemini lane GB r10 (2026-11-25, 16 source trials + 1 diagnostic, fast control 334, al=164, mk=69; 0x247fd0/0x248cc0/0x247470 MATCH):
+// direct `local_2->field_1c.{x,y,z} += local_2->field_28.{i,j,k} * local_11;` in the else arm recovers retail's exact 19-insn
+// staged scale/age sequence and keeps all three scaled components in xmm registers into the else arm (343 at 1652 B, mk 69->59);
+// with staged scale/age locals 343/343, component normal copy 352 (1665 B), compound velocity adds 343, no normal pointer 343,
+// reversed else add + `local_2 != field_50` 342 (mk 58), plain 2-def gate 346, `point3f *pos` 332 (1652 B, under bar), short child index 343,
+// plain blend + shared `last_sample` 425 (1633 B); combined with sibling 0x247fd0 forms (`particle_object_for_tag`, cache order, if/else
+// reciprocal, short ordinal, DATUM in link) 386 (1696 B, al 122, mk 41), + plain `point3f blend` 342 (1664 B, al 86, mk 34, 428/430 insns),
+// + shared `last_sample` 416 (al 102, mk 48), + unpacked workspace 411 (fr=0xa0). Diagnostic (reverted): `#pragma optimize("a", on)` 334 (same code). Body unchanged.
+// M3 lane GA r12 (18 real trials, fast control 334 at 1652 B, 0x247fd0/0x248cc0/0x247470 MATCH throughout; body restored):
+// `TEST_FIELD_BIT(local_3->flag4)` + plain `point3f blend` + compound `+=` + direct `else +=` + sibling `0x247fd0` forms (`particle_object_for_tag`, cache order, if/else reciprocal, `(short)` ordinal, DATUM in link) + no `local_10` hits 271 (exact 430/430 insns, al 134, mk 47, lines 346-434 lockstep) — NOT kept: frame shrinks 0xb0->0xa4 (+0x2) and length grows 1652->1664 B without 0x5c collision; + sibling loop locals 331 (al 130, mk 40, recovers `local_3` in EDI), + `switch (unknown0c)` 341, + `if/else if` `TAG_GROUP` 275 (still folds `[edx+eax]`). Keeping `fr=0xb0` on main with those clean subsets: 350/352/386. Plain locals + `s_placement` ctor at 0x247e3a + `0x5c` collision ctor recover `fr=0xb0` (+0x20), 3-load probe copy and early normal loads (396/399/368, al 135, mk 52), but `real_truncate` asm still sorts 0x28 placement (+0x3c) below 0x5c collision (+0x64). Direct `function_x82e52f` without `function_248076` constant-folds `(1/65535)*65535` (427/408/419/415); standalone `s_placement` ctor on main 334; `point3f *pos` + direct `else +=` 335; reversed blend x + direct `else +=` + NONE after 0x137bd0 343.
+// M3 lane 16 r191 (h2m fast with 0x247fd0/0x248cc0/0x247470, all MATCH each run; control 334 at 1652 B, aligned 246,
+// register-masked 106; body unchanged): no grouping record, the probe point, direction and result declared in the trace
+// block, the placement in the allocation block, the blend a point3f and the four draws into one sample 449 (1617 B, frame
+// 0xa0, aligned 205); the four aggregates at function scope in retail's address order 446 (frame 0xa0, aligned 229). A
+// compile-only frame listing of that shape orders the aggregates the same way whatever their declaration order, names or
+// store counts (the placement stays below the result). The result's normal as a typed member at +0x28 read directly (no
+// pointer local) 334 (same code). The 271 combination (bit-4 bitfield test, point3f blend, compound scale and velocity
+// adds, the else arm's add written out, the sibling's cache order, in-loop lookup, if/else reciprocal, short ordinal and
+// DATUM in the link call) on the retail-ordered locals with the result padded to 0x5c in an aggregate wrapper
+// (diagnostic) 412 at 1664 B, frame 0xb0, aligned 164, masked 76: the placement still homes below the result, so its
+// three references are short and the result's six normal reads long. The blend added through the existing vector3f_add
+// 335; with the velocity add through it too, either operand order, 342.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

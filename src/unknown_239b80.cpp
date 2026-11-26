@@ -230,7 +230,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 144 (was 144): r149 and r154 unchanged; earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
+// score 144 (was 144): r149, r154 and r155 unchanged; earlier 144 (was 144), 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the
 // hull count still live in their own homes where retail keeps them in the dead argument homes. One note, the rounds' entries below.
 // MiniMax E (11-20): no new form, no lower score (144): the frame is still 0x18 against retail's 0x14 because the
 // departure flag is a dword local here and a byte in retail's dead indices home (our hull count then takes a dead
@@ -1047,6 +1047,46 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 144/146, and with the single exit 231/231. Long span with breaks 144/161,
 // and with the single exit 230/230. NOT kept: the breaks keep frame 0x18.
 // The single exit recovers 0x14 but shortens the body and loses the matched caller.
+// M3 lane 14 r155 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH each run; control 144; body unchanged). The closure
+// through the file's existing two-axis equality helper (moved above this function) 152, with its arguments the other way
+// 150; on lane 1 r103's completion-flag body (match-only; rebuilt here 119 at 791 B) 148 / 118 (that helper compares in
+// double, `fld qword` for retail's single epsilon). On the flag body: the lowest scan's result in its own local copied into
+// `current` before the hull loop 242 (784 B); `current` assigned after the classifier call 217 (791 B, exact to +0x28,
+// points ESI and current EDI as retail); on that a named pointer per point in the lowest scan 217 (same code) and a named
+// pointer to the current point for the candidate scan 238. Allocator reading of the 217 form: count, points and the hull
+// count all start at priority <= 0 and are split; count's piece from the entry to the end of the hull loop (priority 21)
+// takes EBX one pass before the hull count's hull-loop piece (76) is formed, so the hull count is left ECX. A forced-ranking
+// search over priorities and colour picks finds nothing below 217; only splitting the hull count's range at the candidate
+// scan (150-155 in that search) gives retail's EBX hull count with the count read from its home, so the split point is
+// the cause.
+// Duplicate search before compaction, with paired indices, outer cursor, stopped cursors, or saved span
+// 222/221/215/251 for short ordinals and 266/279/276/278 for long. NOT kept: all increase
+// the score and change the matched caller. The widened pass bound and departure home still differ.
+// The separate pass-bound spill and the reported departure home still differ.
+// Separate departure and closure arms with dword/bool state 233/230,
+// index first and shared coordinate test 278/284, single coordinate result 278/275,
+// and index first with distinct state continuations 293/279.
+// NOT kept: the separate arms recover 0x14 and 784 bytes but raise the score.
+// The other forms shorten the body and five change the matched caller.
+// M3 lane 16 r190 (fast screen with 0x239d50 and 0x239b80, both MATCH; control 144, aligned 137, masked 58; body
+// unchanged). Retail's pass-loop head read once more: after the index store it sets `next` to NONE in EDX, tests the
+// candidate count against the count's home, stores the hull count, then the best angle (its cell) and the best delta
+// (XMM1). Forms: the best distance declared last of the four bests 144 (same code); `next` and the three bests ahead of
+// the index store and the hull count 146 (aligned 141); the bests in distance, delta, angle order with `next` after
+// the hull count 146; the heading zeroed right after the departure flag, ahead of the lowest scan (retail's store
+// order), 213 (aligned 135, masked 56); the candidate differences formed candidate minus current and passed to atan2
+// 266 (760 B: the distance and the angle then share them, retail forms them twice).
+// The extra frame word, persistent count and hull-count home still differ.
+// Cursor-derived ordinals for the minimum/candidate/both scans 270/262/256;
+// pointer-pair duplicate compaction alone and with minimum/candidate/both
+// scans 286/269/267/265. Candidate identity compared as a pointer 254.
+// Every cursor form raises the score and six change the matched hull caller.
+// M3 lane 16 r191 (h2m fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 137, masked 56).
+// Ranking read: every piece of the hull count has a weighted cost at or below zero (stored each pass, read at the end),
+// so the count's piece over the lowest scan keeps EBX. Forms: `current` declared at function scope (from the parameter)
+// 264 (762 B, 0x239d50 80); the lowest point as a point2f (copied whole on a new low) 244 (796 B); a pointer to the
+// scanned point in the lowest scan 144 (same code); the point2f with `current` at function scope 224 (784 B, aligned
+// 171, 0x239d50 80); the candidate offset through this file's point-difference helper into a vector2f 144 (same code).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1680,6 +1720,18 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // entry and the loop's zero-trip test: the previous point's distance read through `points[count - 1]` 268 (896 B); the
 // alias copy reading from `output` 205; `sizeof(point2f) * count` 129 (same code); the previous distance's second
 // product written `plane->n.i * previous->x` as in the loop 129 (same code); `points + count - 1` 129 (same code).
+// M3 lane 14 r155 (H2M_FAST with 0x239e50, 0x239d50 and 0x239b80; control 129; body unchanged). Allocator reading: the
+// count's piece from the alias join to the tail (references at the join, the loop guard and `result = count`) has a
+// weighted cost of exactly 0, so it is skipped and the previous side takes ECX; main's tail is retail's one instruction
+// late. In the `!negative` arm the copy written before `result = count` 207 (891 B) but aligned 85 -> 34: the count is
+// then in ECX at the join and both side bytes stay in memory as retail (statement order, match-only). LEAD (match-only,
+// needs that order): with it, the fraction as `if (denominator != 0.f) fraction = ...; else fraction = 0.f;` (retail's
+// zero block shared with the low clamp) 42 at 888 B, aligned 28; left the zero in XMM1 made late (retail XMM2 at the
+// join), the crossing's dy and fraction in XMM2/XMM0 (retail XMM0/XMM1: the allocator ranks the fraction, 148, above dy,
+// 50) and one extra `movaps`. On that 42 form: the clamp inside the if 46, the denominator's terms swapped 42 (same code),
+// the deltas declared dx first 45, `real fraction;` ahead of the deltas 42 (same code); the reordered tail with
+// `fraction = 0.f` ahead of the deltas 49. Without the reorder: the if/else fraction 249 (880 B); the tail copy sized
+// from the result 129 (same code); the NONE copy as the first arm 129.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

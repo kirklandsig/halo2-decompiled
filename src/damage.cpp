@@ -1892,6 +1892,28 @@ long function_1e4a10(long index);
 // as `threshold < shield_damage` 8, the multiplier test as nested ifs 8, the stun seconds as `stun_time * rate` 8 (all
 // four the same code); the tail through `DAMAGE_OBJECT(object_index)` at both uses with no `object` refresh 10 (the
 // reload orders stay); re-measured: the multiplier declared right after the category bool 206 (901 bytes).
+// M3 lane 7 r228 (fast). Reading: the reload order after each call follows split-piece numbers: pieces are made in
+// ascending candidate number and draw their numbers from a last-in-first-out pool of seven freed temporaries, then fresh
+// ones, so a later-numbered value gets the lower piece number while the pool lasts. On the six-name set (round 172) body
+// damage is numbered after the constants, which leaves 1.0f a pooled number (retail's function_d5bc0 order), but the
+// scaled shield damage web is still numbered ahead of the zero constant, so the zero reloads first after function_d6a70
+// and function_176780. Forms: the scaled damage written `multiplier * shield_damage` at the accumulator store and the
+// stun test (no reassignment) 28 (the product takes the inverse's slot), on the six-name set 25, with the absorbed damage
+// named 28, with the end lookup fresh too 28; the stun ticks through real_to_long 7 (re-measured), with the product form
+// 27, on the six-name set 4, with both 25; the scaled damage as its own named local 28, with the clamped vitality and the
+// fresh end lookup 28.
+// M3 lane 4 r261 (fast screen, 8). The float split: on main the values are numbered 15-22 (inverse 17, maximum 18,
+// shield 19, scaled shield 20, body 21) ahead of the constants (zero 24, 1.0f 25, 0.0001f 26); the pieces take freed
+// numbers handed out 37, 35, 34, 31, 30, 29, 28, then new ones from 44, so after function_d5bc0 zero 28 < maximum 35 <
+// inverse 37 < 1.0f 45, and after function_d6a70 and function_176780 zero 28 < scaled shield 31. Round 172's six names
+// number body damage after the constants (zero 33/32, 1.0f 31: retail's function_d5bc0 order) but keep the scaled
+// shield (piece 34) ahead of zero; retail needs the scaled shield numbered after the zero constant. Forms: the
+// six-name set re-measured 4; on it `shield_damage *= multiplier` 4, the absorbed product's operands swapped 4, both
+// 4; on main `shield_damage *= multiplier` 8 (same code), the clamped vitality named alone 8. All restored.
+// M3 lane 2 r152 (H2M_FAST, 8): the inverse maximum as a zero default then a conditional reciprocal 150 (880 B); the
+// in-radius flag read once into a bool for its three tests 222 (896 B); the six-name set re-measured 4, with the actor
+// index declared inside the type test and tested in a nested if (no assignment in the condition) 4; on it the shield
+// damage renamed, and the body and shield damage both renamed, 4/4 (names do not reorder the split pieces). All restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2832,6 +2854,31 @@ struct s_unit_event
 // drop blocks (ours still forms one data-plus-offset sum per block), the constant 1 spilled into the region slot at
 // the update, the vehicle block's constant 1 in ESI, the section scan's count/cursor pair, and scratch rotations in the
 // seat and event blocks.
+// M3 lane GB round 13 (24 trials, fast with 0xdaaa0/0xdae60/0xdb760 all MATCH; control 420 at 1868 B, al=216, mk=51):
+// on the named region-states lead (L = 523, 1852 B, +0x5a, al=126, mk=50), dropping the &region_index reference keeps
+// ret 0x14, frame 0x38, +0x5a, and all three matched callers MATCH (523, identical code — L needs no address-taken
+// hack); + existing function_e6900 inlined for the seat event 523 (al=119, mk=47; on baseline 442, mk=50), + indexed
+// section/seat scans 523 (al=109, mk=43: last 193 instructions structurally identical to retail; on baseline 442, mk=46),
+// + existing function_cbd50 (inlined via LTCG) and vehicle datum pointer 523 (al=90, mk=44; cbd50 alone on baseline/L
+// 420/523, via object->current_weapon_index on L 509 at 1868 B, +0x32, mk=59; via unit_weapon_view_get 523); L +
+// object_flags byte pointer 523, + inline damage_object_type 501 (1868 B, mk=74), + single || destroy body 513 (1868 B,
+// +0xc), + entry datum local 523, unified s_damage_object_datum on baseline/L 420/523, L + cbd50 + per-notification
+// const pointers 519 (al=124), diag pool local in drop blocks 523. On every clean form object still beats datum_offset
+// for ESI from 0xda1ca, keeping the 16-byte gap and lea [data+offset] in EDI across the drop blocks. Body unchanged.
+// The region and permutation registers remain exchanged. Short displacement,
+// long displacement, combined byte offset and staged byte offset score
+// 420/420/429/420. With a named full-width destruction bit, each scores 528.
+// NOT kept: the inline shifts tie or regress. The named bit shortens the
+// body by 16 bytes and leaves the same entry difference.
+// M3 lane 7 r231 (H2M_FAST with 0xdaaa0, 0xdae60, 0xdb760, 0xd9d60, all MATCH, and 0xd5de0; control 420). Allocator
+// reading of the first difference: the permutation pointer ranks 66 (four entry-block refs +136, -308 over 83 blocks it
+// is live but unused) and the region index 58 (entry +34, the 0xa8360 block +16, the state update +16, -8 over the four
+// call blocks between), so the pointer colours first and takes EBP; with the region index at 66 or more (it wins the
+// tie) it would take EBP and leave EBX to the pointer, as retail. Forced that way: 516 at semantic distance 48 (from
+// 110), next difference retail's datum offset held in ESI from the mode block's join. Forms: the attachment re-read
+// into a named two-use local in each 0xb58c0 block 420 (same code); the permutation pointer in one expression 558 (1852
+// B); the reference read moved to the 0xa8360 argument 420 (same code); the state update as `x = x | bit` 420 and OR-ing
+// `(word)(1 << permutation_index)` 420 (same code each). Body unchanged.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3944,6 +3991,19 @@ enum
 // chained child defaults 308; single child flags word 309; native child permission masks 309; shared
 // primary pass Boolean 540; nested damage-report admission 309; late absorption initialization 449;
 // separate region span and flag tests 310; separate shield-and-body gate 309.
+// Clear permissions on exclusion 493, explicit defaults in no-info arm 352,
+// snapshot of flags used at the two child gates 538, selected flags then both
+// permissions 355, defaults at info lookup 457, counted single-target append 309,
+// combined event mask 473, rolling damage initialized first 484.
+// NOT kept: the counted append ties and the rolling damage form only fixes length.
+// The child-permission homes and parent count register still differ.
+// GB15 (fast with 0xd9b60/0xdb210/0xd8cb0; control 309 at 1885/1880 B, +0x21, fr=0xf4; 14 trials, body unchanged):
+// consistent accumulator.field_4_2-> replacing all info-> after assignment / in damage block / after 0xd9110: 324 each
+// (1883 B, fixes all 5 flag homes and definition/info homes, but 0xd8119 reads [eax] where retail reads [esi]); + body
+// first 322 (+0x32), + record-order node stores 399 (1880 B), + all retail orders 396 (1880 B, +0x32), + while loop 324,
+// + i > NONE 329. Dropping `current` (DAMAGE_OBJECT at owner stores) 466 (1902 B, naturally recovers retail's `lea eax,
+// [reg - 1]; test eax, eax; jl` loop head), + consistent accumulator.field_4_2-> 462. `kill` after owner stores 396
+// (1888 B, al 221); `(bool)` cast on kill 309; named `damage_tag` local 309; `if/do-while` parent walk 309 (all same code).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -5747,6 +5807,17 @@ struct s_damage_object_creation
 // the code): the detach test as `section_mask_a | section_mask_b` gives the second mask a value in the entry block, the
 // bit then takes EDX as retail's does, but that value holds EDI and the count is spilled, 128 (811 B); retail's extra
 // entry-block value must be one that gets no register there (a constant or a parameter value like the first mask's).
+// Section membership by union equality for primary/secondary/both 199/197/202;
+// by bit-removal inequality 200/200/202; full intersection equality 200;
+// complement exclusion 203. The section count and primary mask still compete
+// for registers. NOT kept: the alternate tests lengthen the loop and raise the score.
+// M3 lane 7 r231 (H2M_FAST with 0xdb810/0xdbb40, both MATCH; control 167). Allocator ledger of the section loop: the
+// bit ranks 50 (head block +48 at weight 2 with four values, second test +8, the first store's block -6) and info 48
+// (entry block +40 with ten values, count read +8 with four), so the bit takes EAX first; retail needs info at 51 or
+// more, or the bit at 47 or less. Forms: the definition read after the info call 227 (first +0x13); the object through
+// a pointer to its header element 167 (same code); the section stores as `field = field | (word)(1 << i)` 167 (same
+// code); the counter declared ahead of the `for` 167 (same code); the piece search's result declared at its
+// computation with no NONE initialiser 167 (same code). Body unchanged.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

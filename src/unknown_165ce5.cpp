@@ -615,13 +615,13 @@ void first_person_weapon_sound_event(long user_index, long field_x11c898, s_firs
 }
 
 // @retail 0x166d50
-void __stdcall first_person_weapon_sound_event_right(long user_index, long unused, s_first_person_event const *event)
+void __stdcall first_person_weapon_sound_event_right(long user_index, real frame, s_first_person_event const *event)
 {
 	first_person_weapon_sound_event(user_index, 0, event);
 }
 
 // @retail 0x166d62
-void __stdcall first_person_weapon_sound_event_left(long user_index, long unused, s_first_person_event const *event)
+void __stdcall first_person_weapon_sound_event_left(long user_index, real frame, s_first_person_event const *event)
 {
 	first_person_weapon_sound_event(user_index, 1, event);
 }
@@ -2178,6 +2178,56 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Unit and mode spill slots remain exchanged. Named blend-weight or blend-rate
 // field pointers, references or mixed pairs 172 in all eight forms. The later
 // weight address still shares the fourth spring slot instead of the unit slot.
+// M3 lane 8 r238 (H2M_FAST on the round 232 lead, rebuilt at 17): the allocator puts the +0xb8 channel pointer in ECX
+// because nothing else holds ECX or EDX across the 0xb6760 call (a forced-ranking search placing it in ESI gives 14:
+// that choice is the three rows); the weapon's EDI piece starts at its first use, after the callback select. On the
+// lead: `long weapon_index` read once for the test and the object lookup (0x16760c's spelling) 17; the callback by
+// if/else 17; the found arm's duration and frame-position calls through `channel` 17; its frame-position read through
+// `channel` 60 (2192 B); the callback ternary inside the update call 17 (same code).
+// M3 lane 16 r188 (H2M_FAST with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172; lane 8 r232's 17 lead rebuilt,
+// 17). Frame reading on main: retail packs the weapon-active byte and mode ahead of unit (ours packs unit first, as it
+// reaches three references first), so retail's active byte joins spring d's cell and zoom then joins unit's; that needs
+// one more reference each for the active byte (the preset) and for mode (the play written per arm), both match-only. The
+// active value as `unit and weapon valid ? !busy && animating : false` 172 (same code). On the lead: one channel pointer
+// for the +0x98 block, then set to +0xb8 for the last block, 62 (2193 B); the +0xb8 clear through the member 17; the
+// orientation index as `user_index * 2 + weapon` 17; the +0xb8 play through the channel pointer 17 (same code each).
+// With the +0xb8 pointer forced into ESI (diagnostic, not source) the lead reads 14; the other 14 rows are the weapon's
+// EDI reload, placed at its first use where retail places it one block earlier. Body unchanged.
+// M3 lane 1 r168 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172; lane 8 r232's lead rebuilt, 17). On
+// the lead: the orientation count read into a local ahead of the callback select 342 (2200 B). Reading on the lead: the
+// weapon's EDI piece is ranked 49 over the push block to the last weapon use, so it starts at the push block after the
+// select; nothing in the lookup block references the weapon (its index is the test's load). On main: one time-globals
+// reference declared ahead of the aiming springs and used for all six rate reads 208 (2193 B); the first-weapon test
+// without its null check 565 (2185 B: retail keeps the check); the user flags tested and set through the field (no flags
+// local) 172 (same code); the weapon loop's index declared in the for statement 172 (same code). Body unchanged.
+// Indexed aiming inputs with mutable or const unit pointer/reference, each with
+// or without one vector address shared by the first spring and later magnitude:
+// eight at 172. The unit and mode slots remain exchanged.
+// Orientation count or buffer ordinal before object lookup 361/172; typed
+// target, output or both banks 172/171/171; shared user ordinal or byte offset
+// 172/383; both banks and count before lookup 361. NOT kept: the output bank
+// gains one and the early count changes its read phase. The byte offset grows
+// the frame to 0x30. The unit and mode slots remain exchanged.
+// M3 lane 16 r192 (H2M_FAST with 0x165dc1, 0x166561, 0x11eed0; control 172, aligned 76, masked 73): the exchanged
+// unit/mode homes against name order: `mode` renamed to a name sorting after `unit` 172, `unit` renamed to one sorting
+// before `mode` 172, both 172 (same code each: these homes do not follow names); the unit local replaced by a pointer to
+// its aiming velocity (the only member read) 562 (2189 B); the look angles read from the table at each use (no look
+// pointer) 408 (2208 B). Body unchanged.
+// GA16 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172, 2196 B, 50 trials):
+// LEAD, match-only (build/ga16/lead-0x166d75-score3.patch): on the r232 match-only lead, scoping
+// `s_animation_state *animation = &weapon->animation;` to 1..4 uses (`update`, `channels[0]`,
+// `overlay_get`, `channel_update`) moves `mov edi, [ebp - 0xc]` up to retail's exact 0x16710b
+// (keeping frame 0x2c) and replacing the embedded-assignment clear test with `bool should_clear` +
+// `long current_set` in the else branch hits score 3 (2199/2199 B, +0x593, masked 0: 576/579 insns
+// exact); 5+ uses of `animation` grow the frame to 0x30 (309..374); `should_clear` omitted 8,
+// plain `else` play 230 (2193 B). On the score-3 base, all +0xb8 pointer forms (`get_duration`/
+// `set_frame_position`, `overlay_play_for_class`, reference, top/pre-98 init, direct `&weapon->channelb8`)
+// stay at 3 (only `lea ecx/mov eax, ecx` x3 vs retail's `esi` across `call 0xb6760`, whose LTCG
+// register summary preserves ECX here); `channel++` from channel98 309 (frame 0x30), inverted
+// animation-name guard 65 (2195 B). On the 172 base, `s_animation_state *animation` (2..4 uses,
+// with or without `== 0 ? right : left`) fixes the 0x16710b reload cleanly at frame 0x2c (173,
+// 2196 B; 5+/all uses 374, frame 0x30); shift/bitfield/TEST_FIELD_BIT channel-byte tests all fold
+// to `test byte ptr [edi + 0x19], 0xa` (331..337, 2197 B). Body unchanged (score-3 lead is match-only).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

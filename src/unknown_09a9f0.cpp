@@ -1134,6 +1134,26 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // end the data pointer's reach); the header test through a reference bound to the table global on F 67 (same code).
 // The retest form (flagged arm storing NONE, then `if (entity->object_index != NONE)`) re-measured 67 at 176 B with
 // its re-read and compare. Body unchanged.
+// M3 lane 16 r189 (H2M_FAST with 0xbb780 and 0xa7870, MATCH throughout; control 8; R = retail's shape, no second store,
+// re-measured 77 at 160 B): the second store kept with the object read through the re-read field 42 (the index is
+// shared); the flagged arm clearing both the field and the local with the valid block under a retest of the local 75
+// (160 B); the valid block under `if (result)` with the result set in the header test's clear arm 72 (176 B); R through
+// 0xbb780 with that function's own body given a local copy of its index, of the table pointer, or of the object pointer
+// (its bytes unchanged) 77 / 77 / 77: the copies fold before the two lookups are merged. Body unchanged.
+// M3 lane 3 r309 (H2M_FAST with 0xbb780 and 0x108e10, MATCH throughout; control 8). A store through a pointer local
+// ends cached field reads, so placed between the two lookups: the field-read form with the read index stored back
+// through a `long *` to the field and 0xbb780 given the local 45 (179 B); the creation result stored through a `long *`
+// to the field (the flagged arm's NONE the same way) with the object read on the field 68; the field bound by `long &`
+// and used as the index everywhere 82 (157 B). Join markers: retail's shape with `do {} while (false);` ahead of the
+// object read 77 (160 B); the field-read form with 0xbb780 and that marker 67 (same code as without it). Body unchanged.
+// M3 lane 4 r262 (H2M_FAST with 0xbb780, MATCH throughout; control 8). Tracer reading of retail's plain shape (R, no
+// second store, plain index, re-measured 77 at 160 B): the header address is one shared value kept in ECX across the
+// header test and the object read, and `f` (two uses) takes EBP for the whole body; retail keeps only the table global
+// (EDX) across the test, gives the data pointer EBP inside the test block alone and loads it again for the object read.
+// Forms, with a file-local inline taking the pool pointer and the index (`&((s_object_header *)pool->data)[index &
+// 0xffff]`, as matched 0x151ea0's getter does): R with the header test through it 77, the object read through it 77,
+// both 77 (160 B each: same code as R); this body with the object read through it in place of the word read 42, with the
+// header test through it as well 42 (the scaled index is shared again). Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1720,6 +1740,32 @@ bool c_projectile_type::v8(long a, long b)
 // values); an empty `do {} while (false);` after the 0xa5e70 call or after the definition copy 12 / 12 (straight-line
 // blocks are merged, no join is kept); the base v27 called inline re-measured 51 (its copy takes `a`'s dead home). Word
 // read kept (5).
+// M3 lane 16 r189 (H2M_FAST; word read 5, mask control 12). The allocator's ranking re-read on the mask form: the flags
+// parameter 37, the object 36, with the object created later (a tie would be the object's). All with the mask unless
+// noted: the request bits pre-masked into a local (`b & 0xc00`) for both tests with the call's mask from `b` 46 (192 B);
+// the index read by value and masked in place inside the NONE block 12; the entry as the address of a 12-byte row of a
+// three-long view 12; the 0x400 arm nested with references to both power fields 12; the volatile definition copy in a
+// scope block of its own 12, with the word read 5 (same code each). Word-read body kept (5).
+// M3 lane 3 r309 (H2M_FAST with 0xa5e70, MATCH each time; word read 5), all with the full-width mask: the volatile
+// definition copy declared after the a5e70 call 43 (189 B); the 0x800 arm as a `do { ... } while (false);` block with a
+// break for each failed test 47 (188 B); the 0x800 arm through a file-local forceinline (group index, state value
+// pointer) update helper returning bool, then `if (...) result |= 0x800;`, 12; no object local, OBJECT(a) at each of the
+// three field reads 82 (208 B); the entry as the address of `((dword *)data)[(index & 0xffff) * 3]` 12. Word-read body
+// kept (5).
+// M3 lane 4 r262 (H2M_FAST with 0xa5e70, MATCH each time; word read 5), all with the full-width mask unless noted. A
+// forced-ranking search on the mask form matches with the object raised 36 -> 37 or the flags lowered 37 -> 35. The one
+// point is the 0x800 constant shared by the test and the `|= 0x800` (it is counted in the 0x800 test's block): a test
+// whose constant is not 0x800 at allocation gives retail's head. `(byte)(flags >> 11) & 1` 26 (187 B: object ESI and
+// flags EDI as retail, but the shift stays, `mov eax, edi; shr eax, 0xb; test al, 1`); `(byte)(flags >> 8) & 8`,
+// `(word)(flags >> 8) & 8`, `(char)(flags >> 8) & 8` and `(bool)(flags >> 11 & 1) != false` 26 each (the same); the
+// flags' second byte, `((byte const *)&flags)[1] & 8`, 19 (object ESI, but the flags take EBX for `test bh, 8`, and the
+// 0x400 test becomes `test bh, 4`), both tests that way 19. Folded to the shared constant before allocation, 12 each:
+// `*(word const *)&flags & 0x800`, `((flags >> 8) & 0xff) & 8`, `(flags & 0x800) >> 11`, `(b >> 11) & 1`, `(flags >>
+// 10) & 2`, a `word` flags local tested `(flags >> 11) & 1`. Other: `(long)(flags << 20) < 0` 35; `!(~flags & 0x800) ==
+// false` 32 (191 B); the 0x400 arm's copy through memcpy 12; the result bits through the existing link-time-inlined bit
+// setter 0xbfe20 (`(dword *)&result`, bit 11 and/or 10, true) 12 for the 0x800 bit, the 0x400 bit or both, 5 with the
+// word read (its shifted constant folds before allocation). Wanted: a 0x800 test (or bit set) whose constant is not
+// shared at allocation and still assembles as `test edi, 0x800`. Word-read body kept (5).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
