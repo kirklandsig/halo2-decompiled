@@ -6,7 +6,6 @@
 #include "globals.h"
 #include "unknown_11cb00.h"
 #include "unknown_11cc90.h"
-#include "vector_products.h"
 #include <math.h>
 #include <xtl.h>
 
@@ -285,6 +284,7 @@ vector2f *function_11df30(
 	return angles;
 }
 
+// review (machine 3, 2026-11-26): the score-37 form in the next note is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (77) stays.
 // score 37 (was 77): vector_products.h helpers (length_sq3f, vector3d_from_points3d, dot3f, vector3f_add_scaled) and inline ternary clamp match lines 1-46; left: two-return tail schedule and else subtraction order. Single-exit `real result;` matches byte-for-byte (0, 290/290 B; also improves 0x260670) but triggers LTCG auto-inlining in matched 0x1a8fa0 (435), so held as a patch; in-place v 48 (inlines 0x1a8fa0); kji/jki return sums 39; parenthesized xyz return 41; if/else clamp with helpers 78.
 // @retail 0x11e000
 real function_11e000(
@@ -292,20 +292,38 @@ real function_11e000(
 	point3f const *a,
 	vector3f const *d)
 {
-	if (length_sq3f(d) > 0.0001f)
+	if (d->j * d->j + d->k * d->k + d->i * d->i > 0.0001f)
 	{
 		vector3f v;
-		vector3d_from_points3d(a, b, &v);
-		real t = dot3f(&v, d) / length_sq3f(d);
-		vector3f diff;
-		vector3f_add_scaled(&v, d, -(t < 0.f ? 0.f : (t > 1.f ? 1.f : t)), &diff);
-		return length_sq3f(&diff);
+		real t;
+
+		v.k = b->z - a->z;
+		v.i = b->x - a->x;
+		v.j = b->y - a->y;
+		t = (d->i * v.i + v.k * d->k + v.j * d->j) / (d->j * d->j + d->k * d->k + d->i * d->i);
+		real nt;
+		real x;
+		real y;
+		real z;
+
+		if (0.f > t)
+			t = 0.f;
+		else if (t > 1.f)
+			t = 1.f;
+		nt = 0.f - t;
+		x = d->i * nt + v.i;
+		y = nt * d->j + v.j;
+		z = nt * d->k + v.k;
+		return z * z + y * y + x * x;
 	}
 	else
 	{
 		vector3f u;
-		vector3d_from_points3d(b, a, &u);
-		return length_sq3f(&u);
+
+		u.j = a->y - b->y;
+		u.i = a->x - b->x;
+		u.k = a->z - b->z;
+		return u.k * u.k + u.j * u.j + u.i * u.i;
 	}
 }
 
@@ -534,38 +552,47 @@ real function_11e6f0(
 	}
 }
 
+// review (machine 3, 2026-11-26): the score-109 form in the next note is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (126) stays.
 // score 109 (was 126): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
 // @retail 0x11e800
 bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {
-	vector3f w;
-	vector3f e2;
-	vector3f e1;
+	real w[3];
+	real e2[3];
+	real e1[3];
 	vector3f n;
 	real d;
 
-	vector3d_from_points3d(a, p, &w);
-	vector3d_from_points3d(a, c, &e1);
-	vector3d_from_points3d(a, b, &e2);
-	cross3f(&e2, &e1, &n);
-	d = dot3f(&n, &w);
-	if (length_sq3f(&n) * 0.0001f > d * d)
+	w[0] = p->x - a->x;
+	w[1] = p->y - a->y;
+	w[2] = p->z - a->z;
+	e1[0] = c->x - a->x;
+	e1[1] = c->y - a->y;
+	e1[2] = c->z - a->z;
+	e2[0] = b->x - a->x;
+	e2[1] = b->y - a->y;
+	e2[2] = b->z - a->z;
+	n.i = e1[2] * e2[1] - e1[1] * e2[2];
+	n.j = e2[2] * e1[0] - e1[2] * e2[0];
+	n.k = e1[1] * e2[0] - e2[1] * e1[0];
+	d = n.j * w[1] + n.k * w[2] + n.i * w[0];
+	if ((n.k * n.k + n.j * n.j + n.i * n.i) * 0.0001f > d * d)
 	{
 		short axis = function_120850(&n);
 		bool positive = n.n[axis] > 0.f;
 		short const *indices = g_440b94[axis * 2 + positive];
 		long i0 = indices[0];
 		long i1 = indices[1];
-		real w1 = w.n[i1];
-		real e2_1 = e2.n[i1];
-		real e2_0 = e2.n[i0];
-		real w0 = w.n[i0];
+		real w1 = w[i1];
+		real e2_1 = e2[i1];
+		real e2_0 = e2[i0];
+		real w0 = w[i0];
 		real ca = w1 * e2_0 - e2_1 * w0;
 
 		if (ca > -0.0001f)
 		{
-			real e1_1 = e1.n[i1];
-			real e1_0 = e1.n[i0];
+			real e1_1 = e1[i1];
+			real e1_0 = e1[i0];
 			real cb = e1_1 * w0 - w1 * e1_0;
 
 			if (cb > -0.0001f)
