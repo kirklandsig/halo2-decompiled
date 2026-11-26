@@ -2457,6 +2457,23 @@ bool function_1900a5(long index);
 // on 643 base: real XUID/word fields on s_cache_property_record/s_cache_property (+ XUID team_owner, or + dword count) 643/643/643 (+ space 643 at 2862 B, aligned 359 / masked 261);
 // properties pointer with properties_used += 6 736 (2926 B, unrolled; + space 704, + XUID/word + space 704, + dup continue + space 730);
 // nested if (variant) + space 643 (2862 B, aligned 358 / masked 260); while duplicate scan 643; read_record_count > 0 guard + space 642; if (variant) ... else state=1 + guard 736 (2942 B).
+// M3 lane GA r24 (15 fast trials on the 633 base with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x80940,
+// 0x80aa0, 0x80bf0, 0x80d70 all MATCH; control 633 at 2862/2862 B, 768/772 insns, al=376, mk=253; body unchanged):
+// two-use last_write local 637 (mk=252); two-use last_read local 636; both nested under !state 637 (al=373, mk=249);
+// completion per-arm `else if (state == 2) { state = 1; failed = true; } else if (state == 5) { state = 4; failed = true; }`
+// 658 (2846 B, al=362, mk=240), with `if (variant) { ... } else player->state = 1;` and `property->type == 0 ? 0 : ...` 658
+// (2878 B, al=368, mk=245), plus `if (read_record_count > 0)` around variant_type 680 (2910 B, al=357, mk=235);
+// fill `long count = 6` for record->count, loop bound and properties_used += count 696 (2910 B, al=343, mk=233);
+// `properties_used += 6` ahead of `j < record->count` loop 681 (2910 B, al=357, mk=227); carried `next_property` cursor
+// 673 (2874 B, al=363); named record_space/property_space 640 (2862 B, al=363), + per-arm failed 674 (2830 B, al=348, mk=235),
+// + last_write 674; polls as `state != 0 && state != 1` / `state == 0 || state == 1` 633 (al=374, mk=251); `pstate` local in
+// request loop 633; `buffers` declared first 633. All retail-aligned structural forms shift positional rows up behind the
+// three cross-file/flag blockers (0x1900a5 cmovne /arch:SSE, 0x647a0/0x647d0 and 0x75890 /Ob1).
+// M3 lane 12 r194 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x72700, 0x75890, 0x6c7e0, all MATCH;
+// control 633): the opening test through the existing logon helper 0x6c7e0 itself 763 (its /Ob1 file keeps it a call); the
+// request gate through the existing elapsed-time function 0x75890 itself 646 (a call, same file reason); the delay as one
+// conditional expression 633 (same code); the property value as `= 0` then `if (type)` 642; the team flag declared ahead of
+// the valid flag 633 (same code).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

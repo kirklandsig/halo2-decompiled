@@ -776,6 +776,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 96 [0] (same score); object index, absolute index, table, type, rigid body 111 [9]; object index, table, absolute
 // index, rigid body, type 83 (256 B) [0]; the rigid body first with const element and table pointers 96 (256 B) [13].
 // Body unchanged.
+// M3 lane 6 r249 (fast, caller 0x1d5bf0 in brackets; control 96 [0]). Round 60's 24 form rebuilt 24 at 256 B [0]:
+// only the entry rotation (object index EDX, table ESI, rigid body ECX against retail's ECX, EDX, ESI) and the byte
+// type's `mov al` + `movzx eax, al` are left; with a long type 89 [0] (retail's one movzx, the entry then one
+// instruction short). Allocator reading of the long-type form: the absolute index 110, the rigid body 94, the object
+// index 73, the table 53, so the rigid body keeps the incoming ECX; a forced-ranking search on it finds no single
+// decision that matches (the rigid body ranked last is the best, 58 of 68 distance left). Natural forms with one type
+// local used by both routes, read straight from `headers[component->object_index & 0xffff]` (no index locals), case 0
+// as main or through the bit2 view: byte type after the rigid body 136/136 (216 B) [213], before it 117/116 (236 B)
+// [213]; long type after the rigid body 141/141 (212 B) [213], before it 105/105 (256 B) [9]. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

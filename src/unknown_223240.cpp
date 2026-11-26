@@ -533,6 +533,14 @@ void function_2232a0(void)
 // base add is the pointer's shape, not a pick. Forms: the view loop bounded by `view_count - 1` 132 (578 B); the terminal
 // record as `g_47f0f8 + 1 + local_2` 183 (583 B); view_count declared after the source pointer 47 (same code); the stub's
 // player count written `view_count - 1` 157 (588 B). Still BLOCKED-BY 0x2b5d0.
+// M3 lane 15 r152 (h2m fast with 0x223240 and 0x2232a0 MATCH, 0x223080 2 on the reduced image as before; control 47): the
+// terminal record as `g_47f0f8 + view_count` 47; one record type for both files (0x223080's record grown to the full
+// 0x118 bytes and taken by 0x223080, no casts at the three calls) 47 (same code); that with the view count declared at
+// the terminal call 40 (the listed moved declaration's 40, nothing more); that with the record as `g_47f0f8 + view_count`
+// 47; that with `1 + local_2` 47. Diagnostics: 1 to 7 unused locals 47 each (inert); a forced-ranking search over 12
+// decisions: best 35 by giving the terminal record pointer EDX, but with a larger instruction distance (17 against 11),
+// so not a lead. The tail still needs 0x2b5d0's register convention (count in EAX): BLOCKED-BY 0x2b5d0, whose activation
+// is still blocked by the unmatched 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600. Body unchanged.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

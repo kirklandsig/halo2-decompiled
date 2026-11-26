@@ -1937,6 +1937,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // the machine scan's exit as `return false;` 871 (same code); the machine id copies in a block of their own around the
 // group loop 871 (same code, frame unchanged); both party scans as plain index loops 940 (2716 B), the first one only
 // 923 (2716 B).
+// M3 lane 15 r152 (h2m fast with 0x73530, 0x63220 and 0x192e60, all MATCH; control 871): forms first listed on the 766
+// base, re-measured on today's 871: the group clears chained (`averages = rated_counts = total_counts = 0`) 871; the
+// three NONE extrema stores chained 871; those two with the no-rated reset chained too 871; the machine id copy as a
+// 12-byte memcpy 871; the machine id array declared at the top of the body 871 (same code each). Body unchanged; still
+// BLOCKED on the link's inline choice for the opening 0x192e60 call.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
