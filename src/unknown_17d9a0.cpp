@@ -251,13 +251,6 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon);
 
-PRIVATE __forceinline void decal_project_17dd80(real const *point, short axis, bool side, point2f *out)
-{
-	short const *axes = g_440b94[axis * 2 + side];
-	out->x = point[axes[0]];
-	out->y = point[axes[1]];
-}
-
 PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *mesh, s_decal_mesh_edge const *edge,
 	bool reverse, s_decal_quad_17d9a0 const *quad, real radius, short mode, long *adjacent, short *count)
 {
@@ -266,9 +259,7 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 		point3f const *start = &mesh->vertices[edge->vertices[!reverse]].position;
 		point3f const *end = &mesh->vertices[edge->vertices[reverse]].position;
 		vector3f direction;
-		direction.i = end->x - start->x;
-		direction.j = end->y - start->y;
-		direction.k = end->z - start->z;
+		vector3d_from_points3d(start, end, &direction);
 		if (function_11e5e0(start, &direction, &quad->matrix.position, g_444a38[mode].radius_scale * radius))
 		{
 			long face = edge->faces[!reverse];
@@ -285,10 +276,24 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 	}
 }
 
-// score 423 (was 453) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
+// score 400 (was 423) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
 // 2 + positive) at each projection, with the side as a by-value bool (0x143-0x161 for the first vertex, 0x180-0x199
 // for the current one); the projection is an inline helper called for both. Left: frame 0x58 against retail's 0x5c,
 // face_index in edi (retail esi), mesh in esi (retail ebx).
+// M3 lane 13 r163 (h2m fast with 0x17e670, 0x17fd20 and the callees; plain check 400): kept, 423 -> 400 and frame 0x5c as
+// retail's: the file's existing decal_project_point_17d9a0 at both projections in place of a second copy of it, the
+// first vertex passed without its one-use pointer, and 0x11cf50 given the face plane first (retail's call passes the
+// quad normal in EAX and the plane in ECX; 0x11cf50 is symmetric); the edge direction through the existing
+// vector3d_from_points3d (same code). Steps: the 0x11cf50 order alone 433 (1821 B), with the 0x17d900 call ahead of
+// `radius * 0.05f` 433; the helper alone 435 (1805 B), with both 449; the helper and no `first` pointer 408. On the kept
+// body: the call-first comparison 400 (same count; retail's order there); the vertex's one-use pointer dropped too 438
+// (frame back to 0x58); the normal offset through vector3f_add_scaled 400 (same code); `face_index == edge->faces[1]` 400
+// (same code). Left: the quad normal's address in EBX (retail EDI), face_index EDI and mesh ESI (retail ESI and EBX);
+// in the loop the vertex pointer ranks 254 and takes ECX ahead of the first projection's temporaries, so `reverse` gets
+// EBX where retail has vertex ESI, edge EDI, polygon_points EBX and `reverse` in DL with its home in the dead `mode`
+// slot; the output loop keeps the plane normal and the 1/256 constant in registers across 0x120790 where retail reloads
+// them after each call (a callee register-set question). A forced-ranking search found no single decision below 400
+// (the adjacent block's start pointer in ESI 428, the vertex in ESI 405).
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,
@@ -305,7 +310,7 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 	}
 	plane3f plane;
 	bsp3d_get_plane((s_bsp3d const *)mesh, face->plane_index, &plane);
-	real angle = function_11cf50(&quad->plane.n, &plane.n);
+	real angle = function_11cf50(&plane.n, &quad->plane.n);
 	if (g_444a38[mode].maximum_angle * 0.017453292f >= angle &&
 		radius * 0.05f > function_17d900(mesh, face_index, &quad->plane))
 	{
@@ -324,11 +329,11 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 			polygon_points = g_55ec10[iteration & 1];
 			if (iteration == 0)
 			{
-				point3f const *first = &mesh->vertices[edge->vertices[reverse]].position;
-				decal_project_17dd80((real const *)first, quad->axis, quad->positive, &previous);
+				decal_project_point_17d9a0((real const *)&mesh->vertices[edge->vertices[reverse]].position,
+					quad->axis, quad->positive, &previous);
 			}
 			point2f current;
-			decal_project_17dd80((real const *)vertex, quad->axis, quad->positive, &current);
+			decal_project_point_17d9a0((real const *)vertex, quad->axis, quad->positive, &current);
 			plane2f clip;
 			clip.n.i = previous.y - current.y;
 			clip.n.j = current.x - previous.x;
@@ -1120,6 +1125,20 @@ plane3f *function_1428b0(transform4x3f const *matrix, plane3f const *plane, plan
 int __stdcall function_1429d0(transform4x3f const *matrix, long count,
     point3f const *source, point3f *destination);
 
+// score 363 (was 430): kept in M3 lane 13 r163 (h2m fast with both matched callers 0x17a8a0 and 0x23aad0, plain check
+// 363, callers MATCH): the deterministic restore and the neighbour search as one exit (search under `!deterministic &&
+// radius test && (world hit || excluded bound)`, then `if (deterministic)` restore), 430 -> 368 at retail's 1787 B;
+// `cluster` as a `long` (retail stores it as a sign-extended dword) 363 (428 on the old body). Left: frame 0x1178
+// against 0x1170; retail keeps the vector in EBP, the source in ESI, the point in EDI and the sixth argument in BL with
+// `excluded` in memory, where this build keeps `excluded` in EDI, the point in ESI and the source in EBX; the search
+// radius is x87 with a float 0.25 in retail (a double constant here; `0.25f` in the double expression folds to the same
+// double constant, 363). Leads, not kept: the sixth parameter as a `bool` (retail tests it as BL, pushes the register
+// whole to 0x17ee20's bool argument and re-reads the argument byte at the end; the callers' declarations follow, both
+// callers still match) 429 on the old body, 421 with the long cluster, 385 on the kept body; the restore test after the
+// radius test (retail's test order) 390; the collision query only for a missing or type-4 source and that test repeated
+// to pick the collision record, as retail does with no found flag, 414; the old body's returns with the three
+// constant-initialised locals declared above the seed block 443; `deterministic` declared first 417; the placement
+// pointer declared first 387.
 // @retail 0x17e670
 void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
@@ -1136,7 +1155,7 @@ void function_17e670(point3f const *point, s_effect_source *source, long tag_ind
         g_4e7408->seed = bits[0] ^ bits[1] ^ bits[2] ^ 0xdeadc0de;
     }
     long excluded = -1;
-    short cluster = -1;
+    long cluster = -1;
     bool world_hit = false;
     point3f center;
     vector3f direction = *vector;
@@ -1189,75 +1208,73 @@ void function_17e670(point3f const *point, s_effect_source *source, long tag_ind
                 function_1429d0(matrix, 4, (point3f const *)unknown2, (point3f *)unknown2);
         }
     }
-    if (deterministic)
+    if (!deterministic && definition->maximum_radius * 2.0f > 0.2f && (world_hit || excluded != -1))
     {
-        g_4e7408->seed = saved_seed;
-        return;
-    }
-    if (!(definition->maximum_radius * 2.0f > 0.2f) || (!world_hit && excluded == -1))
-        return;
-    real search_radius = (real)((double)radius * (double)definition->maximum_radius * 0.25);
-    s_decal_bound_17e490 *nearby[1024];
-    long count = function_17e490(excluded, cluster, &center, search_radius, 1024, nearby);
-    for (long i = 0; i < count; ++i)
-    {
-        s_decal_bound_17e490 *bound = nearby[i];
-        short mesh_index = *(short *)((byte *)bound + 0x34);
-        byte *meshes = *(byte **)((byte *)g_4e0348 + 0x13c);
-        s_decal_mesh_view const *mesh = (s_decal_mesh_view const *)(meshes + mesh_index * 0xc8 + 0x70);
-        s_decal_placement adjacent;
-        adjacent.unknown24 = -1;
-        direction.i = bound->center.x - center.x;
-        direction.j = bound->center.y - center.y;
-        direction.k = bound->center.z - center.z;
-        if (function_30bf0(&direction) >= 0.0001f)
+        real search_radius = (real)((double)radius * (double)definition->maximum_radius * 0.25);
+        s_decal_bound_17e490 *nearby[1024];
+        long count = function_17e490(excluded, cluster, &center, search_radius, 1024, nearby);
+        for (long i = 0; i < count; ++i)
         {
-            point3f origin;
-            origin.x = direction.i * 0.01f + center.x;
-            origin.y = direction.j * 0.01f + center.y;
-            origin.z = direction.k * 0.01f + center.z;
+            s_decal_bound_17e490 *bound = nearby[i];
+            short mesh_index = *(short *)((byte *)bound + 0x34);
+            byte *meshes = *(byte **)((byte *)g_4e0348 + 0x13c);
+            s_decal_mesh_view const *mesh = (s_decal_mesh_view const *)(meshes + mesh_index * 0xc8 + 0x70);
+            s_decal_placement adjacent;
+            adjacent.unknown24 = -1;
+            direction.i = bound->center.x - center.x;
+            direction.j = bound->center.y - center.y;
+            direction.k = bound->center.z - center.z;
+            if (function_30bf0(&direction) >= 0.0001f)
+            {
+                point3f origin;
+                origin.x = direction.i * 0.01f + center.x;
+                origin.y = direction.j * 0.01f + center.y;
+                origin.z = direction.k * 0.01f + center.z;
+                real length = search_radius * 2.0f;
+                direction.i *= length;
+                direction.j *= length;
+                direction.k *= length;
+                if (function_1697c0(0x800005, &origin, &direction, -1, -1,
+                    (s_collision_result_1697c0 *)&adjacent) && adjacent.unknown00 == 3
+                    && &((s_decal_bsp_17e490 *)g_4e0348)->bounds[adjacent.unknown3c] == bound)
+                {
+                    transform4x3f const *matrix = (transform4x3f const *)bound;
+                    function_142700(matrix, &adjacent.position, &adjacent.position);
+                    function_1428b0(matrix, &adjacent.plane, &adjacent.plane);
+                    function_1427f0(matrix, &direction, &direction);
+                    g_46dd4c = 2;
+                    function_17ee20(mesh, matrix, tag_index, &adjacent, &direction,
+                        radius, false, unknown1, 0);
+                }
+            }
+        }
+        if (!world_hit)
+        {
+            vector3f axes[6] = {{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1}};
             real length = search_radius * 2.0f;
-            direction.i *= length;
-            direction.j *= length;
-            direction.k *= length;
-            if (function_1697c0(0x800005, &origin, &direction, -1, -1,
-                (s_collision_result_1697c0 *)&adjacent) && adjacent.unknown00 == 3
-                && &((s_decal_bsp_17e490 *)g_4e0348)->bounds[adjacent.unknown3c] == bound)
+            for (long j = 0; j < 6; ++j)
             {
-                transform4x3f const *matrix = (transform4x3f const *)bound;
-                function_142700(matrix, &adjacent.position, &adjacent.position);
-                function_1428b0(matrix, &adjacent.plane, &adjacent.plane);
-                function_1427f0(matrix, &direction, &direction);
-                g_46dd4c = 2;
-                function_17ee20(mesh, matrix, tag_index, &adjacent, &direction,
-                    radius, false, unknown1, 0);
+                point3f origin;
+                origin.x = axes[j].i * 0.01f + center.x;
+                origin.y = axes[j].j * 0.01f + center.y;
+                origin.z = axes[j].k * 0.01f + center.z;
+                vector3f ray;
+                ray.i = axes[j].i * length;
+                ray.j = axes[j].j * length;
+                ray.k = axes[j].k * length;
+                s_decal_placement world;
+                world.unknown24 = -1;
+                if (function_1697c0(0x20800007, &origin, &ray, -1, -1,
+                    (s_collision_result_1697c0 *)&world) && world.unknown00 == 1)
+                {
+                    g_46dd4c = 3;
+                    if (function_17ee20((s_decal_mesh_view const *)g_4e0340, 0, tag_index,
+                        &world, &ray, radius, false, unknown1, 0))
+                        break;
+                }
             }
         }
     }
-    if (!world_hit)
-    {
-        vector3f axes[6] = {{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1}};
-        real length = search_radius * 2.0f;
-        for (long j = 0; j < 6; ++j)
-        {
-            point3f origin;
-            origin.x = axes[j].i * 0.01f + center.x;
-            origin.y = axes[j].j * 0.01f + center.y;
-            origin.z = axes[j].k * 0.01f + center.z;
-            vector3f ray;
-            ray.i = axes[j].i * length;
-            ray.j = axes[j].j * length;
-            ray.k = axes[j].k * length;
-            s_decal_placement world;
-            world.unknown24 = -1;
-            if (function_1697c0(0x20800007, &origin, &ray, -1, -1,
-                (s_collision_result_1697c0 *)&world) && world.unknown00 == 1)
-            {
-                g_46dd4c = 3;
-                if (function_17ee20((s_decal_mesh_view const *)g_4e0340, 0, tag_index,
-                    &world, &ray, radius, false, unknown1, 0))
-                    break;
-            }
-        }
-    }
+    if (deterministic)
+        g_4e7408->seed = saved_seed;
 }
