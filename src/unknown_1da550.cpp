@@ -271,10 +271,11 @@ real magnitude3d(vector3f const *vector);
 long function_1dac40(long object_index, long other_object_index);
 void function_e3f00(long object_index);
 
-// score 47 (was 62): with magnitude3d `inline` (src/unknown_023540.cpp) retail's spill of the speed across the
+// score 16 (was 47): with magnitude3d `inline` (src/unknown_023540.cpp) retail's spill of the speed across the
 // magnitude3d call comes from the inline callee, so the larger speed is a plain ternary (no volatile, no copy local,
-// no reference locals). Left: the velocity copy's registers, the damage-index load order around the 0xd6660 call,
-// the flags / owner stores before 0xd7b80 and the second havok_component_get's global load.
+// no reference locals). Left: the velocity copy's registers, the damage-index load order around the 0xd6660 call
+// and the flags / owner stores before 0xd7b80 (the second havok_component_get's global load is retail's since the
+// named materials pointer, round 151).
 // M3 lane 8 r240 (fast screen with 0x1da550, 0x1da9e0, which stay matched): every difference is a scratch-register
 // rotation or a store order. A const pointer to the first rigid-body element for the velocity copy 41 (the copy then
 // retail's), a const reference to it 41, a pointer to the velocity member 45, `.data[0]` 47, the copy ahead of the
@@ -295,6 +296,20 @@ void function_e3f00(long object_index);
 // store still precedes the index load: its dependence is real, not the inlined constructor's pointer), with the three
 // match-only forms 5, with the index declared ahead of the damage limits 5; the store-form with the element pointer
 // and the owner store first (index as a temporary) 41; the event declared ahead of the damage limits 47.
+// M3 lane 15 r151 (H2M_FAST with 0x1da550 and 0x1da9e0, MATCH throughout). Kept: the materials pointer named under
+// its own count test (`if (count) { materials = ...; if (materials->material) ... }`) 47 -> 16: the pointer then
+// reuses the dead model register as retail does and every later scratch rotation is retail's. Reading: retail's
+// damage index is an expression temporary (it takes EDX by rotation and is what advances the later rotations) that
+// is loaded ahead of the event's NONE store; our temporary always follows the store, and a named index (EAX) leaves
+// every later call setup rotated by one. On the kept form: the owner store ahead of `flags |= 0x101` 14; with that
+// and the one-use element pointer for the velocity copy 8 (registers all retail; left only the index load after the
+// NONE store, the span's movaps/subss and the push order); on that 8 form the event declared at the damage block's
+// top 8, at the force block's top 18, a named index at the block's top 23 (a forced-ranking search putting it in EDX
+// still leaves 20: the later rotations need a temporary); the velocity read through `rigid_bodies.data->` 16. On the
+// earlier three-form 5 (element pointer, named index, owner store first): the index first in the block 5, between
+// the limits and the span 5, after the event 41, as a `long const &` 41, through a `long const &` copy at the call 5;
+// the count test nested with the materials read at each use 5, the named materials pointer 28. Diagnostic (removed):
+// the NONE store moved into the call's first argument (index evaluated in the call) 41, the store still ahead.
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {
@@ -334,8 +349,12 @@ bool function_1da6d0(long object_index, long other_object_index, real speed_a, r
                     if (other_definition->model_index != NONE)
                     {
                         s_collision_force_model *model = (s_collision_force_model *)g_4e3b44[other_definition->model_index & 0xffff].bytes;
-                        if (model->material_count && model->materials->material)
-                            event.kind = model->materials->material | 0xc0;
+                        if (model->material_count)
+                        {
+                            s_collision_force_material *materials = model->materials;
+                            if (materials->material)
+                                event.kind = materials->material | 0xc0;
+                        }
                     }
                     real damage = (force - definition->minimum_force) * damage_span / (definition->maximum_force - definition->minimum_force) + lower;
                     event.damage = lower > damage ? lower : damage > upper ? upper : damage;

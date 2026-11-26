@@ -1071,6 +1071,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // tracked-prop tests written field first at all three sites 406; the prior state read ahead of the next link 404 (same
 // code); the prior state read after the 0x263670 call 434 (1620 B); the sampling test with `actor[0x48]` first 429; the
 // tail on a fresh actor lookup after the walk 421 (1632 B). Every form keeps `ret 4`. Body unchanged.
+// M3 lane 16 r194 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all MATCH; control 404): the
+// tracked-prop test named once as a bool after the 0x263670 call for its first two uses 427 (1616 B, first difference
+// +0x6); case 4's arms the other way round 455 (1652 B); case 3's decrement as a short 404 (same code); the counter
+// reset ahead of the two flag stores in the sampling arm 405; the maximum update after the tracked-prop block 409.
+// Every form keeps `ret 4`. Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

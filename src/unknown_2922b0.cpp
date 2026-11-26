@@ -1068,6 +1068,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // object's field with no copy 687 (2858 B); a named ray length for the four-length initialiser 608 (2886 B); the ray
 // loop as a plain `for` over the index (no down-counter) 683 (2828 B); the output fraction's clamp through the existing
 // PIN_126660 439 (2873 B). Body unchanged.
+// AO r6 (fast with 0x1e5450/0x30bf0/0x1697c0 MATCH; control 362): renames for the frame order (success flag sorting
+// as `unobstructed` / `clear`, hit flags `blocked`, minimum `nearest`) 362 each, byte-identical; the input copy declared
+// after the hit flags 363, the minimum after the hit flags 362, the hit flags declared first 362, the clamped distances
+// declared before the ray lengths 362.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

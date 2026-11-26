@@ -2412,6 +2412,11 @@ struct s_actor_looking_structure_view
 // and then assigned from the actor 23; the length test written `0.f < function_30bf0(&forward)` 23; the clamp's arms
 // swapped (`score > 0.6f ? score : 0.6f`) 25; the angle with an implicit conversion (`i * 0.785398185f`) 23; the best
 // test as `best_score < score` 23 (the 23s the same code). Restored.
+// M3 lane 12 r194 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23). Reading: the
+// score's product order follows the numbering of forward's members (k at its clear, then j and i at the score), and
+// retail's i, k, j needs j numbered ahead of k. Forms: forward built member by member (i, j, then the k clear) 199
+// (927 B); forward from a three-value initialiser list 199 (927 B); forward through the existing three-value setter
+// 199 (926 B); the score's terms written i, j, k 25; the candidate copied through that setter 87 (930 B).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
