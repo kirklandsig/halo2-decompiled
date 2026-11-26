@@ -1045,6 +1045,15 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // as `r * r < d` 838. Diagnostics: 1..7 unused function-scope locals 717/717/862/862/862/862/843 (masked
 // 75/77/83/83/76/76/66, no phase near retail); 1..3 redundant float parentheses on the entry dot or on the type-0 offset
 // change nothing. Body unchanged.
+// GB22 (22 fast trials with 0x29a190/0x2c0d00 MATCH, control 838 at 3731/3731 B, +0x4a, body unchanged): uninitialized
+// `bool straight;` with inner & outer `else straight = true;` 756 (3731 B, +0x3c, mk 111; NOT kept: drops retail's
+// `0x2c0e19` store; outer both 743, both uninit 921 at 3745 B); init + `else { straight = true; aligned = true; }` 808
+// (3745 B, +0x91); clean retail bundle (early `bool enabled = true;`, direct `*(long *)(object + 0x248)`, `!(d <= r*r)`
+// gates, dir-first vel dots, `dot3f(&difference, direction)`, `(sphere_flags | obstacle_flags) | moving`) 838 (3731 B,
+// mk 72 -> 44; early `enabled` + direct `+0x248` alone 838, mk 88; + uninit `straight` 882/880/919); on clean bundle:
+// `vector3d_from_points3d` obj/veh/sphere+flat/all3 856 each (3713 B), `switch (type)` 868 (3748 B), one-expr x-z-y
+// vehicle dot 840 (mk 44). On `528` (`else straight = true;`, 3731 B, 921/921 insns, al 142, mk 37): `vector3d_from_points3d`
+// obj+sphere flat 529, veh+sphere ijk 527, one-expr x-z-y + obj + flat kji 490 (921/921), + `bool moving` 488 (920/921).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
