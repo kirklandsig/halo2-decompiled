@@ -38,7 +38,6 @@ real function_30bf0(vector3f *v);
 
 /* the stream primitives, src/unknown_195720.cpp */
 bool function_1946f0(s_bitstream *stream);
-void function_194710(s_bitstream *stream, bool discard);
 void function_1947a0(s_bitstream *stream);
 void function_1947e0(s_bitstream *stream, dword value, long bits);
 real function_194870(vector3f const *v, vector3f *a, vector3f *b);

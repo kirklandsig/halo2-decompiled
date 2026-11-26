@@ -1620,6 +1620,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // constant planar delta 234; raw spatial delta setter 505; history offset/relative
 // setters 234/234, both 234; in-place scaled normal correction 232.
 // NOT kept: the last form gains two points and adds three bytes.
+// M3 lane 12 r190 (h2m fast with 0x1f0450, 0x30bf0 and 0xa75d0; control 234). Reading: in the general arm's side cross
+// retail loads up.k ahead of facing.j and facing.i (the operand ranks of offset loads), ours the reverse; its last k row
+// leaves the out.k store to the shared join. Forms: the direct arm's speed read at each use (no `speed` local) 429; the
+// three flag bits as `(state->flags >> n) & 1` without `!= 0` 232 (not kept: two points), only damping so 590, only direct
+// and gravity so 594; the input pointer declared after the flying test 248; the side vector through the existing cross3f
+// 234 (same code), through cross3f_staged 501; cross3f on the 232 form 232. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

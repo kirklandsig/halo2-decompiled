@@ -1021,6 +1021,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // straight into arg_3 in place of vector3f_assign 565 (2861 B); the side vector declared ahead of the other two 518; the
 // clearance test written `local_19 / local_6 < 0.1f` 518; the two angle totals declared in the other order 518; the
 // inactive exit as `return local_0;` 518 (same code each). Body unchanged.
+// M3 lane 6 r245 (h2m fast with 0x1e5450/0x30bf0/0x1697c0, all MATCH; callers 0x29ab90 343 and 0x29bab0 656 unchanged;
+// control 518): the ray loop is retail's instruction for instruction apart from the homes of the compiler's loop values
+// (retail: count +0x10, point cursor +0x14, index +0x1c, hit cursor +0x34; ours +0x10, +0x18, +0x24, +0x38) and our
+// loop-entry pad. `FLT_MAX` from the standard header at both uses 518; the existing OBJECT_DATUM_GET for the object 518;
+// both with a file-scope named constant for the no-hit distance 515 (under the bar); that with the two angle totals
+// declared in the other order 515; the minimum's test written `local_19 < local_4` 518 (all the 518s the same code).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

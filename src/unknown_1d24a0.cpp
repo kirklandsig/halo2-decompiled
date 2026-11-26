@@ -790,6 +790,18 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // masked 89, first 84 rows byte-exact; `0x54590` and `0xc2d00` both MATCH in fast check). Left on 808: frame 0x1d8 vs
 // 0x1d4 (angular coefficient homes), loop head / swap-remove (`s_havok_array08::remove_at`), object-type `movzx`, and
 // limit-arm float product sides.
+// M3 lane GA r12 (fast with 0x1d2280, 0x1d2070, 0x1cf9f0, 0x142eb0, all MATCH; control 808 at 4260/4259 B, fr 0x1d8, al
+// 352, mk 112; 29 valid compiled trials, body unchanged): on 808: `long object_type` for both mask tests (`movzx`) 806 (al
+// 350, mk 111); `local_18` before `local_17` 796 (al 341, mk 103, exact flag-shift block; declaration order, not kept), +
+// `long object_type` 794 (mk 102); `local_23` before `local_22` 809, both flag pairs swapped 797; `field_58`/`field_5c`
+// read at each use + 4 block-scoped `response_fraction` locals 809 (4230 B, fr 0x1d4, +0x14, al 228, mk 105), + `long
+// object_type` 804 (al 226, mk 104), + `local_18` first 796 (al 216, mk 96), + all 3 791 (al 214, mk 95); `field_5c` read
+// alone 807 (fr 0x1d4, al 326), + split fraction 814; aggregate `local_28 = *local_76` 834; operand/dot/limit trials
+// (`function_1d24a1(&local_31,&local_30)`, `local_37.k = local_39 + local_37.k`, angular/block-2/block-3 dot orders,
+// separate `scaled` vector in limit arms, `k,j,i` `function_1d24a6`): all 808 on main (MSVC canonicalizes operands), 809
+// on `fr=0x1d4` (al 222/226), 804 with `long object_type` (al 220, mk 104). Diagnostics (moved list local at removal on
+// 808): alone 757 (al 289, mk 89), + `fr=0x1d4` 738 (al 164, mk 82), + `local_18` first 724 (4239 B, fr 0x1d4, +0x14, al
+// 153, mk 76; + math/limit 724, al 151), + `long object_type` 800.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
