@@ -1106,6 +1106,27 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // diagnostics, restored at once: `inline` on 0x210a30's definition 428 (1307 B, 0x1f45c0 250), also on 0x210850's 539
 // with seven callers differing; file-local force-inlined copies of both expanded at the test 8 (the pair unchanged).
 // BLOCKED-BY 0x210a30 / 0x210850 (retail expands them here only). Body unchanged.
+// M3 lane 16 r194 (h2m fast with 0x270930, 0x26f3f0 and 0x2104b0, all MATCH; lane 15 r123's two-flag form, held as a
+// patch, re-applied: 2 at 1388 B). Cause of the last pair, read from the allocator and the scheduler: the latch's join
+// block holds only the reloads of the steps piece (EBP) and of j's piece (EDX); both get the same scheduling priority, so
+// they stay in the order the allocator inserted them, which is ascending piece number. Both pieces come from the split
+// pass that follows `state` taking EBX; ten numbers are free at that point (four early temporaries the optimizer removed,
+// six float values spilled across the length call), and eleven pieces are made: steps' piece takes a recycled number and
+// j's, the eleventh, a fresh higher one. Diagnostic, reverted at once: `complete` declared volatile (it is never in a
+// register anyway) MATCHES byte for byte, because one piece fewer leaves j a recycled number below steps'; `special`
+// volatile 249 instead. A forced-ranking search agrees (raising j's reload or lowering steps' matches). Forms on that
+// base, all 2 with the pair unchanged unless given: `complete` cleared through an inline helper taking its address;
+// `*(byte *)&complete = false`; the final read through a cast of its address; memcpy for the final store; the edge
+// test as a `continue`; `++j`; the truncation test nested; `real const margin`; the clamp as one conditional; the link
+// count's increment inside the copy 304; the count declared ahead of the fill loop 348; `complete` declared before the
+// walk 337, after the link count 2; a `long` fill counter 40; a separate walk index for the node parameter 370 (frame
+// 0xe8); a step pointer for the special arm 263, for the depth row 299, for the type-2 arm 230, in the fill loop 2;
+// `MIN(maximum_steps, ...)` 4; `(short)` casts on the count stores 2 each, on the fill bound and the returns 2;
+// explicit NULL tests at the end 2; the previous point by if/else 2; a pointer-sum link destination 2; a function-scope
+// data pointer 2; a result copy of the count 2; `lookup` written out at each use 2; the link and depth limits compared
+// with the parameter first 4 each. A 600 s permuter run (60 tries) found nothing below 2. Next: a legal form that keeps
+// `complete` out of the register candidates (retail's address-taken flags, see `special`), or one more removed
+// temporary ahead of that split. Body unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

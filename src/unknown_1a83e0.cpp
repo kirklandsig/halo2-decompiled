@@ -103,6 +103,15 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
 // vector3f_add_scaled into a separate vector 205, in place with `-t` as the scale 205, the squared distance as
 // dot3f(&delta, &delta) 205 (same code each); the update as vector3f_scale into an offset then vector3f_add 243
 // (1560 B). On this body: the update through vector3f_add_scaled in place 78 (same code); into a separate vector 222.
+// GA23 (43 compiled fast trials, 0x2b400/0x1f5110/0x1a8c30 MATCH): 0x11e000's 0-diff match body (single-exit or two
+// returns, dot3f, vector3f_add_scaled, 0.0f-t, ternary or if clamp, `(real)sqrt` outside, `(point, start, segment)`
+// order) 205 (al 32, mk 19, same code as `a0`); on `a0`: `length_squared` jki / `+=` kji / `+=` jki / `+=` ijk / `+=` kij
+// 205/205/201(al 26)/208/208, `squared_distance` `+=` kji 205, recomputed `length_sq3f` 205, scoped `delta` +
+// `vector3f_add_scaled` 205, direct delta sub 205, `local_7` at top 205, nested `segment_dist_sq` (`__forceinline` 205,
+// plain `inline` 944), `segment`-first dot kji/ijk 78/205; `dot` `+=` kji/ijk 205/225; `squared_distance` `+=` kji with
+// update orders kij 71 (mk 13), ikj 64 (al 41, mk 13; + `length_squared` `+=` jki 60, al 35, mk 13; `t`-first 64/71/205;
+// separate scalars 204/176/236; `sq` ijk 240/225; NOT kept: retail length_squared evaluates k, j, i and seg.k/seg.j stay
+// xmm4/xmm3); on HEAD: `length_squared` `+=` kji or jki 78. Body unchanged.
 // @retail 0x1a83e0
 bool __stdcall function_1a83e0(long arg_0, short *arg_1, real *arg_2, point2f *arg_3, bool *arg_4)
 {

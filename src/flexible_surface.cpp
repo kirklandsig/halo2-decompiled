@@ -1027,6 +1027,16 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // as retail, but the seed read moves ahead of the clock loads and the time stays on the x87 stack (`fst`) where retail
 // stores and reloads it; a one-use local and a moved statement, so a lead only); the `short` local alone 130 (same code).
 // Body unchanged.
+// M3 lane 4 r266 (H2M_FAST with 0x118140 and 0x117c80, MATCH; control 130). Dead initialised longs at the top (diagnostic)
+// K = 1..8, 12, 16: 130/152/154/154/154/154/138/138/136/136 (880 B for K = 2..6, 882 B from 7), the frame 0x1c at every K,
+// so the missing cell is not a symbol-count state. In the shared rotation helper (with 0x2551f0, 0x1ff360, 0x1161f0,
+// 0x26d570), the vector's j read into a local beside k, with or without the dot and cross written j, k, i: this function
+// 150 (883 B) with retail's 0x20 frame (first difference moves to +0x2a: the global's j and k then stay in registers and
+// two cross terms spill), but matched 0x2551f0 63 and 0x1ff360 93, so not kept. Here: the rotation through a
+// file-local copy with separate input and result parameters, called with the global for both (diagnostic: a second
+// spelling of the shared helper) 154 (880 B, frame 0x1c); the four globals only this function uses (g_55e710, g_55e714,
+// g_55ecd0, g_55ecd4) declared `static`, all four or the direction alone, 162 each (880 B, frame 0x1c: the limit call's
+// constant push is hoisted into the rotation). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
