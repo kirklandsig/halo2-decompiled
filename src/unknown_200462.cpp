@@ -370,6 +370,13 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // moves to XMM4); one function-scope sprite-record pointer shared by both passes 12 (the one-use pointer's code); the
 // top and bottom y edges named before the first x step 25, on the record pointer 23; only the left and right x edges
 // named after the step 39, on the record pointer 37. All restored.
+// M3 lane 12 r191 (h2m fast with 0x2008fc 0x200891, control 14; the bounds-record pointer re-measured 12): on the pointer
+// the two half extents in one declaration 12 (same code); the pulse query after both half extents 53; the bitmap record
+// pointer formed after the pulse query 81 (850 B); the pulse pointer formed at the draw loop's top 12 (same code). Reading
+// of the allocator's ranking on the pointer form: the half-height copy (copy, `y - h`, `h + y` in place) is coloured in the
+// first pass and takes XMM3; the advance product is used again after the draw call, so its whole range is split and only
+// its draw-block piece is coloured, in the second pass, taking XMM4 (the same 162 as the copy); retail's product takes
+// XMM3, so its piece outranks the copy in retail's first pass. A forced-ranking search over 30 decisions found nothing.
 // @retail 0x200462
 void function_200462(long arg_0)
 {
