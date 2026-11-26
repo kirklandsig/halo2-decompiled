@@ -1924,6 +1924,15 @@ long function_2197f0(real gain);
 // `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 143 (681 B).
 // Staged release end with default result, exhaustive result, selectable endpoint, or elapsed fallback accumulator 92/92/155/157.
 // The same four with the quotient before the cap 148/148/153/97. NOT kept: duration reuse keeps the wrong XMM allocation.
+// Roasted-Codes #1535 (released 2026-11-26; fast reduced-image scores, the seven neighbouring functions unchanged at
+// every run, control 87). The simple same-ambience arm's interpolation bound to a const reference and then added: 80
+// (684 B); that arm's interpolation, sum and tail become retail's (result XMM0, zero XMM2), elapsed stays in XMM2 and the
+// fade-out time is still reloaded. The same binding on the overlap arm 157 (688 B); on the current-ambience arm on top of
+// the 80 form 99 (686 B); both same-ambience arms with a fade-out local for its three uses 161 (688 B), elapsed still in
+// XMM2. One-use references, not kept. The release contribution held in a local with a released flag and published once
+// after the previous-ambience block, with the current arm's clamp in place (t = ambience_fade / fade_in, then 1.0f unless
+// 1.0f > t): 54 (678 B), first difference +0x53; the gain bypass and the tail cross-jump are gone, elapsed is still in
+// XMM2 and the fade-out time is reloaded. Not kept (a one-use local and a flag).
 // @retail 0x127010
 long function_127010(short class_index)
 {

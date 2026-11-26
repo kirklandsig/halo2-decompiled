@@ -1062,6 +1062,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // compiler re-reads the field after the loop instead of keeping the word spill, though the OR then has retail's
 // `or reg, [present]`); the compare's mask widened by a cast 23, on the carrier 20 (same code); the in-place
 // `old_team_mask |= present_teams` on the carrier re-measured 78 (the narrowed OR keeps present as destination).
+// M3 lane 2 r153 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23): a forced-ranking search over 40 single
+// decisions gives at best 22 (the playing teams EAX -> EDX), nowhere near a match. Forms: the playing store without its
+// cast 23 (same code); the update as a word local of the cast OR stored uncast 77; a word copy of the saved mask in the
+// change block OR-ed in place and stored 77; the present update as test-then-set (0x157970's idiom) 39 (398 B); the mask
+// field through a `word &` reference instead of the pointer 23 (same code).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6538,7 +6543,7 @@ void __stdcall function_b6df0(dword const *previous, dword const *current, long 
 void function_d4de0(void);
 void function_d4e20(void);
 void function_d4e30(void);
-void function_d4e60(short bsp_index);
+void __stdcall function_d4e60(short bsp_index);
 void object_list_initialize(void);
 void object_list_dispose(void);
 void object_list_initialize_for_new_map(void);

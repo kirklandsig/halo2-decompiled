@@ -3517,9 +3517,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
-// MiniMax A (11-20): no new form, no lower score (139): retail keeps the channel in EBP and walks a packet cursor in EDI, ours keeps the data base in EBP with base+offset addressing
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
+// MiniMax A (11-20): no new form, no lower score (139): retail keeps the channel in EBP and walks a packet cursor in EDI, ours keeps the data base in EBP with base+offset addressing
 // MiniMax B (11-18, round 2): no new form, no lower score (139): the rewrite that advances the packet cursor on its
 // own measures 164 at 478 bytes against retail's 488 - the same form lane A measured - so the split stands: retail
 // keeps the channel in ebp from the entry and the cursor in edi, this build keeps the data pointer in ebp and
@@ -4096,6 +4096,22 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // `voice_has_remote_talker_inlined` with `&&` / ternary / early-return `if` ties 139 indexed and 162 cursor (guarded +
 // `&&` leaves it out of line, 187 at 456 B, mk=27, spilling member while stride takes EBP). Channel EBP vs member EBP
 // remains unchanged.
+// M3 lane GA r13 (56 compiled trials across 4 batches, fast with 0x564c0/0x54810/0x55b40/0x54a20/0x565c0/0x56df0/0x53890/
+// 0x53720/0x57360, all MATCH unless noted; control 139 at 488/488 B, al=150, mk=47; body unchanged): inline PIN clamp expr/
+// local 167/167 (guarded 160); `word_flags_set(&members, member, false)` on orig 139, guarded 160, do-while 160; guarded
+// plain-first (`if (!relay)`) 161 (496 B; + `&packet[3]` / `word_flags_set` 161); constant 13/11 step in arms 197; do-while
+// 2-return 160; `dword member` guarded 160; `bool ok` local guarded 160; `__forceinline` local-delivery helpers passing
+// `packet`/`byte const &kind`/offset or two helpers 160-167 (`sczp`/`czsp`/`scps`/PIN all `chEBP=0`, `fr=0x10`; plain-arm
+// `kind` local 165/167/163, `for+czsp` 160 emits `add edi, 2`; `kind` inside `if` / `payload` / `settings` / `payload_size` /
+// `&channel->index` all 160). New structural finding (without any diagnostic store): passing `byte kind` by value to a
+// `__forceinline` delivery helper (136 at 488 B, al=83, mk=19; guarded 148, al=77, mk=12; on orig 160) or declaring a
+// two-use `byte kind = packet[0]` live across `0x53720` in the relay arm (guarded 145 at 495 B, al=73, mk=8: plain arm, tail
+// and all 3 epilogues match retail; `for+szcp` 136 at 488 B, al=79, mk=15; `for+czsp` 141 at 488 B with both `chEBP=1` and
+// `add edi, 2`; `long kind` 145; `byte kind` after `member == NONE` 145, mk=8) flips `channel` into EBP from entry and spills
+// `member` because `kind` interferes with `member` across `0x53720`, but spills `kind` into `channel`'s dead arg slot
+// (`frame 0x14` vs `0x10`, bumping `route` to +0x10) so NOT kept (3 pts, frame grows); marking `0x53720` `inline` with shared
+// helper also hits `chEBP=1` at `frame 0x10` (+0x4f first diff, 148, 512 B) by adding 3 blocks inside `member`'s live range,
+// but breaks matched `0x53890` (45) and inlines `0x53720` into the relay arm.
 // M3 lane 3 r311 (fast screen with 0x564c0, 0x54810, 0x55b40, 0x54a20, 0x565c0, 0x56df0, 0x53890, 0x53720 and 0x57360, all
 // MATCH; control 139). Allocator reading on the packet-cursor form (`byte *packet = data + 2;` advanced by the packet size
 // beside `consumed`, 164 at 478 B): its loop already has retail's cursor in EDI and `consumed` in memory, and the only

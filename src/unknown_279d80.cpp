@@ -2263,6 +2263,13 @@ void function_27dd10(void)
 // control 2): node_destination_get's map-flag test through node_flags_test (defined ahead of it) 2 (0x289580 78);
 // node_destination_get as one bool result set in each arm 2 (same code everywhere); both 2 (0x289580 78); the walk's
 // bit test as `(local_2 & 1) != 0` 2; quaternion_blend's three parameters const 2 (same code). All restored.
+// M3 lane 6 r246 (fast over all 78 functions of the file, control 76 of 78; this function and 0x281b60 2 throughout):
+// the pass counter chain through a new inline step helper taking the component, like component_decompress 2; the
+// walk's bit-flags local as `int` 2; the flags read as `arg_6[0]` with the pointer step as its own statement 2 (the
+// three the same code everywhere); re-measured the chained counter resets 2 (0x288570 120) and the bit test as
+// `(local_2 & 1) == 1` 2 (0x288570 3, 0x289580 78). quaternion_multiply's sign mask as a float array (a float
+// constant in the intermediate code) 2 here, 0x281b60 245, 37 matched samplers lost; the mask as `{ 0 }` with its
+// last element stored after 2 here, 0x281b60 297, 37 lost. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2573,6 +2580,9 @@ void function_2818e0(void)
 // numbering is taken before dead arms go): blend 4's scale arm with no locals 2 (0x288570 3, 0x289580 2); its
 // `*=` form 2; blend 4's translation arm through `g_5044c0` with no local 2 (0x288570 3, 0x289580 78); blend 3's
 // scale as `*=` 2; blend 3's translation as `+=` 2 (all controls matched in the last three). All restored.
+// M3 lane 6 r246 (fast over all 78 functions of the file, control 76 of 78; 0x27dff0 2 throughout): the walk trials
+// listed above 0x27dff0's marker, all 2 here; quaternion_multiply's sign mask as a float array 245 (1685 B) and as
+// `{ 0 }` with its last element stored after 297 (1685 B), each losing 37 matched samplers. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
