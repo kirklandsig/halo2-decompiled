@@ -949,6 +949,13 @@ inline void actor_274f30_update(long actor_index, bool flag)
 // inverted erase branch all tie 47; (long)(short)&0xffff in update 15 (193 B, movzx, breaks 0x274f30 120) /
 // in erase 43 (196 B, breaks 0x274f30 132); direct (word) erase 43 (196 B); flag split 48; inverted if(!flag)
 // 53 (breaks 0x274f30 117); diag #pragma optimize("s") 190 (53 B).
+// AO r5 (fast with 0x274f30 and 6 peers): the slot stored from and update fed by iterator.actor_index directly 47;
+// the slot declared bare ahead of the iterator and assigned in the loop 47; the index declared in a for header 47;
+// every erase field read through its own lookup 35 (194 B, breaks 0x274f30 146: the product is still shared, so the
+// lookups' repetition is not the cause); update's three reads through their own lookups 41 (breaks 0x274f30); erase
+// taking short/word 177 (64 B, update no longer inlined, breaks 0x274f30/0x2a55a0) or dword 47; update taking short 50
+// (movzx, 178 B, breaks 0x274f30); update written out in this body (0x274f30 untouched) with a lookup per branch 48 or
+// one shared lookup 47: the product is still hoisted and shared.
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
@@ -1639,6 +1646,12 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // NOT kept: three-point prefix gain only. Departure type registers and request/slot stores remain.
 // DH397: Separate short append ordinal using indexed mutable/const, row reference/pointer, with original observations and one shared iterator handle 32/32/150/150/32/32/150/150.
 // NOT kept: The indexed forms tie; row aliases move the first difference earlier and regress, with the 846-byte extent intact. The iterator handle, departure selector and request/slot schedules remain. The original body is restored.
+// AO r5 (fast with the four callers and every callee, all MATCH): the leave request as two calls in an if/else 82 (855 B);
+// the candidate's unit index in a named local for the object lookup, the leave and the load request 88; the load helper
+// taking the actor and reading its unit at the request 81 (844 B: the unit load moves after the seat reads as retail, but
+// the append's distance products reorder); the count stepped in the busy store's index 32; the unit looked up before the
+// seat pointer 42; the slot's seat and vehicle stored ahead of the flags, either order, 41/41; `success` initialised false
+// 32. NOT kept: no gain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -3016,6 +3029,16 @@ struct s_scenario_scripting_view
 // NOT kept: 79 grows to 372 bytes and loses the exact wrapper. Actor, counter and selector homes remain.
 // DH397: Encoded set portion at decode/admission/selection/inside lower bound, each with final OR/sum 76/76/60/60/102/102/75/75.
 // NOT kept: The 60-point admissions spill the encoded value at retail length and preserve the wrapper, but shift before the search where retail shifts at submission. They also keep the actor in EBX and the counter in EBP. The original body is restored at 80.
+// AO r5 (fast with the wrapper and both callees, all MATCH): ours spills the counter (its zero is stored at the top,
+// where the declaration sits) and keeps the set index in EBP; retail spills the set index and counts in EBX. The counter
+// declared in the for header 87 (the set index spills and the counter is in a register as retail, but the actor takes
+// EBX and the counter EBP, the scripting data is not copied to EDX and the loop head is not padded); on it: the
+// scripting data read at each use 98 (96 on the original), the data local declared after the bounds test 98, the actor
+// lookup after the set pointer 95 (wrapper lost), best_index declared first 86, a const actor 87; the counter declared
+// bare (zeroed in the for init) at the block top, after the actor, at the function top or in the set block 87 each
+// (its declaration's place does not move the actor/counter registers); the actor looked up at each use, no actor local,
+// 102 (380 B, wrapper lost), with the for-header counter 93 (376 B). The point reached
+// through the typed points array in place of the raw 0x3c/0x20 offsets: same code (80), kept.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
@@ -3035,7 +3058,7 @@ void function_2769d0(long point_reference)
 				short best_index = NONE;
 				for (; point_index < point_set->point_count; point_index++)
 				{
-					s_type_c3b527 *point = (s_type_c3b527 *)((byte *)point_set->points + point_index * 0x3c + 0x20);
+					s_type_c3b527 *point = &point_set->points[point_index].position;
 					vector3f vector;
 					if (point->output_index == NONE)
 					{
