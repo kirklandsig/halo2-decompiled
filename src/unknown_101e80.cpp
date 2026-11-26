@@ -228,7 +228,12 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 	return object;
 }
 
-// score 87 (was 110): the two lookups of the holder's child now read the
+// score 31 (was 87): the link is read through the object at each use instead of through a `link` pointer local, so
+// the link offset is made after the tag link's and loses the register tie to the object index (the index times 12
+// now in ESI, the link offset in EDX, as retail). Left (709 B against 707): retail computes both link products ahead
+// of the object lookup and forms the tag link in the 0xec product's register before copying it, where ours folds it
+// into its first three reads; the two child lookups add the index first.
+// At 87 (was 110): the two lookups of the holder's child now read the
 // pool's data pointer again as retail does. Left: retail keeps the object
 // index times 12 in esi and the link offset in edx (ours swaps them), forms
 // the tag link's address once in ecx, and loads the object's tag index
@@ -250,18 +255,26 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // is folded into its first three reads and formed afterwards (retail forms it first, then copies it) for `tag->links +
 // link_index`, a links local, a reference, byte arithmetic, a long index, a const pointer and inline accessors taking
 // a short or long index.
+// Round 233: the tie is the object index (created later) against the link offset; one fewer candidate in any block of
+// the attachment tail lifts the link offset to 77 and flips it, as the `other_index = NONE` start moved ahead of the
+// second child lookup (74, tail code changed) or an else-if for the second pick (73, 710 B) show; the same flip
+// comes from making the link offset after the tag link's: the `link` local declared after `tag_link` (31) or after
+// `blocked` (31), or no `link` local (31, kept; same code); declared after `tag` 87, after `result` 87. On the kept
+// form: the tag link at each use too 227 (737 B), tag_link declared ahead of `result` 31, the duration product
+// written rate-first 31, the child lookups without the getter 117; the existing unit weapon-slot getter 0xcbd50 for
+// the two picks 207 (it stays a call). Other probes on main: a second child local, the index compares written
+// index-first and a named child index all leave the tie (87).
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {
 	s_object *object = OBJECT_HEADER(object_index)->object;
-	s_object_link *link = &object->links[link_index];
 	s_object_tag *tag = OBJECT_TAG(object);
 	bool result = false;
 	s_tag_link *tag_link = &tag->links[link_index];
 	bool blocked = false;
 	real rate;
 
-	real duration = (tag_link->end - tag_link->start) * link->rate + tag_link->start;
+	real duration = (tag_link->end - tag_link->start) * object->links[link_index].rate + tag_link->start;
 	if (duration > 0.0001f)
 		rate = (real)g_510c54->field_2_3 / duration;
 	else
@@ -283,16 +296,16 @@ bool function_102100(short link_index, long object_index, bool *out_a, bool *out
 
 	if (!blocked)
 	{
-		if (!link->time || (real)link->timer + 1.0f >= rate)
+		if (!object->links[link_index].time || (real)object->links[link_index].timer + 1.0f >= rate)
 			result = true;
 	}
 
-	if (tag_link->minimum && link->time < tag_link->minimum)
+	if (tag_link->minimum && object->links[link_index].time < tag_link->minimum)
 	{
 		*out_a = false;
 		*out_b = false;
 	}
-	else if (tag_link->maximum && link->time >= tag_link->maximum)
+	else if (tag_link->maximum && object->links[link_index].time >= tag_link->maximum)
 	{
 		*out_a = false;
 		*out_b = true;
@@ -304,7 +317,7 @@ bool function_102100(short link_index, long object_index, bool *out_a, bool *out
 		*out_b = false;
 	}
 
-	if (link->flags & 0x40)
+	if (object->links[link_index].flags & 0x40)
 	{
 		result = false;
 		*out_b = true;
@@ -341,7 +354,7 @@ bool function_102100(short link_index, long object_index, bool *out_a, bool *out
 		}
 
 		if (1.0f > rate && rate > 0.0001f)
-			link->accumulator += 1.0f / rate;
+			object->links[link_index].accumulator += 1.0f / rate;
 	}
 	return result;
 }

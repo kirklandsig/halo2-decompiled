@@ -1787,6 +1787,13 @@ struct s_camera_clip_reference_16ebf0
 // operand spellings, temps, k-j-i order, a component loop and 1 - amount inline all give the same 49; a blended
 // point3f temp 87, x + (p - x) * f 69.
 // score 49 (was 87): see above; 0x171d00 now matches, so the old BLOCKED-BY no longer applies.
+// M3 lane 4 r265 (fast screen, control 49): the blend's products are ordered at code generation (the scheduler keeps
+// their order; a forced-ranking search over the blend and tail scheduler regions changes nothing), and every spelling
+// gives one code: the sums written point-first 49, both products operand-swapped 49, `point *= amount` then
+// `+= original * remainder` 49, the blend through a same-text vector3f_interpolate copy 49. The `original` pointer
+// declared beside original_position 49, ahead of the location query 49, ahead of `fraction` 49, original_position
+// used directly 49; `point` declared first in the function 49, beside original_position 49. 1..31 unused
+// initialised locals at the top 49 at every count (not a symbol-count state). Body unchanged.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {
