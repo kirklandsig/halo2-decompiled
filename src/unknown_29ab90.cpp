@@ -696,6 +696,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // line from 37 other functions (many matched), so its existing noinline declaration stays. Forms: site 1, sites 1-2 and
 // all three planar steps through the existing planar_normalize (include/vector2f_normalize.h) 286 each (same code);
 // local_17 declared ahead of local_16 286, at function scope 286. Body unchanged.
+// M3 lane 1 r174 (fast screen with lane 2 r148's 18-callee set; control 286 at 1865 B). The frame packer's order (4-byte
+// cells, then 8, then 12; most references lowest, ties to the first to reach the count) reproduces our homes; retail's
+// need more references on local_5 than local_4 and on local_6 than the local_27 cell. Forms: the desired-velocity sum
+// accumulated in local_6 in place (no local_31) 286 (same code); local_22 as an initialised declaration 286 (same code);
+// the history pointer named at the top and used for the entry copy as well 303; the squared-speed floor as a ternary
+// 286 (same code); the turn-dot floor as `local_21 > 0.0f ? local_21 : 0.0f` 283 (retail's 1863 B; only XMM numbers
+// move, the clamp keeps its compare-and-copy shape). Site 1 still BLOCKED-BY 0x2b400. Body unchanged.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

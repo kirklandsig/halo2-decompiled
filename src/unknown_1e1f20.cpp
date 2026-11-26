@@ -1195,6 +1195,15 @@ void swarm_leader_detach(long actor_index);
 // first. On the named form: the walk's last store through the body's `memory` pointer 304 (998 B); the walk's test
 // through a named pointer 297 (same code); the joint index read once into a named short for both stores 281 (980 B, the
 // head still flipped); the walk index typed long 494 (1172 B). Body unchanged (59).
+// M3 lane 5 r252 (H2M_FAST and the plain check, both with 0xf0fd0 and 0x1fb360 listed; control 59; the listed 4 form
+// rebuilt, 4 at 980 B; with the handler named, `handler->stop` tested and called, 297 at 996 B). Caution: screened with
+// 0x1e1a00 alone (both fast tools agree there) the handler-named form with `other != actor` reads 1 (only the compare's
+// operand order left), and with `if (actor == other) continue;`, with `if (!(actor == other))`, or with `actor != other`
+// and `other` declared ahead of the iterator it reads MATCH; with 0xf0fd0 and 0x1fb360 listed each is 297, and the plain
+// check of the `continue` form is 297 too, so those single-address results are reduced-image artifacts. Allocator reading
+// of the handler-named form: the actor pointer ranks 18 (slot-loop test block 6 values, 5 on the 4 form);
+// a forced-ranking search: the actor at 15 MATCHes, at 16 not; the memory walk's stepped pointer raised to 16 or 17 does nothing
+// and to the top 277. Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {
