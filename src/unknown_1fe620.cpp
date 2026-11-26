@@ -482,6 +482,18 @@ static __forceinline long real_to_long(real value);
 // worse); no single pick, cut or ranking reaches retail. Forms: the prop test as `!(unknown24 > 0 && unknown27)` 373
 // (same code); `local_0` declared at the prop block 395; the timer product written count first 373; the 0x1fe410 bound
 // named in its arm 373; the sign step through a `dword *` to the seed 373 (as listed). Body unchanged.
+// M3 lane 1 r174 (fast screen with 0x2104b0 and 0x210850, both MATCH; control 373). Reading: the allocator makes the
+// random-state pointer one candidate from the timer draw to the last range draw (priority 63, ten references) and
+// gives it ESI, so the third input (priority 3) stays on the stack and the frame needs the extra slot; retail loads
+// the pointer again after the 0x2104b0 call (and after 0x1fe410) into ECX, i.e. it does not know that 0x2104b0
+// leaves the global alone. Diagnostic (reverted): the 0x2104b0 call made opaque gives retail's entry `push esi`,
+// the pointer reloaded after that call and short-lived, 423 (other entry changes). So BLOCKED-BY 0x2104b0's
+// link-time summary, the same family as the 0x210690 / 0x210770 / 0x2108a0 leads of 0x1f99d0 and 0x299460; an
+// `inline` on 0x2104b0's definition (diagnostic) changes nothing here (373). Forms: the sign test as
+// `(local_11 & 0x80000000) > 0` 375 (1863 B; it gives retail's `test eax, 0x80000000; jbe` where `& 0x80000000`
+// alone becomes `test eax, eax; jns`), with the two range draws through local_10 422, with the length's squares in
+// i, j, k order 375; the sign test as `(long)local_11 < 0` 417; the resolver through a call to 0x210850 445 (1807 B),
+// with `inline` on that helper's definition (diagnostic) 466 (1889 B). Body unchanged.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
