@@ -9924,6 +9924,21 @@ struct s_unit_melee_collision
 // read the aim's j and k through the unit and the range from the weapon definition at each product. Forms: the NONE
 // defaults declared ahead of the weapon index 502, at the top 502; with the material index object ahead of them 532 (2216 B);
 // the melee entry selected ahead of the fan 551 (2259 B); the hit type as a long 518 (2224 B).
+// GB r14 (fast with 0xcfc90 and 0xcf040 MATCH; control 447 at 2229 B, fr 0x180, al 344, mk 181; 22 real trials):
+// dropping `aim` (`&unit->unknown168` in 0x11d000 and existing cross3f, direct unit->unknown168 in ray) + per-product
+// range + existing vector3f_scale (normalize3d.h) for across/up + existing TEST_FIELD_BIT on both seat-flag tests +
+// structured ifs (no goto impact): 390 (2219/2229 B, 520/522 insns, fr 0x17c, al 240, mk 100; plain check confirmed 390
+// with all 128 unit_object_type.cpp peers + 0xea090/0x1697c0 intact, BUT adding `#include "normalize3d.h"` or a local
+// inline scale helper to this TU triggers the known 2-point LTCG tie in matched 0x185be0 at +0x21c, confirmed even on
+// HEAD + `#include "normalize3d.h"` alone; NOT kept to preserve 0 lost). Tried and not kept: drop aim + live range
+// alone 532 (fr 0x17c, mk 109); + cross3f 551 (al 295); + split width/height mul-left + TEST_FIELD_BIT 546 (2203 B,
+// al 278, mk 117); + unit_at_masked_index (all/4/unit+post) 546/546/539 (2203 B, al 263); + vector3f_add_scaled ray
+// 548 (2187 B); + `+=` ray 539; + cross3f_staged 539; vector3f_scale without TEST_FIELD_BIT 397 (2214 B); damage_index
+// before weapon_index 428 (2230 B, 521/522 insns, al 185, mk 83; drops or esi,-1 in tail), with structured ifs 427
+// (al 183, mk 81), at very top 428, with flipped a76b0 test 426 (al 179, mk 76); all NONE defaults before weapon_index
+// 532; definition after weapon_index 425 (al 166, mk 87); s_record_pool *objects = g_4e0300 547/573 (fr 0x180);
+// damage_index before hit_index 501, before material_index 429; unit_at_masked_index on 390 form 390 (same code);
+// swapped ray operands/orders on 390 form 390 (same code). Body unchanged.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

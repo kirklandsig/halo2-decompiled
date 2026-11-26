@@ -410,6 +410,10 @@ bool function_dc310(long object_index);
 // 15; iterator scoped to one actor 15; result between startup calls 17;
 // target inline/__forceinline 15/15; signed-byte result 45; iterator memset
 // 15. All forms restored; inner ECX/EDX exchange remains at native length.
+// GB r16: an inline copy of swarm_creature_iterator_next in this file (the creature looked up in an if/else, creature
+// or NULL, then next_index set by a ternary) MATCHES (402/402 B), not kept: a new inline twin of an existing function.
+// Lead: the same if/else + ternary shape in swarm_creature_iterator_next itself (0x290c80, src/swarm.cpp), checked
+// against 0x290c80 and every caller it is inlined into.
 // @retail 0x2732e0
 bool function_2732e0(long ai_index)
 {
@@ -967,6 +971,14 @@ inline void actor_274f30_update(long actor_index, bool flag)
 }
 
 // score 47 (was 47): frame (0x34), dead actor_index store and length (192/192 B) match retail; only the shared lookup product differs (ours shares imul eax, eax, 0x888 between update and erase as matched 0x274f30 does; retail computes imul ecx, ecx, 0x888 and imul eax, eax, 0x888 from the one masked eax). GA14 (35 fresh trials, all keeping 0x274f30 and peers matched unless noted): same-TU non-inline static/extern/stdcall/cdecl erase or update 110-175 (fail to inline under /Ob1, break 0x274f30); cross-TU LTCG inlining of erase/update from unknown_1e1f20.cpp (/O2 /Gr, fastcall/stdcall/cdecl, with 0x1e3240 sharing erase, with volatile/record/plain) 47/59; signed/unsigned byte-offset products 47; s_actor_view in erase 47; pointer/const-ref/param-ref index without volatile 59; direct erase with iterator.actor_index 47 or stored_actor_index 49 (201 B); g_4f55f0/data/slot locals 47; inverted if (!flag) 53 (breaks 0x274f30); (word) only in erase 43 or only in update 15 (193 B, movzx, breaks 0x274f30); short *value pointer 65 (breaks 0x274f30/0x2a55a0).
+// frame (0x34), dead stack store and length (192/192 B) match; only the shared
+// `imul ..., 0x888` differs (while matched 0x274f30 shares it). GB r16 (fast with 0x274f30 and 7 peers
+// MATCH, 25 real trials + 1 diag): &actor_index / erase taking long const* (no volatile) 59 (176 B);
+// actor_datum_get in each branch 41 (192 B, breaks 0x274f30 149); 0xffffu / byte-offset mul / shift mask /
+// % 65536 / padded 0x888 struct / work struct copy-vs-iter / direct iter erase / early return / do-while /
+// inverted erase branch all tie 47; (long)(short)&0xffff in update 15 (193 B, movzx, breaks 0x274f30 120) /
+// in erase 43 (196 B, breaks 0x274f30 132); direct (word) erase 43 (196 B); flag split 48; inverted if(!flag)
+// 53 (breaks 0x274f30 117); diag #pragma optimize("s") 190 (53 B).
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {

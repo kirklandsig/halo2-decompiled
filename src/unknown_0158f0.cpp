@@ -255,6 +255,8 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // all stay 99 (30 B); diag constant (D3DPALETTESIZE)0 still keeps CreatePalette2 out of line (104, 25 B). Wrappers
 // D3DDevice_CreatePalette (86-87), D3DDevice::CreatePalette (81) and IDirect3DDevice8_CreatePalette (76) only lower
 // score via spurious HRESULT (0x8007000e) length padding and worsen 0x1d3f0 (77-102), NOT kept. Body restored at 99.
+// GB r16: the D3DDevice_CreatePalette2 call wrapped in do { ... } while (0) MATCHES (95/95 B; 0x1d3f0 76 -> 65), not kept:
+// a dead loop whose only job is to change the compiler's inlining (the same class as a dead if (0) steer).
 // @retail 0x15b10
 bool function_015b10(
 	long index,

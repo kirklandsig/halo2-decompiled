@@ -1085,6 +1085,11 @@ extern "C" void _ReadWriteBarrier(void);
 // after the barrier, tested in the NONE block): the flags byte in a local 6; that with a `point3f const *` to the point
 // for the copy 6; the flags in a `long` 6; the test held in a bool 6 (all four the same code: the read sinks into the
 // NONE block with the slot load); the flags byte local with no barrier 44 (208 B).
+// M3 lane 2 r152 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6), each without the barrier: `__assume(slot !=
+// NULL)` as the first statement 44; the state as `slot ? (s_slot_4c *)slot : NULL` 44; the flags test held in a bool
+// inside the NONE block 44; the point bound by `point3f const &` at the top for the copy 44; the state declared inside
+// the NONE block 44 (all the no-barrier code, 208 B). The listed data-block form (FORMS-slot-data-block) does not fit:
+// retail reads +0x22 and adds 0x34 to the slot itself.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

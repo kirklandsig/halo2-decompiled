@@ -1046,6 +1046,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // scores 570/670/716/651 with the alignment scale before those reads and
 // 567/670/716/648 after them. NOT kept: the staged vector ties at best, and
 // the coordinate and point forms move the frame or vector schedule away from retail.
+// GB15 (fast with 0x1eb6f0/0x1ed4a0/0x30bf0 MATCH; control 567 at 2877/2881 B, +0x9, fr=0x24, al=727, mk=408; 18 trials,
+// body unchanged): 3-use `real ticks = (real)g_510c54->field_2_3; position->i/j/k *= ticks;` at all 3 scale sites 565
+// (-2, 2877 B, al 723, mk 404, 0x1eb6f0 MATCH; NOT kept: under 8-pt bar); direct field_2_3 *= 659 (mk 367); `vector3f qr
+// = *q;` struct copy 661, + single `qr_rate` scale 602, + ticks *= 602, + `!(0.001f >= e3)` 664, + w*rate before if 657,
+// + unfolded 3.f*0.5f/remain 692 (all 0x1eb6f0 MATCH). Inline `k` before `t` at all 3 clamps (no helper) recovers `q=EBX`
+// and `cmove ebx` without touching `*position = *q`, but shrinks frame to 0x20 and breaks 0x1eb6f0 (score 22, pushes `b`
+// instead of EDX): with `PIN` 726 (+ qr_rate/ticks 693, mk 311; + unfold/dir/cmps 736, al 646, mk 301); with original `if`
+// 718 (+ ticks 718, + qr_rate/ticks 749, + unfold 740, + direct limit 762, + unfold/cmps 742, mk 306).
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,
