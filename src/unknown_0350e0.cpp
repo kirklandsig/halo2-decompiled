@@ -3102,6 +3102,15 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // i, j, k 504, with the delta through vector3d_from_points3d 518 (2302 B). A forced-ranking search (12 of 2692
 // candidates) found no single allocator decision that lowers 281: the first difference is in the scheduler, not the
 // colouring. Body unchanged.
+// GA22 (26 fast trials, control 281 at 2286/2285 B, +0x76, fr=0x94, al=143, mk=62, 0x2df00/0x222d0/0x2e3f0 MATCH, 0x2f2d0 142, body unchanged):
+// on loop-free helper form (vector3d_from_points3d delta, dot3f x4, 3-helper reflected, vector3f_add_scaled draw point, early attenuation; 435 at 2289 B,
+// ins=568/567, al=58, mk=23): inline projection dot3f 435, basis_dot_xzy projection 436 (mk=21), running-sum projection i,j,k 457 (2286 B, al=87),
+// j,i,k 379 (2286 B, al=98, mk=30), single-expr j+i+k or k+j+i 455 (2286 B, al=73, mk=30: 2 in-place multiplies instead of retail's 1), i+(j+k) 383 (2286 B),
+// delta-first i,j,k 458, projection before inverse 435, single-div projection 445 (2285 B, ins=575), direct near bounds 435, s_camera_storage pointer 441,
+// vector3f_add_scaled reflected 544, separate projected local 435, double atan2 457, main draw point 457, basis_dot_xzy forward 456, declaration reorders
+// (direction first/last, delta early/top, motion locals at top) 435 each; with retail opacity arm order + axis_scale before angle 435 (al=56, mk=22),
+// + PIN on vertex data 435 (al=52, mk=19), + function_020d80(context, true) 445 (al=53, mk=19). The single extra movss in projection (`direction.i * delta.i`
+// loading direction.i instead of multiplying delta.i in place) shifts all 422 trailing lines by one instruction.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

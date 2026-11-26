@@ -1026,6 +1026,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // the turn weight's half factor folded into local_26 (`local_26 *= 0.5f;` ahead of the dot, then `local_24 *=
 // local_26;`) 476 (3507 B); both 479 (3507 B); the +0x7c axis pointer as a typed member address beside forward 462 and
 // as `&local_1->forward + 1` 462 (same code each). Body unchanged.
+// GA22 (12 fast trials on calibrated companion list, control 462 at 3504/3499 B, +0x100, fr=0x88, pos=+0x8c, al=178, mk=64, 0x1f38c0 MATCH, body unchanged):
+// value-returning point2f_add_scaled_val in if/else (xy or yx) 793 (3555 B, fr=0x8c, pos=+0x84), ternary yx 838 (3590 B, fr=0x94);
+// symmetric if/else with same arm-local s (y before x or x before y) 729 (3527 B, fr=0x8c, pos=+0x84, ins=846/844: moves pos below local_14 but spills point2f to x87 fsub);
+// vector2f perp with dot_product2d at both perpendicular dots 660 (3499 B, +0x60, fr=0x88); normalize_inline on 462 base 763 (3503 B, +0x60);
+// on the 457 base (MIN(1.0f, ratio) both + axis-first frame_velocity dot3f): dot_product2d at 0.99 test 660 (3499 B, +0x60), double-parens 0.99 + cross3f_staged + dot3f(&local_7, &local_9) 467,
+// symmetric if/else s yx 729, direct == local_22 bool flip 661, early field_50 457 (3504 B, al=165, mk=56: under 8-point keep bar).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
