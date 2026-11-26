@@ -1038,8 +1038,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // product re-measured 217 (1270 B, aligned 37); the direction computed straight into the output's forward (no local)
 // 360 (1231 B); the else arm's forward through one pointer for its three stores and the 0x11d090 call 43 (aligned 24,
 // masked 10: the else arm is then retail's; two under the bar); that pointer at function scope for both arms 328; on
-// the 43 form the first product through function_1f087b too 47 (1264 B). A forced-decision search (14 decisions) finds
+// the 43 form the first product through function_1f087b too 47 (1264 B). A forced-ranking search (14 decisions) finds
 // nothing below 45; left are the first product's right.i/right.j colours and the second product's k, j, i schedule.
+// M3 lane 12 r193 (H2M_FAST with 0x1f0870 and 0x130f60; control 45): the first product from the `direction` local in
+// place of the copied output 43 (1261 B, but the product then reads the stack copy where retail reads the output
+// through ECX, so not closer); with the else arm's forward through one pointer as well 41 (1261 B, the else arm
+// retail's, the camera block as just described; under the bar for a non-match); the else-arm pointer alone
+// re-measured 43; the camera arm's forward through one pointer for the copy and both products 223 (1272 B);
+// previous_up bound by const reference to the player state 277 (1237 B: retail copies it before the length call).
+// Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -1081,6 +1081,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // caller's declaration and its call) re-measured 35, on it the fill counted by extra_count (`parties[player_count + i]`)
 // 62, and the total as `extra_count + player_count` with the entry named once and copied first 76. The player count still
 // arrives in EDX: the fill value is still loaded ahead of the count and destination. Body unchanged.
+// M3 lane 8 r242 (fast screen with 0x91e30 MATCH; control 34). Allocator reading: the player count is coloured second and
+// sees EAX with a conflict score of 1 (EDX 0), and the only fixed EAX use in its range is the fill's value, so the
+// conflict is the whole fill operation, not the order of its operands in the code. Forms: the fill through a pointer
+// stepped from the first extra slot to the end 63 (199 B, no rep stosd); the entry named once for the test, the maximum
+// and the copy 74; the fill bound written `player_count + extra_count` 34 (same code); the fill counted by the extra
+// count into `parties[i + player_count]` 62. Body unchanged.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

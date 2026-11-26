@@ -1067,6 +1067,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // cast 23 (same code); the update as a word local of the cast OR stored uncast 77; a word copy of the saved mask in the
 // change block OR-ed in place and stored 77; the present update as test-then-set (0x157970's idiom) 39 (398 B); the mask
 // field through a `word &` reference instead of the pointer 23 (same code).
+// M3 lane 14 r160 (fast screen with 0xb58c0/0x196780, both MATCH; control 23): present's update with the team re-read from
+// the player 42 (382 B); as `present_teams = present_teams | 1 << team` 23 and `= 1 << team | present_teams` 23 (same
+// code); the saved mask `word const` 23 and both saved values `const` 23 (same code).
 // @retail 0x158140
 void function_158140(void)
 {
