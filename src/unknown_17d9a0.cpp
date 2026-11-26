@@ -826,24 +826,39 @@ PRIVATE __forceinline void decal_normalize_17ef10(vector3f *v)
 PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
     vector3f const *v, vector3f *out)
 {
-    real x = v->i, y = v->j, z = v->k;
+    vector3f scaled;
     if (m->scale != 1.0f)
-    {
-        x *= m->scale;
-        y *= m->scale;
-        z *= m->scale;
-    }
-    out->i = m->up.i * z + m->left.i * y + m->forward.i * x;
-    out->j = m->up.j * z + m->left.j * y + m->forward.j * x;
-    out->k = m->up.k * z + m->left.k * y + m->forward.k * x;
+        v = vector3f_scale(v, m->scale, &scaled);
+    decal_rotate_vector_17fd20(m, v, out);
 }
 
-// score 967 (was 988 at r914): retail keeps a bool result set true at entry in a dead argument home (0x17ef59) and returns it at the
-// success exit (0x17fcc6) while both failures return 0, so the texture failure clears `result` and the projection is built only
-// when it holds. Earlier: a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
-// Score 966 in a full build with stand-in SDK headers (was 987): the result is a bool set true at entry (retail stores
-// 1 into a dead argument home at 0x17ef59 and reads it back at the success exit), the texture failure clears it, and
-// the 0x17d9a0 call and the orientation stores run under if (result).
+// score 859 (was 966; earlier 967, 988 at r914, 987): retail keeps a bool result set true at entry in a dead argument home
+// (0x17ef59) and returns it at the success exit (0x17fcc6) while both failures return 0, so the texture failure clears
+// `result` and the projection is built only when it holds. Earlier: a mask test read as a field bit (TEST_FIELD_BIT) gives
+// retail's load-and-shift; the rest still differs. (966 was the full build with stand-in SDK headers, 967 the reduced
+// image: the result is a bool set true at entry, retail storing 1 into a dead argument home at 0x17ef59 and reading it
+// back at the success exit, the texture failure clears it, and the 0x17d9a0 call and the orientation stores run under
+// if (result).)
+// Round 160 (m3 lane 14, fast and plain): kept, the scale-and-rotate helper as the existing vector3f_scale (into a local
+// only when the scale is not 1) followed by the file's existing rotate helper (0x17fd20's, same row order): 966 -> 899
+// (3551 B; aligned with esp offsets masked 1075 -> 1058 unaligned, exact aligned 226 -> 248); then the recent-decal
+// array read from the decal globals at each use (no cached `recent` pointer; retail re-reads the global for the chosen
+// entry): 899 -> 888 (3562 B, masked unaligned 1013, exact aligned 268); then the direction's inverse scale in the
+// basis block through the existing vector3f_scale: 888 -> 859 (3578 B). On that block: the copy member by member with
+// `*=` 893, with `inverse *` 893, with vector3f_scale 893; the copy kept and `inverse *` 889; vector3f_scale of the
+// direction into the local or the plain copy in an else arm 858 (fast, -2 against the kept 860). decal_time_17ef10 as
+// if/return 889 (same code), with a result local 900. On 860 (fast): the tangent and perpendicular crosses through
+// cross3f in either arm or both 866 (same code each); the facing test through dot3f 897; the eight-direction loop's
+// normalization through normalize2d_fast (dot y-first or x-first) 869. Its transform block is not
+// retail's shape (retail keeps the scaled x, y, z in XMM0-2, scale in XMM3, each row then + the position): the copy goes
+// through memory here. Tried: the transform reading placement->position directly with the position added in place 963
+// (closest transform block: exact aligned 257); that with the output into a local first 972; the helper's rows as staged
+// sums 972 (with the direct read 969); a whole copy of the input scaled member by member then rotated 902 (with the
+// direct read 929), copied member by member with the direct read 1051 (frame 0x84), scaled through vector3f_scale 926. Left: frame 0x90
+// (retail 0x60: retail keeps `count` in unknown2's home and `result` in preparation's), the recent-decal loops (retail's
+// pointer walks the entry at +0x24 and keeps the loop index in EDI, the squared gaps sum x, z, y with the radius squared
+// last; the test written sum-first 899 before the global change, 889 fast after it), the oldest-slot loop (retail duplicates the entry fill
+// for the break path on the loop's own pointer) and every later block.
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,
@@ -869,12 +884,10 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
         real now = decal_time_17ef10();
         if (scale == 0.0f)
             scale = 1.0f;
-        s_decal_recent_17ef10 *recent =
-            (s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c);
         long count = 0;
         for (long i = 0; i < 24; ++i)
         {
-            s_decal_recent_17ef10 const *entry = &recent[i];
+            s_decal_recent_17ef10 const *entry = &((s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c))[i];
             if (entry->tag_index && (entry->expires == 0.0f || entry->expires > now)
                 && entry->tag_index == tag_index && entry->radius > 0.0f)
             {
@@ -893,7 +906,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
         dword oldest = 0;
         for (long j = 0; j < 24; ++j)
         {
-            s_decal_recent_17ef10 const *entry = &recent[j];
+            s_decal_recent_17ef10 const *entry = &((s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c))[j];
             if (!entry->tag_index || (entry->expires > 0.0f && now > entry->expires))
             {
                 chosen = j;
@@ -907,7 +920,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
         }
         if (chosen != -1)
         {
-            s_decal_recent_17ef10 *entry = &recent[chosen];
+            s_decal_recent_17ef10 *entry = &((s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c))[chosen];
             entry->tag_index = tag_index;
             entry->position = position;
             entry->radius = definition->maximum_radius * scale;
@@ -934,12 +947,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
             function_142390(&placement->plane, &basis);
             vector3f local = *direction;
             if (basis.scale != 1.0f)
-            {
-                real inverse = 1.0f / basis.scale;
-                local.i *= inverse;
-                local.j *= inverse;
-                local.k *= inverse;
-            }
+                vector3f_scale(&local, 1.0f / basis.scale, &local);
             real x = basis.forward.k * local.k + basis.forward.j * local.j + basis.forward.i * local.i;
             real y = basis.left.k * local.k + basis.left.j * local.j + basis.left.i * local.i;
             long selected = 4;
