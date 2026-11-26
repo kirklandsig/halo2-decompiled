@@ -2259,6 +2259,10 @@ void function_27dd10(void)
 // 53, three siblings 9); the output target as an if/else 2; the bit-flag pointer by an if/else-if chain 2;
 // function_288573's destination index as `arg_1 != 0 ? local_4 : arg_5` 2; the saved frame fraction read ahead of the
 // two saved indices 2 (all four the same code everywhere). All restored.
+// M3 lane 5 r247 (fast screen with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2): node_destination_get's map-flag test through node_flags_test (defined ahead of it) 2 (0x289580 78);
+// node_destination_get as one bool result set in each arm 2 (same code everywhere); both 2 (0x289580 78); the walk's
+// bit test as `(local_2 & 1) != 0` 2; quaternion_blend's three parameters const 2 (same code). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

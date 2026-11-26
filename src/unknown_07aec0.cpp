@@ -44,6 +44,13 @@ bool function_7af40(s_type_99af70 const *address);
 // matching. More if-form spellings, all unchanged or worse: result as byte (58) or long (61); (short) length cast,
 // result declared first, a copy of address, a byte local for the low byte, empty-if/else, "!(word)(output << 8)"
 // (all 14); "!(output << 24)" (28); the value swapped in a local then stored (29); "address &&" first (86).
+// GB r16 (fast with all 10 callers/peers MATCH; control 26; 28 real trials): moving 0x7af40 above 0x7aec0, dropping
+// `dword &output`, 4 byte-swap commutative orders, `!(char)output`, `!(bool)(byte)output`, 2-var swap splits, `low_zero`
+// bool, local inline 0x7af40 copies (single-exit, early-return, case4-first, while-loop) all hit 14 (113/113 B, breaking
+// 0x783d0/0x784a0/0x7ab60); 4-term swap 45; `v` local / `bswap` inline helper 16 (and 25 on sete-form, wrong and/shl
+// order, not kept); test-before-store 44; if-chain inline 0x7af40 44; short loop index 88; early-return if-form 49;
+// `(output & 0xff) == 0` 28 (keeps ECX/EDX in prefix but spills `ipv4_address` to stack, breaking 4 callers); sete
+// ternary / no-ref / if-else true-false all tie 26. Restored at 26.
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {
