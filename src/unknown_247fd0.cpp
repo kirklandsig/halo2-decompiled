@@ -1171,6 +1171,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // child loop's tag and effect indices in named locals as the sibling 0x247fd0 writes them 337; that with the sibling's
 // if/else reciprocal 337; that with the sibling's cache test and store order 346; the blend's x row written like the
 // y and z rows (start point term first) 334, and all three rows in the x row's order 334.
+// M3 lane 1 r173 (fast with 0x247fd0, 0x248cc0, 0x247470; control 334): the blend as its own point3f local 390 (1617 B,
+// the frame shrinks), with the adds written `+=` 390; the blend adds as `+=` on the record member 334 (same code); the
+// velocity pointer preset to the default and set under `if (local_0 != NONE)` 348; the +0x1c scale written `*= arg_7` 334.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

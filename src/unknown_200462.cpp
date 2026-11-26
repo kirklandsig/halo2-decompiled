@@ -388,6 +388,15 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // the pointer: the corners as four chained assignments (left, top, right, bottom) 87 (846 B), grouped x then y 87 (846
 // B); the bottom edge as `local_25 + local_14.y` 12, the right edge as `local_24 + local_14.x` 12; the second x step as
 // `local_14.x = local_24 * local_23 + local_14.x;` 12 (the 12s the same code). All restored.
+// M3 lane 2 r156 (h2m fast with 0x2008fc 0x200891, control 14; the bounds record through a one-use pointer re-measured
+// 12): the XMM3/XMM4 pair is the half-height copy (made when the half height is assigned, so ahead of the first x step)
+// and the draw block's piece of the first x step's result; both rank 162 (a reference cost of 9 in a block of 18
+// candidates), and on equal rank the one made earlier in the code is coloured first, so the copy takes XMM3. Retail's
+// pair needs the x-step piece made ahead of the copy, or one more reference for it in the draw block. Forms on the
+// pointer: the first step's product as `local_23 * local_24` 12; the second step as `local_14.x = local_14.x + local_24 *
+// local_23` 12; both half extents written size first 12; the bounds copied with memcpy 12 (the 12s the same code);
+// corners 1 and 3 copying their y from corners 0 and 2 28; re-measured lane 13's named top/bottom edges ahead of the
+// step 23 and named left/right edges after it 37. All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

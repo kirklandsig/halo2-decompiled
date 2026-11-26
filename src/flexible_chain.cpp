@@ -1103,6 +1103,10 @@ void __stdcall function_1160c0(real dt)
 // cross_i) is main's state; cross_k before cross_j 59/15/60/128/42/158; the projection after the crosses 98 here and
 // 0x2551f0 54-87, 0x1ff360 79-113; without vector_k 0x2551f0 122-123. No spelling keeps both matched users and lowers
 // another. Body unchanged.
+// M3 lane 8 r243 (H2M_FAST with 0x116750, 0x1160c0 and 0x17c540, all MATCH; control 95 at 1371 B): the offset declared
+// uninitialised at the loop top and assigned at its copy 95; the axis declared at the loop top 95 (same code each);
+// the vertical declared once ahead of the loop 300; the angle taken ahead of the cross product 314 (1353 B); the sine
+// named before the rotation call with the cosine in the argument 95; the predicted point's rows stored z, y, x 104.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
