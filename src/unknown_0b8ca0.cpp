@@ -728,7 +728,12 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
     return (transform4x3f const *)(object + *(short const *)(object + 0x116));
 }
 
-// score 53 (was 53): the component lookup is written as the argument of the physics query and
+// score 19 (was 53): typed s_object_definition, moved predicate with return-false after return-true, and explicit
+// left-associated (k*k + i*i) + j*j (matching retail's exact movement sum and tail, lines 135-203 verbatim). Left
+// (736/736 B): secondary block (retail re-reads dynamic_light_sphere_radius from memory and loads primary_center->x
+// first in xmm0; reading dynamic_light_sphere_radius directly matches that block and drops the trailing int3,
+// scoring 30, but swaps definition/header_offset between EBX and EBP) and the 3-dword copy's store/load order (2
+// lines). Earlier at 53: the component lookup is written as the argument of the physics query and
 // the node matrix comes through a small helper on the fresh object lookup: the lookup
 // is then index-first between the pushes, and the scale is reloaded for each product,
 // as in retail. Left: the secondary sphere's sum order and which callee-saved register
@@ -744,11 +749,17 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // the squared length through the existing length helper 53, the length helper alone 53 (same code); the delta
 // assigned k, i, j 55, j, i, k 53, i, k, j 55; a single-exit `moved` result 59 (the return-false block stays inline);
 // `<= && ==` with an early return 67 (739 B). Diagnostic (not keepable): the return false behind a label at the end 53.
+// GA20 (33 real trials across 3 batches, fast with 5 peers MATCH): needs_update/moved tails 28; !active || helper 53;
+// s_object_definition 53; direct dynamic_light_sphere_radius 66 / +moved 39 / +moved+grouping 30; j*j+(k*k+i*i) 44;
+// +moved 19; j*j+k*k+i*i 28; (k*k+i*i)+j*j+moved 19 (kept); scalar dx/dy/dz 53; delta ikj 53; on direct-radius+moved+
+// grouping (30): vector3f_add 31, no ptrs 33, reuse ptrs 30, offset ptr 31, def after active 46 (737 B), no from_physics
+// 30, swapped if 45, field copy 120, inline component_index 30, real_point3d_set sec 34, node_matrix by idx 30, def after
+// comp 43 (737 B), active bitfield 30, raw def 30, sec_radius ptr 30, const_ref def/masked idx/const_ref idx 176 (719 B).
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {
     byte *object = (byte *)OBJECT_GET(object_index);
-    byte const *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
     long component_index = *(long *)(object + 0xb4);
     bool active = (bool)((*(dword *)(object + 4) >> 8) & 1);
     bool from_physics = false;
@@ -760,8 +771,8 @@ bool __stdcall function_bdef0(long object_index)
     {
         transform4x3f const *matrix = object_node_matrix_bdef0((byte const *)OBJECT_GET(object_index));
         point3f center;
-        real_point3d_set(&center, *(real const *)(definition + 8),
-            *(real const *)(definition + 0xc), *(real const *)(definition + 0x10));
+        real_point3d_set(&center, definition->bounding_offset.x,
+            definition->bounding_offset.y, definition->bounding_offset.z);
         point3f *output_center = (point3f *)(object + 0x30);
         if (matrix->scale != 1.0f)
         {
@@ -775,16 +786,16 @@ bool __stdcall function_bdef0(long object_index)
             matrix->forward.j * center.x + matrix->position.y;
         output_center->z = matrix->up.k * center.z + matrix->left.k * center.y +
             matrix->forward.k * center.x + matrix->position.z;
-        *(real *)(object + 0x3c) = *(real *)(object + 0xa0) * *(real const *)(definition + 4);
+        *(real *)(object + 0x3c) = *(real *)(object + 0xa0) * definition->cull_radius;
     }
     point3f *primary_center = (point3f *)(object + 0x30);
     point3f *secondary_center = (point3f *)(object + 0x50);
-    real secondary_radius = *(real const *)(definition + 0x20);
+    real secondary_radius = definition->dynamic_light_sphere_radius;
     if (secondary_radius > 0.0f)
     {
-        secondary_center->x = primary_center->x + *(real const *)(definition + 0x24);
-        secondary_center->y = primary_center->y + *(real const *)(definition + 0x28);
-        secondary_center->z = primary_center->z + *(real const *)(definition + 0x2c);
+        secondary_center->x = primary_center->x + definition->dynamic_light_sphere_offset.x;
+        secondary_center->y = primary_center->y + definition->dynamic_light_sphere_offset.y;
+        secondary_center->z = primary_center->z + definition->dynamic_light_sphere_offset.z;
         *(real *)(object + 0x5c) = *(real *)(object + 0xa0) * secondary_radius;
     }
     else
@@ -794,7 +805,7 @@ bool __stdcall function_bdef0(long object_index)
     }
     point3f center;
     real radius;
-    if ((bool)(((dword)*(word const *)(definition + 2) >> 12) & 1))
+    if ((bool)(((dword)definition->flags >> 12) & 1))
     {
         center = *(point3f *)(object + 0x50);
         radius = *(real *)(object + 0x5c);
@@ -804,23 +815,27 @@ bool __stdcall function_bdef0(long object_index)
         center = *(point3f *)(object + 0x30);
         radius = *(real *)(object + 0x3c);
     }
+    bool moved = true;
     if (active)
     {
         vector3f delta;
         delta.i = center.x - *(real *)(object + 0x40);
         delta.j = center.y - *(real *)(object + 0x44);
         delta.k = center.z - *(real *)(object + 0x48);
-        if (delta.k * delta.k + delta.i * delta.i + delta.j * delta.j > 0.1f * 0.1f ||
-            *(real *)(object + 0x4c) != radius)
-            function_b87b0(object_index);
-        else
-            return false;
+        moved = ((delta.k * delta.k + delta.i * delta.i) + delta.j * delta.j > 0.1f * 0.1f ||
+            *(real *)(object + 0x4c) != radius);
     }
-    *(point3f *)(object + 0x40) = center;
-    *(real *)(object + 0x4c) = radius;
-    if (active)
-        function_b8600(object_index, 0);
-    return true;
+    if (moved)
+    {
+        if (active)
+            function_b87b0(object_index);
+        *(point3f *)(object + 0x40) = center;
+        *(real *)(object + 0x4c) = radius;
+        if (active)
+            function_b8600(object_index, 0);
+        return true;
+    }
+    return false;
 }
 
 

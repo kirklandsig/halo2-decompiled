@@ -3256,6 +3256,14 @@ struct s_1cf531
 // that ends after the speed is taken 2 (all the same code); lane 14's 7 form with that velocity block 7 (905 B: the
 // block-local final then joins the freed velocity slot 0x50 in place of 0x40, so it takes the newest slot free of
 // interference, and 0x30 needs every newer slot busy while the final is live). All restored.
+// M3 lane 7 r232 (h2m fast, 2): the frame packer's 16-byte list on the kept body is local_7 (7), local_13 (4), the rsqrt
+// temporary (3), the square's spill (2), local_14 (2), corrected (2); local_13 interferes with corrected over its whole
+// first-to-last range, so corrected joins the rsqrt slot. Forms: the product inside the subtraction written
+// `local_18 * splat` 4 (905 B, its two registers swap); `__m128 const corrected` 2; the speed, correction, scale and final
+// call in an inner block 2; the rsqrt steps in an inner block with local_18 declared outside 2; the scale as `0.2f *
+// get_inverse_scale()` 2 (same code). Diagnostic: the correction stored back into local_18 2 (same slot). Reading: retail's
+// layout follows if the vector passed to the call is its own object with four references (placed after the 4-reference
+// impulse, ahead of the rsqrt temporary, and joining the impulse's slot); with two it comes after every 3-reference object.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

@@ -219,7 +219,13 @@ def scan(text, path):
             header += ' ' + later.split('//')[0]
             if '{' in later:
                 break
-        header = ' '.join(header.split('{')[0].split())
+        # a block comment between the marker and the function is not part of its header (its words would be
+        # read as the function's name and parameters); one left open, or holding a '{', stops the build here
+        header = re.sub(r'/\*.*?\*/', ' ', header.split('{')[0])
+        if '/*' in header or '*/' in header:
+            raise SystemExit(f'{path}:{i + 2}: a block comment after @{m.group(1)} {m.group(2)} runs into the '
+                             f'function; put the note above the marker as // lines')
+        header = ' '.join(header.split())
         h = HEADER.match(header)
         inner = h and _balanced(header, h.end() - 1)
         if inner is None:

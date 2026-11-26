@@ -1,5 +1,5 @@
 #include "unknown_4cf790.h"
-// @flags /O2 /Ob1 /Gr
+// @flags /O2 /Ob1 /arch:SSE /Gr
 /* ONLINE_TASKS.CPP: the online tasks (the data array g_4cf78c, 24 tasks of
    0x14 bytes) (lane D) */
 
@@ -859,21 +859,14 @@ void online_set_notification_state(const XNKID *session_id, DWORD user_index, BY
 }
 
 void __stdcall online_messages_enumerate(DWORD controller_index, s_entry *entries, long *count);
+bool function_1900a5(long index);
 
-// score 112 (was 112): retail reads the controller's flags through a null-tested pointer to the slot's flags part
-// (`add eax, <slot flags base>; mov ecx, 0; cmovne ecx, eax; test byte [ecx+8], 3`: the adjusted address itself is
-// tested, eight bytes longer than ours, and cmov needs the SSE architecture flag this file does not set), keeps the
-// false result in DL with its own `mov al, dl` exit, loads the logon task index straight into EAX, and stores the four
-// notify flags 0, 2, 1, 3; everything after the first difference is shifted by those bytes. M3 lane 13 r160 (fast;
-// control 112): the flags through an `s_player_slot_flags *` local converted from the slot 133 (400 B: the conversion
-// tests the unadjusted slot address with a branch), the same with the SSE flag on the file (diagnostic) 133 (same
-// code: no cmov); the two tests as nested ifs 112 (same code); `found = true;` set inside `if (notification call)` 142
-// (376 B); the notify flags assigned 0, 2, 1, 3 112 (retail's store order, the shift unchanged). All restored.
+/* retrieves a pending Xbox Live notification for a non-guest controller */
 // @retail 0x6d080
 bool function_6d080(long controller, s_channel_message *result)
 {
 	bool found = false;
-	if (!(g_54e8e0[controller].s_player_slot_flags::flags & 3) && online_logon_connected())
+	if (!function_1900a5(controller) && online_logon_connected())
 	{
 		XONLINE_NOTIFICATION_EX_INFO notification;
 		DWORD state_flags;

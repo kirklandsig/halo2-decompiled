@@ -1167,6 +1167,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // (diagnostic) 412 at 1664 B, frame 0xb0, aligned 164, masked 76: the placement still homes below the result, so its
 // three references are short and the result's six normal reads long. The blend added through the existing vector3f_add
 // 335; with the velocity add through it too, either operand order, 342.
+// M3 lane 4 r264 (h2m fast with 0x247fd0, 0x248cc0 and 0x247470, all MATCH each run; control 334; body unchanged): the
+// child loop's tag and effect indices in named locals as the sibling 0x247fd0 writes them 337; that with the sibling's
+// if/else reciprocal 337; that with the sibling's cache test and store order 346; the blend's x row written like the
+// y and z rows (start point term first) 334, and all three rows in the x row's order 334.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

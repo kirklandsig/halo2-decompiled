@@ -1067,6 +1067,15 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // Roasted-Codes (#1519 comment, 2026-11-26; fast reduced-image scores): the occupied key's index taken as a pointer
 // difference, `player - watcher->players.players`, 239 (1099 B; the exact division survives as a multiply by 0xb60b60b7
 // and a `sar`).
+// M3 lane 1 r172 (h2m fast with 0x84e90/0x84c90/0x83c90, MATCH each run; control 28). Reading of the compiler's sum ranking:
+// the occupied key's terms sort by rank, highest first; the two loop temporaries (the inverse start and the stepped player
+// address, created late) rank 0xdf40 and 0xd840 above `collection` (a named local, 0x180), and no named variable can rank
+// above them, so retail's collection-first sum needs the collection term to be a late temporary itself. Forms: the occupied
+// key read as `watcher->players.players[i].key` 294 (1064 B, the player loads merge); the occupied player through a pointer
+// local `&collection->players[i]` 41; the loop's player pointer formed from `collection` 267 (1064 B), with the mask test
+// also through `collection` 271 (1063 B); `&watcher->players` at each use (no local) re-measured by rank only (the sum
+// splits into two-term adds). The (collection, player, update, other) swap order re-measured 32 (left: the key sum, then
+// the key/destination ECX/EDX pairing and the last record's two reads). All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

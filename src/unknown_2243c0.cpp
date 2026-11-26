@@ -1025,6 +1025,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 117/152 and 165/135. Typed directory through fallback 117, through all
 // lookups with word/full mask 165/152, with typed fallback shader field 152.
 // NOT kept: the word entry ties; the full mask still moves the directory.
+// M3 lane 2 r154 (fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH unless given; control 117): the +0xd8 flags read
+// declared just ahead of the 0x173ba0 call, as matched 0x2243c0 reads its +0x98 flags, 149 (first +0x4: arg_0 then comes
+// on the stack into EBP, 0x224d90 36); the four cache zeros grouped after the material lookup, as 0x2243c0 groups them,
+// 120; both 151 (0x224d90 36); the group test through TAG_GROUP at each compare 165 (re-measured), that with the grouped
+// zeros 157. Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

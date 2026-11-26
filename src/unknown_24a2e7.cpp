@@ -547,6 +547,19 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // ascii call 84; NULL result with ternary fallback at return 76 (201 B); loop-top `entry` used only for copy/wcsncat 84;
 // `long count = 0` + indexed terminator 78 (198 B). Every indexed-terminator form still CSEs `&entries[i]` into EBX across
 // the five calls with frame 0x24 and no [ebp-8] base spill.
+// M3 lane GA r19 (10 fast trials with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; control 67; body unchanged):
+// forceinline template `s_static_wchar_24a691<50>` wrapper 99 (182 B); nested `if (append)` with duplicated `else` + indexed
+// terminator on plain locals 83 (190 B); swapped if/else + indexed terminator 84 (197 B); `while (i < count)` match-break-inc
+// + indexed terminator 84 (197 B); byte-offset terminator on plain locals 84; third `wcsncat` indexed 84; `void *` raw items +
+// indexed terminator 84; `entries = 0;` init + indexed terminator 84; `wcsncat` return used as `buffer` + indexed terminator 75
+// (199 B); forceinline formatting helper followed by indexed terminator 83 (198 B). All stay at frame 0x24 and CSE `&entries[i]`.
+// M3 lane 8 r241 (H2M_FAST with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; control 67). Lane 10 r119's
+// two-member lead re-measured 39 (204 B). Reading from the register allocator on it: the product `i * 0x248` is one
+// candidate shared by the arm and the terminator (ranked 81, the arm and the build blocks) and takes EBX, i (39) takes
+// ECX; retail's three separate multiplies mean its code never had that shared value, so no colouring change can give
+// retail's i in EBX. Forms on the lead: the plain arm first as an early `break` 72 (192 B); the buffer formed indexed 49
+// (208 B); the copy source indexed 50 (208 B); only the name test through the entry pointer 64 (207 B); the plain result
+// stored ahead of the append test 47 (190 B); the suffix declared ahead of the name test 63 (209 B). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
