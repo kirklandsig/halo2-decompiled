@@ -1036,6 +1036,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // break; rotate_direction 314; renaming the success flag (sorts first / last) 518 / 518 on the old body. Reading: on the
 // lead the first rotation's inputs are created k, i, j and coloured j, i, k into XMM1/XMM3/XMM2 behind the second
 // rotation's copies (360 vs 320); a forced-ranking search found nothing below 184 in its first 24 decisions.
+// M3 lane 15 r149 (h2m fast with 0x1e5450/0x30bf0/0x1697c0 MATCH; control 362). Retail stores the flag's 1 as an
+// immediate, returns a literal `mov al, 1` on the field_48 <= 0 exit and never writes AL after its flag test; ours holds
+// the 1 in BL from entry to that exit. Tried: an early `return true` ahead of the main block 640; two returns re-measured
+// 623 (entry byte-exact); the flag declared after the 0x1e5450 lookup 348 (2886 B, but ESI then takes the early push;
+// a later declaration is match-only and the aligned distance rises 311 -> 329); two returns with field_48 read once
+// ahead of the test 615; two returns with the late flag 616; the arg_6 arm returning in its own block 650 (2877 B).
+// The aligned distance stays 308-311 on all of these.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
