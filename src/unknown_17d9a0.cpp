@@ -41,18 +41,6 @@ struct s_decal_bsp_17e490
 	s_decal_bound_17e490 *bounds;
 };
 
-// score 120 (was 120): retail takes `excluded` in EAX (kept in ESI) and the cluster index in CX, holds the count in
-// AX through the gather and widens it once at the join of the three gather paths (before the bit-array clear, with
-// the result already zeroed in EBP), and computes the bound's squared distance before the radius sum. Round 159
-// (m3 lane 14, fast): the result zeroed before the clear 134 (retail's whole inner-loop allocation, 491 B); at the top
-// 138; a long count 153; with the result moved, a long copy of the count taken before the clear (the loop bound) 53,
-// the else arm as `count = 1;` first 51, and the clamp after the if/else as in the matched 0x132d60 19 at retail's
-// 475 B (match-only lead: the copy is used once; each part alone: clamp and arm order 120, plus the moved result 134,
-// plus the copy 93). On that lead only the distance block differs: the radius sum is generated ahead of the squared
-// distance (retail after it), whatever the spelling: the differences assigned y, z, x (retail's x, z, y sum) 19; the
-// radius sum first 19, as a repeated expression 19; the compare written either way round 19, negated 20, as a
-// subtraction 133, as a `continue` 20; the distance inline in the compare 19; the existing distance_sq3f 19 (z, x, y);
-// vector3d_from_points3d with length_sq3f or dot3f 19; 1-8 unused locals 19 each.
 // @retail 0x17e490
 long function_17e490(long excluded, short cluster_index, point3f const *point, real radius, long maximum_count, s_decal_bound_17e490 **output)
 {
