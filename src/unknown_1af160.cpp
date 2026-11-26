@@ -397,6 +397,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // `bool const &` bound right after the call 12 (same code); round 164's post-if clear (31) with the equal arm
 // assigning `local_5 = !unknown227` and testing it 199 (981 B), with the equal arm's test positive (`if (unknown227)
 // local_5 = false; else ...`) 43; the post-if clear written after the scratch release 233 (943 B).
+// M3 lane 7 r232 (h2m fast with 0x1e1f20, MATCH; control 12; the same two swapped home pairs): the 0x2626b0 guard as
+// `!(local_17 || local_18)` 12; local_5 declared first at the top 187; local_13 and local_14 declared ahead of the entry
+// aggregate 12; local_22 declared ahead of the not-equal arm's two stores 12; the 0x261280 result declared bare and
+// assigned on the next line 12 (same code but the 187); re-measured: the 0x265c30 flag ahead of the 0x1e1f20 call 24.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
