@@ -8130,7 +8130,7 @@ bool function_e63b0(vector3f const *aim, bool flag)
 /* measures a target from the biped's grab eye, against a reference
    direction: the yaw and pitch (radians) of the direction to the target, and
    the gap between the two bodies, not less than 0 */
-// score 314 (was 406; earlier 449): The logic matches retail (walked block by block, constants read from the XBE, no behaviour
+// score 219 (was 314; earlier 406, 449): The logic matches retail (walked block by block, constants read from the XBE, no behaviour
 // difference found). The reference frame is a matrix3x3 (forward, left, up): retail's frame is 0xc8, the 36 bytes
 // being that 36-byte object at +0x58 (a 12-byte local per axis overlaps the eye's locals and gives 0xa4). Still
 // differs: the other locals' slot order (retail head +0x10, to_head +0x1c, eye +0x28; ours packs the 4-byte
@@ -8146,6 +8146,24 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // into EAX/ECX/EDX after each producer (0xdf5f0 and 0xb9dd0 write a temporary at +0x34, the nearest point comes from
 // +0x44) and stores it at the join, ours passes `target` itself; block-local points copied into `target` 288 (1577 B,
 // match-only lead: one-use copies); ours is still 69 bytes short.
+// Round 160 (m3 lane 14, fast and plain): retail keeps two points, the target's (+0x34, written by every producer) and
+// a copy of it whose z alone is clamped (+0x1c; the clamp compares the target's z and the high arm re-reads the copy's
+// z), and turns the normalized direction into the frame's axes in place through a copy (left amount stored back into
+// direction.j at +0x14). Kept: the `aim` copy clamped with nested ifs (`aim.z += target_height` in the high arm, as
+// retail re-reads the copy's z there), the direction through vector3d_from_points3d, the frame block as dot3f of a
+// `world` copy into direction (atan2 on its j/i and k): 219 at retail's 1624 B. Lead (match-only, a one-use copy):
+// the same with `aim.z = PIN(eye.z, target.z, target.z + target_height)` 218; with PIN reading `aim` itself 244, its z
+// from `aim` and its top from the target 242. Without `aim`: the direction helper alone 305; the in-place frame block
+// alone 280 at 1588 B, both 280; aim alone 254. Tried on 218: the frame
+// rows hand-written k, j, i or i, j, k or dot3f(&row, &world) 218 each (same code); frame.left through cross3f 252;
+// normalize_inline 234; the clamp as nested ifs (`aim.z += target_height` in the high arm, as retail re-reads) 219,
+// with `!(target.z > eye.z)` outside 219; the copy written in each producer arm 241 (1645 B), with PIN 240; the copy
+// set by real_point3d_set with the clamped z 268. Leads (match-only): the two bipeds for the contact call named in the
+// else arm (`self`, `other`, used once each) 212 (retail loads both into ESI/EBX before the pushes, and the target
+// index then takes EBP); that with nested ifs 213. Left: retail loads the target point into ECX/EAX/EDX at the end of
+// each producer arm and keeps aim.x/aim.y in registers to the direction (ours copies at the join, those candidates
+// are never coloured), the normalize's per-component store order, the frame block's sum order and the slot order
+// (retail head +0x10, aim/world +0x1c, eye +0x28, target +0x34).
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {
@@ -8156,6 +8174,7 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 	point3f target;
 	real target_height;
 	real target_radius;
+	point3f aim;
 	vector3f direction;
 	real distance;
 
@@ -8185,10 +8204,17 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 		target_height = 0.0f;
 		target_radius = 0.0f;
 	}
-	target.z = PIN(eye.z, target.z, target.z + target_height);
-	direction.i = target.x - eye.x;
-	direction.j = target.y - eye.y;
-	direction.k = target.z - eye.z;
+	/* the point aimed at: the target's, raised to the eye's height but no
+	   higher than the target's top */
+	aim = target;
+	if (target.z <= eye.z)
+	{
+		if (eye.z > target.z + target_height)
+			aim.z += target_height;
+		else
+			aim.z = eye.z;
+	}
+	vector3d_from_points3d(&eye, &aim, &direction);
 	distance = normalize3d(&direction);
 	point->z = distance;
 	if (distance == 0.0f)
@@ -8199,9 +8225,7 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 	else
 	{
 		matrix3x3 frame;
-		real forward_amount;
-		real up_amount;
-		real left_amount;
+		vector3f world;
 
 		point->z = distance - (target_radius + radius);
 		point->z = point->z < 0.0f ? 0.0f : point->z;
@@ -8210,11 +8234,13 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 		frame.left.i = frame.up.j * frame.forward.k - frame.up.k * frame.forward.j;
 		frame.left.j = frame.up.k * frame.forward.i - frame.up.i * frame.forward.k;
 		frame.left.k = frame.up.i * frame.forward.j - frame.up.j * frame.forward.i;
-		forward_amount = direction.k * frame.forward.k + direction.j * frame.forward.j + direction.i * frame.forward.i;
-		up_amount = direction.k * frame.up.k + direction.j * frame.up.j + direction.i * frame.up.i;
-		left_amount = direction.k * frame.left.k + direction.j * frame.left.j + direction.i * frame.left.i;
-		point->x = (real)atan2(left_amount, forward_amount);
-		point->y = (real)atan2(up_amount, sqrt(left_amount * left_amount + forward_amount * forward_amount));
+		/* the direction turned into the frame's axes in place, through a copy */
+		world = direction;
+		direction.i = dot3f(&world, &frame.forward);
+		direction.j = dot3f(&world, &frame.left);
+		direction.k = dot3f(&world, &frame.up);
+		point->x = (real)atan2(direction.j, direction.i);
+		point->y = (real)atan2(direction.k, sqrt(direction.j * direction.j + direction.i * direction.i));
 	}
 }
 

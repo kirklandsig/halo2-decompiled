@@ -2101,6 +2101,10 @@ static inline bool unit_dual_wielding(long unit_index)
 // as a `long` with the slot field read at each use 26; the barrel loop on its own `short` counter passed straight 110
 // (535 B). BLOCKED-BY 0x101f20 and 0xcd660 (retail expands both inside its copy of 0x1058b0 here; their files are
 // built /Ob1, so the call form keeps them as calls).
+// M3 lane 14 r160 (fast screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17), on main's body: the trigger
+// reset through the outer `weapon` pointer 156 (521 B); the trigger index without its `(short)` cast 46 (535 B); the
+// ticks store through a fresh lookup 148 (539 B), through `current` 150 (542 B); the gate's state read through a fresh
+// lookup 206 (581 B); the barrel call's index without its cast 17 (same code).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

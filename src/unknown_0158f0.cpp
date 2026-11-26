@@ -311,6 +311,14 @@ bool function_015b10(
 // unreferenced), so its split part takes the one register left (EBP) where retail's takes EAX. With no tag-index local
 // (the two global stores first, the source's tag index read in the test and again for the definition) 56 on the local
 // count and 56 on the global count.
+// M3 GB r23 (30 real + 3 flag diag fast trials with 0x15c90/0x15cd0/0x14a60/0x1d2a0 MATCH; control 56 at 280 B): on
+// global-count (56, al=59, mk=5), store orders Common/Data/Lock 56, Data/Lock/Common 56, Common/Lock/Data 65,
+// Lock/Data/Common 65, Lock/Common/Data 65; early return / scoped decls / continue bounds / inline helpers / source
+// ptr / top decls / rename locals / dword*256 / /Ob1 / /arch:SSE / /Oi all 56; reverse bounds 57; stores before loop1
+// 76; D3DPalette_Register 113; (word)tag_index 65; slot local 67; hoisted base 61; no-ptr Common first 65; post-inc
+// `&g_484dd0[g_5093ac++]` 86 (285 B, al=27; Common first 84, al=26; flips all registers to retail's exact EAX/ECX/EDX/
+// ESI/EBX/EDI layout but adds early pointer copy); inc before Lock 83 / after Data 84; local palette_total with
+// `if (group_count > 0)` 56, store in outer 67, store in inner 63, post-inc 87. Body unchanged at 56.
 // @retail 0x15b70
 void function_015b70(void)
 {

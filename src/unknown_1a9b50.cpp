@@ -1014,6 +1014,13 @@ extern point2f *g_468778;
 // mk 29); `field_15` if/else 377; arm-1/arm-1+2 view reads 435/435 (mk 32); no `local_8` 384 (+ all-3 `dot3f` 431); late
 // `local_8` in `else` 429; no `local_20` 414 (1525 B, fr 0x40); early return 394; `field_12`-only `unit_index` + `0.8` view
 // / `memcpy` / `field_15` if/else 400/400/387; main `unit_index` + `dot3f` + `memcpy` 410; pointer dot + view / `memcpy` 410/410.
+// M3 lane 6 r248 (H2M_FAST with 0x265d30, MATCH each run; control 280 at 1557 B; body unchanged): the allocator splits
+// the prop pointer and leaves the piece that spans the field_12 logic in memory (its weighted cost is not positive),
+// while the unit index holds EDI across the two view calls, so the view falls to EBX. Forms: the unit index at all five
+// uses (both 0x110ab0 calls, 0x10f340, 0xe6900 and the submit call) 375 (1562 B); the index and its two arms in their own
+// braces 280 (same code); the index declared above the prop pointer 417 (1576 B); the field_12 arm reading the field and
+// the facing arm declaring the index ahead of the view calls for all four of its uses 378 (1565 B), declared after the
+// view calls 407 (1572 B); the clock read at its one compare instead of a named local 356 (1555 B).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

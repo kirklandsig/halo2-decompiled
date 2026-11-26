@@ -1060,6 +1060,17 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // (3289 B); the decibel pin as an if / else if / else chain 837 (same code); `0.0f - target->step` as both target pins'
 // lower bound 837 (same code); the decibel pin as a single-exit result on today's base 869 (3297 B); a `char` choice count
 // 903. Body unchanged.
+// M3 lane 5 r250 (fast with 0x18bb80 and nine callees; control 837, frame 0x4dc): reading of the allocator's costs: every
+// use of the short choice count is a widening load worth nothing to a register, so it never gets one (retail keeps a
+// full-word count in ESI, stores it at each increment and reloads it after calls, as a memory member does). Tried: full-
+// width query and choice counts with the out count read directly 951; count-first lists (count, then elements) for the
+// choices, targets and existing indices with `list.count++` then `&list.elements[list.count - 1]` 977 at retail's 3327
+// B (ESI entry zero, retail's first-loop count and index homes, instruction distance 998 against 1151, frame 0x4e8);
+// that with retail's store order (tag, source, decibels, cluster) and the three 1.0f defaults as statements 977
+// (distance 989); plus a scale local in the flags & 8 arm 969 (976); the linear conversion reusing its value parameter
+// for the pinned bits 837 on main's body (same code) and 969 on the lists. The lists' frame is 8 bytes over retail's:
+// in the target loop retail's conversions share two slots (value and bits in one slot per conversion), ours keep three
+// separate address-taken temporaries alive across the loop.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
