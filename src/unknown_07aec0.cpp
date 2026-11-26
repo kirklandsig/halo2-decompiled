@@ -51,6 +51,14 @@ bool function_7af40(s_type_99af70 const *address);
 // order, not kept); test-before-store 44; if-chain inline 0x7af40 44; short loop index 88; early-return if-form 49;
 // `(output & 0xff) == 0` 28 (keeps ECX/EDX in prefix but spills `ipv4_address` to stack, breaking 4 callers); sete
 // ternary / no-ref / if-else true-false all tie 26. Restored at 26.
+// M3 lane 13 r160 (fast with the five callers/peers above; control 26): reading from the allocator's ranking, the
+// address takes ECX only while its priority (32 here) beats the inlined 0x7af40 loop counter's 31; the if-form tail
+// moves the result's last reference out of the swap block, one candidate fewer there, so the address drops to 30 and
+// the counter takes ECX first (14, the address in EDX). Tried: `result = false;` again in the arm ahead of the if-form
+// test 20 (the address in ECX and every caller matching, but the swapped value moves to EAX; a dead store, not kept);
+// `result` declared bare and set false in both arms 48 (callers lost); `result` initialised from the two tests and
+// reused for the low-byte test 48 (114 B); `if ((byte)output == 0) result = true;` 14 (as the if-form); a `dword
+// swapped` local stored and tested 28 (four callers lost). All restored.
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {
