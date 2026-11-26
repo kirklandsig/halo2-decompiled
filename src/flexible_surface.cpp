@@ -998,6 +998,18 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 204/201/206, with the oscillation delayed too 206/171/181. Normalized draw
 // kept across setup or axis 206/202. NOT kept: all regress, integer forms
 // shrink the frame to 0x18 and alter the caller. Sample and sine still share a home.
+// On the rounded-real angle carried as double, shared integer draw 135, unsigned/signed
+// draw converted after oscillation 135/194, unsigned conversion in the angle 135. With a
+// named wave cosine product, product and rounded sine, sum and envelope, or two separate
+// cosines 161 each. NOT kept: all raise the score despite restoring the 0x20 frame.
+// M3 lane 12 r190 (h2m fast with 0x118140 and 0x117c80; control 130). Reading: the wave tail is retail's but for cell
+// offsets, so the frame difference comes from the rotation: retail loads the global's j and k early, keeps them in
+// XMM5/XMM4 through rows j and k and spills cross j and cross k (+0x18/+0x10), where the shared helper's body here
+// re-reads j from the global for row j and spills one cross term, one cell fewer. A forced-ranking search over the
+// XMM priorities moves the count by 2 at most, so the helper's shape, not a ranking, is the cause. Forms: sine and
+// cosine named just before the rotation call 152; a `vector3f *direction = &g_55ecd4` local for the rotation and the
+// limit call 130 (same code); the sine named ahead of the axis draw 154; the axis copy `const` 130 (same code); the
+// cosine named before the call 155. Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

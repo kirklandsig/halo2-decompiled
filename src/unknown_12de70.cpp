@@ -824,6 +824,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // fix through a `now` local read once, with the field pointer 27 (same code), with the field written at both uses and no
 // pointer 45; an identity forceinline pointer view (no code) around the arm's group argument 48 (272 B), around the arm's
 // linked test 48 (272 B).
+// M3 lane 1 r169 (h2m fast with 0x12e210, which stays matched; control 27): a forced-ranking search over 183 single
+// allocator decisions on this body and 60 on round 85's field-pointer form (14) finds nothing below either count, so
+// what is left is not a ranking tie but the arm's missing second use of the block. Forms: the task count named and
+// stored at the end of the loop body 68 (266 B); the release's physical block named inside the arm 27; the arm's
+// release reading the guard's physical block local re-fetched in place 27; one physical-object local at the guard's
+// top for the time fix and the arm's page shift 84 (266 B); the loop's block local as a const pointer to const 27.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

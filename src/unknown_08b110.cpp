@@ -15,7 +15,6 @@ struct s_z_input_packet;
 struct s_z_transform_state;
 void function_aaef0(s_bitstream *stream, s_z_input_packet const *state);
 void function_ab7f0(s_bitstream *stream, s_z_transform_state const *state);
-void function_194710(s_bitstream *stream, bool discard);
 
 // @retail 0x8b9e0
 void c_vtable_450c94::v3(s_node_450d1c *node, long a2, long a3, long key,
@@ -32,7 +31,7 @@ void c_vtable_450c94::v3(s_node_450d1c *node, long a2, long a3, long key,
 	if (unknown718 & (1 << index))
 		function_ab7f0(stream, (const s_z_transform_state *)&data720[index]);
 	if ((stream->size_in_bytes << 3) - stream->bit_position < reserved_bits)
-		function_194710(stream, true);
+		stream->function_194710(true);
 	else
 	{
 		stream->checkpoint_count--;

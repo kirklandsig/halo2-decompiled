@@ -1293,6 +1293,23 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // hit copies 305 (1245 B); one `shape` local for the second node's shape in the kind test, the data read and both
 // material calls 362 (1206 B); the found flag stored last in the result block 255 (1251 B); the key clamp as `limited =
 // key` with an if/else-if 238 (same code). Body unchanged.
+// The 0x40 frame, second-node spill and root-kind comparison still differ.
+// Query/target node names 238; distance and index names 238; shared admitted root
+// entity 238; const hit/origin copies 238/238; instance normal setter 238, with
+// const coefficients 238; direct plane normal setter 264.
+// NOT kept: the direct setter adds six bytes and raises the score.
+// M3 lane 16 r190 (fast screen with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238, aligned 180; body
+// unchanged). The exclusion test's three data loads through separate pointer variables. Three shape locals inside the
+// kind test, one per `&&` operand (zero test, classifier, byte test) 309 (1246 B, aligned 172): the byte test then
+// loads the data again from the kept shape register, as retail's third load does, but the zero test and the
+// classifier still share one load (two of retail's three); two locals with the zero test through the node 309 (same
+// code); the classifier alone reading through its own pointer local 320 (1243 B, aligned 216, one load); three bool
+// helpers on the node, each with its own shape local 320 (aligned 197, one load: a helper's local merges with the
+// caller's read where a local of this body does not); one multi-return bool helper on the node with a shape local
+// per test 305 (1246 B, aligned 182: retail's `setne al; test al, al`, one load); the three body locals with the
+// classifier's result preset to 1 and bound by reference 325 (1243 B, aligned 212: `mov ecx, 1` and `mov ecx, 0x10`
+// preloads and the separate third load, but the two relational compares stay value-first and the zero test's load
+// is still the classifier's). None kept: each raises the count and each is a match-only form.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

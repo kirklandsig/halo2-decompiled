@@ -2492,6 +2492,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // each use 379 (336 B: the helper is then called out of line); `&effect->location` named once for the set_location test,
 // the call and both zone calls 142 at retail's 552 B (the system still in EDI). Retail's callers confirm the declared
 // order (scale in xmm0, then effect, system, definition, unknown and the flag pushed last to first). Body unchanged.
+// The early color spill and system register still differ. With the two colors
+// read on opposite sides of individual spawn stores, A first scores
+// 184/184/184/184 and B first scores 185/185/185/185.
+// NOT kept: every split grows the frame to 0x48 and the body to 572 bytes.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4083,6 +4087,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // matrix declared at the block's head 103 each [lost], without the record 103 [lost]. Reading: in every form here the
 // convention follows the count of locals rather than
 // the code: dropping the cached mode lets LTCG put the effect index in a register too. Body unchanged.
+// Named cursor slot, color tag, and both 93 each. With direct per-call mode,
+// named cursor slot 108, color tag 126, both 126. Mode-field pointer 108,
+// with named color tag 126. The 108 forms lose the matched update caller;
+// the 126 forms retain it with frame 0x50 and 352 bytes.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

@@ -1596,6 +1596,19 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // own block, so the data comes from EDI); the call's parent argument as `parent_index != NONE ? parent : 0` 52 (1405 B:
 // the second test is emitted), its mirrored argument as `parent_index != NONE ? parent_mirrored : false` 411 (1415 B).
 // Two lookups in one block re-read the data field (retail and the base); one lookup per block shares EDI's.
+// M3 lane 2 r151 (fast screen; control 20 at 1399 B). Allocator reading: the no-model index ranks 78 (its load and test with
+// six values live, then the in-place mask and the scaled index in the nine-value lookup block) against the pool's 34
+// (four references, live and unreferenced over the model tests), so the index takes ECX first and the pool is reloaded.
+// Tried: the no-model index read through a `long const &` for the test and both lookups 20, the reference for the
+// matrix lookup only 20 (same code each); only the mirrored default in an else arm (parent initialised at its
+// declaration) 290 (1404 B); only the parent default in an else arm 32 (1395 B); the flag passed to the 0xbdc40 call as
+// `parent_index != NONE && bit` with only the matrix under the test 42 (1395 B).
+// M3 lane 3 r310 (fast screen with 0xb8bd0, 0xbdc40, 0xbc820, 0xbd020, 0xbee60, 0xbfa40 and 0xbdb60, all MATCH; control 20
+// at 1399 B): the no-model index assigned inside its test 20; a parent-object local with the node read into a named
+// long after it, flag through object_get 44 (1390 B); one parent header pointer for both reads 41 (1392 B); the matrix
+// through object_header_get's object with the flag through object_get 20, the reverse 20 (same code each). Allocator
+// reading: the no-model index ranks 78 and takes ECX, the first free register at its turn (EAX and EDX hold the two
+// defaults), so the pool loaded at the current-object lookup is reloaded.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

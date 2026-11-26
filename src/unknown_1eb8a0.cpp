@@ -1025,6 +1025,26 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // and activation success result: 659/654/659/687. With the initial speed factor before
 // the time product: 680/698/680/716. NOT kept: the reload and result forms retain the
 // supplied direction in EBX. The early factor forms shrink the frame and lose the caller match.
+// M3 lane 1 r168 (fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 567): the duration sum written
+// `n2 + (s->fast ? 7 : 1)` 567 (same code); the settle length through the existing magnitude3d 567 (same code); the
+// closing test as `s->duration + 6 > s->counter` 568; the 12/8 factor written inside the cap at all three clamps (no k
+// locals) 567 (same code); both activation step counts as one conditional expression each 677 (2879 B). Body unchanged.
+// M3 lane 12 r190 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH; control 567, aligned 709). Reading: retail
+// forms `&s->target` once (`lea eax, [esi + 0x30]`) ahead of the activation's target branch, writes both arms and reads
+// the direction refresh through it, and forms `&s->direction` (`lea edi`) before the refresh's stores; it also reads
+// s->limit from memory at the length cap, the limited flag and the distance pick. Forms: a `point3f *target = &s->target`
+// local for both arms and the activation refresh 567 (aligned 708, same count); that with the activation refresh through
+// the existing vector3d_from_points3d(pos, target, &s->direction) 576 (aligned 622, semantic rows 96 against 122: the
+// branch, copy and refresh are retail's but for registers), with the active block's refresh through it too 597 (aligned
+// 615); both refreshes through the helper without the pointer 678 (re-measure); s->limit read at each use (no `limit`
+// local) on the 576/597 forms 681/661 (aligned 583/611); the 12/8 factor selected before t at the first clamp on the
+// 576 form and on its each-use-limit form 673/741 (frame 0x20). Lead (not kept, the count rises): the 576 form is the
+// closest aligned shape so far. Body unchanged.
+// EBX still takes the supplied direction. Staging the first displacement endpoint
+// in the vector, in three coordinates, as a point copy or as a point initializer
+// scores 570/670/716/651 with the alignment scale before those reads and
+// 567/670/716/648 after them. NOT kept: the staged vector ties at best, and
+// the coordinate and point forms move the frame or vector schedule away from retail.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

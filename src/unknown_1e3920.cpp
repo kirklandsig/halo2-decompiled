@@ -1367,6 +1367,12 @@ void function_1e3b60(long actor_index);
 // declaration 428 (1624 B), on the walk 442; on the walk the flags declared at function scope 442; the actor fetched
 // once per iteration for the loop's reads 463 (1644 B); the 0x264b50 guard testing `update` first 435. Still
 // BLOCKED-BY 0x262ba0.
+// M3 lane 2 r151 (fast screen with 0x262ba0; 25 here in every form, the actor index still pushed for 0x262ba0): in
+// 0x262ba0, the 0x2641c0 call written out as its body (diagnostic) 509 there; the update flag computed from the sampling
+// test after the 0x263670 call 453; both flags declared after that call 404; the parameter copied into a local at entry
+// 404; both flags at function scope, cleared at the loop top, 402. A first-pass (all-stack) compile of 0x262ba0 holds the
+// actor index in EDI but reloads it from its home five times after EDI goes to the view pointers, so link-time code
+// generation keeps it a stack argument. Still BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
