@@ -369,6 +369,15 @@ void function_19c6d0(s_record_pool *data, long key0)
 	}
 }
 
+// score 108 (was 119): retail keeps the pool parameter in EBX from entry (the allocator's first pass; ours
+// colours it only in its second pass, from the release call on, after its first-pass priority ends at -40 with -72 of
+// live-not-referenced blocks across the first loop), borrows EBX for the flagged count (kept in memory, so a zero
+// register serves the zero store and tests), passes sort_4byte a separate scratch slot shared with the spilled valid
+// flag, and places the flagged keys below the sorted keys in the frame. M3 lane 13 r160 (fast; control 108): the
+// flagged keys renamed to sort after the sorted keys 108 (same code: the frame order does not follow the names); the
+// walk's iterator declared and set up at the top 123 (frame 0x1a4: the iterator goes to memory); a `long scratch;`
+// declared at the sort_4byte call and passed in place of the count's address 149 (375 B); the two array stores split
+// from their increments 108 (same code); the counts declared ahead of the table lookup 156 (371 B). All restored.
 // @retail 0x19c7e0
 void function_19c7e0(s_record_pool *data)
 {

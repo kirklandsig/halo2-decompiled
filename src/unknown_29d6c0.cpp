@@ -41,32 +41,27 @@ PRIVATE __forceinline s_pathfinding_edge const *function_29d741(s_pathfinding_da
 	return &arg_0->edges[arg_1];
 }
 
+/* parameter order (pathfinding, index, normal) is retail's: 0x29d7b0 sets up the normal (EAX) first and the
+   pathfinding data (EDX) last, last to first in the declared order */
 // @retail 0x29d740
-bool function_29d740(vector3f *arg_0, s_pathfinding_data const *arg_1, long arg_2)
+bool function_29d740(s_pathfinding_data const *arg_0, long arg_1, vector3f *arg_2)
 {
 	bool local_5 = false;
-	s_pathfinding_edge const *local_0 = function_29d741(arg_1, arg_2);
-	point3f const *local_2 = &arg_1->vertices[local_0->vertices[1]];
-	point3f const *local_1 = &arg_1->vertices[local_0->vertices[0]];
+	s_pathfinding_edge const *local_0 = function_29d741(arg_0, arg_1);
+	point3f const *local_2 = &arg_0->vertices[local_0->vertices[1]];
+	point3f const *local_1 = &arg_0->vertices[local_0->vertices[0]];
 	real local_3 = local_2->x - local_1->x;
 	real local_4 = local_2->y - local_1->y;
-	arg_0->i = local_4;
-	arg_0->j = 0.0f - local_3;
-	arg_0->k = 0.0f;
-	if (function_30bf0(arg_0) > 0.0f)
+	arg_2->i = local_4;
+	arg_2->j = 0.0f - local_3;
+	arg_2->k = 0.0f;
+	if (function_30bf0(arg_2) > 0.0f)
 		local_5 = true;
 	return local_5;
 }
 
 #include "unknown_25fc30.h"
 
-// score 117 (was 117): 0x29d740 call sets up &edge_normal last vs retail first; compiler hoists 0.4f into xmm0
-// before if (direction), moving length to xmm7 and delta.i to xmm3 and emitting mulss xmm2, [esp+0x2c] vs retail
-// movss xmm0, [esp+0x2c]; mulss xmm0, xmm3 (reloading length into xmm0 and loading 0.4f twice). Tried 0x29d740
-// param order (pathfinding, index, &edge_normal) 114 (fixes lines 14-16); swapped/reordered dot expressions 114-123;
-// 3-stmt k+j+i dot 103; 3-stmt k+i+j / i+k+j / basis_dot_xzy 92 (649 B, un-hoists 0.4f and matches lines 5-105
-// and 123-190, but changes float grouping without matching); check_start/check_end defaults/long/nested 105-128;
-// /Ob1 114; inline offset 121; in-place edge_normal rotation 139.
 // @retail 0x29d7b0
 bool function_29d7b0(long index, s_pathfinding_data *pathfinding, s_type_d4fbfa *definition,
 	vector3f const *direction, point3f *point, vector3f *normal, char *side)
@@ -75,14 +70,14 @@ bool function_29d7b0(long index, s_pathfinding_data *pathfinding, s_type_d4fbfa 
 	if (index >= 0 && index < *(long *)((byte *)pathfinding + 8))
 	{
 		vector3f edge_normal;
-		if (function_29d740(&edge_normal, pathfinding, index))
+		if (function_29d740(pathfinding, index, &edge_normal))
 		{
 			vector3f local_direction;
 			bool facing = true;
 			if (direction)
 			{
 				function_210770(definition->unknown0c, direction, &local_direction);
-				if (0.0f > edge_normal.j * local_direction.j + edge_normal.i * local_direction.i + edge_normal.k * local_direction.k)
+				if (0.0f > dot3f(&edge_normal, &local_direction))
 					facing = false;
 			}
 			if (facing)

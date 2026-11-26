@@ -847,7 +847,8 @@ bool function_404b0(long mode)
                 parent = *(long *)(*(byte **)(g_4e0300->data + (parent & 0xffff) * 12 + 8) + 0x14);
         }
         function_402b0(cache_index, mode);
-        function_4a1e0((s_view_source *)&shape, (s_view_camera *)(light + 0x84), light_index,
+        /* the frame first, the shape second (retail: eax and ecx) */
+        function_4a1e0((s_view_source *)(light + 0x84), (s_view_camera *)&shape, light_index,
             (s_view_flags *)definition, 1024.0f, false, 1.0f);
         g_4ba018 = true;
         dword flags = (short)shape.kind == 0 ? 1 : 0;

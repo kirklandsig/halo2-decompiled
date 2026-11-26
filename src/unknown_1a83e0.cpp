@@ -13,12 +13,10 @@ PRIVATE __forceinline real function_1a83e1(point3f const *start, vector3f const 
 {
     vector3f delta;
     real squared_distance;
-    real length_squared = segment->k * segment->k + segment->j * segment->j + segment->i * segment->i;
+    real length_squared = length_sq3f(segment);
     if (length_squared > 0.0001f)
     {
-        delta.i = point->x - start->x;
-        delta.j = point->y - start->y;
-        delta.k = point->z - start->z;
+        vector3d_from_points3d(start, point, &delta);
         real t = (delta.k * segment->k + delta.j * segment->j + delta.i * segment->i) / length_squared;
         if (t < 0.0f)
             t = 0.0f;
@@ -28,14 +26,12 @@ PRIVATE __forceinline real function_1a83e1(point3f const *start, vector3f const 
         delta.i += segment->i * t;
         delta.j += segment->j * t;
         delta.k += segment->k * t;
-        squared_distance = delta.k * delta.k + delta.j * delta.j + delta.i * delta.i;
+        squared_distance = length_sq3f(&delta);
     }
     else
     {
-        delta.i = start->x - point->x;
-        delta.j = start->y - point->y;
-        delta.k = start->z - point->z;
-        squared_distance = delta.k * delta.k + delta.j * delta.j + delta.i * delta.i;
+        vector3d_from_points3d(point, start, &delta);
+        squared_distance = length_sq3f(&delta);
     }
     return (real)sqrt(squared_distance);
 }
@@ -60,7 +56,7 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
     return 0.0f;
 }
 
-// score 205 (fast build at 32fb6007d; was 205): walked statement by statement against retail 0x1a83e0 (r726), no behaviour
+// score 78 (was 205): walked statement by statement against retail 0x1a83e0 (r726), no behaviour
 // difference found: field offsets, the three constants (0.0001f, +-0.3f), every condition direction (retail's tests at
 // 0x1a8491, 0x1a84c6, 0x1a8963, 0x1a897c), both f5110 calls (arguments, order, result slots), the answer cascade
 // (0x1a8941-0x1a89bc) and the result stores (0x1a89c1-0x1a8a07) agree. Rounding agrees too: fst/fstp dword at
@@ -78,6 +74,17 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
 // `t * seg` or `delta = seg * t + delta` forms, length_squared assigned inside the test (205); sqrt returned in each
 // branch (273, 1549 bytes); plain `inline` (944); reversing the local_7 stores (95) or the delta loads (113) lowers
 // the score but emits k first where retail emits i first (0x1a8559, 0x1a86ac), so those were dropped as score-only.
+// Round 158 (m3 lane 14, fast = plain): the projected branch's delta through the existing
+// vector3d_from_points3d(start, point, &delta) 78 (kept). Left: the segment's k and j loads are still xmm4/xmm3
+// (a forced-ranking search that ranks the j load below k gives 72), the dot evaluates j, i, k with delta.k
+// reloaded (retail k, j, i from registers), the else branch now evaluates i first (retail k) and the projected
+// sum is still stored after the join. Also kept, the same code: length_sq3f for length_squared and both squared
+// distances and vector3d_from_points3d(point, start, &delta) in the else branch (existing helpers for their bodies
+// written out by hand; 78). Tried on top (fast): dot term orders k i j 94, i k j 84, i j k 205, j k i 212,
+// j i k 213; length_squared term orders 78 each; dot3f(&delta, segment) or dot3f(segment, &delta) for the
+// projection 205; else-branch delta orders k j i 236, i k j 82, j i k 82; update orders k i j 219, k j i 221, i k j 236;
+// local_7 stores i, k, j 192; an else-branch offset vector of its own 236 (with or without the helpers); the
+// segment itself through vector3d_from_points3d 237.
 // @retail 0x1a83e0
 bool __stdcall function_1a83e0(long arg_0, short *arg_1, real *arg_2, point2f *arg_3, bool *arg_4)
 {

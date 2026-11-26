@@ -993,7 +993,12 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 	return false;
 }
 
-// score 69 (was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
+// score 11 (was 69) in a stand-in image: the cluster radius is passed straight to function_132fd0 (no local), and the
+// entry local is declared with its NONE before the function_132e60 call, which gives retail's registers in the instance
+// loop (the centre pointer in edi at 0x134693). Left: that NONE store is scheduled ahead of the call (retail stores it
+// after the visible test, 0x1346c0), and the else arm's entry read is `movsx edx, word ptr [eax + esi]` where retail
+// has `[esi + eax]` (0x134859).
+// Earlier (69, was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
 // instance flags with behind last (ours earlier), and reloads data->lists[3] after function_16e210 in the
 // duplicate-instance branch; writing that reload swaps edx and edi in the instance loop (score 70).
 // b10H (11-17) walk against retail, fast build on r841: fields, offsets, jcc senses (NaN included), call arguments,
@@ -1006,11 +1011,16 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
 // visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
 // shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
-// score 11 (was 69) in a stand-in image: the cluster radius is passed straight to function_132fd0 (no local), and the
-// entry local is declared with its NONE before the function_132e60 call, which gives retail's registers in the instance
-// loop (the centre pointer in edi at 0x134693). Left: that NONE store is scheduled ahead of the call (retail stores it
-// after the visible test, 0x1346c0), and the else arm's entry read is `movsx edx, word ptr [eax + esi]` where retail
-// has `[esi + eax]` (0x134859).
+// Round 248: the store moved after the visible test, as `long entry;` before the call with `entry = NONE;` at the top
+// of the visible block (70) or `long entry = NONE;` declared there (70): the NONE constant and the entry def leave the
+// call-setup block, the centre pointer's register priority falls 244 -> 204 under the instance index (216) and it
+// loses EDI; `entry = NONE;` after the 0x132fd0 call 212; the else arm's index named (`short entry_index =
+// list->shorts_d[index];`, one use) fixes (0x134859) alone, 10; `list->shorts_d[(short)index]` 11; `(long)(short)i >> 5`
+// 11. On the late store plus the named index (70): a centre pointer local for both calls 109, a radius local for both
+// calls 366, behind/in_front declared with the three call bools 70, NONE stored after the pair's declarations 70, the
+// bsp global read at each use 70, definition inside the stamp test 206, filter started NULL 199, entry passed without
+// its cast 70. A forced-ranking search says that form matches once the centre pointer outranks the instance index
+// (204 -> 217); no source form found that adds that.
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {

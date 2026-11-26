@@ -73,6 +73,14 @@ PRIVATE __forceinline long function_1d96d4()
  return local_1;
 }
 
+// score 1088 (was 1088): BLOCKED-BY 0x20670: the full build expands the compiler's array-constructor helper for
+// the 16 damage entries into an in-line loop where retail calls 0x20670 (`push 0x1da540; push 0x10; push 0x94`);
+// the reduced image keeps the call (985, 3660 bytes). Beyond it: retail's frame is 4 bytes smaller, its zero register
+// is EBX (ours EBP) and the entry count's zero is stored after the array is built (ours at entry). Round 158 (m3 lane
+// 14, fast, with 0x20670 0xd66d0 0xe58e0 0x184060 0x1c58a0 0x1cfdf0 0x1d1c10 0x1da550 0x1da6d0 0x1da9e0 listed):
+// `long local_7 = 0;` declared after the entry array 951 (lead: a declaration moved later); with local_8 there too
+// 951; the mass total assigned after its declaration 985; the object flag as `!(local_5[2] & 0x20)` 985; the inverse
+// mass computed once 1063.
 // @retail 0x1d96d0
 void function_1d96d0(long arg_0)
 {
