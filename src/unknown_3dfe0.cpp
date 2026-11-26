@@ -320,6 +320,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // is decided before allocation. Forms: force typed `byte` 106 (833 B); force written with `== false` tests 21 (same
 // code); force started true and cleared under `if (initialized && valid)` 49 (830 B); the hidden test through a `(bool)`
 // cast 21 (same code); the force arm as `update = force;` 52.
+// M3 lane 4 r263 (h2m fast with 0x3d2c0, 0xd1850 and 0x3e4e0; control 21): `update` typed `long` 65 (837 B); the
+// 0xd1850 call's flag argument written as the two cache tests (the force local then used only by the update test) 237
+// (845 B); the elapsed clamp moved inside the sample block (its only reader) 31, with `update` declared ahead of force
+// 226; `update |= force;` with `if (!force && hidden) return;` 231. The frame packer puts the object (four spill
+// references) in the lowest slot and the force flag (three) above it; retail has them the other way round, and forcing
+// the object's first piece into EBX alone measures 22.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -2437,6 +2437,13 @@ bool function_1900a5(long index);
 // 0x70f8-byte block with memset, which now resets these counters and tasks as in retail), the completion loop's direct
 // g_509454[group] with the unknown10/&owner fields and the variant_type local. The fields alone 646; the range-first polls on
 // this form are the 623 lead.
+// M3 lane GA r18 (12 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50 all MATCH; control 643 at 2878/2862 B,
+// +0x1a; body unchanged): tested on the consolidated g_509450 + direct completion + variant_type base: variant->type read inside
+// completion record loop 667; completion if (variant) { ... } else player->state = 1; with in-loop variant->type 676 (2910 B);
+// request identity pointer (no local XUID copy) 661 (2846 B); request due byte flag (state==1 / state==4 elapsed) 648 (2894 B);
+// request properties pointer with literal 6 and += 6 after fill 696 (2910 B); users loop direct g_509454[group] 753; completion
+// property->type == 0 ? 0 : ... 643; two-use last_write local 664, nested 665; nested last_read local 643; both nested 665,
+// with in-loop variant->type 667. Blockers stand: 0x1900a5 cmovne needs /arch:SSE (file flag), users cursor needs inlined 0x647d0.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
