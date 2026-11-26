@@ -615,13 +615,13 @@ void first_person_weapon_sound_event(long user_index, long field_x11c898, s_firs
 }
 
 // @retail 0x166d50
-void __stdcall first_person_weapon_sound_event_right(long user_index, long unused, s_first_person_event const *event)
+void __stdcall first_person_weapon_sound_event_right(long user_index, real frame, s_first_person_event const *event)
 {
 	first_person_weapon_sound_event(user_index, 0, event);
 }
 
 // @retail 0x166d62
-void __stdcall first_person_weapon_sound_event_left(long user_index, long unused, s_first_person_event const *event)
+void __stdcall first_person_weapon_sound_event_left(long user_index, real frame, s_first_person_event const *event)
 {
 	first_person_weapon_sound_event(user_index, 1, event);
 }
