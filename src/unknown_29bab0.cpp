@@ -1021,6 +1021,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // scalar cx/cy with local_24 ternary 686 (fr=0x8c); 4th else arm bool == / ternary / long same 661/663/628; tail dot3f
 // swapped 462; frame_velocity retail dot3f argument orders 458 (-4, matches lines 628-653; + cross3f_staged 458), + both
 // MIN(1.0f, ratio) clamps 457 (-5, al 336, mk 106; + tail dot3f / cross3f_staged 457; NOT kept: under 8-point bar).
+// M3 lane 16 r192 (H2M_FAST with GB15's companion list, control 462 as plain; with only 0x1f38c0 listed it reads 656):
+// the side point through the existing point2f_set after the side ternary (its arguments evaluate right to left) 467;
+// the turn weight's half factor folded into local_26 (`local_26 *= 0.5f;` ahead of the dot, then `local_24 *=
+// local_26;`) 476 (3507 B); both 479 (3507 B); the +0x7c axis pointer as a typed member address beside forward 462 and
+// as `&local_1->forward + 1` 462 (same code each). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

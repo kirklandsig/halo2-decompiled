@@ -477,6 +477,16 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // `group >= 5` 216 (1395 B); the time step as `t = times[group]` then `t -= step` 134 (1403 B); the time table in a
 // `real const *` local ahead of the loop 103 (1395 B, first +0x18); the values array and its cursor declared after the
 // coefficient cursors 67; the copy loop's index declared ahead of its loop 64 (same code). Body unchanged.
+// M3 lane 16 r192 (H2M_FAST with 0x16fe90 and 0x170d70; control 64, aligned 65, masked 48): the powers as `t * t2`,
+// `t * t3`, `t * t4` 64; forward and up as `&state->current[10]` / `[13]` 64, forward only 64; the side vector declared
+// at the function top 64 (same code each); the count table read at each advance (no count local) 127 (1403 B).
+// Diagnostic grids (not source): on the explicit time cursor body (125 at 1413 B, aligned 35, loop exact), 0..7 unused
+// locals x the dot's terms parenthesised (none, k, i, j): the parentheses never change the aligned rows, best 91 (1399
+// B) at six locals; 0..7 unused locals x 0..3 no-op `(real)(x * 1.f)` on the forward length: best aligned 29 (masked 32,
+// 124 at 1401 B) at 0/2/7 locals with one no-op, retail length only at six locals with two (81, aligned 55); main's body
+// with the same two levers: best aligned 44 (masked 32, 86 at 1388 B) at six locals. With six locals the orthogonality
+// dot reuses up.k's register as retail does, but its other two terms stay exchanged, and no cell gives retail's cross
+// section schedule or first normalize. Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1260,6 +1270,12 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // result in a named bool 105; the camera table copied into a local at the loop body's top 105 (folds); the count store
 // as `(short)(volume_index + 1)` 105; the capacity test as `!(volume_index < 512)` 105; camera and rectangle pointers
 // both named after the volume address 22.
+// M3 lane 16 r192 (H2M_FAST with 0x1730a0; control 105, only 14 aligned rows, 10 masked: the call setup, the plane
+// lookup's schedule and a 2-byte filler, `lea ecx, [ecx]` against retail's `mov edi, edi`): the offset written
+// `0x1bc * entry->key` 105, parenthesised 105, the capacity test on the field ahead of the index local 105, the plane
+// lookup as `[portal_index * 9 + 1]` of a long array 105 (same code each); the plane store as one ternary 115 (425 B).
+// On the offset lead (re-measured 11) a forced-ranking search (40 builds) moves only the key to EDX (13): the camera
+// table is a scratch temporary, not a ranked candidate (its parameter has one reference). Body unchanged.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
