@@ -101,3 +101,53 @@ def test_circular_saved_body_pointer_capture(solver_images, precision, aliased):
                 # Exact heap bytes and return value, including replacement bodies.
                 # execute also checks stack cleanup, saved registers and FP control.
                 assert snapshots[0] == snapshots[1], (precision, rounding, aliased, ta, tb, coupling)
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('active_row', [0, 1])
+def test_circular_a_inertia_precedes_scalar_copy(solver_images, precision, active_row):
+    frame = STACK + 32768 - 0xd0
+    # A's inertia W overlaps the rounded SIMD input at frame+0x1c. Both
+    # circular rows must capture it before publishing their scalar copy.
+    # Reading the new impulse instead corrupts the retained B pointer when
+    # A's angular W is written back into frame+0x0c.
+    body_a = frame - 0x20
+    body_b = HEAP + 0x80
+    retail, compiled, symbols = solver_images
+    snapshots = {}
+    for label, machine, entry, gate in [
+        ('retail', retail, 0x31c940, 0x480c60),
+        ('compiled', compiled, address(symbols, 'solve_operations_31c940'),
+         address(symbols, 'g_480c60')),
+    ]:
+        for rounding in range(4):
+            data = solver_case(7, 0)
+            put(data, STEP, '7fi', 0, 1, 0, 1, 1, 0, 0, 1)
+            put(data, OPS + 12, '2I', body_a, body_b)
+            put(data, OPS + 24, '6I', 7 | (20 << 8) | (5 << 16),
+                FRICTION_RESULTS, 0, 0x42c80000, 8, 0x400)
+            for row in range(2):
+                put(data, TERMS + row * 48, '12f',
+                    0, 0, 0, float(row == active_row), 0, 0, 0, 1, 0, 0, 0, 1)
+            put(data, HEAP, 'B', 3)
+            for offset in [0x10, 0x20]:
+                put(data, body_b + offset, '4f', 0, 0, 0, 0)
+            put(data, body_b + 0x30, '4f', 1, 1, 1, 1)
+            put(data, IMPULSES, '2f', 0, 0)
+            machine.mem_write(frame - 0x10, b'\0' * 16)
+            machine.mem_write(frame + 0x10, b'\0' * 16)
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data, [STEP, OPS, HEAP, IMPULSES],
+                               precision=precision | (rounding << 10))
+            context = (label, precision, rounding, active_row)
+            b_home = words(machine, frame + 0xc, 1)
+            assert b_home == (body_b,), (context, b_home)
+            # Exact signed zero: downward rounding produces -0 for the inactive row.
+            inactive = 0x80000000 if rounding == 1 else 0
+            expected = (0x3f800000, inactive) if active_row == 0 else (inactive, 0x3f800000)
+            assert words(machine, IMPULSES, 2) == expected, context
+            assert snapshot[1] == 1, context
+            if label == 'retail':
+                snapshots[rounding] = (snapshot, b_home)
+            else:
+                assert snapshots[rounding] == (snapshot, b_home), context
