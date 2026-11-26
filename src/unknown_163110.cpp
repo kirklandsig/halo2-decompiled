@@ -530,9 +530,7 @@ struct s_bsp_1648d0
 PRIVATE inline real ray_plane_distance_1648d0(point3f const *origin, vector3f const *direction,
 	s_plane const *plane)
 {
-	real dot = direction->j * plane->normal.j;
-	dot += direction->k * plane->normal.k;
-	dot += plane->normal.i * direction->i;
+	real dot = direction->i * plane->normal.i + direction->j * plane->normal.j + direction->k * plane->normal.k;
 	real distance;
 	if (dot != 0.0f)
 	{
@@ -568,12 +566,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 		s_plane const *plane = &((s_bsp_1648d0 *)g_4e0348)->block->planes[source->plane_index];
 		for (long i = 0; i < 4; i++)
 		{
-			vector3f const *direction = &source->directions[i];
-			real distance = ray_plane_distance_1648d0(&source->points[4], direction, plane);
+			real distance = ray_plane_distance_1648d0(&source->points[4], &source->directions[i], plane);
 			points[i] = source->points[i];
-			points[i + 4].x = direction->i * distance + source->points[4].x;
-			points[i + 4].y = direction->j * distance + source->points[4].y;
-			points[i + 4].z = direction->k * distance + source->points[4].z;
+			points[i + 4].x = source->directions[i].i * distance + source->points[4].x;
+			points[i + 4].y = source->directions[i].j * distance + source->points[4].y;
+			points[i + 4].z = source->directions[i].k * distance + source->points[4].z;
 		}
 		edge_count = 12;
 		edges = box_edges;
@@ -619,9 +616,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 52 (was 115): the head, both planes and the three intersection rows are retail's; left are the classification's
-// k term order in its three unrolled copies, the clip denominator's term order (ours j, k, i, retail i, k, j), two
-// operand sides in the clip distance and the projection entry (`total` in ECX for retail's EAX).
+// score 5 (was 14; earlier 52, 115): head, both planes, all four unrolled classification rows, remainder classification,
+// clip denominator (i,k,j), clip distance i term, intersection rows, and the entire projection loop (including `total`
+// in EAX and `add edi, 0x18` after the `total` store) match retail; left are only 5 instructions (1851/1851 B): the clip
+// distance y*j operand order (+0x456, 2 insns) and the projection header store order `segment/segment_count/total` (3 insns).
 // M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
 // computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
 // with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
@@ -1417,6 +1415,51 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Classification with named x/y, x/z or y/z subtotals 55/68/62; x/y or x/z subtotal with a separate
 // accumulation 55/70; named component products 185; signed classification bytes 52; separate branch
 // stores 755. The three unrolled copies still need retail's product schedule; the signed-byte form ties.
+// M3 lane 15 r147 (fast screen with 0x1648d0, 0x320b0, 0x168b40 and 0xb7740, all MATCH each run; control 52; without
+// the last two files the reduced image scores 555). Lead, match-only (a renaming reference): the classification reading
+// the plane through `plane3f const *const &clip = plane;` (bound to a converted temporary) 30: the three unrolled copies
+// become retail's j, i, k, but the first copy's and the remainder loop's j term now load the point first; the same 30
+// with the reference ahead of `long i` or after it, passed to the clip helper too 30, and in all 48 term orders and
+// operand sides of the classification 30 (the text order is ignored). On that lead with lane GA r9's walking-output tail
+// (`total` first, `point3f *out = cursor;` and `out++` at the k-loop bottom) 25 (the projection entry is then retail's
+// but for `cursor += 2` scheduled early; the statements in output/culled/total/cursor order 25). Not better: the
+// reference bound to `plane` itself (`plane3f *const &`, ahead of the plane tests) 46; a plain `plane3f const *` copy
+// 199; the pass's plane typed const 52 (same code); the classification index, `total`, or one segment/segment_count
+// pair shared by both loops declared at the top 52/52/52 (same code); on the 25 form, the point read through a pointer
+// or a reference 45/45 (the unrolled copies go back to the old order), through a const reference to its address 183,
+// the clip helper's start point through a const reference 25 (same code), its direction 349, its plane 47, both 185;
+// diagnostic, the helper's dot as one i, k, j expression on the 25 form 55 (0x1648d0 186). Body unchanged.
+// GB r14 (fast with 0x1648d0, 0x320b0, 0x168b40, 0xbc070 all MATCH; control 52 at 1851 B, al 61, mk 37; 38 trials):
+// dropping `forward` and using symmetric 3-use `near_origin = &view->vector_e4` and `far_origin = &view->vector_b4`
+// (+1 symbol ahead of `plane`, 1/6/0) gives 38 (+0x410, al 41, mk 17), plus GA r9's walking projection tail (`total`
+// first, `point3f *out = cursor;`, `out++` at k-loop bottom) 33 (+0x410, al 37, mk 16); changing shared
+// `ray_plane_distance_1648d0`'s `dot` from three `+=` statements to one flat sum (`i*i + j*j + k*k`, avoiding the
+// `dot3f` expansion that breaks matched 0x185be0 by 2) while dropping the redundant `direction` local in 0x1648d0
+// keeps 0x1648d0 and 0x185be0 MATCH and drops 0x1652e0 to 10 (1851 B, 474/474 insns, al 10, mk 8; kept, verified in
+// plain check with all 15 file peers + 0x185be0 MATCH). Review kept it without the two statement-order moves
+// (`total` declared first, `out` declared ahead of `culled`), which are match-only: 14 (+0x28a, 1851 B; 0x1648d0 and
+// 0x185be0 MATCH). Also tried (not kept): symmetric plane0/plane1
+// pointers without `forward` 245/211; both origins + one-expr near_distance + walk tail 35; real_max/real_min helpers
+// 185-190 (with near_sum 45); `dot3f` for `dot` 10 (same code here, 0x1648d0 MATCH, breaks 0x185be0 by 2); `dot3f` for
+// both dot and offset 12 (+0x456, breaks 0x1648d0 169); plane_distance_to_point for offset 12 (0x1648d0 MATCH); `p0 + 1`
+// 70; 2-stmt offset (`y*j + z*k; += i*x`, all
+// 4 operand orders, or with `origin` local in 0x1648d0) 6 (+0x55d, al 6, mk 4: fixes both +0x28a and clip distance i
+// term, leaving only `total` in ECX vs EAX, but breaks 0x1648d0 by 8 on a 2-insn `origin->z * normal.k` swap); `y*j; +=
+// z*k + i*x` 10 (0x1648d0 8); projection entry statement orders (`out;cur;cul;tot` puts `total` in EAX, 10 al 13 / 6
+// al 9 on 2-stmt offset; `out;tot;cul;cur` 10; `tot;out;cul;cur` 11; `source` ptr 10-11).
+// GB r16 (fast with 0x1648d0, 0x320b0, 0x168b40, 0xbc070 all MATCH; control 14 at 1851 B; 91 trials): dropping the
+// artificial `cursor`/`out` locals in the projection loop and indexing `projected_points[total] = s;` with `total++;`
+// inside the k-loop reproduces retail's exact projection entry (`mov eax, [esp+0x20]; mov esi, 2; add eax, esi; mov
+// edx, edi; mov byte [esp+0x13], 0; mov ecx, ebx; mov [esp+0x20], eax; add edi, 0x18`) AND fixes +0x28a and +0x46d,
+// dropping 0x1652e0 from 14 to 5 (+0x456, 1851/1851 B, 0x1648d0 untouched MATCH; kept, plain verified). With `total`
+// declared before `segment` (match-only order) it scores 2 (+0x456, only `y*j` left; without `outside0` 2 at +0x46d,
+// only `i*x` left); `point3f *out = &projected_points[total];` + `total++;` scores 4 (7 without `total` first); combining
+// `out = &projected_points[total]` + `total++;` + `total` first + no `outside0` + 2-stmt offset in shared
+// `ray_plane_distance_1648d0` hits 0 (MATCH) on 0x1652e0 but breaks matched 0x1648d0 by 8 (`directions[i].i * distance`
+// operand swap), so not kept. Also tried (not kept): `cursor++` in k-loop without `out` 320-359; `cursor[k]` 231/131;
+// `total += 2`/`cursor += 2` after k-loop 130-138; `src` ptr 10/471; `index0` local 11/4/2; dropping `outside0` alone
+// 12/9; dropping `t` 11/2; direct `vector3f_negate` into `planes[1].n` 467; `if` `near_distance` 73; `for` segment loops
+// 145/1869; `plane_distance_to_point` in `outside[i]` 49 / in rpd 13/6; rpd early return 248 / `== 0` 15 / 3 named terms 8/6.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
@@ -1434,16 +1477,17 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 	real near_sum = view->margin + margin;
 	real near_distance = 1.52588e-5f > near_sum ? 1.52588e-5f : near_sum;
 
-	vector3f const *forward = (vector3f const *)&view->point54;
-	planes[0].n = *forward;
-	planes[0].d = view->vector_e4.i * planes[0].n.i + view->vector_e4.k * planes[0].n.k + view->vector_e4.j * planes[0].n.j;
+	vector3f const *near_origin = &view->vector_e4;
+	planes[0].n = *(vector3f const *)&view->point54;
+	planes[0].d = near_origin->i * planes[0].n.i + near_origin->k * planes[0].n.k + near_origin->j * planes[0].n.j;
 	plane_negate_168b40(&planes[0], &planes[0]);
 	planes[0].d += near_distance;
 
 	vector3f negated;
-	vector3f_negate(forward, &negated);
+	vector3f_negate((vector3f const *)&view->point54, &negated);
+	vector3f const *far_origin = &view->vector_b4;
 	planes[1].n = negated;
-	planes[1].d = view->vector_b4.i * planes[1].n.i + view->vector_b4.k * planes[1].n.k + view->vector_b4.j * planes[1].n.j;
+	planes[1].d = far_origin->i * planes[1].n.i + far_origin->k * planes[1].n.k + far_origin->j * planes[1].n.j;
 	plane_negate_168b40(&planes[1], &planes[1]);
 
 	memcpy(local_points, points, point_count * sizeof(point3f));
@@ -1502,19 +1546,14 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 	long total = 0;
 	if (segment_count > 0)
 	{
-	point3f *cursor = projected_points;
 	do
 	{
 		if (!segment_culled[segment])
 		{
 			culled = false;
-			total += 2;
-			point3f *output = cursor;
-			cursor += 2;
 			for (long k = 0; k < 2; k++)
 			{
 				point3f t;
-				point3f *out = &output[k];
 				transform_point(&view->matrix, &local_points[segment * 2 + k], &t);
 				real w = t.z > -1.52588e-5f ? -1.52588e-5f : t.z;
 				real factor = -1.0f / w;
@@ -1523,7 +1562,7 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 				s.y = t.y * factor;
 				s.z = t.z;
 				if (projected_points)
-					*out = s;
+					projected_points[total] = s;
 				if (bounds->x0 > s.x)
 					bounds->x0 = s.x;
 				if (s.x > bounds->x1)
@@ -1536,6 +1575,7 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 					bounds->z0 = s.z;
 				if (s.z > bounds->z1)
 					bounds->z1 = s.z;
+				total++;
 			}
 		}
 		segment++;

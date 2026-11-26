@@ -1833,6 +1833,22 @@ bool function_108530(long device_index, long name)
 // rates, the three pairs, all three, and the phase squares: 127/143/117,
 // 176/170/143, 188/115. NOT kept: the squares gain one but extend the body
 // and lose both callers. The half times preserve the callers and also increase the extent.
+// M3 lane 14 r156 (h2m fast with both callers, 0x108600/0x108670 MATCH unless noted; control 116). The allocator ranks the
+// two half times equal (the later-created one colours first) and colours the ramp-down's clamp piece (a split of the
+// parameter) into a register; a forced-ranking search found no single decision below 69. Forms: the half ramp-down named
+// first 123 (525 B; callers 31/13); the denominator adding the half ramp-up first 116 (same code); the numerator
+// subtracting the ramp-down part first 115 (one point, not kept); the cruise velocity stored in each arm with no local
+// 127 (528 B: the tail then reloads the field and hoists 2.0 as retail, but the clamp keeps its register copy), with the
+// numerator swapped too 126; the deceleration distance read back from its field 116 (same code); the position stored to
+// start and position in one chained assignment 142 (509 B; callers 26/28). Body unchanged.
+// M3 lane 15 r148 (h2m fast with 0x108600/0x108670, both MATCH unless noted; control 116). Reading: the position piece
+// (B12..B22) cannot take XMM3 because the half ramp-down holds XMM3 in the inner block while our position store comes
+// after the half times (retail stores target, position and start ahead of them), so the duration piece takes XMM3 and
+// position XMM5; a forced-ranking search's best single decision is the half ramp-up one priority lower, 81. Forms: the
+// position store moved up beside the start store 142 (509 B; callers 26/28); the inner stores in retail's order
+// (target, position, start, the halves, the acceleration and deceleration distances, velocity, cruise) 169 (486 B;
+// callers 19/34); the acceleration block reading the cruise-speed local 116, both blocks 116 (same code); the two half
+// times adjacent ahead of the acceleration zero, up first 116 (same code), down first 123 (525 B; callers 31/13).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

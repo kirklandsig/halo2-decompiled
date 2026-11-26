@@ -1080,6 +1080,19 @@ struct s_physical_block_iterator
 // 235, named tie result in the later arm 230, and scoped equal/unequal result 284.
 // With both age bounds in the same operand order 279/227/213/280. NOT kept:
 // all shorten the body past 1213 bytes and fail to recover the shared policy join.
+// Guarded products for candidate, incumbent or both, conditional products in the same order,
+// then both from one clock read with guarded stores or zero-first conditionals: 414/219/270/274/219/305/270/305.
+// NOT kept: both incumbent-only forms retain the 0x1054 frame but grow the body. The other
+// forms change the probe. The common AL policy test and both weighted-age masks remain open.
+// M3 lane GA r11 (fast with 0x13d320/0x13d170/0x13d230/0x13d2b0/0x13d830/0x13d8b0/0x13d950, all MATCH; control 201
+// at 1214/1213 B, +0x1cc; 34 trials): clean default-arm dual MAX(x,0) variants (normal/revcmp/revmul/dword/best_first/
+// inline/prods) 209..217 (al 194..209, mk 84..87); clean symmetric 2-stage insertion (like block_delete, no at_head)
+// 215 (mk 62), with Stage-1 blocks + dual MAX 222 (mk 52); clean case-0 `if` without reset / nested `if` / if-else
+// have_best + 2-stage insert 226 each; combining block-scoped `bool older` (no one-caller helper) + dual MAX(x,0) +
+// symmetric 2-stage insertion hits mk=25 (`216`, `1197 B`), and with Stage-1 `blocks` + dropping `long next` hits
+// `mk=23` (`221`, `+0x1cc`, case 1/case 0/join and full 2-stage insertion CFG 100% retail without any helper, leaving
+// default `eax/ecx`, copy `eax/edx`, walk `ebx/edi` + `add edi, ebx`, and insert `ebx/edi`); with `at_head` 207 at
+// 1213 B (mk 38). Body restored at 201.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

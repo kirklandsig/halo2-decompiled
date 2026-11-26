@@ -1084,6 +1084,25 @@ static inline word font_character_pixel(long alpha, long color)
 // The 0xc frame agrees. The packed length/count join and literal low-word/shifted-high OR still differ.
 // Common nonliteral count with zero header, nested tests or dispatch switch, branch or selected span 188/187/188/179;
 // with zero type and payload 176/181/183/193. NOT kept: an early literal branch changes the prologue and the caller.
+// The pair count load still precedes the last pixel store. Descending bit offsets,
+// upper boundaries, post-tested offsets and pre-stepped boundaries score
+// 175/192/175/196 with shared length and 175/192/175/196 with per-arm length.
+// NOT kept: the offset loops change the pair layout. The boundary walks also
+// change the matched pixel-copy caller.
+// The packed pair count is still loaded early and the literal uses shift/add.
+// Radix-16 accumulation across the low byte with add or OR 129/129,
+// across the high byte 129/130. With per-arm lengths 114/114/114/115.
+// The pair count load still precedes the second pixel store. Fixed output base
+// with pair and fill windows 184/184/184/184; cursor distance with count-only
+// tally 220/287; count advanced at pair or all single stores 155/155.
+// NOT kept: all raise the score and change the matched pixel-copy caller.
+// GB15 (fast with 0x140960/0x122540/0x122570 MATCH; control 41 at 508/504 B, +0x24; 31 trials, body unchanged):
+// Clean control flow on score-41 base: type==3/else-if type==2 chain 191; type<=1 first 175; no length local with
+// remaining-=3/source+=3/continue 84 or -=2/+=2 88; type==2 before else 100. Literal probes on score-12 base (504 B):
+// source[1] shift-split <<8 outside + (word)source[2] 11 (504 B, movzx ecx/eax; shl; or); (word)source[2] + (dword)s1<<8
+// (either order) 12; source[1] mask-split, source[2] word mask-split / outer word cast, s1&0xff<<8, long s1<<8, word
+// ptr>>8, word value, (short)source[2] with dword/long/short s1, (word)s2|0, 2-step loop, and &0xff00 all fuse to 90
+// (496 B); 4-channel word ARGB 135; (word)/(short) over dword shift-split 102; color-then-pixel 178/192; &0xffff 82.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

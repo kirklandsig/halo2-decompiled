@@ -958,6 +958,24 @@ void function_1537f0(s_profile_record *record);
 // array element 14 (round 136's mix, base +0x5e); the link pointer declared at the loop top 18 (same code). Diagnostics: the
 // links half through a pointer and half through `entry`, four shapes, 47/47/47/46 with NONE in EBP each. Reading: without
 // the all-pointer chain the record's first forwarded word is stored once ahead of the loop and its EBP goes to NONE.
+// M3 lane 1 r169 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18). READING from a forced-ranking search:
+// with no `entry` local (the builder's view, the four links as two chained pairs in retail's store order and the tail all
+// through `g_4cf98c[index]`) the code is retail's byte for byte once the -1 constant ranks below the record's first forwarded
+// word. The allocator ranks the -1 at 102 (the four head stores add 12, the loop's preheader takes 6, the four link stores
+// add 96) against that word's 96 (its copy and the +0x4c store), so the -1 wins EBP; round 136's mix (element view,
+// `entry->` link pairs) is the same contest. Through main's link pointer the link stored at the loop base's zero offset
+// counts nothing, which drops the -1 to 78: that is why main's form does not hoist. Forms on the element-only body: as
+// described 46; the heads as two chained pairs in retail's order 46; the heads ahead of the counters 47; the links as one
+// element chain in retail's store order 46; the tail cleared ahead of the links 46. Wanted: about 6 less for the -1
+// outside the loop (two fewer head references) or one more reference of the record word inside it.
+// M3 lane 4 r262 (h2m fast with 0x7f8b0 and 0x1537f0, both MATCH each run; control 18; E = round 169's element-only
+// body, re-measured 46). Ledger on E: the -1 constant 102 = entry block 12 (four head stores, cost 1 each, three values
+// referenced there: the zero, the -1 and the entry pointer) - 6 (live through the loop's preheader, six constants
+// counted there) + 96 (four link stores, weight 2, twelve values); the record word 96 = its definition and its one use
+// (cost 2 each). It is a store-to-load forwarded copy of the zero the inlined record fill stores, so a head copied
+// the same way would cost the -1 nothing; but global-to-global copies fold first: the heads as `g_4cf980 = NONE;`
+// then the other three read from g_4cf980 46 on E and 18 on main, two pairs each read from its first 46, a chain of
+// reads 46, all four as one chained assignment 46 on E and 18 on main (same code each).
 // @retail 0x7f930
 void function_7f930(void)
 {

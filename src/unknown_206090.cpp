@@ -1042,6 +1042,16 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // with shared direction scale 1389, copied hit normal 1379. NOT kept: the point setter uses SSE for retail's integer
 // origin copy. The direction scale still publishes the origin and tests admission before the first direction store.
 // The hit-normal address gains six at retail length, below the threshold.
+// The magnitude captures still displace the escaped velocity homes.
+// Individually captured coordinates with named squares, a planar subtotal,
+// or real or double running sums 1654/1612/1654/1613.
+// The same direct-field reducers 1612/1612/1612/1623.
+// NOT kept: removing the full input capture loses the retail extent.
+// The point loop still uses different relative-vector homes in the 0x5d0
+// frame. Typed point with vector pointers, direct fields, reference, or index
+// 1346/1394/1394/1372. Typed settings alone or with typed points 1346/1346.
+// Shared point difference or with k-first cross 1379/1415.
+// NOT kept: both retail-length forms raise the score and retain the frame gap.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

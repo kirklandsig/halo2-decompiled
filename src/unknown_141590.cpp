@@ -1377,6 +1377,10 @@ void function_143250(
 // r6 product declared ahead of its r7 product, r1/r0/r3/r4 squares 1583/1582/1583/1564 (about 10722 B), all four 1632
 // (10681 B); `s35_r5_r0_r0` right after `s35_r5` or after `s35_r5_r1_r1` 930/930; `s21_r5_r7_r7` right after `s21_r5` or
 // after `s21_r5_r6_r6` 1508/1508 (10757 B). A forced-ranking search (12 of about 5000 decisions) moves nothing.
+// The root-105 component-1 square and root-35 component-2 product still
+// lack separate spill homes. Copy then multiply for either weighted pair, both, the
+// full axial or transverse family, either family plus the other pair, and
+// both full families all 939. The frame stays 0x2fc against retail's 0x300.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
