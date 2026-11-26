@@ -326,6 +326,13 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // 226; `update |= force;` with `if (!force && hidden) return;` 231. The frame packer puts the object (four spill
 // references) in the lowest slot and the force flag (three) above it; retail has them the other way round, and forcing
 // the object's first piece into EBX alone measures 22.
+// M3 lane 15 r150 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21). Allocator reading of the update-first
+// form (216 here): the update time's candidate rises from 15 to 20 (its first block then references twelve candidates
+// against eleven), so it is coloured before the 17-point candidate that takes EBX and picks ESI; on the kept order it is
+// coloured after it, sees ESI scored 2000 and takes EDI, as retail. Forms: update first with the elapsed clamp after the
+// force arm 232 (816 B); the clamp and the update-time difference both after the force arm 242; update declared ahead
+// of force 218 (the update-first code); the hidden return tested ahead of force on `initialized && valid` with update
+// started from force 224 (813 B); that with update first and `if (force) update = true;` 120 (first +0x8).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
