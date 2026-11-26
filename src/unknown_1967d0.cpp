@@ -1168,6 +1168,11 @@ static inline long team_score_195ed0(long team)
 // either counter order 276/276; counter-address-copy or address-counter-copy
 // 329/329. NOT kept: early counters cache the teams byte, and the address-first
 // form hits retail length while reading the teams byte before the copy.
+// M3 lane 12 r193 (H2M_FAST with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the score helper
+// taking a `short` team 171 (1225 B); the score sampled once into a named local ahead of the rank store, re-measured
+// 210 (1161 B); the teams flag with internal linkage 100 (same code: the copy still does not reach it); the team test's
+// bool as a `? true : false` of the masked bit 100 (same code); the score helper's failure value set in an else arm
+// 170 (1225 B). Body unchanged.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

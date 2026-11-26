@@ -58,12 +58,12 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
 // MiniMax I (11-16): no new form, no lower score (34): the abstract allocator's base vtable store retail keeps
 // (mov [eax], 0x453760) is still dropped here, and the pool's placement is still loaded and added where retail
 // reloads the block and forms the address with a lea; the store comes from the shared constructors in
 // include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY that header).
 // MiniMax H (11-14): no new form, no lower score (34): the permuter tried 80 variants of the body and none came below the kept form (30 differing instructions in both).
-// score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
 // MiniMax R (11-11): no new form, no lower score (34); the abstract allocator's base vtable store
 // (`mov [eax], 0x453760`) is still dropped, because it comes from the shared constructors in
 // include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY), and the pool placement still reloads
@@ -448,7 +448,7 @@ bool g_47f05b;
 // store retail keeps is still dropped as a dead store, and the pool's placement is still loaded and added where
 // retail reloads the block and forms the address with a lea; both follow from the shared constructors in
 // include/unknown_146a20.h, which this lane may not edit, so the body stands.
-// score 34 (was 34): unchanged this round: the abstract allocator's dead vtable store and the reload of the backing
+// A later round, unchanged at 34: the abstract allocator's dead vtable store and the reload of the backing
 // pointer on the successful arm are still missing; the shared constructor bodies they follow are in another file.
 // Another round, unchanged at 34: the abstract allocator's vtable store and the backing pointer's reload
 // on the successful arm are still missing; both come from the shared constructors in include/unknown_146a20.h,
@@ -475,9 +475,14 @@ bool g_47f05b;
 // the zero stores). The barrier in the shared (buffer, size) constructor instead: 0x146a20 MATCH but 0x146b80 21 and
 // 0x146e30 123. Not kept: it is a same-behaviour constructor twin carrying a barrier steer (twin ruling, as lane 4 r166
 // held). No real header form found that drops the barrier. No new doubles.
-// @retail 0x146a20
 // MiniMax E (11-17): no new form, no lower score (34): the 1 in EDX and retail's reload of the block on the constructed arm still never come together (the forms that keep the 1 read the block from a local, the forms that reload it read the global), and the abstract allocator's vtable store retail keeps still comes from the shared constructors in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY that header).
 // MiniMax C (11-17): no new form, no lower score (34): the abstract allocator's vtable store retail keeps is still dropped as a dead store, and the pool's placement is still loaded and added where retail reloads the block and forms the address with a lea; both follow from the shared constructors in include/unknown_146a20.h, which this lane may not edit, and the permuter's 53 variants in 310 s found nothing below the kept form. BLOCKED-BY that header.
+// M3 lane 5 r250 (fast with 0x146b80/0x22c3e0/0x146e30; header trials restored): a size-only fixed-memory constructor
+// whose buffer is the memory right after the allocator (`this + 1`), without any barrier, with the call site
+// `new (block) c_havok_fixed_memory(0x15000)` 35 (140 B: the base vtable store is still dropped); that with the fixed
+// base `__declspec(novtable)` 35; novtable on the fixed base alone 34 (same code); the size-only form placed through
+// g_479888 35, also with novtable 35. 0x146b80 and 0x22c3e0 stay matched in all. Body unchanged.
+// @retail 0x146a20
 void function_146a20(void)
 {
 	void *block = g_479888;

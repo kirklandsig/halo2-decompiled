@@ -571,6 +571,14 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // compare, the NULL store and the first extended index, where retail's zero is not a register candidate at all (the
 // compare and the store reuse the index's EBP, and the first extended index gets its own `xor eax, eax` after the
 // guard). The statement order inside the guard block does not move it (the index def first gives the same code).
+// M3 lane 3 r313 (fast; control 8, exclusive bound 11): a forced-ranking search on the exclusive bound needs two decisions,
+// the index in EBP (6) and then the zero, whose constant piece takes EAX apart from the index. The zero shares the index's
+// register only when the index's 0 is defined in an earlier, dominating block: the index initialised ahead of the flags
+// test with the seat's NULL left in the guard block 14 (the guard block is then retail's `cmp count, i; mov [seat], i`,
+// but the index's xor sits in the flags block and count and index keep EBP and ESI); the seat's NULL moved ahead of
+// `result = true` 14 (the first extended index then gets its own `xor eax, eax`, as retail); the seats base read into a
+// local in each pass 26; a while loop with the index declared first 11; the index initialised ahead of the seat pointer
+// inside the guard block 11.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
