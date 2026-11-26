@@ -503,6 +503,11 @@ void function_11bed0(s_location *location, point3f const *point);
 // query's /O2 file 160 (281 B: the link expands the helper and then 0x11bed0 at the loop site); `__forceinline` here 160;
 // the /O2-file helper on the current body 80 (same code). Our link expands callees from /O2 files and never from /Ob1 ones,
 // the reverse of retail for 0x11bed0 and 0x16bbc0. Still BLOCKED-BY 0x11bed0.
+// M3 lane 3 r315 (H2M_FAST with 0x11bed0, 0x16bc00, 0x219d90, 0x125920, all MATCH; control 80): the first sound as the
+// latch's conditional expression 80; the latch's sound set by an if 80; the call through a second name for the sound 80;
+// the pool global used directly (no pool local) 80 (same code each); the latch through the called 0x16bc00 123 (170 B).
+// The site is expanded one test level deeper than retail (the inliner's calibration, as for 0x25d740 at 0x261510): the
+// spellings above leave its enclosing tests unchanged, and the forms that add tests are implied ones. Body unchanged.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {

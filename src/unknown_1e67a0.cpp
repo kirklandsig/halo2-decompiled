@@ -1421,6 +1421,14 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // field 365 (1369 B); the rotation axis copied by value into a local 248 (1422 B); the six flag bits built in a local
 // word and stored once 397 (1326 B); `angle` declared ahead of `movement` 111 (same code); the rotation angle computed
 // ahead of the forward copy 122.
+// M3 lane 7 r234 (fast screen with 0x1e5af0 and 0x1eb640, MATCH each run; control 111 at 1393 B). Operand-rank
+// reading of the rotation: the axis' j and k loads rank above the copy's j and k (retail's sides need them between the
+// copy's j/k and its i); the rank follows the pointer the loads go through, not declarations (the movement, angle and
+// cross declarations moved: same ranks). Forms: no `component` local (the flag test reads the component's word
+// directly) 401 (1419 B); a `vector3f *velocity` pointer for the three velocity rows 151 (1382 B); the rotation's axis
+// as `&((s_physics_initial_state *)output)->up` 109 (1382 B: the axis loads rank higher still, the four products
+// unchanged; a second spelling of the state pointer, under the bar); the rotation in place on the state's forward with
+// a `previous` copy for the turn block (no final store) 222 (1389 B); initial_cross's rows in k, i, j order 115.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

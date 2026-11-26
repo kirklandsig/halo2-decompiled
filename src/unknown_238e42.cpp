@@ -1471,6 +1471,13 @@ bool __stdcall function_2399da(long controller_index)
 // request action before validity 121; authorized action before dispatch 92; early confirmation
 // predicate 130. The removal-target and rank-cap forms put rank in ECX and identity in EDX.
 // All eight forms restored; identity ECX/rank EAX and the extra removal move remain.
+// M3 lane 16 r194 (h2m fast with 0xac050, 0xac360 and 0x2399da, all MATCH; control 90). Allocator reading re-taken: the
+// rank (15) and the controller index (11) are coloured in the second pass, the identity's test-to-removal piece (6) only
+// in the third, so the rank takes EAX with no score against it. Forms: the over-rank refusal folded into the permission
+// test (`&& (rank == NONE || rank <= own_rank)`, one shared 0x5d refusal) 121 (435 B); have_member and may_change declared
+// at their assignments 90; the dispatch as a chain with no early returns and the task index preset to NONE 90; the
+// membership record declared in the block around its call 90; the selected-team record in a block around its call 90
+// (the same code each). Identity ECX / rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

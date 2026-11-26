@@ -1101,6 +1101,34 @@ void __stdcall function_25eea0(
 // declared ahead of the early return 353 (1337 B). The first difference is the weight's colour (ours XMM1, retail
 // XMM2 with the 12.0 kept in XMM0); retail's induction pointers sit at position z (leader loop) and at the score
 // (cover loop) where ours use x and the tested byte.
+// GB r25 (63 valid fast trials, 6 callees MATCH): improved 253 -> 214 (1307/1306 B, aligned 66, masked 36) by indexing
+// `positions[i]` directly in all three loops, caching `real *score = &positions[i].score;` after the cover counters,
+// and moving `point3f *point = &positions[i].position;` past the `unknown4c` guard; the cover loop's line index and
+// zero now coalesce into EBX, all three counters sit in memory zeroed by EBX, both score updates use retail's 2-insn
+// `addss`, and `if (!scored)` matches retail's `xor ebx, ebx` / `cmp ..., ebx`. What still differs: `actor` slot offset
+// (+0x28), weight/quotient XMM1/XMM2 colouring, `0x1df560` arg load order, leader loop's `add eax, 0x14` + x87 `fst`
+// keep, and cover loop's `+0x4c` anchor (vs retail `+0x54` + `lea edi, [edx+0x34]`). Tried: `0x1e4a50` do-while cover
+// shape 253 (with `T33` 252); dropping `inline_depth(0)` + calling `function_1e4a50` 383 (+ `distance3d` 366: inlines
+// `0x1e5240` too, though `distance3d` gives retail's `add eax, 0x14` and `fst dword [esp+0x38]`); `double distance`
+// 270; `delta.k*delta.k+...` 253; inner weight clamp `* 12.f` / `* weight` 319; `12.f * (...)` 253; `range`/`dist`
+// locals 334/276; `leader_index` hoisted 286; dropping `point` 334 (1306 B); `point` after guard alone 250 (1306 B,
+// frame 0x20, gives `j` in EBX and `lea edi, [edx+0x34]`); `point` + counters after guard 339; direct `positions[i]`
+// alone 252 (gives `add ecx, 0x54`); `score` ptr alone 258; `score` before counters + direct `positions[i]` + `point`
+// before guard 237 (1306 B), after guard 214 (1308 B), after counters + `point` after guard 214 (1307 B, kept);
+// `score` after guard 250 or after `j` loop 239/251; `position` kept + `score` before/after counters + `point` after
+// guard 251/252; `delta.k/j/i` order 213 (flips float sum order, not kept). Lead (not kept, extra double copy):
+// `double d = sqrt(...); real distance = (real)d;` with `inner > d && outer > distance` matches retail's x87 `fst`
+// (237 alone, 198 on kept form, 177 with `position` kept).
+// review (machine 3, 2026-11-26): the GB r25 form above (214) is held, not applied: it rests on where `score` and
+// `point` are declared against the `unknown4c` guard (statement order: kept only with a byte match). In main's order
+// (`score` in place of the `position` pointer, `point` before the guard, the fields read through `positions[i]`) a full
+// check gives 250, under the keep bar; main's form (253) stays.
+// M3 lane 15 r151 (H2M_FAST with the same callees, MATCH throughout): the leader distance converted implicitly
+// (`distance = sqrt((double)...)`) 253 (same code); the root taken on the float sum (no double) 300 (1353 B); the
+// weight loop's quotient named 253; the leader bonus summed as `bonus + score` 253 (same code); the leader bonus as
+// one conditional expression 266. Readings: the cover loop's EBX goes to the moving counter (-38) over the line index
+// (-44); a forced-ranking search lowering the counter gives only 252, so that contest is not the main cause; retail
+// keeps the unrounded root on the x87 stack for the inner compare (`fstp st(3)` ... `fst`), ours stores and reloads.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

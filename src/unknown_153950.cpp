@@ -1129,6 +1129,14 @@ struct s_flag_word_bits
 // retail's length (1659 B, aligned 165, masked 61; frame 0x8c because axis then shares sine_axis's home), the same with
 // sine and cosine named in the caller or computed in an angle-taking wrapper 247, with the shared cross3f as well 247
 // (all three the same code); that helper form plus the 16-bit curve wrapper above 190 (1663 B, masked 58; lead only).
+// AO r6 (fast with 0x1544e0, MATCH each run; control 244): the frame order does not follow names or declarations: the
+// rotation helper's sine_axis renamed three ways and squares renamed 244 each; sine_axis declared before squares, both
+// declared ahead of the sine and cosine, the caller's axis ahead of the transform, the transform declared after the
+// cross 244 each; the offset through the existing vector3f_scale 244, the position through vector3f_add_scaled 244.
+// The curve read through a dword bitfield view or as `(short)(dword & 0xffff)` 244 each (same code); the curve held in
+// an unsigned 16-bit local before each call 248 (1672 B) gives retail's `xor eax, eax; mov ax, [ebx+0x3c]` (and +0x54)
+// at both curve loads, like the 16-bit wrapper lead, without a helper (a one-use local, match-only); a long local
+// loaded from the 16-bit field 243 (1664 B; `movzx` at the start instead).
 // @retail 0x1546f0
 void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
 {

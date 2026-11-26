@@ -1059,6 +1059,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `vector3f_rotate_into_axes` 761. On GA7's 184 lead (rebuilt 184, al 148, mk 91): 3-arg in-place 184, all-3 crosses 184
 // (mk 88), `vi/vj/vk` 376 (667/667 insns), `function_x84d9e8` 449 (+ tail `dot3f` 317), tail cross-first 210, `v = *arg_0`
 // 506, `vk`-only 329, `cos`-first 275.
+// AO r6 (fast with 0x1e5450/0x30bf0/0x1697c0 MATCH; control 362): renames for the frame order (success flag sorting
+// as `unobstructed` / `clear`, hit flags `blocked`, minimum `nearest`) 362 each, byte-identical; the input copy declared
+// after the hit flags 363, the minimum after the hit flags 362, the hit flags declared first 362, the clamped distances
+// declared before the ray lengths 362.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
