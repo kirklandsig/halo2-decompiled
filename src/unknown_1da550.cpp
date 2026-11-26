@@ -275,6 +275,19 @@ void function_e3f00(long object_index);
 // magnitude3d call comes from the inline callee, so the larger speed is a plain ternary (no volatile, no copy local,
 // no reference locals). Left: the velocity copy's registers, the damage-index load order around the 0xd6660 call,
 // the flags / owner stores before 0xd7b80 and the second havok_component_get's global load.
+// M3 lane 8 r240 (fast screen with 0x1da550, 0x1da9e0, which stay matched): every difference is a scratch-register
+// rotation or a store order. A const pointer to the first rigid-body element for the velocity copy 41 (the copy then
+// retail's), a const reference to it 41, a pointer to the velocity member 45, `.data[0]` 47, the copy ahead of the
+// other definition 54, after the magnitude 57. On the element pointer: the damage index read into a `long` local ahead
+// of the event (the constructor's NONE store then follows the load, as retail) 7, with the owner-object store ahead of
+// `flags |= 0x101` (0x1da9e0's order) 5, left: the index in EAX (retail EDX) and the materials pointer in EDX (retail
+// reuses EAX). On that: a named materials pointer 23 (that block then retail's, the later call setups rotate by one),
+// with the index `long const` 23; the model lookup at each use 5; a byte local for the material 5; the index declared
+// at the rigid-body block's top 30, the ratio block's top 33, the function's top 188; a constructor taking the index 5,
+// with the named materials pointer 23. Diagnostic (not keepable): the index as an expression temporary inside the call
+// with the named materials pointer 8, everything after the 0xd6660 setup then retail's. Lead: retail reads the index as
+// an expression temporary ahead of the NONE store (EDX by rotation) and names the materials pointer; every natural way
+// to read it first makes it a named value, which takes EAX. All of these are one-use or order forms: match only.
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {

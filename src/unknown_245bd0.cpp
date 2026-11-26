@@ -351,14 +351,20 @@ bool function_2461a0(
 	return result;
 }
 
-// score 104 (was 106): every sum now associates as in retail (the compiler reorders unparenthesized
+// score 73 in a full build with stand-in SDK headers (was 104): the capsule's vector is read through the capsule
+// at each use instead of through a `v` pointer local, and the first product is dot3f.
+// Earlier (104, was 106): every sum now associates as in retail (the compiler reorders unparenthesized
 // sums of three products); what still differs is scheduling of the first block: retail multiplies
 // v.k by u.k from memory before summing a, and keeps a in XMM3 and uv in XMM0 (ours XMM4, XMM1), which
 // swaps registers to the end. Tried: any subset of the four parenthesized sums (151-214), w computed
 // k, j, i by hand (211), a or uu parenthesized (180, 206), uv unparenthesized in any order (214),
 // uv as += statements (182), a/uv/uu statement orders (104-217), den = a * uu (104).
-// score 73 in a full build with stand-in SDK headers (was 104): the capsule's vector is read through the capsule
-// at each use instead of through a `v` pointer local, and the first product is dot3f.
+// Round 248: the allocator ranks vw (197) above uv (185) and b (160) above a (153), so vw takes XMM0 and b XMM3
+// first; a forced-ranking search that lifts a to 161 alone gives 38 (a in XMM3; uv/vw still swapped and the
+// vw i row's operands reversed). By the priority sums, one fewer candidate in the w/uw/vw/b/c block would flip
+// both pairs (vw -16, b -12, a -4, uv -2; not reached by any form). Tried: the direction parameter at each use
+// instead of `u` (205), c from length_sq3f(&w) (205), uw and vw from dot3f (211), vw alone from dot3f (206), uw
+// alone from dot3f (206), disc as `b * b - den * c` (73).
 // @retail 0x246360
 bool function_246360(
 	vector3f const *direction,

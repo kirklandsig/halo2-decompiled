@@ -757,6 +757,10 @@
 // vector3f 531; plain cross3f base + inv*0.5f/cam/d-in-place 534); staged-into-w + add_scaled/scale + d in place /
 // vector3f_scale(&d) 639/639; s1 before staged cross + named doubles + d in place 597 (2625 B); diagnostic scalar ck/cj/ci
 // without union 693 (frame 0x50, 2555 B), proving c.j/c.k's 4-byte cells require separate s0/s1 homes.
+// M3 lane 1 r171 (fast screen with 0x4a1e0 at 322 and 0x42c50/0x42b20/0x43720/0x43740 MATCH; control 536 at 2622 B, frame
+// 0x54): the special arm's first cross renamed and declared at function scope, so it cannot share the input copy's home,
+// 536; renamed only 536; the two input copies renamed 536; the two perspective crosses renamed 536; `inv` declared after
+// the shape pointers 536 (each the same code: names and these scopes do not move the 12 missing frame bytes). Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -870,6 +870,13 @@ s_1a8a10 g_4453c0[] =
 // both sums with `(real)(...)` around each product, main's term orders 17 and retail's (`i * y` first, `j * y` first) 17;
 // `(real)(0.0f - j)` around the negation alone, main's term orders 17 and retail's 17 (all five the same code: the casts
 // are no-ops under SSE and do not make the negation a separate leaf, and j is still read once).
+// M3 lane 11 r170 (h2m fast with 0x1a8c30, MATCH; control 17): the rotated y carried in a scalar through the switch
+// and stored to the point after the facing copy, with the final switch reading the point through a `point2f const *`
+// 24 (the point's y store is forwarded into the scalar's 0x50 home, j still folded); the rotated x carried the same way
+// and stored after the copy 24; the copy's j assigned between the sums with the rotated y carried in a scalar and
+// stored after the copy's i 22 (j then loads twice, the folded reload first, but the copy's j load stays after the left
+// sum where retail loads it right after i); the negated j read through a `real const &` bound to the facing's j ahead
+// of the outer test 17 (same code); the negated j through a fresh in-place actor lookup 157 (548 B, the frame grows).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

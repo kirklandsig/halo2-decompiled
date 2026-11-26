@@ -1279,6 +1279,14 @@ struct s_record_collision_view
 // `point3f const &` 42, on M (the marker store and the entry pointer between the endpoint and the lift, entry first)
 // 38; M with the entry first re-measured 22 (only the entry lea and the marker store swap outside the rotation). Kept:
 // the collision record's +0x24 short as a typed field (same code, 26; on M 22).
+// M3 lane 13 r160 (fast with 0x26d100, MATCH each run; control 26; M re-measured 20). Reading from the compiler's
+// commutative-operand ranking: the dot's three products sort by the axis load's rank plus twice the direction
+// component's; the axis j and k loads rank by address temporaries that the offset block's axis reads share with the
+// rotation, numbered by the offset's y/z statement order (z ahead of y gives the axis j load the higher rank and
+// retail's (j + i) + k, as the listed x, z, y forms show; the args of real_point3d_set do not move it). Tried: the 0.1
+// offset through the existing vector3f_add_scaled 71 (1085 B: the axis j load turns into a memory operand), that with
+// the 0.5 lift as three `+=` statements 77, on M 65; the trace endpoint through vector3f_add_scaled 45, on M 39. All
+// restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
