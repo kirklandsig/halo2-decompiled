@@ -799,6 +799,27 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // above the weights test, the crossing pairs tail-merge (the point address is formed early), the tail copies the
 // point through integer registers (retail loads it as a real ahead of the stores), and two 4-byte slots (the loop
 // index and the radius) are swapped.
+// M3 lane GA r24 (47 fast trials across 4 batches with 0x25a10, 0x22bbca, 0x17d9a0 all MATCH and 0x28580 unchanged at 151;
+// baseline 530 at 2702/2782 B, al=172, mk=92 -> kept 459 at 2763/2782 B, 654/656 insns, al=123, mk=52):
+// Kept (-71 pts, +61 B toward retail): 4-caller inline vector4f_set for both weights arms and both coordinates rows
+// (fixes right-to-left argument evaluation, keeps the fraction clamp inside each weights arm, loads point coordinates
+// as reals ahead of the stores, and puts i/radius/cosine/fraction in retail's exact stack slots; 492 alone, weights
+// only 497, coords only 522) plus typing point2f points[4] at s_28580_view+0x48 (drops the points local and the spurious
+// lea ecx in the tail, making the final 135 instructions 99.3% exact) and filter_random_pair(state, index) (eliminates
+// crossing tail-merging without a macro or extra local). Also tried (not kept): `*angle -= (real)-(atan2(heading.j,
+// heading.i) * *(real *)(definition + 4));` with cos(*angle)/sin(*angle) 491 (al=117, mk=46: makes the entire angle/cos/sin
+// block byte-exact via fsubr [ebp+0x3c], but shifts positional rows by -3 because far-near is still CSE'd; ready to combine
+// once far-near is solved); FILTER_RANDOM_PAIR macro + wrap local 454 (al=119, mk=48; 489 without wrap, 530 on baseline);
+// max_real helper 559; span if/else 530; MAX lt/gt macros 491; step / 4.0f 491; direct g_4857e0/g_4857dc 457 (491 with angle
+// subeq); if (far > near) block 459; inverse_span before step 460; bitmap real value 547/568, inline cast 505/491, assign
+// expr 491 (mk=41); relative point3f local 491 (al=105, mk=41), transform helper 531; one_minus_t local 492; two seed locals
+// 491; angle fsubr via double local 545 / assign+cos 508. Left: far-near computed 3x (ours CSEs to 1x), angle fsubr (lead
+// above), bitmap fst dword before fst qword, crossing branch-2 mov ecx, edx and late lea, relative transform xmm reg order,
+// and one mulss xmm0, xmm0 vs xmm0, xmm1 in weights[0].
+// review (machine 3, 2026-11-26): the GA r24 form above (459) is held, not applied: its gain rests on a new
+// vector4f_set used only by this function (a new one-caller helper, chosen for its argument evaluation order) and on
+// filter_random_pair taking (state, index) in place of the point (a helper parameter shape picked by score); both are
+// kept only with a byte match. main's form (530) stays.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
