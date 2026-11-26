@@ -1215,6 +1215,16 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // form gives retail's inlined block but leaves the result in memory and the bitmap in ESI; retail colours the bitmap
 // EBP from entry, the result ESI (with its slot) and a zero in EBX after the load call. A forced-ranking search moves
 // no single decision near: the bitmap's second-pass priority raised to the top 185, the zero or block picks 215-227.
+// GB r25 (34 fast trials, 7 peers MATCH): priority `if (restricted) priority = 2; else if ...` with no final `else`
+// 190 (646 B, reproduces retail's `je next; jmp end`); empty `if (restricted) {}` 193; switch setting `failed = true;`
+// to the single exit 191 (663 B, reproduces retail's dead result-home store in all three arms); both 191 (with
+// candidate outside `if` 191, with no early return after shared texture 190, with getter order 220); `for (long i = 0;
+// i < 3; i++)` calling existing `function_12c990(..., false, false, false, 0, ...)` (inlines without unrolling,
+// explaining retail's `&entry->resource != NULL` check) 193 (identical 645 B code; + priority & `failed` 191; + getter
+// order 220; with `NULL, NULL`, reused `level`, `view` kept, `restricted, priority`, `waited` at top, `failed` before
+// `restricted`, or renamed `bitmap_texture`/`a_texture`/`m_restricted`/`z_wait` all 191/193/220); `level` `if` 214/191;
+// `do-while` calling `12c990` 191; `(dword)block_index & 0xffff` 193; pointer-range loop 223/214; `restricted` before
+// `result` 202/200; bit-shift flags with direct `bitmap` 193. Body unchanged.
 // M3 lane 15 r151 (H2M_FAST with 0x12c960 and 0x12ccf0, MATCH throughout): the block index read at each use in the
 // block loop (no local) 193 (same code: the reads merge); the block's time store through a file-local inline taking
 // the index 193 (same code); the result declared first 194; the parameter copy declared after the result 193; the
