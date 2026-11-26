@@ -1762,14 +1762,9 @@ void function_22c390(c_havok_abstract_allocator *memory, s_fixed_memory_statisti
 void function_22cb00(c_havok_abstract_allocator *memory, s_physics_pool_statistics *statistics);
 long function_1d3880(s_havok_component const *component, long *constraints, long *bodies, long *contacts, long *other);
 
-// score 6: only the argument-setup order at four havok_printf calls differs;
-// retail issues the fild before the integer push, ours after. Permuter: 299
-// tries in 600 s, no lower form.
-// M3 lane 4 r263 (h2m fast with 0x1d3880, 0x2797a0, 0x22c390 and 0x22cb00, all MATCH each run; control 6: the runtime
-// pool line and the two component lines, retail loading the first real argument before pushing the integer beside it):
-// the maxima tests written `count > maximum` 14; the totals and maxima declared in total/maximum pairs 12; the output
-// counts declared contacts, bodies, constraints, other 6 (same code); the final sum in a named total 6 (same code); each
-// total's maximum test right after its sum 211 (1167 B). A forced search over 10 scheduler decisions finds nothing below 6.
+#define BYTES_TO_KB(bytes) ((real)(bytes) / 1024.0f)
+
+/* dumps Havok simulation, pool and component memory statistics */
 // @retail 0x1c4590 standard
 void __stdcall function_1c4590(long flags)
 {
@@ -1815,11 +1810,11 @@ void __stdcall function_1c4590(long flags)
     fixed_memory_get_statistics_16(g_47989c, &memory.scratch);
     function_22cb00(g_479898, &memory.pool);
     function_22c390(g_479894, &memory.startup);
-    havok_printf("Havok Memory (total %.2f KB, debug %.2f KB, percent used %.3f)", 1045.109375, (memory.pool.metadata_size + memory.scratch.unknown0c + memory.startup.unknown0c) * (1.0f / 1024.0f), memory.pool.used_fraction * 100.0f);
-    havok_printf("Startup pool: mem(%.2f KB/%.2f KB), allocs(%d)", memory.startup.allocated_size * (1.0f / 1024.0f), memory.startup.header_size * (1.0f / 1024.0f), memory.startup.allocation_count);
-    havok_printf("Overflow pool: mem(%.2f KB/%.2f KB), allocs(%d))", memory.scratch.allocated_size * (1.0f / 1024.0f), memory.scratch.header_size * (1.0f / 1024.0f), memory.scratch.allocation_count);
-    havok_printf("2nd Overflow pool: mem(%.2f KB/%.2f KB), allocs(%d))", memory.physical.allocated_size * (1.0f / 1024.0f), memory.physical.header_size * (1.0f / 1024.0f), memory.physical.allocation_count);
-    havok_printf("Runtime Pool(%.2f KB): usage==pages(%d/%d)*size(%.2f KB)+last(%.2f KB)", (memory.pool.allocated - memory.pool.metadata_size) * (1.0f / 1024.0f), memory.pool.used_pages, memory.pool.pages, memory.pool.page_size * (1.0f / 1024.0f), (memory.pool.page_size - memory.pool.free_size) * (1.0f / 1024.0f));
+    havok_printf("Havok Memory (total %.2f KB, debug %.2f KB, percent used %.3f)", 1045.109375, BYTES_TO_KB(memory.pool.metadata_size + memory.scratch.unknown0c + memory.startup.unknown0c), memory.pool.used_fraction * 100.0f);
+    havok_printf("Startup pool: mem(%.2f KB/%.2f KB), allocs(%d)", BYTES_TO_KB(memory.startup.allocated_size), BYTES_TO_KB(memory.startup.header_size), memory.startup.allocation_count);
+    havok_printf("Overflow pool: mem(%.2f KB/%.2f KB), allocs(%d))", BYTES_TO_KB(memory.scratch.allocated_size), BYTES_TO_KB(memory.scratch.header_size), memory.scratch.allocation_count);
+    havok_printf("2nd Overflow pool: mem(%.2f KB/%.2f KB), allocs(%d))", BYTES_TO_KB(memory.physical.allocated_size), BYTES_TO_KB(memory.physical.header_size), memory.physical.allocation_count);
+    havok_printf("Runtime Pool(%.2f KB): usage==pages(%d/%d)*size(%.2f KB)+last(%.2f KB)", BYTES_TO_KB(memory.pool.allocated - memory.pool.metadata_size), memory.pool.used_pages, memory.pool.pages, BYTES_TO_KB(memory.pool.page_size), BYTES_TO_KB(memory.pool.page_size - memory.pool.free_size));
     for (long i = 0; i < memory.pool.entry_count; ++i)
     {
         s_physics_pool_statistics::s_entry *entry = &memory.pool.entries[i];
@@ -1848,7 +1843,9 @@ void __stdcall function_1c4590(long flags)
         if (constraints_maximum <= constraints) constraints_maximum = constraints;
     }
     havok_printf("Havok Component Meta Information Resource Stats");
-    havok_printf("HEAP meta contact point memory %.2f KB (max %d), meta rigid body memory %.2f KB (max %d)", contacts_total * (1.0f / 1024.0f), contacts_maximum, bodies_total * (1.0f / 1024.0f), bodies_maximum);
-    havok_printf("HEAP meta phantom memory %.2f KB (max %d), meta constaint memory %.2f KB (max %d)", other_total * (1.0f / 1024.0f), other_maximum, constraints_total * (1.0f / 1024.0f), constraints_maximum);
-    havok_printf("TOAL HEAP meta memory %.2f KB", (contacts_total + bodies_total + constraints_total + other_total) * (1.0f / 1024.0f));
+    havok_printf("HEAP meta contact point memory %.2f KB (max %d), meta rigid body memory %.2f KB (max %d)", BYTES_TO_KB(contacts_total), contacts_maximum, BYTES_TO_KB(bodies_total), bodies_maximum);
+    havok_printf("HEAP meta phantom memory %.2f KB (max %d), meta constaint memory %.2f KB (max %d)", BYTES_TO_KB(other_total), other_maximum, BYTES_TO_KB(constraints_total), constraints_maximum);
+    havok_printf("TOAL HEAP meta memory %.2f KB", BYTES_TO_KB(contacts_total + bodies_total + constraints_total + other_total));
 }
+
+#undef BYTES_TO_KB
