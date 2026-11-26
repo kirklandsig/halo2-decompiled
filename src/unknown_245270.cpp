@@ -1128,6 +1128,10 @@ void function_245400(s_source_245400 const *source, long index,
 // material test, 164 (790 B; 0x245aa0 6); the second plane pointer and the second side declared first 162 (one point,
 // not kept); the plane-index test as `((local_2 ^ local_3) & 0x7fff) != 0` 221 (767 B; 0x245aa0 6); the matrix scale
 // read once into a local for the test and the scale 163 (same code). Body unchanged.
+// M3 lane 15 r148 (h2m fast with 0x245aa0, 0x245400, 0x244de0, 0x245270, all MATCH; control 163). On lane 5 r213's saved
+// lead (re-measured 50 at 789 B, aligned 40): 0-7 unused initialised longs at the top 50/50/52/52/52/48/48/48 (no phase
+// break); the plane test as `(local_2 ^ local_3) & 0x7fff` 190 (783 B); the first side bit as `(bool)((dword)code >> 15)`
+// 173, the second 167. On this body: both side bits as `((dword)code >> 15) & 1` 226 (760 B). Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

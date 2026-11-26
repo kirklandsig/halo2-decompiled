@@ -3704,6 +3704,16 @@ struct s_ammo_conversion_entry
 // offer 190 each. Existing reserve query with loaded first or unloaded first 190/190, with a
 // separate capacity 192. NOT kept: the immutable-capacity handoff grows to frame 0x24, the
 // separate offers raise the score, and the rest tie. The destination and conversion-search homes differ.
+// M3 lane 13 r159 (H2M_FAST; round 157's 51 lead rebuilt, 51). Reading on the lead: the magazine offset `i * 16` ranks
+// 166 (128 of it from the loop head, where eight candidates are referenced) against `source` 156 (96 lost across the
+// conversion scan); one candidate fewer in the loop head, or one more in the debit block (where `source` has six
+// references), would put `source` first. Forms on the lead: `if (source != NULL)` 51, the loaded clamp as a ternary 51,
+// the unloaded clamp as an if 51, the total's operands swapped 51, the definition compare written other-first 52,
+// `transfer` declared ahead of `source` 51, `available >= 1` 57, the magazine definition pointer first 208 (713 B), the
+// conversion compare written other-first 51. With the offset forced into EDX (a forced-ranking search, 14 left: the tail's
+// scratch rotation from the 0xa88a0 setup on, one register late): the sound as an if/else, the last lookup's index not
+// named, `!(other_has_rounds || retained)`, the sound call braced 14 each; `retained` as main's if 102; the last lookup
+// through `other` 232.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4185,6 +4195,14 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Pre-heat loaded snapshot short/long 593/621; separate pre- and post-heat snapshots short/long 593/621;
 // post-heat short for the minimum and debit 593; one short refreshed across both samples 593; debit
 // through the post-heat short 593, with its clamp also 593 at 2521 bytes. The 0x1c64 probe and magazine spill remain.
+// M3 lane 13 r159: GA round 9's held lead rebuilt from its recorded edits, plain check 2 (2533 B, +0x5cd); the reduced
+// image reproduces it only with the file's callees listed beside it (alone it reads 539 at 2552 B). Reading (operand
+// ranks): after the 0x105fa0 call the re-lookup's scaled index (an entry temporary) outranks the pool data load, and the
+// barrel offset temporary outranks the `updated` pointer, so both addresses come out index-first. On the lead: no
+// `updated` local (two lookups) 2, no `updated` or definition local 2, a barrel pointer formed from `updated` 2, the
+// definition read twice through `updated` 2, `updated` const 2, the weapon definition named before the barrel's 2;
+// diagnostics (reverted at once) with 1-8 dead initialised locals at the top 2 each (neither address flips). Main's
+// body restored.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4763,6 +4781,10 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Magazine/trigger, magazine/barrel, trigger/barrel and all three 1412 each.
 // Magazine while loop with the count refreshed after advancing the ordinal 1412.
 // NOT kept: the latch reads remain, but the 0x34 frame, EBX/EDI and the dual spill persist.
+// M3 lane 13 r159 (H2M_FAST with the file's callees listed, which reproduces the plain 1412): the owner unit index passed
+// straight to 0xd1490 (no local) 1412; the player default declared after the flag-27 select 1437; the owner's player
+// index tested and copied in one `&&` test 1412; the flag-27 select as an if/else 1412; the unit index declared ahead
+// of `dual` and assigned after it 1412 (the 1412s the same code).
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
