@@ -1655,6 +1655,18 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // through magnitude3d 487; the general arm's output through vector3f_add(current, &limited, out) 542; the direct arm's
 // output as three statements (i, j, then k, retail's store order) 545; those two together 471 (masked-aligned 127, the
 // closest structure, but every row after the direct arm shifts). Body unchanged.
+// M3 lane GA r24 (30 fast trials across 2 batches with 0x1f0450, 0x24590, 0x30bf0, 0xa75d0, 0x1f03e0 all MATCH unless noted;
+// control 198 at 3047/3047 B, 626/626 insns, al=142, mk=95; body unchanged): renaming delta/limited in Arm 2 (raw_delta/
+// clamped_delta), Arm 3 (applied/unclamped), or both, or declaring limited before delta in Arm 3 / both, all 198 (same code:
+// multi-word struct homes do not follow alphabetical name order here); commuting rotated.y and high-normal desired.j 198;
+// magnitude as (j2+i2)+k2 or k2+(j2+i2) 198; low-normal side computed j, i, k 200 (al=141); flying 3rd cross / all flying
+// crosses / low-normal cross via function_1f087b 370/477 (al=134, mk=92)/383; 3-statement output stores in Arms 2 and 3
+// 311 (3052 B, 626/626 insns, al=127, mk=79: Arm 2 output store order and Arm 3 i/j stores exact, Arm 3 k commutes to
+// addss xmm2,[eax+8] preventing Arm 1 tail-merge; commuted limited+current 311, vel ptr 323, Arm 2 k-first 389, Arm 2 len
+// local 552, Arm 2 step before delta 563 at 3047 B matching rotated lines 84-96, Arm 2/3 field copy 574/508, Arm 2
+// point2f_set 647 breaking 0x1f0450, Arm 3 vector3f_add either arg order 471 at 3047 B, Arm 2 only 3 stores 545); Arm 3
+// only 3 stores 562 (3037 B: reproduces Arm 1 + Arm 3 exact movss [edi+0x14],xmm0 tail-merge verbatim, but Arm 2 also
+// tail-merges; with Arm 2 real_point3d_set 562, with Arm 2 limited+=current 564).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
