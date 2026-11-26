@@ -542,32 +542,47 @@ struct spin_projection_output_31c940 {
 __forceinline spin_projection_output_31c940(spin_projection_output_31c940 const &v):address(v.address),linear_home(v.linear_home),linear_input(v.linear_input){}
  __forceinline void store(__m128 const &v) const {*linear_home=linear_input;_mm_store_ss(address,v);}
 };
-// Reuse four consumed vectors across both linear rows and the spin projection.
-// Publish the linear receiver after first-row inputs and before its scalar.
+// The first reduction keeps its own consumed projection values. Capture B's
+// angular receiver after those inputs and before publishing its linear receiver.
 // Later projections retain their separate body reads and scalar publications.
+static __forceinline __m128 project_spin_axis_view_31c940(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 const &linear_b,__m128 const &angular_b, __m128 const &axis_linear)
+{
+ struct projection_view {
+  __m128 work;
+  __m128 const &linear_axis;
+  __forceinline projection_view(__m128 const &w, __m128 const &axis)
+   :work(w),linear_axis(axis){}
+ };
+ projection_view projection(linear_b,axis_linear);
+ __m128 work_1=angular_b;
+ __m128 work_2=a->linear;
+ __m128 work_3=row->a;
+
+ work_2=_mm_sub_ps(work_2,projection.work);
+ projection.work=a->angular;
+ projection.work=_mm_mul_ps(projection.work,work_3);
+ work_3=row->b;
+ work_3=_mm_mul_ps(work_1,work_3);
+ work_2=_mm_mul_ps(work_2,projection.linear_axis);
+ work_1=_mm_add_ps(projection.work,work_3);
+ work_3=_mm_add_ps(work_1,work_2);
+ __m128 xy=_mm_add_ss(_mm_shuffle_ps(work_3,work_3,0x55),work_3);
+ return _mm_add_ss(_mm_shuffle_ps(work_3,work_3,0xaa),xy);
+}
 static __forceinline void project_spin_contact_rows_31c940(solver_linear_row_31e7b0 const *rows,
 	solver_velocity_31c940 *a,solver_velocity_31c940 *body_b,
-	__m128 *const &linear_home,__m128 const &angular_b,
-	spin_projection_output_31c940 output,solver_scalar_arena_31c940 &pool){
+	__m128 *const &linear_home,__m128 *&angular_home,
+	spin_projection_output_31c940 output,solver_scalar_arena_31c940 &pool)
+{
+ {
+  __m128 projected=project_spin_axis_view_31c940(rows,a,body_b->linear,
+   body_b->angular,rows[0].linear);
+  angular_home=&body_b->angular;
+  output.store(projected);
+ }
+ {
  __m128 w[4];
- w[0]=body_b->linear;
- w[1]=a->linear;
- w[2]=rows[0].a;
- w[3]=body_b->angular;
- w[1]=_mm_sub_ps(w[1],w[0]);
- w[0]=a->angular;
- w[0]=_mm_mul_ps(w[0],w[2]);
- w[2]=rows[0].linear;
- w[1]=_mm_mul_ps(w[1],w[2]);
- w[2]=rows[0].b;
- w[3]=_mm_mul_ps(w[3],w[2]);
- w[0]=_mm_add_ps(w[0],w[3]);
- w[0]=_mm_add_ps(w[0],w[1]);
- w[1]=_mm_shuffle_ps(w[0],w[0],0x55);
- w[1]=_mm_add_ss(w[1],w[0]);
- w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
- w[2]=_mm_add_ss(w[2],w[1]);
- output.store(w[2]);
  w[0]=*linear_home;
  w[1]=a->linear;
  w[2]=rows[1].a;
@@ -575,7 +590,7 @@ static __forceinline void project_spin_contact_rows_31c940(solver_linear_row_31e
  w[1]=_mm_sub_ps(w[1],w[0]);
  w[0]=a->angular;
  w[0]=_mm_mul_ps(w[0],w[2]);
- w[2]=angular_b;
+ w[2]=(*angular_home);
  w[2]=_mm_mul_ps(w[2],w[3]);
  w[3]=rows[1].linear;
  w[1]=_mm_mul_ps(w[1],w[3]);
@@ -586,10 +601,13 @@ static __forceinline void project_spin_contact_rows_31c940(solver_linear_row_31e
  w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
  w[2]=_mm_add_ss(w[2],w[1]);
  _mm_store_ss(&pool.spin_second,w[2]);
+ }
+ {
+ __m128 w[3];
  solver_angular_row_31e7b0 const *spin=(solver_angular_row_31e7b0 const *)(rows+2);
  w[1]=spin->a;
  w[0]=a->angular;
- w[2]=angular_b;
+ w[2]=(*angular_home);
  w[0]=_mm_mul_ps(w[0],w[1]);
  w[1]=spin->b;
  w[2]=_mm_mul_ps(w[2],w[1]);
@@ -599,6 +617,7 @@ static __forceinline void project_spin_contact_rows_31c940(solver_linear_row_31e
  w[2]=_mm_shuffle_ps(w[0],w[0],0xaa);
  w[2]=_mm_add_ss(w[2],w[1]);
  _mm_store_ss(&pool.spin_angular,w[2]);
+ }
 }
 static __forceinline __m128 const *apply_spin_first_fields(double impulse,
  solver_linear_row_31e7b0 const *row,solver_velocity_31c940 *a,
@@ -2049,11 +2068,11 @@ result+=2;
 					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
 					__m128 * &linear_b_pointer = scalar_work.linear_b;
 
-					__m128 *angular_b_pointer = &body_b.body->angular;
+					__m128 *angular_b_pointer;
 					float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
 
 					spin_projection_output_31c940 projection_output(projection_pool.spin_first,linear_b_pointer,&body_b.body->linear);
-					project_spin_contact_rows_31c940((solver_linear_row_31e7b0 const *)terms,a,body_b.body,linear_b_pointer,*angular_b_pointer,projection_output,projection_pool);
+					project_spin_contact_rows_31c940((solver_linear_row_31e7b0 const *)terms,a,body_b.body,linear_b_pointer,angular_b_pointer,projection_output,projection_pool);
 scalar_work.first_error = (spin_target * load_friction_scale(step) - projection_pool.spin_angular * load_velocity_scale(step)) * spin_mass;
 					// Observe each target before multiplying by the current step scale.
 					float captured_target_a = (float const &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
