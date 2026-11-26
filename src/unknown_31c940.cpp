@@ -813,25 +813,31 @@ static __forceinline void apply_second_pair_second_impulse(float const &source,_
  __m128 *linear_b_pointer,__m128 *const &angular_b_home,__m128 const *const &inverse_b_home,
  float *result,float &simd_copy)
 {
- __m128 inertia_a=a->inverse_inertia;
+ // Each body keeps its angular weight while its linear change is applied.
+ struct
+ {
+  __m128 angular;
+  __m128 linear;
+ } delta_a, delta_b;
+ delta_a.angular=a->inverse_inertia;
  float impulse=load_stored_impulse(source);
  _mm_store_ss(&simd_copy,second_scalar);
- __m128 inertia_b=*inverse_b_home;
+ delta_b.angular=*inverse_b_home;
  __m128 scalar=_mm_load_ss(&simd_copy);
- __m128 change_a=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),inertia_a);
- __m128 change_b=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),inertia_b);
+ delta_a.angular=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),delta_a.angular);
+ delta_b.angular=_mm_mul_ps(_mm_shuffle_ps(scalar,scalar,0),delta_b.angular);
  // Retain this published row across both linear writes.
  row_cursor=(__m128 *)row_home;
  __m128 axis=*row_cursor++;
- __m128 linear_a=_mm_mul_ps(_mm_shuffle_ps(change_a,change_a,0xff),axis);
- __m128 linear_b=_mm_mul_ps(_mm_shuffle_ps(change_b,change_b,0xff),axis);
- a->linear=_mm_add_ps(a->linear,linear_a);
- *linear_b_pointer=_mm_sub_ps(*linear_b_pointer,linear_b);
- __m128 angular_a=_mm_mul_ps(change_a,*row_cursor++);
- __m128 angular_b=_mm_mul_ps(change_b,*row_cursor);
+ delta_a.linear=_mm_mul_ps(_mm_shuffle_ps(delta_a.angular,delta_a.angular,0xff),axis);
+ delta_b.linear=_mm_mul_ps(_mm_shuffle_ps(delta_b.angular,delta_b.angular,0xff),axis);
+ a->linear=_mm_add_ps(a->linear,delta_a.linear);
+ *linear_b_pointer=_mm_sub_ps(*linear_b_pointer,delta_b.linear);
+ delta_a.angular=_mm_mul_ps(delta_a.angular,*row_cursor++);
+ delta_b.angular=_mm_mul_ps(delta_b.angular,*row_cursor);
  __m128 *angular_b_pointer=angular_b_home;
- a->angular=_mm_add_ps(a->angular,angular_a);
- *angular_b_pointer=_mm_add_ps(*angular_b_pointer,angular_b);
+ a->angular=_mm_add_ps(a->angular,delta_a.angular);
+ *angular_b_pointer=_mm_add_ps(*angular_b_pointer,delta_b.angular);
  *result+=impulse;
 }
 
