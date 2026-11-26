@@ -991,7 +991,7 @@ void function_103f60(long weapon_index, short barrel_index)
 }
 
 // @retail 0x105dd0
-void __stdcall function_105dd0(long object_index, long unused, s_weapon_sound_event *event)
+void __stdcall function_105dd0(long object_index, real frame, s_weapon_sound_event *event)
 {
 	if (event->type == 1 && event->sound_index != NONE)
 	{
@@ -2095,6 +2095,12 @@ static inline bool unit_dual_wielding(long unit_index)
 // main's body, the `volatile` compare's tail: the compare's sides swapped 17; the slot ternary negated (`slot == NONE
 // ? NONE : ...`) 17; the holder's unit index named for the unit lookup 17 (all the same code); the slot read at both
 // uses with no local 26; the slot as `long` 47 (527 B).
+// M3 lane 6 r246 (h2m fast with 0xc9d00, 0xfff40 and 0x1058b0, MATCH each time; control 17), on main's body: the
+// definition read through its own weapon lookup 17; `bool result = false;` declared first 17 (both the same code); the
+// replaceable test reading the state through a fresh lookup 206 (581 B); the volatile compare's slot selection named
+// as a `long` with the slot field read at each use 26; the barrel loop on its own `short` counter passed straight 110
+// (535 B). BLOCKED-BY 0x101f20 and 0xcd660 (retail expands both inside its copy of 0x1058b0 here; their files are
+// built /Ob1, so the call form keeps them as calls).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

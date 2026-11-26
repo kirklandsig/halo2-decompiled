@@ -5997,6 +5997,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // (!from_actor)` the default) 168 (812 B), with the velocity local 159; on the both-in-place form the rate block's
 // scaled limits as their own locals 170. Re-measured: a/b in place 168, c/d in place 61.
 // @retail 0xd0080
+// M3 lane GA r15 (35 fast trials with 0xc49b0, 0x1e3370, 0x1ecf50 all MATCH; control 58; plain verified 37, all file peers MATCH):
+// Not kept at review, 58 -> 37 (810/810 B, first diff +0x59 -> +0x1cf): shared 2-caller clamp_turn_bounds(real const *value, limit, scale, *high, *low)
+// computing above = limit - *value and below = *value + limit then scaling in each clamp test; matches lines 1-118 byte for byte
+// (xmm4/xmm5 clamps, shared xmm3 for pi/4 and 4.244, xmm6 for 2*pi, both clamp blocks and both random branches exact).
+// Also tried (not kept): clamp_turn_bounds with real value by value 57 (subss xmm0, xmm1); with scale = 1/(0.3*limit) 37; with below first 173;
+// with pre-scaled products 173; without above/below locals 81; with real const &value 37; with two-use turn_rate = unit->unknown2dc + turn 28
+// (and turn_rate = turn; turn_rate += unit->unknown2dc 25, matching rotate_direction lines 144-188: gains only inside unchanged rotate_direction);
+// include/axis_rotation.h function_x84d9e8 alone 100, with both clamp sums in place 70 (+0x1cf, lines 1-118 exact, tail 56 diffs from vector_k),
+// with c/d or a/b in place 97/84, with clamp_turn_bounds 100-130, with function_x82e52f 100, with swapped high/low 100.
+// Review: clamp_turn_bounds is a new helper used only by this function (two sites), match-only; body restored at 58.
 void function_d0080(long unit_index, vector3f *direction)
 {
 	s_unit *unit = UNIT_GET(unit_index);
