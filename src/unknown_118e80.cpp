@@ -1335,6 +1335,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // code). Reading: a forced-ranking search keeps two semantic rows in every forced decision (the force's byte spill and
 // its dword push), so register choice alone cannot reach retail while 0x1c4b00's formal is `long`. Still BLOCKED-BY
 // 0x1c4b00.
+// M3 lane 8 r239 (h2m fast with 0x119bc0, 0x1c4b00, 0x119020, 0x119c10 and 0x118e80, all MATCH each run; control 14):
+// the force bool declared bare at function scope and assigned at the call 14; the re-fetched object pointer declared bare
+// at function scope 14; the re-fetched pointer declared bare ahead of the 0x119bc0 call and assigned after the member
+// store 14 (the three the same code); the move output declared at function scope 19 (first +0x225, its homes move);
+// the +0x88 copy member by member through a pointer to the object's vector 40 (1046 B). Still BLOCKED-BY 0x1c4b00 (its
+// bool formal: one declaration sits in src/items.cpp, another lane's file this round, and contributor 0xe24f0 rises)
+// and 0x1ec690 (a stub; its disabled draft costs two matches) for the copy's hoisted loads.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
