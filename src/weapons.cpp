@@ -2091,6 +2091,10 @@ static inline bool unit_dual_wielding(long unit_index)
 // (unused expressions are dropped before the numbering). So retail evaluates two (or three) more live expression nodes
 // ahead of the first lookup's data load; the put-away lookup's data is a load seen once (the pool global is read again
 // after the animation call) and stays D in every form here.
+// M3 lane 3 r310 (fast screen with 0xc9d00, 0x1058b0, 0xfff40, 0x103e60 and 0xb7360, MATCH each time; control 17). On
+// main's body, the `volatile` compare's tail: the compare's sides swapped 17; the slot ternary negated (`slot == NONE
+// ? NONE : ...`) 17; the holder's unit index named for the unit lookup 17 (all the same code); the slot read at both
+// uses with no local 26; the slot as `long` 47 (527 B).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

@@ -1357,6 +1357,16 @@ void function_41040(short index, long part_index, long group, byte weight,
 // tricks (none), statement-order permutations of result/out/key/index (305-360), key as long (341), group as switch or
 // if-chain (switch gives sub/dec instead of test/cmp; the nested != 1 form gives retail's cmp), selection as byte with one
 // movsx (closer to retail, score 340-361 only because the size changes: 1196 vs 1204 bytes).
+// M3 lane 15 r147 (fast screen, 305): retail splits the tag parameter: its early uses (the 0x15d70 call, the case 18
+// and 19 definition reads) come from ebp, the override in cases 18/19 is stored to the parameter's own slot and the
+// material lookup reads it back from there; stage is in edi only up to the switch, pass stays in its slot. Ours keeps
+// one tag web in edi to the material lookup, pass in ebp, stage in memory. Forms: the source fields for the 0x15d70
+// call read as g_4ba138[index] with the pointer formed after the call 376 (1248 B, the pointer is never formed); the
+// override in a separate `material_tag` local initialised from tag 316 (1204 B, retail's length: pass now stays in its
+// slot as retail, but tag takes edi and stage ebp, and the copy is stored to tag's slot); (void)& on tag/pass/stage
+// 305 (same code), with the separate local 316; the 0x4cbb0 call reading out->value10 as retail does 305 (same code:
+// the stored value is forwarded); the selection switch's default listed with cases 1-3 365 (1164 B). Retail's primitive
+// switch shares one block for cases 1-3 and the default (same register), and tests the 0x4cbb0 result as a byte.
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)

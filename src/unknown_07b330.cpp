@@ -72,7 +72,6 @@ void network_message_gateway_send_pending_messages_to_address(s_network_message_
 
 bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb const *collection, long *size);
 void network_message_write_header(s_bitstream *stream, long type, long size);
-void function_194710(s_bitstream *stream, bool discard);
 
 static __forceinline void gateway_stream_begin(s_bitstream *stream)
 {
@@ -138,10 +137,10 @@ bool __stdcall function_07b140(void *object, long destination, long type, long s
 		}
 		if (started)
 		{
-			function_194710(stream, true);
+			stream->function_194710(true);
 			break;
 		}
-		function_194710(stream, true);
+		stream->function_194710(true);
 		network_message_gateway_send_pending_messages(gateway);
 	}
 	return result;
