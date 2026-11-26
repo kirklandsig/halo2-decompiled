@@ -9,6 +9,16 @@ matched 10945 of 11326 game functions (2264823 of 2786206 bytes, 81.29%)
 matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
 ```
 
+0 new matches, none lost:
+- @alosec's #1552, #1556, #1553, #1554: closer scores and notes, no new match.
+
+## 2026-11-26: 10945 functions match
+
+```
+matched 10945 of 11326 game functions (2264823 of 2786206 bytes, 81.29%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
 4 new matches, none lost:
 - Machine 3's batch 357 (#1551): `0xd4e60`, `0xd52b0`, `0xd5390` and `0xe64e0` match.
 
