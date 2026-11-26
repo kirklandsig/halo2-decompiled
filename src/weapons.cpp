@@ -5509,6 +5509,11 @@ struct s_weapon_projectile_creation
 // direction 1121, shared special-marker draw 1121, separate target outputs 1139 (0x1eac frame),
 // standard request copies 1121, interleaved request fields 1125 at 5215 B, standard motion copy
 // 1121, standard synchronization point clear 1130.
+// M3 lane 13 r161 (fast, control 1121): the inherited speed through the existing dot3f 1138 (5196 B); the unit-velocity
+// projection through dot3f 1121 (same code); both 1138; the three loop-top resets as one chained `= 0.0f` 1154
+// (5197 B); the inherited-speed clamp compared with a double zero 1168 (5165 B). A forced-ranking search over the
+// zero's web (ours one xmm7 web across both loops, ranked 202/272) found no single ranking or cut that moves the
+// count: the frame (0x1ea4 against 0x1e98) still decides every stack offset.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

@@ -1210,6 +1210,11 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // `(word)block_index` 194; the entry through `(word)block_index` 195; the switch reading the parameter while the body
 // reads the copy 193. Lead: the shared-texture getter (0x12c960, still matched) assigning its result before the build
 // call gives retail's inlined block (`xor edi, edi` ... `mov edi, eax` ahead of the call) but 220 here.
+// M3 lane 6 r247 (fast): that getter form with the parameter used directly 220, with a plain `view = bitmap` copy
+// 220, with the level as `level = 0; if (!unscaled) level = ...` 220 (that alone on main's getter 197). The getter
+// form gives retail's inlined block but leaves the result in memory and the bitmap in ESI; retail colours the bitmap
+// EBP from entry, the result ESI (with its slot) and a zero in EBX after the load call. A forced-ranking search moves
+// no single decision near: the bitmap's second-pass priority raised to the top 185, the zero or block picks 215-227.
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

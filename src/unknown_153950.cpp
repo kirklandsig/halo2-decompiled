@@ -1113,6 +1113,13 @@ struct s_flag_word_bits
 // priority) 263; the point through real_point3d_set 118; 0x1544e0's builder order swapped for `up.k` last 142. On the
 // 240 form: a named entry pointer for the two fade stores 242, with the shared cross3f as well 242; the clamps as
 // `if (!(x > 0.0f))` 240 (same code).
+// M3 lane 16 r193 (H2M_FAST with 0x1544e0, MATCH each run; control 244, aligned 176): the six draws through the existing
+// [0, 1] random helper (no cast around the scale) 352 (1632 B: the 1/65535 and 2.0 factors fold into one constant); the
+// curve fields read as unsigned 16-bit values 244 (same code: a field load does not give the `xor eax, eax`); the rotation
+// helper in 0x1544e0's exact statement form (scalar squares, t * i * j) 248 (first difference +0x2); the priority as the
+// product's first operand with no local, `slot->priority9c * curve(...)`, 272 (1644 B; on the 105 lead 270, aligned 71);
+// on the 105 lead, the position as three statements z, y, x 387. A forced-ranking search on the 105 lead (40 single
+// decisions) finds nothing below it: what is left there is instruction order, not register choice.
 // @retail 0x1546f0
 void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
 {

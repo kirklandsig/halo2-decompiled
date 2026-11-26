@@ -587,6 +587,12 @@ long g_55e6c0;
 // stays live and the stores take the global's displacements); only the common-word store so addressed 161 (528 B).
 // Register's data argument read as `entry->data` (on the signed-packing, late-levels, header-pointer form) 152 (499 B;
 // the height takes the data's EBP and a real field load follows the format call).
+// M3 lane 1 r172 (h2m fast with 0x1dc40/0x1db10/0x1d770, all MATCH; control 29): a forced-ranking search over 24
+// single decisions finds no match (best 17: the clamp's pick moved from EAX to EDX), so at least two decisions remain.
+// Forms: the clamp's middle test as `count < 4 ? count : 4` 30; the clamp with reversed compares (`0 > count ? 0 : 4 <
+// count ? 4 : count`) 29 (same code); the clamp stored right after the data store 33; the pitch named as a long and the
+// packing as one OR expression of `(x - 1) << n` terms, with the `< 4` middle test 98 (479 B), with the clamp after the
+// data store 101 (479 B). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

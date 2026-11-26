@@ -1102,6 +1102,11 @@ extern "C" void _ReadWriteBarrier(void);
 // inside the NONE block 44; the point bound by `point3f const &` at the top for the copy 44; the state declared inside
 // the NONE block 44 (all the no-barrier code, 208 B). The listed data-block form (FORMS-slot-data-block) does not fit:
 // retail reads +0x22 and adds 0x34 to the slot itself.
+// M3 lane 5 r249 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, each with the barrier): the point copied as
+// the actor's whole target aggregate (`*(u_actor_target const *)&state->point`) 6 (same code); the point through the existing
+// three-real point setter 42 (213 B); the second parameter typed as the state itself (no cast local, the table entry cast)
+// 6 (same code); the point copied ahead of the 0x420/0x41c stores 40 (207 B); the busy field read into a named long
+// between the lookup and the barrier, tested after it, 49 (210 B).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
