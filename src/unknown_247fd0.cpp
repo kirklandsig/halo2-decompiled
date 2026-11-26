@@ -1155,6 +1155,18 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // + shared `last_sample` 416 (al 102, mk 48), + unpacked workspace 411 (fr=0xa0). Diagnostic (reverted): `#pragma optimize("a", on)` 334 (same code). Body unchanged.
 // M3 lane GA r12 (18 real trials, fast control 334 at 1652 B, 0x247fd0/0x248cc0/0x247470 MATCH throughout; body restored):
 // `TEST_FIELD_BIT(local_3->flag4)` + plain `point3f blend` + compound `+=` + direct `else +=` + sibling `0x247fd0` forms (`particle_object_for_tag`, cache order, if/else reciprocal, `(short)` ordinal, DATUM in link) + no `local_10` hits 271 (exact 430/430 insns, al 134, mk 47, lines 346-434 lockstep) — NOT kept: frame shrinks 0xb0->0xa4 (+0x2) and length grows 1652->1664 B without 0x5c collision; + sibling loop locals 331 (al 130, mk 40, recovers `local_3` in EDI), + `switch (unknown0c)` 341, + `if/else if` `TAG_GROUP` 275 (still folds `[edx+eax]`). Keeping `fr=0xb0` on main with those clean subsets: 350/352/386. Plain locals + `s_placement` ctor at 0x247e3a + `0x5c` collision ctor recover `fr=0xb0` (+0x20), 3-load probe copy and early normal loads (396/399/368, al 135, mk 52), but `real_truncate` asm still sorts 0x28 placement (+0x3c) below 0x5c collision (+0x64). Direct `function_x82e52f` without `function_248076` constant-folds `(1/65535)*65535` (427/408/419/415); standalone `s_placement` ctor on main 334; `point3f *pos` + direct `else +=` 335; reversed blend x + direct `else +=` + NONE after 0x137bd0 343.
+// M3 lane 16 r191 (h2m fast with 0x247fd0/0x248cc0/0x247470, all MATCH each run; control 334 at 1652 B, aligned 246,
+// register-masked 106; body unchanged): no grouping record, the probe point, direction and result declared in the trace
+// block, the placement in the allocation block, the blend a point3f and the four draws into one sample 449 (1617 B, frame
+// 0xa0, aligned 205); the four aggregates at function scope in retail's address order 446 (frame 0xa0, aligned 229). A
+// compile-only frame listing of that shape orders the aggregates the same way whatever their declaration order, names or
+// store counts (the placement stays below the result). The result's normal as a typed member at +0x28 read directly (no
+// pointer local) 334 (same code). The 271 combination (bit-4 bitfield test, point3f blend, compound scale and velocity
+// adds, the else arm's add written out, the sibling's cache order, in-loop lookup, if/else reciprocal, short ordinal and
+// DATUM in the link call) on the retail-ordered locals with the result padded to 0x5c in an aggregate wrapper
+// (diagnostic) 412 at 1664 B, frame 0xb0, aligned 164, masked 76: the placement still homes below the result, so its
+// three references are short and the result's six normal reads long. The blend added through the existing vector3f_add
+// 335; with the velocity add through it too, either operand order, 342.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

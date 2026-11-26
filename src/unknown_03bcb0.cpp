@@ -883,6 +883,16 @@ struct s_41490_record
 // locals 8, `delta.k` after `tag` 15, `delta.k *=` 15; `#pragma inline_depth(0)` around 0x41490 stops `record_format_groups`
 // inlining (196/224), around 0x40e10 in unknown_03f2b0.cpp still expands 0x40e10 (131); 0x40e10 moved into this `/Ob1` file
 // keeps the register summary (154). On HEAD (call expanded): `*(word *)(definition + 0x16)` 70 (-2, under bar), flat dot 72.
+// M3 GB r17, NOT KEPT (moving a function into a file with other flags is kept only with a byte match of the target; the
+// same body without the move is 73; the 12 form is held as a patch). Fast and plain checked with 0x40e10, 0x41040, callers
+// 0xd4cf0/0x244630/0x2be670 and all file peers:
+// moving 0x40e10 into this `/Ob1` file (next to its retail neighbours and its only two callers 0x41040/0x41490) + `*(word *)(definition + 0x16)`
+// + `record->position = *position` + `0.0f - (delta.i * forward.i + delta.j * forward.j + delta.k * forward.k)` keeps `position`
+// on the stack (`ret 0x20`, no `position_reference`), keeps `0x40e10` and all 3 callers MATCH and `0x41040` unchanged at 300,
+// and drops 0x41490 72 -> 12 at retail's exact 426/426 B (`+0x12d`; only `delta.k` spill order before `and cl/dl, 1` and
+// volatile `delta.i/j` non-folded `mulss` remain). Also tried on HEAD (call expanded): word+aggpos 73, plain v3d+dot3f 131,
+// word bitfield / nested if / neg dot / dword flags 70, scalar volatile deltas 127, `depth = delta.k; depth *=` 75; with 0x40e10
+// moved here: main body 127 (breaks callers), word+aggpos+staged depth 17 (kij/kji/ijk/neg/bitfield 17, flat kij 13, sym ijk 12).
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
@@ -1098,6 +1108,12 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // (845/845 B, 187/187 insns, +0x88, al=12, mk=12: only 2-insn movss [esp+4] and subss shifts + stage 2 [esi+0x6c] order
 // left; `real const *state` param 115, `values` after angle 115, `scales = (real const *)(state + 0x68)` 90/202,
 // `scale = 1.0f` after rotation 81, 1-7 dead locals 115-150). None passes keep rules without a byte match; body unchanged.
+// M3 GB r17 (fast with 0x3bf00 and 0x4d640 MATCH; control 84; 34 real trials): HEAD with no `(double)` casts on atan2 88,
+// `transform4x3f g_4c1b9c` 84, typed `s_3c650_state const *state` param across 0x3c650/0x3bf00/0x4d640 84, plain `sine`/`cosine`
+// + scalar squares/sine_axis 134; plain `sine`/`cosine` + `vector3f` squares/sine_axis without shared xy/xz/zy 190-222 (861-886 B),
+// `0x1544e0`-style scalar squares + `vector3f sine_axis` 165 (851 B), direct `D3DDevice_SetTextureStageState` 189 (858 B),
+// `kji` squares + `ijk`/`jki` `sine_axis` + shared xy/xz/zy with/without `inverse` and swapped bump operands 76-177 (with
+// typed `s_3c650_state const *water` matching `values` at 76/86, confirming bump operand order is symbol-canonicalized). Body unchanged.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {

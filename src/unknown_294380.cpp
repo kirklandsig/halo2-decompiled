@@ -422,6 +422,19 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // store goes); the centroid's reciprocal written inside the scale call 455 (3712 B, aligned 59); the centroid offset in a
 // vector of its own instead of the shared steering vector 745 (3736 B); the walk's self test as an early `continue` 704
 // (first +0x72, aligned 53); the target block's default radius as a select 273.
+// M3 lane 3 r311 (fast screen listing 0x293b30, 0x293d30, 0x294050, 0x295600, 0x11c380 and 0x293130 with this function,
+// all MATCH; control 252; body unchanged). Frame reading: every frame offset carries the same instruction references in
+// retail and here (the five four-reference cells 4 each, the speed vector 11, the lone walk vector 10, the rest equal
+// line for line), and a model of the back end's density sort (an unstable quicksort, middle pivot) over the slots in
+// creation order reproduces this build's whole layout; with these counts no creation order that follows the packing rule
+// (size, then references, ties by the one that reached its count first) gives retail's layout, so retail's counts or
+// counting order at packing time differ. Model leads: the object spill reaching its second reference before the walk's
+// neighbour-pointer spill (both 2) gives retail's object, count, nearest order; the speed vector at 10 references (or the
+// lone walk vector at 11, created ahead of it) gives retail's sum, record order; both together with the object-index temp
+// ahead of the path maximum give retail's layout. Forms: both steering-helper dots tested as `0.0f > dot` 252 (same
+// code); the clamp helper's test as `3.0f < total + strength` 252 (same code); the half radius as `0.5f * radius` 252
+// (same code); the count raised ahead of the three sums 253; the nearest arm with the point copied first and its test as
+// `local_26 < local_10` 255.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

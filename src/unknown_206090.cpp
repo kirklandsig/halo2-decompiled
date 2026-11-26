@@ -1052,6 +1052,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1346/1394/1394/1372. Typed settings alone or with typed points 1346/1346.
 // Shared point difference or with k-first cross 1379/1415.
 // NOT kept: both retail-length forms raise the score and retain the frame gap.
+// M3 lane 3 r311 (fast screen with 0x24590 and 0x30bf0; the fast image builds this body at 1345 with the "builds
+// differently" caveat, the full build 1346). Frame reading: the five inlined copies of the magnitude helper's input
+// snapshot take five separate 12-byte homes (60 bytes of the 0x44 by which this frame exceeds retail's), where retail's
+// magnitudes read the vectors' own stack homes just after their component stores. Forms: the magnitude helper returning
+// the existing out-of-line magnitude (inlined) 1624 (5990 B); the sign flip as `local_11 *= ... ? -1.0f : 1.0f` 1345,
+// the gain as `1.0f + rate * local_15` 1345 and the speed sum passed as `local_18 + local_17` 1345 (all three the same
+// code); the steering product negated on its first factor (`-field_74.j * x`) 1349 (6243 B). Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

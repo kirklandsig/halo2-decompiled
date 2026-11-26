@@ -5745,6 +5745,14 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // was not ranked from that call. Also: the transform declared ahead of up and forward 169, the local vector declared
 // there 169 (same code each); up_scale computed ahead of the cosine 190 (778 B); `left` declared beside up and forward
 // (outside the aim branch) 169.
+// GB r17 (fast with 0xde190/0x1fe120 MATCH, 0xc60c0 172; control 169 at 768/767 B): on s_view_angles base, reusing local
+// for clamped direction 169; renaming up/forward/left/local/matrix 169/169; inline 0xb9fc0 wrapper 169; inline mat3 helper
+// 169; inline trig without scale locals 169; plain double trig scales 191 (776 B); double cosine+forward_scale with real
+// left/up 191 (774 B, all 26 row insns match retail, cosine spills to qword); direct cross3f_staged (both/first, with or
+// without s_view_angles) 169; inline orthonormalize_up helper using cross3f_staged first (both/first, static/forceinline,
+// vector3f* return, swapped params, HEAD/angles, kij/cb_kji/cb_kij) 156 at 768/767 B (delays up.i to retail's line after
+// left.i, matching lines 37-56 and the second cross, still 1 extra movaps for up.j*fwd.i; NOT kept: new one-caller helper);
+// helper with cross3f first or ijk/ikj staged 169, jki/jik 184 (774 B), reversed stores 181, by-value cross 358. Body unchanged.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {

@@ -370,6 +370,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // moves to XMM4); one function-scope sprite-record pointer shared by both passes 12 (the one-use pointer's code); the
 // top and bottom y edges named before the first x step 25, on the record pointer 23; only the left and right x edges
 // named after the step 39, on the record pointer 37. All restored.
+// Roasted-Codes (#1508 comment, 2026-11-26; fast reduced-image scores): the named advance with the pulse result bound by
+// `real const &` ahead of it 15 (849 B); the query and the centring match, so the named advance's 53 is the pulse query
+// sinking below the half extents. With the advance moved after the half height on that body: 12, the same XMM3/XMM4 pair.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

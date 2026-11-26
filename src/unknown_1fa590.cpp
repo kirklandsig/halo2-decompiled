@@ -614,6 +614,19 @@ bool function_1faf80(long object_index, vector3f *facing, void const *settings_p
 // up, state, ticks 130 (0x1e5af0 MATCH); forward, up, ticks, state 130 (MATCH); state, forward, up, ticks 296 (0x1e5af0
 // 47); forward, state, up, ticks 295 (47); state, ticks, forward, up 296 (47). On the first: the first idle cross through
 // cross3f_staged 130, the second 130, both 146. Not kept (an order picked by score without a match).
+// M3 lane 1 r170 (h2m fast with 0xc7840, 0x30bf0, 0x1eb8a0 and 0x1e5af0, base 132; aligned counts by a masked line
+// diff). The active arm's angle expression is the lever: each extra node on it (a redundant paren pair, a cast of the
+// product, the length in a named local, or `angle *= rate` as a second statement) moves the whole function, and the
+// effect adds up: one 170 (1164 B), two 206 (1175 B), three 16 at retail's 1161 B (aligned 16: left only the active
+// sine store two instructions late and the offset-0 loads of both dots and the first idle cross, where retail takes
+// forward's component first). The same three nodes anywhere else (the active dot, the active zero test, the idle
+// cosine) do nothing; 0-7 unused initialised locals change nothing at three nodes. Forms: the length named 170, the
+// product cast 170, `angle *= rate` 170, `angle = angle * rate` 170, the named length with the product cast 206, the
+// rate cast 132 (no node), the rate in a named local for the 0xc7840 call and the angle 290 (1181 B), the angle test
+// as `!angle` 130. LEAD (steering, match-only): three redundant paren pairs on the angle 16, or the named length with
+// two pairs 16; with the parameters ordered forward, up, state, ticks (definition, declaration and 0x1e5af0's call
+// together; 0x1e5af0 MATCH) 12 (only the sine store and the first idle cross's i products left); forward, up, ticks,
+// state 12; the other 20 orders 16..284 (state or ticks first breaks 0x1e5af0, 47).
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {

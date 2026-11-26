@@ -1580,6 +1580,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // NONE)` / while / `count1` else / `samples` for first+second / `if (count > 0)` / dot swap 402 each; late assign 403
 // mk=58; mixed offset/diff 644/661); on `samples` + `first` ahead 406 (2108 B, fr 0x28, mk=65, edi=1, ox=1; nested 429;
 // with second diff 399, mk=50; first after 418); `opp` before scan 1 502 (2122 B, fr 0x2c, edi=0 in unrolled scan 1).
+// M3 lane 7 r230 (h2m fast with 0x22750, 0x22c30, 0x24550, all MATCH, and the caller 0x23690 at 354; control 418):
+// scan 2 skipping the nearest sample with `continue` 418; scan 1's distance declared once ahead of the loop 418; the
+// offset declared once with delta ahead of scan 2 418; both 418 (same code each); scan 1's distance as
+// distance_sq3f(position, sample) 448. A forced-ranking search (diagnostic, 12 decisions) moved the aligned distance only
+// 448 -> 433, so no single allocator decision gives retail's 0x2c frame. Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

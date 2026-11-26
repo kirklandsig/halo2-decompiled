@@ -1181,6 +1181,12 @@ real function_30bf0(vector3f *vector);
 // 110, `short result` 76, `flag7` local 312, `plane` helper 84/247, `switch (mode)` 266, `amount >= 0.0f` 236; on `B12`:
 // `cross3f_staged` 70, `matrix3x3` basis ptr 117 (1308 B), hoisted `world_up` 141, `exceeded` flag 72 (on base 239),
 // `result == 0` guard/nested 97/97 (on base 90), `range` after delta 75, sec-first copy 70, `if (count > 0)` 145.
+// M3 lane 7 r230 (h2m fast with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84): the frame packer
+// counts scale and range at 5 references each where retail's layout needs 4 (both final codes have 4: ours counts one
+// store per posture case and two range loads ahead of the join). Forms aimed at one posture-scale store: both cases
+// sharing one `posture == 0 ? 0.3f : 0.7f` assignment 214 (1312 B); the posture tested by an `if` with that conditional
+// 181 (1311 B); the whole scale as one nested conditional at its declaration 219 (1308 B); an explicit `default: break;`
+// 84 (same code); the clip clamp as a conditional assignment 84 (same code). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

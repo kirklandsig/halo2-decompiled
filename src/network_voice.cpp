@@ -4112,6 +4112,17 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // (`frame 0x14` vs `0x10`, bumping `route` to +0x10) so NOT kept (3 pts, frame grows); marking `0x53720` `inline` with shared
 // helper also hits `chEBP=1` at `frame 0x10` (+0x4f first diff, 148, 512 B) by adding 3 blocks inside `member`'s live range,
 // but breaks matched `0x53890` (45) and inlines `0x53720` into the relay arm.
+// M3 lane 3 r311 (fast screen with 0x564c0, 0x54810, 0x55b40, 0x54a20, 0x565c0, 0x56df0, 0x53890, 0x53720 and 0x57360, all
+// MATCH; control 139). Allocator reading on the packet-cursor form (`byte *packet = data + 2;` advanced by the packet size
+// beside `consumed`, 164 at 478 B): its loop already has retail's cursor in EDI and `consumed` in memory, and the only
+// large gap is EBP, which the member takes because the allocator ranks it 20 against the channel's 14 (the channel
+// collects +104 from its seven reads but loses 90 over 19 blocks where it is live and unread, the entry and setup blocks
+// above all). A forced-ranking search confirms the lead: the member ranked below the channel (or the channel 7 higher)
+// gives 52 at 488 B with the route in the channel's argument slot as retail. Forms on the cursor form, none moving that
+// ranking: the member's NONE and kind tests as two returns 164; the route brace-initialised 164; the member bit test
+// written `(1 << member) & members` 164; `size -= consumed` after `consumed = 2` with the cursor from `data + consumed`
+// 164; `consumed` declared ahead of the packet size 168; the cursor declared ahead of `size -= 2` 139 (the cursor folds
+// back into `data + consumed`, this body's code). Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
