@@ -353,17 +353,6 @@ inline void ai_script_object_set_flag10a_14(long object_index, bool flag)
 
 /* sets a flag of the unit of every actor an ai index names, or of the objects
    of its perception when it has no unit */
-// score 7: the swarm loop's ECX/EDX trade places, as in 0x2732e0 (its note
-// lists the forms tried there, all tied). Ours keeps the object table base in
-// ECX and the creature in EDX; retail keeps the base in EDX and the creature
-// in ECX. Permuter on this function: 147 tries, best 7, no improvement; the
-// rest of the body is identical. Needs the callers and 0xdc310 in a fast check.
-// GA14 (23 fresh trials): non-inline static/extern/stdcall setter 113 (163 B,
-// does not inline under /Ob1); word &flags, ternary SET_FLAG, early return,
-// header subscript, byte offset, swarm_creature_iterator_new helper, long flag,
-// bool value local, macro setter, perception subscript, != NULL, g_4e0300 local
-// all 7 (219 B); object_get_or_null 67; no flags ptr 116; byte +0x10a[1] 69;
-// (word) index 49; bitfield flag14 39/93; (word) perception 70; if (!flag) 13.
 // @retail 0x273200
 void function_273200(long ai_index, bool flag)
 {
@@ -395,25 +384,6 @@ bool function_dc310(long object_index);
 
 /* whether every actor an ai index names (or every object of the perception of
    one without a unit) is dead */
-// score 15 (was 15): the code is the same instruction for instruction; only ECX and
-// EDX trade places in the swarm loop. Retail keeps the object data base (and
-// the object function_dc310 reads) in EDX and the creature in ECX; ours does
-// the reverse. 0x273200 shows the same swap in the same loop. Needs the
-// callers and 0xdc310 in a fast check. Tried (all 15 unless noted): the
-// returned object kept in a local; if (!(result = ...)); a separate bool;
-// the iterator's fields set in the other order; the iterator declared at the
-// top; result declared last; while ((actor = next) != NULL); a local copy of
-// the creature iterator (also with the ternary form); index set before the
-// object get 118; while (result && ...) loops 71 (inner) and 155 (both); a
-// for loop 167; the unit test inverted 112.
-// P419: Returned-object for traversal 151; actor initialized at its producer
-// 15; iterator scoped to one actor 15; result between startup calls 17;
-// target inline/__forceinline 15/15; signed-byte result 45; iterator memset
-// 15. All forms restored; inner ECX/EDX exchange remains at native length.
-// GB r16: an inline copy of swarm_creature_iterator_next in this file (the creature looked up in an if/else, creature
-// or NULL, then next_index set by a ternary) MATCHES (402/402 B), not kept: a new inline twin of an existing function.
-// Lead: the same if/else + ternary shape in swarm_creature_iterator_next itself (0x290c80, src/swarm.cpp), checked
-// against 0x290c80 and every caller it is inlined into.
 // @retail 0x2732e0
 bool function_2732e0(long ai_index)
 {

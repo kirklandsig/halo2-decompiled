@@ -364,6 +364,19 @@ void function_22fba9(c_class_1473c9 *screen)
 // `!= NULL` / `!= false` tests in the text and model loops 23 (the 23s the same code). Reading: matched /O1 0x2b3e4d's
 // `and [slot], eax` is a plain `field = 0;` store to a memory local after a `repe cmpsd` left EAX zero, so retail's text
 // reset is a constant-zero store given the zero register late, its model reset a store of the counter's zero register.
+// M3 lane 6 r246 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23). Allocator reading: every loop's
+// offset reset, counter zero, null test and flag test refers to one function-wide zero constant. In the last pass the
+// bitmap, block-24, block-18 and text resets are register pieces of it (`mov [slot], reg`) and the model reset is its
+// last use, a scratch zero (`and [slot], 0`, given EBX afterwards); retail has the text reset as the last use and the
+// model reset as a piece. A forced-ranking search: the text reset forced to last use 22 (text `and`); the zero's range
+// cut at the text loop's guard compare in its first split walk 21 (both resets retail's; only the model loop's EAX copy
+// of the screen is left). That walk visits blocks breadth first with one shrinking set of free registers, and EBX is
+// still free at the text guard in ours, so retail uses EBX up somewhere earlier in that walk. Forms, with that walk
+// read: the text loop under `if (pane->text_count > 0)` 58 (418 B), the block-18 element read at each use 61 (417 B),
+// `long i = 0;` above the pane lookup 25 (all three leave EBX free at the text guard); the text test written
+// `pane->text_count > i` 25; diagnostic, a trailing loop over the list count after the model loop 53 (431 B, the
+// model reset still the last use); a redundant `if (0 < pane->block_18_count)` around the block-18 loop 25, `if (0 <
+// pane->block_24_count)` around the block-24 loop 25 (the walk unchanged: EBX still free at the text guard).
 // Roasted-Codes (#1508 comment, 2026-11-26; fast reduced-image scores): `long i = 0;` above the pane lookup plus the model
 // loop as a guarded do/while over an explicit zero-initialised byte offset 24 (416 B); both resets are retail's (text `and`,
 // model `mov`) and the earlier loops keep retail's registers; left are the `xor ebx, ebx` ahead of the pane call and the

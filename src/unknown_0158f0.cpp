@@ -279,6 +279,18 @@ bool function_015b10(
 	return created;
 }
 
+// score 56 (was 56): retail keeps the palette count in a register through both loops and stores it to g_5093ac
+// once after the outer loop (the zero-trip path skips that store), compares the group count in memory against the
+// zero register, and keeps the palette definition in EAX (spilled, reloaded after the data store) with 0x30001 in EBP.
+// Lead: the count written as g_5093ac itself (no local, `g_5093ac++` in the inner arm, no copy after the loop) gives
+// all of that structure, 56 at 280 B with only register choice left (ours: EBP definition, EBX zero then 0x30001, ESI
+// count, EDI NONE then index; retail: EAX definition, EBP 0x30001, EDI zero and count, EBX NONE then index, ESI the
+// 0x400 step). On it the allocator ranks the palette pointer (288), the group (152) and the 0x400 step (96) above the
+// tag index (48); a forced-ranking search gives a byte match with the tag index ranked first (the definition then
+// claims EAX before the loop values pick) and with no other single decision. Forms on the global count: the definition
+// read through the tag table at each use 86 (283 B, reloaded every outer pass); the group pointer local dropped 97
+// (259 B); the palette pointer local dropped 65; the two global stores ahead of the tag read 56 (same code). With the
+// local count: the definition read at each use 79 (299 B).
 // @retail 0x15b70
 void function_015b70(void)
 {
