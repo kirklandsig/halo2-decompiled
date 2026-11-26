@@ -511,6 +511,16 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // template<long> count 1110; macro apply 4; non-const update 3; (counters,update,count) param order 3;
 // flat ptr arith 3; signed short test 215; continue 3; ulong helper 3; do-while helper 804; dest before
 // src in earlier loops 5; inline parenthesized offset 3.
+// M3 lane 3 r312: only two operand orders inside the strength-reduced addresses differ: `[edi + eax]` against
+// retail's `[eax + edi]` in the first group loop's unrolled body (the second group loop has `[edi + eax]` in both),
+// and the record base added after the entry pointer ahead of `lea eax, [edx + ecx + 0xc6c]` in the entries loop
+// (retail adds the record first). Both follow the order in which the loop optimiser creates its temporaries (the
+// walking record pointer of the first loop is created before its difference here, after it in retail), so unused
+// locals do not move them (1-7: 3 each, same code). Fast screen: the group loop indexing
+// `update->groups[i]` with no group pointer 419 (1791 B); the helper taking the block's flag and testing it itself
+// (all sites) 403 (1776 B), in the group loop only 404 (frame 8); the record read through its own address in the
+// entries call 3 (same code); the helper loop as `while` 3 (same code); the helper walking the record pointer 401
+// (1791 B), walking the update pointer 396 (1866 B).
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {

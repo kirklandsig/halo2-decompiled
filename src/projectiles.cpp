@@ -1258,6 +1258,11 @@ real function_30bf0(vector3f *v);
 // (985 B, all 6 callers MATCH; + `t`-if/var 202/202, + `velocity.i*i+j*j` **200**, + inline velocity 263, + forced first 265,
 // + plain forced 263, + path before k 237), double-div variant 253 (3 callers lost). NOT kept (202/200): expands `two_a` at
 // both divisions, combines parts that regress alone, and grows to 985 B (frame stays 0x28, `forced_speed` still holds EDX).
+// M3 lane GB r21 (33 fast trials with 0xfa580 and all 6 matched callers 0xfa6a0, 0xecdc0, 0x1f8100, 0x1f8160, 0x26f150, 0x2900b0; control 216 at 983/983 B, aligned 203; body unchanged):
+// -1.0f / (double)two_a alone 270 (962 B, 6 callers lost), with double t2 270, with (0.0f > gravity ? 0.0f : gravity) > 0.0f 253 (983 B, aligned 189, both x87 fdiv, all 7 match; + t-clamp + late path 255, + vel.k before hspeed 256, + direct velocity 255, + forced first 262 / plain forced 260 [frame 0x2c, delta.i xmm7, optimal_time +0xc, callers lost]);
+// real t2 with / (double)two_a + maxgrav 253 (983 B, aligned 189, dword -1.0f, both fdiv, all 7 match); + minimum before optimal_time (either div via (double)two_a) 204 (985 B, aligned 187, both fdiv, all 7 match; not kept: steering cast + order, 985 B);
+// double t2 without cast 219 (3 callers +4 B frame: proves no double local in retail), + maxgrav 218 (+ late path 262, + t-clamp + late path 205, + min before opt 271);
+// clean forms (all 7 match): maxgrav + uncast sqrt in real t2 215 (aligned 188), + min before opt 271 (1006 B); vector3d_from_points3d 217 (+ maxgrav 215); two-use t_squared local 216 (+ maxgrav 215); t then PIN + maxgrav 263; magnitude2d helper 258 (callers lost); clamped_gravity local 255 (callers lost); early delta.k 217.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2677,6 +2682,12 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // shared child_index 202; no probe ptr 228; no seed local 395; plain += 198 (+ vector3f_scale 198); real_point3d_set 200; b9dd0
 // inline in vector3f_add 289; axis loop 397; vector3f_scale for center/probe 15/15; vector3f_add_scaled(..., 1.0f) 15; point as
 // vector3f 15; owner via ptr/agg/order 202/17/17; component-wise forward copy 206 (+ owner ptr 47).
+// M3 lane GB r21 (23 fast trials with 0xfcea0, 0xfcbc0, 0xa84e0, 0xd6660, 0xd6c80, 0x1697c0, 0x1ca690 all MATCH; control 40 at 2190/2190 B, +0x37; body unchanged):
+// inline effect-owner helper 40, by-value owner helper 289 (2208 B); owner/position-forward-up/all locals at top scope 40/40/40/40 (36 with damage_scale after bools, 32 with all three store orders);
+// point3f add helper / inline returning vector3f* / staged / diagnostic swapped x,y add 40/40/40/40 (MSVC canonicalizes all three components point-first regardless of operand order);
+// center or center+point typed vector3f 40/40; owner typed s_damage_owner or 12-byte padded struct 40/40; owner field order 0/4/8 42; owner via local pointer 40;
+// hoisted probe locals 40; area data.direction component-wise copy 67 (2200 B), memcpy 40, direction before position 56; sound compressed_forward before position 51.
+// forward (+0x30) vs owner (+0x1c) slot pairing and point-first vector3f_add loads stay unchanged across all forms; 0x1ca690 short-arg fix remains held as a patch (raises 0xf8eb0).
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {

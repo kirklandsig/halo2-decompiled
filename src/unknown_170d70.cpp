@@ -1717,6 +1717,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // 334 plain (aligned 357 against 378: every matrix element then sits at retail's offset, tij - s * k at +0xc, but the
 // code is otherwise the same; held as a patch); on it tij formed first 348
 // (1455 B), with the shared (1 - c) * k named 357 (1431 B); tij first on main's matrix 348. Body unchanged.
+// M3 lane 12 r192 (H2M_FAST with 0x1726d0 and 0x170fd0, MATCH each run; control 337): the limit written as two
+// literals (no `limit` local) 338 (1456 B); the deviation as `sqrt(dot3f(&difference, &difference))` of a difference
+// vector stored k, j, i 361 (1438 B); the clamp as a ternary 337 (same code); the deviation's squares accumulated into
+// a double local 341 (1448 B); the scaled original through vector3f_scale before the differences 354 (1448 B). The
+// allocator's first-rotation block has about forty XMM candidates in one ranking (a tracer run), not a single tie.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2771,6 +2776,11 @@ struct s_camera_reference_171830
 // ahead of the depth or after it 266 each (1222 B); the depth bound by const reference to the sum 263 (1223 B), or to
 // a sum local 263. Diagnostic only (unread parameters are not source): four unread longs after forward 27 (first
 // difference +0x92), at the end of the list 29. Body unchanged.
+// M3 lane 12 r192 (H2M_FAST with 0x170fd0 and 0x171d00; control 155, aligned 36): the flags as a ternary 300 (1230 B,
+// 0x170fd0 143); the centre copied from the point then `+=` the rear vector 346 (1259 B, 0x170fd0 220); the sample
+// counter as `long` 130 positional at 1223 B but aligned 65 (retail keeps the 16-bit counter, `cmp bx, 4`, beside a
+// long index: not a gain); the radius computed ahead of the 0x171d00 call 281 (1235 B); the first offset copied
+// member by member 272 (1207 B, 0x170fd0 220).
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
