@@ -1050,6 +1050,15 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // each); the helper storing the root through its out pointer and multiplying by that 287 (2872 B). On this body:
 // OBJECT_DATUM_GET with a named FLT_MAX constant 648; that with `return local_0;` closing the block and `return
 // true;` last 394 (2896 B). Body unchanged.
+// GB22 (32 fast trials with 0x1e5450/0x30bf0/0x1697c0 MATCH, control 362 at 2897/2886 B, body unchanged): on 362 base,
+// `local_18` declared before `local_17` 358 (-4, under keep bar); `local_6` before `arg_3 = 0` 643 (2886 B), with two
+// returns 610 (2886 B, +0x40, al 245, exact entry & both exits); existing `include/axis_rotation.h` `function_x84d9e8`
+// 689 (2846 B; + two-ret/range-first 663); tail `dot3f` (either order) 676/676, without `local_19` 644 (+ range-first/ang
+// 694/644/664); 3-arg in-place rotation 362 (same code), with `vi/vj/vk` locals 653 (2876 B), `vector3f v = *arg_0` 707,
+// all-3 `cross_i/j/k` locals 362, `kji` stores 447, tail cross before `local_17` 382 (+ ang 378), no `local_19` + ang 434,
+// `vector3f_rotate_into_axes` 761. On GA7's 184 lead (rebuilt 184, al 148, mk 91): 3-arg in-place 184, all-3 crosses 184
+// (mk 88), `vi/vj/vk` 376 (667/667 insns), `function_x84d9e8` 449 (+ tail `dot3f` 317), tail cross-first 210, `v = *arg_0`
+// 506, `vk`-only 329, `cos`-first 275.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
