@@ -1241,6 +1241,11 @@ real function_30bf0(vector3f *v);
 // before the test 215 (986 B).
 // The direct test `time_scale && *time_scale > 0.0f` with plain reads (no named value, no address read) 256 (callers
 // lost): the single read into the named value is what keeps the convention and frees EDI.
+// M3 lane 5 r247 (fast screen with 0xfa6a0, 0x1f8100, 0x26f150, 0x2900b0, 0xecdc0, all kept matched; aligned rows against
+// retail in brackets, main 203): the vertical gravity term as `gravity * time * 0.5f` 216 (203); the path distance as
+// `chosen_speed * time` 216 (203); the velocity's horizontal square as i*i + j*j 215 (202, not kept: one row); the
+// inverse time passed straight to vector3f_scale 216 (203); the arc sign multiplied ahead of the root 216 (203); on the
+// 215 form, each of the first two and the sign order 215 (202).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,

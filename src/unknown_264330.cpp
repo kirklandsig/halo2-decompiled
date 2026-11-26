@@ -1057,6 +1057,16 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // + release-in-case-3) 455 (1628 B, frame 0x9c, aligned 159, masked 95), + 3 tail returns + split true flags + `delta`
 // 463 (1656 B, aligned 146, masked 86). Still BLOCKED-BY 0x2641c0's noinline declaration (src/unknown_265cb0.cpp) and
 // the release site's 0x25c820 expansion.
+// M3 lane 8 r239 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all MATCH; control 404 at
+// 1624 B, aligned 317). A compile-only all-stack screen of this file counts the actor index's home reads: main 6 (the
+// index in EDI, given up to the case 2, case 3 and completion view pointers). The update flag at function scope, false
+// at entry and cleared again after its one use in the sampling block, gives 1 there (the actor index then held in EBX
+// as retail) but 431 here at retail's 1616 B and 0xa0 frame (aligned 331; the actor index is still a stack argument
+// and EBX goes to the prop index in the loop); cleared after the sampling block instead 431; the 0x264b50 test as
+// `if (sample && update) if (0x25d610(node)) ...` 404 (same code); `actor[0x48] != 0` in the sampling test 404 (same
+// code); the 0x26be00/0x26be30 walk (round 220's form) re-measured 446 at 1632 B, with the function-scope update flag
+// 447. So holding the actor index in a register in that screen does not make it a register argument here. Still
+// BLOCKED-BY 0x2641c0's noinline declaration (src/unknown_265cb0.cpp, another lane's file this round).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

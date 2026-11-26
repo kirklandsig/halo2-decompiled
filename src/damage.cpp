@@ -1910,6 +1910,10 @@ long function_1e4a10(long index);
 // shield (piece 34) ahead of zero; retail needs the scaled shield numbered after the zero constant. Forms: the
 // six-name set re-measured 4; on it `shield_damage *= multiplier` 4, the absorbed product's operands swapped 4, both
 // 4; on main `shield_damage *= multiplier` 8 (same code), the clamped vitality named alone 8. All restored.
+// M3 lane 2 r152 (H2M_FAST, 8): the inverse maximum as a zero default then a conditional reciprocal 150 (880 B); the
+// in-radius flag read once into a bool for its three tests 222 (896 B); the six-name set re-measured 4, with the actor
+// index declared inside the type test and tested in a nested if (no assignment in the condition) 4; on it the shield
+// damage renamed, and the body and shield damage both renamed, 4/4 (names do not reorder the split pieces). All restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2850,6 +2854,17 @@ struct s_unit_event
 // drop blocks (ours still forms one data-plus-offset sum per block), the constant 1 spilled into the region slot at
 // the update, the vehicle block's constant 1 in ESI, the section scan's count/cursor pair, and scratch rotations in the
 // seat and event blocks.
+// M3 lane GB round 13 (24 trials, fast with 0xdaaa0/0xdae60/0xdb760 all MATCH; control 420 at 1868 B, al=216, mk=51):
+// on the named region-states lead (L = 523, 1852 B, +0x5a, al=126, mk=50), dropping the &region_index reference keeps
+// ret 0x14, frame 0x38, +0x5a, and all three matched callers MATCH (523, identical code — L needs no address-taken
+// hack); + existing function_e6900 inlined for the seat event 523 (al=119, mk=47; on baseline 442, mk=50), + indexed
+// section/seat scans 523 (al=109, mk=43: last 193 instructions structurally identical to retail; on baseline 442, mk=46),
+// + existing function_cbd50 (inlined via LTCG) and vehicle datum pointer 523 (al=90, mk=44; cbd50 alone on baseline/L
+// 420/523, via object->current_weapon_index on L 509 at 1868 B, +0x32, mk=59; via unit_weapon_view_get 523); L +
+// object_flags byte pointer 523, + inline damage_object_type 501 (1868 B, mk=74), + single || destroy body 513 (1868 B,
+// +0xc), + entry datum local 523, unified s_damage_object_datum on baseline/L 420/523, L + cbd50 + per-notification
+// const pointers 519 (al=124), diag pool local in drop blocks 523. On every clean form object still beats datum_offset
+// for ESI from 0xda1ca, keeping the 16-byte gap and lea [data+offset] in EDI across the drop blocks. Body unchanged.
 // The region and permutation registers remain exchanged. Short displacement,
 // long displacement, combined byte offset and staged byte offset score
 // 420/420/429/420. With a named full-width destruction bit, each scores 528.
@@ -3973,6 +3988,13 @@ enum
 // combined event mask 473, rolling damage initialized first 484.
 // NOT kept: the counted append ties and the rolling damage form only fixes length.
 // The child-permission homes and parent count register still differ.
+// GB15 (fast with 0xd9b60/0xdb210/0xd8cb0; control 309 at 1885/1880 B, +0x21, fr=0xf4; 14 trials, body unchanged):
+// consistent accumulator.field_4_2-> replacing all info-> after assignment / in damage block / after 0xd9110: 324 each
+// (1883 B, fixes all 5 flag homes and definition/info homes, but 0xd8119 reads [eax] where retail reads [esi]); + body
+// first 322 (+0x32), + record-order node stores 399 (1880 B), + all retail orders 396 (1880 B, +0x32), + while loop 324,
+// + i > NONE 329. Dropping `current` (DAMAGE_OBJECT at owner stores) 466 (1902 B, naturally recovers retail's `lea eax,
+// [reg - 1]; test eax, eax; jl` loop head), + consistent accumulator.field_4_2-> 462. `kill` after owner stores 396
+// (1888 B, al 221); `(bool)` cast on kill 309; named `damage_tag` local 309; `if/do-while` parent walk 309 (all same code).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
