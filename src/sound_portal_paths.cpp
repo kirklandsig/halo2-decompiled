@@ -818,6 +818,12 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // distances 295 (same code each), the valid clear and the cluster pointer in the lead's order 296, the path list formed
 // ahead of the seed test 358; on the held form the path list ahead of the seed test 363. Still BLOCKED-BY 0x14b240's
 // write summary (its may-write form raises 0x18ae80, another lane's file).
+// M3 lane 13 r164 (H2M_FAST with 0x18d730 and the callees; control 295): lane 5 r242's held 21 form re-applied, 21 (0x18ae80
+// 913). The allocator's ranking there: the widened index 134 (walk head +144 at weight 2 with 12 values referenced, stores
+// +36, -46 where it is live but unread), the cluster 124 (entry block +144 with 12 values, seed +32, -84 live in the walk).
+// On that form: the side bit as `(encoded >> 15) & 1` 22, `(word)encoded >> 15` 247, `(encoded & 0x8000) != 0` 21,
+// `(encoded & 0x8000) >> 15` 22; the cluster pointer ahead of the bit-vector clear 21. Still BLOCKED-BY 0x14b240's write
+// summary.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
