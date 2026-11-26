@@ -3212,7 +3212,7 @@ void function_202be0(long arg_0, long arg_1)
 struct s_1fb7e0_data;
 bool __stdcall function_20ba60(short arg_0, long arg_1, long arg_2, long arg_3, short arg_4, s_1fb7e0_data const *arg_5);
 
-// score 107 (was 126): registers differ: retail keeps the record and its index in EBP/EDI and the
+// score 67 (was 107): registers differ: retail keeps the record and its index in EBP/EDI and the
 // inherited and new choices in EBX/ESI, reads the 0x1c choice zero-extended into EAX (xor eax,eax;
 // mov ax), and keeps the next script index in BX on that path where ours stores it. Retail sets the
 // choice passed down back to NONE on every path that finds none, which the `local_11` branch
@@ -3232,6 +3232,15 @@ bool __stdcall function_20ba60(short arg_0, long arg_1, long arg_2, long arg_3, 
 // search: the record's priority (304) has to fall under the index's (232) so the index takes EDI and the record EBP
 // (95); the inherited choice in ESI (retail EBX), the zero-extended 0x1c load into EAX and the definition-table load
 // order still differ after that.
+// GB r25 (fast + plain, 42 valid trials): kept 0x202be0's arm shape (word pending, word local_7 = NONE, no goto,
+// else local_2 = NONE) passing (short)local_2 to function_202e30 (whose first argument arrives in ESI) -> 67 (476/476 B,
+// al=55, mk=17): snaps local_2 to ESI, arg_1 to EBX, local_5 to BX, squad base to EBX, and matches lines 65-147 up to
+// only the EDI<->EBP swap. Also tried: calling 0x202e30 in arm 1 235-250 (369-374 B, does not inline under 0x202e30's
+// /Ob1); guarded self tail call 197 (417 B); passing local_2 on main's goto arm 122; passing local_2 to 0x291740 too
+// 107 (480 B); short local_2 157; uninit local_2 with else 130; shared ai_index local 166 (452 B); word23/dword24
+// flag, flag16-first, typed views, squad loop step, De Morgan if, no local_3, local_2 outside while all tie 67. Lead
+// (not kept): arm-1 separate group lookup / a __forceinline 0x202e30 flips EDI<->EBP so all 4 callee-saved registers and
+// lines 65-148 match retail verbatim (al=41, 476/476 B) but duplicates the 0x38 multiply in arm 1 (118).
 // @retail 0x202a00
 void __stdcall function_202a00(long arg_0, long arg_1)
 {
@@ -3257,36 +3266,36 @@ void __stdcall function_202a00(long arg_0, long arg_1)
         {
             short local_5 = NONE;
             short local_6;
-            short local_7 = *(short *)(local_4 + 0x1c);
-            if (local_7 != NONE)
+            word pending = *(word *)(local_4 + 0x1c);
+            word local_7 = (word)NONE;
+            if (pending != (word)NONE)
             {
-                if (*(short *)(local_4 + 0x1e) > 0)
-                    goto local_11;
-                local_5 = *(short *)(local_4 + 0x20);
+                if (*(short *)(local_4 + 0x1e) <= 0)
+                {
+                    local_7 = pending;
+                    local_5 = *(short *)(local_4 + 0x20);
+                }
             }
             else
             {
                 local_7 = function_290cd0(*(short *)(local_4 + 0x14), NONE, arg_0, &local_6, &local_5);
-                if (local_7 == NONE)
-                    goto local_11;
-                if (local_6 > 0)
+                if (local_7 != (word)NONE && local_6 > 0)
                 {
                     *(short *)(local_4 + 0x1e) = local_6;
-                    *(short *)(local_4 + 0x1c) = local_7;
+                    *(word *)(local_4 + 0x1c) = local_7;
                     *(short *)(local_4 + 0x20) = local_5;
-                    goto local_11;
+                    local_7 = (word)NONE;
                 }
             }
-            if (local_7 != NONE)
+            if (local_7 != (word)NONE)
             {
-                local_2 = local_7;
-                function_202e30(local_7, arg_0, true);
+                local_2 = (short)local_7;
+                function_202e30((short)local_2, arg_0, true);
                 if (local_5 != NONE)
                     function_20ba60(local_5, NONE, NONE, local_3 | 0x40000000, NONE, NULL);
             }
             else
             {
-local_11:
                 local_2 = NONE;
             }
         }
