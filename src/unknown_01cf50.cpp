@@ -7551,8 +7551,8 @@ extern dword g_4e6494;
 // call out of the pass loop (retail's evaluation order, not a behaviour fix; 221 -> 193). (3) The volatile
 // on geometry is gone (193 -> 184); the length is retail's 877 and the frame retail's 0xac. (4) The (byte)
 // cast on the word at section + 0x1a is gone: retail pushes the zero-extended word (0x4c929) where ours
-// still loads a byte, because function_1cdd0 declares `byte flags`; its callee reads only the low byte
-// (0x1cdde), so no behaviour differs, and the score is the same. Still differs: ours creates the zero in
+// loaded a byte while function_1cdd0 declared `byte flags`; function_1cdd0 now takes `long flags` and reads only
+// the low byte (0x1cdde), so no behaviour differs. Still differs: ours creates the zero in
 // ebx before the test of function_3e320's result where retail makes it in edi after it (0x4c6fe), the
 // loop counter is in edi (copied to esi before function_151e0) where retail keeps it in esi, the section
 // is in esi where retail uses ebx, and ours tests the table handle once (jl) where retail tests NONE
@@ -10838,8 +10838,8 @@ __declspec(noinline) void function_016a30(real scale, long y, long x);
 // so passing &g_484dbc changes no behaviour and drops the NULL local. (4) the volatile on success is gone: retail
 // stores 0 only on the failure path (0x125d5). (5) the position copy is one struct assignment (dword moves,
 // 0x12809-0x1281a). Callers/callees: 0x1d3f0 (62), 0x2ca00 (3) unchanged, 0x2c8a0 and 0x16a30 still MATCH.
-// Still differs: retail sign-extends both offsets (0x125a7, 0x125aa) because its callee took ints (declared short in
-// src/unknown_0167a0.cpp, not edited); 0x3f6e10 takes 0x11 in eax (0x12670) where the XDK lib here takes it on the stack.
+// Retail sign-extends both offsets (0x125a7, 0x125aa) because its callee takes longs, as function_016a30 is now
+// declared. Still differs: 0x3f6e10 takes 0x11 in eax (0x12670) where the XDK lib here takes it on the stack.
 // @retail 0x12560
 void function_12560()
 {
