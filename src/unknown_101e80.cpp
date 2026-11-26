@@ -264,6 +264,17 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // written rate-first 31, the child lookups without the getter 117; the existing unit weapon-slot getter 0xcbd50 for
 // the two picks 207 (it stays a call). Other probes on main: a second child local, the index compares written
 // index-first and a named child index all leave the tie (87).
+// GA23 (42 fast trials, 6 peers MATCH): child weapon slot lookup in a shared inline helper
+// `unit_hand_weapon_102100(holder->child_index, 0/1)` (or index-first SIB in `object_get_102100`) 29 (al 24->22,
+// fixes both `[ecx+eax+8]`/`[ecx+esi+8]` lines; NOT kept: 2-pt gain under keep bar). On 29/31: `real_bounds` +
+// `real_bounds_interpolate` (inline / `__forceinline`) 31 (by-value 232), `tag_link` duration/rate inlines 31,
+// `offset + base` 31, `tag_block` inline helpers 31, `long idx` at top 265, dead `tag_link` copy/helper 31,
+// `inline_depth(2)` / no-`/Ob1` diag 31/29, `s_tag_link const &` / `+=` / decl at top / duration operand orders /
+// `end` local / `weapon_get`+`weapon_tag_get` / `(long)link_index` / `__forceinline` ptr / decl reorder / 2-ptr
+// duration / `101f20` holder inline / `long tag_index`+`.bytes` / `byte *links` / `dword flags` / ternary rate /
+// `real_bounds *` local / `object_link_get` / duration-from-tag inline all 29 (same code: `tag_link` still folds into
+// `[ecx+eax+8]`); `link` after `tag_link` 31; `rate = 0` no-else 197 (707 B); bools after duration 179 (708 B);
+// `slots[2]` array 232; diag `s_tag_link *const &` 29 (still folds), `volatile` ptr 247. Body unchanged.
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {

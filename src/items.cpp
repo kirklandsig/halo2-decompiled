@@ -2085,6 +2085,18 @@ struct s_item_flags_view_10b850
 // impact threshold, lift, both flow steps, lateral magnitude, complete flow, shared ray with complete flow,
 // and shared ray with all subtractions: 855/842/813/813/878/878/891/871. NOT kept: the overlap forms shorten the frame to 0x144
 // but expand the body and raise the score.
+// GA22 (29 fast trials, control 813 at 4096/4096 B, al=773, mk=513, 15 peers MATCH, 0x10b4d0 140, body unchanged):
+// on 813 base: default: case 4: settle 813 (with word_flags_set 859 fr=0x148), bit_vector_test entry/gravity/bit14 860,
+// c_type_47f957 default ctor on s_collision_result_1697c0::unknown24 with early collision/settled 813 (ins 868, mk 496; + default: case 4: 813),
+// vector3f_add_scaled/vector3f_add 813, typed s_item fields + s_item_definition 813, swapped gravity with physics_gravity_get() 865 (fr=0x148).
+// On clean retail stack (c_type_47f957 + typed collision + settle-first + word_flags_set + cross3f/SSE abs + vector3f_add_scaled/vector3d_from_points3d +
+// function_x84d9e8 + cross3f_staged): base 871 (4075 B, fr=0x138, al=567, mk=380), + bit_vector_test 880 (4074 B, fr=0x138, al=530, mk=222: locks
+// collision [esp+0x58], flow [esp+0xb4], angular [esp+0x4c], velocity [esp+0x14], position [esp+0x28], matrix [esp+0x58]), + ternary value_13a 861
+// (4097 B, fr=0x140, mk=273; if/else 866 fr=0x138 al=515; item_spin_vector 860 at 4096 B; no settle-first 909; typed s_item fields 861; case 4: only 868;
+// s_item union bitfields 862; outer-cast / <=254 ternary 883); + scoped ray block: on base 876 (4073 B, +0x3e, fr=0x12c, al=514, mk=374, no flag helper),
+// on bit_vector_test + ternary value_13a 861 (exact 4096/4096 B, fr=0x134, ins=876/877, al=461, mk=210, ray/flow shared at [esp+0xb8]; renaming ray/flow 861;
+// item_spin_vector 860; outer-cast / <=254 ternary 885; + case 4: only 876; no ctor 894 fr=0x12c +0x3e; entry local bools diag 891 fr=0x12c +0x3e);
+// calling noinline function_16a040 on clean stack 938 (4013 B, fr=0x12c, +0x3e). Still blocked on entry dead-byte stores (carrier slot reuse) and noinline 0x16a040.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
