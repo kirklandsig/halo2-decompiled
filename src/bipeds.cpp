@@ -23,6 +23,7 @@ files; 0xdc370, at the start of the range, is c_a's destructor
 #include "unknown_1efac0.h"
 #include "unknown_1eb550.h"
 #include "unknown_1cafc0.h"
+#include "unknown_1e1f20.h"
 #include "object_tag_definitions.h"
 #include <math.h>
 #include <string.h>
@@ -8164,6 +8165,17 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // each producer arm and keeps aim.x/aim.y in registers to the direction (ours copies at the join, those candidates
 // are never coloured), the normalize's per-component store order, the frame block's sum order and the slot order
 // (retail head +0x10, aim/world +0x1c, eye +0x28, target +0x34).
+// M3 lane GA r24 (48 fast trials with 0xdef60, 0xde9d0, 0xe63b0 all MATCH and 0xe5bc0 unchanged at 55; control 219 at
+// 1624/1624 B, +0x54, al=107, mk=53; body unchanged): assigning `aim = target` in each of the two outer arms (`t05`)
+// snaps every stack slot (`head +0x10`, `aim +0x1c`, `eye +0x28`, `target +0x34`, `self_definition +0x40`, `center +0x44`,
+// `height +0x50`, `radius +0x54`, `frame +0x58`, `collision +0x7c`), reproduces the `0x183670` `target.z`-only store, and
+// matches bytes `+0x000..+0x382` verbatim: 201 (`1637/1624 B`, `al=88`; + `+=` `k, j, i` frame dots 196, `al=85`; + `self`/`other`
+// diag `al=71`, `1637 B`), NOT kept because `+13 B` over retail (`aim` is stored inside both arms instead of carried in
+// `ecx`/`eax`/`edx` to the join). Also tried: `aim` declared before `eye` / retail decl order / renamed slots / late `aim` decl /
+// `gt` clamp / `memcpy(&aim, &target)` / in-place matrix3x3 inverse-transform helper / `+=` `k, j, i` frame dots on 219 base
+// (219 each); field-by-field `aim` copy in 2 arms or outer join / brace init / `real_point3d_set` before or after clamp (273/277,
+// `1594 B`, `target.x/y` copy-propagated); `aim` in 3 arms (240, `1645 B`); scoped `target` + `target_z` (224, `1624 B`);
+// flat `if/else if/else` (332); by-value target-point helper (531/547); inline `j *= inv; k *= inv` normalize (237 on 219, 206 on `t05`).
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {
@@ -8248,55 +8260,21 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
    (NONE for none): the one inside the grab window (function_e63b0), and when
    both are, the one with the smaller yaw when both are close, else the
    nearer; NONE when neither is */
-// score 55 (was 112) in a full build with stand-in SDK headers: the result lives in object_index's argument home
-// and the candidate in a copy (`candidate_index`), with no result local, as retail keeps them. Left: retail keeps
-// the pool pointer in esi and reloads [esi+0x44] for the weapon lookup of the inlined 0x1012c0 where ours caches
-// the data pointer, and retail calls 0xe63b0 on the candidate first.
-// Before:
-// score 112 (was 112): walked against retail block by block, no behaviour difference: the weapon slot byte at
-// +0x212 and the +0x218 table (0xe5be1-0xe5bfd), the flag inlined from function_cbd50 and function_1012c0
-// (definition byte +0x12f, bit 0; 0xe5c04-0xe5c34), previous == NONE at 0xe5c37, both function_e5d50 calls (object
-// first, then previous, offset = unit + 0x168, out pushed first; 0xe5c4d, 0xe5c83, 0xe5c95), function_e63b0 on
-// candidate then current (0xe5ca0, 0xe5cad), the 0.6 constant at 0x44ae8c, the gap test (+8, 0xe5cc6-0xe5cda), the
-// yaw magnitudes (+0, 0xe5cdc-0xe5d0a; the candidate wins only when |candidate yaw| < |current yaw|, a tie
-// keeps previous via 0xe5d36) and the three returns (candidate: 0xe5cbc, 0xe5d0f, 0xe5d23; previous: 0xe5d36; NONE:
-// 0xe5d3a) all agree; the caller 0x1515e0 (0x15165a-0x15166c) passes (unit, object, previous) and stores the
-// result. Remaining difference is allocation: retail keeps object_index in EBP and the result in the argument's
-// home slot ([esp+0x28], stored as imm -1 at 0xe5bf0), reloads [esi+0x44] for the weapon lookup (0xe5c0b) and tests
-// the first function_e63b0 result from its spill (0xe5cb2); ours holds -1 in EBP as the result, caches the data
-// pointer in ESI and calls function_e63b0 on current first. Tried: result as a reassigned parameter with the flag
-// before the unit lookup (391 bytes, 120), flat && conditions (127/132), inverted nesting (136/140), calls inside
-// the conditions (114, wrong: the second call becomes conditional).
-// M3 lane 8 r240 (fast screen with 0xe63b0 and caller 0x1515e0, which stay matched; this body measured 55 at 384 B, the
-// result now in the parameter's home and the candidate in EBP as retail). Left: our NONE is one EDX constant for the
-// home store and two compares where retail stores and compares immediates; ours keeps the object data field in ESI
-// where retail keeps the array global and re-reads the field inside the inlined weapon-flag lookup (0x1012c0's); the
-// two inside tests run current-first (the compiler reorders them to keep the first-tested result in AL). Forms: the NONE
-// store ahead of the flag 128 (382 B), ahead of the unit lookup 120 (391 B: the immediates and the store's place become
-// retail's, the data-field reload is still missing, so the rest misaligns); the flag before the unit local, the
-// candidate copy first, a named weapon index 55 each (same code); a named offset pointer for the three calls 133 (caller
-// 0x1515e0 69). On the early store: the inside results as initialisers, declared the other way round, the vectors
-// declared the other way round, the calls written current-first, 120 each (same code). Diagnostics (reverted): the
-// parameter's address stored to a probe global 84 (the field still kept, not an aliasing kill); a probe global store
-// inside 0xe63b0 gives retail's two-vector arm exactly; a self-copy through its aim parameter does not. BLOCKED-BY
-// 0xe63b0 (its call order needs it to look side-effecting to the optimiser).
 // @retail 0xe5bc0
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {
+	long result = NONE;
 	s_biped *unit = BIPED_GET(unit_index);
-	long candidate_index = object_index;
-	bool flag = function_1012c0(function_cbd50(unit_index, *((char *)unit + 0x212)));
-
-	object_index = NONE;
+	bool flag = function_1012c0(unit_get_current_weapon(unit_index));
 
 	if (previous_index == NONE)
 	{
 		vector3f measurement;
 
-		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&measurement);
+		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&measurement);
 		if (function_e63b0(&measurement, flag))
 		{
-			object_index = candidate_index;
+			result = object_index;
 		}
 	}
 	else
@@ -8306,46 +8284,43 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 		bool candidate_inside;
 		bool current_inside;
 
-		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&candidate);
+		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&candidate);
 		function_e5d50(unit_index, previous_index, &unit->unknown168, (point3f *)&current);
 		candidate_inside = function_e63b0(&candidate, flag);
 		current_inside = function_e63b0(&current, flag);
-		if (candidate_inside)
+		if (candidate_inside && current_inside)
 		{
-			if (current_inside)
+			if (candidate.k < 0.6f && current.k < 0.6f)
 			{
-				if (candidate.k < 0.6f && current.k < 0.6f)
-				{
-					real candidate_yaw = candidate.i >= 0.0f ? candidate.i : 0.0f - candidate.i;
-					real current_yaw = current.i >= 0.0f ? current.i : 0.0f - current.i;
+				real candidate_yaw = candidate.i >= 0.0f ? candidate.i : 0.0f - candidate.i;
+				real current_yaw = current.i >= 0.0f ? current.i : 0.0f - current.i;
 
-					if (candidate_yaw < current_yaw)
-					{
-						object_index = candidate_index;
-					}
-					else
-					{
-						object_index = previous_index;
-					}
-				}
-				else if (candidate.k < current.k)
+				if (candidate_yaw < current_yaw)
 				{
-					object_index = candidate_index;
+					result = object_index;
 				}
 				else
 				{
-					object_index = previous_index;
+					result = previous_index;
 				}
+			}
+			else if (candidate.k < current.k)
+			{
+				result = object_index;
 			}
 			else
 			{
-				object_index = candidate_index;
+				result = previous_index;
 			}
+		}
+		else if (candidate_inside)
+		{
+			result = object_index;
 		}
 		else if (current_inside)
 		{
-			object_index = previous_index;
+			result = previous_index;
 		}
 	}
-	return object_index;
+	return result;
 }

@@ -482,6 +482,15 @@ bool g_47f05b;
 // `new (block) c_havok_fixed_memory(0x15000)` 35 (140 B: the base vtable store is still dropped); that with the fixed
 // base `__declspec(novtable)` 35; novtable on the fixed base alone 34 (same code); the size-only form placed through
 // g_479888 35, also with novtable 35. 0x146b80 and 0x22c3e0 stay matched in all. Body unchanged.
+// M3 lane 15 r152 (h2m fast with 0x146b80, 0x22c3e0, 0x146e30 and 0x146ac0; 0x146b80, 0x22c3e0 and 0x146ac0 MATCH
+// throughout; control 34). Retail's layout reads like a fixed buffer that carries its own storage: the allocator's 0x30
+// bytes, its 0x15000-byte buffer right behind it (buffer = this + 0x30), and the pool at the next 16-byte boundary
+// (0x15030 -> 0x15040). Lead: a type derived from c_havok_fixed_memory in this file with a `byte fixed_bytes[0x15000]` member,
+// its constructor passing (fixed_bytes, sizeof(fixed_bytes)), built with `new (block) ...` 35 (140 B): the reload of the block on
+// the constructed arm and the `lea esi, [eax + 0x15040]` join are then exactly retail's, and the only difference left is
+// the abstract allocator's dropped vtable store (6 bytes). On it: a virtual destructor in the derived type 35; the block
+// read from g_479888 directly (no local) 35; the derived type novtable 35; the fixed base novtable in the shared header 35.
+// Not kept (one point above 34 without the store). Body unchanged.
 // @retail 0x146a20
 void function_146a20(void)
 {

@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "unknown_11cb00.h"
 #include "unknown_11cc90.h"
+#include "vector_products.h"
 #include <math.h>
 #include <xtl.h>
 
@@ -199,6 +200,17 @@ __inline void quaternion_rotate_point(
 // square and dot locals and w2 computed after d, plus the existing point3f_scale for the scaled position: 8 (was 35),
 // and 0x11dd80 4 (was 48). The locals and the w2 placement are statement and operand order, kept only with a byte
 // match. Left at 8: the dot sums (j + i) + k in retail and cy multiplies q->i * v->z.
+// M3 lane 13 r163 (h2m fast with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820; main 35): the held form rebuilt 8 (0x11dd80
+// 4). Its rotate already has the shape of the vector twin in src/unknown_141590.cpp. The two spots left are operand-rank
+// ties: in the commutative sorts the field loads rank by their address temporaries, here q.j and v.x 6, q.w 4, q.i and
+// v.z 2, v.y and q.k 0 (units of 0x2000), so the dot's i and k terms tie and keep the k term first, and cy's q.i * v.z
+// keeps v.z first; retail's order needs v.z alone at 0 or 1. On the held form: cy as `v->z * q->i` 8 (same code); the
+// helper's definitions reordered (dot and d first 79, w2 before the dot 66, cy/cx/cz 8, cz/cy/cx 27, cx/cz/cy 27,
+// cross products first 93, dot before m 8, dot before the square 8, cy/cz/cx 8, cz/cx/cy 27, w2 last 88, w2 after cx 8,
+// w2 between cy and cz 78); `2.f *` spellings of m, d and w2 8; the cross product into a named vector 83 (0x11dd80 92),
+// through the existing cross3f the same ranks; `out->scale = a->scale * b->scale` 8; the position sum as `+=` 8; the
+// copies through memcpy 8, with `out == a` tests the same ranks, from `*out` 35 (the copy reads EDX). Diagnostics: without
+// the copies only v.x moves (to 5); without the tail or the 0x11d820 call nothing moves.
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,
@@ -253,6 +265,11 @@ static __inline point3f *point3f_scale(point3f const *p, real s, point3f *result
 // expression 4/9/18 (same three placements); the inverse scale as an inline helper 58-60 (432 B); a named -1 constant
 // at file scope 4 (also for w: 4), as a local 14. Dead-local scans at three anchors: the rotate moves with period 8
 // (4 only at 0, 8, 16), the tail never.
+// M3 lane 12 r195: the rotate helper in the matched vector form's order (named square, w2 after d, as in
+// src/unknown_141590.cpp) 19 (0x11dbb0 39); with a named dot 4 (0x11dbb0 48) and with 0x11dbb0 through
+// point3f_scale 4 (0x11dbb0 16; that helper moved above the rotate). Without moving w2: square and dot named 50,
+// square named 86 (433 B), point3f_scale in 0x11dbb0 alone 48 (0x11dbb0 63), dot named 39 (0x11dbb0 21; a one-use
+// name). The w2 move is a statement order change, kept only with a byte match; the tail's 4 are left.
 // @retail 0x11dd80
 void function_11dd80(
 	real_quaternion_transform const *in,
@@ -284,46 +301,34 @@ vector2f *function_11df30(
 	return angles;
 }
 
-// review (machine 3, 2026-11-26): the form in the next note (37) is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (77) stays.
-// score 77 (the held form described here scored 37): vector_products.h helpers (length_sq3f, vector3d_from_points3d, dot3f, vector3f_add_scaled) and inline ternary clamp match lines 1-46; left: two-return tail schedule and else subtraction order. Single-exit `real result;` matches byte-for-byte (0, 290/290 B; also improves 0x260670) but triggers LTCG auto-inlining in matched 0x1a8fa0 (435), so held as a patch; in-place v 48 (inlines 0x1a8fa0); kji/jki return sums 39; parenthesized xyz return 41; if/else clamp with helpers 78.
+// score 37 (was 77): vector_products.h helpers (length_sq3f, vector3d_from_points3d, dot3f, vector3f_add_scaled) and inline ternary clamp match lines 1-46; left: two-return tail schedule and else subtraction order. Single-exit `real result;` matches byte-for-byte (0, 290/290 B; also improves 0x260670) but triggers LTCG auto-inlining in matched 0x1a8fa0 (435), so held as a patch; in-place v 48 (inlines 0x1a8fa0); kji/jki return sums 39; parenthesized xyz return 41; if/else clamp with helpers 78.
+// M3 lane 12 r195: this helper form is applied together with 0x11e800's; each alone moved 0x24cf66 (a link-time
+// layout flip) in an earlier full build, both together keep it matched (this round's full check). The single-exit
+// match stays out of line at 0x1a8fa0 when that caller tests a flag in place of its goto (0x1a8fa0 then 2: its
+// `distance += actor->unknown36c` takes the parameter first, the field load ranking below it; flag spellings,
+// stores in the inner test, named range, the direction or the dot through the vector helpers 2-6, statement orders
+// in the block 4-39); the existing 0x1f8640 flag reader in 0x1a8fa0 493 (still inlined). Same-shape bodies: if/else
+// clamp single-exit 70 (296 B), main's old body single-exit 69 (296 B), a named length squared 95 (265 B, inlined).
 // @retail 0x11e000
 real function_11e000(
 	point3f const *b,
 	point3f const *a,
 	vector3f const *d)
 {
-	if (d->j * d->j + d->k * d->k + d->i * d->i > 0.0001f)
+	if (length_sq3f(d) > 0.0001f)
 	{
 		vector3f v;
-		real t;
-
-		v.k = b->z - a->z;
-		v.i = b->x - a->x;
-		v.j = b->y - a->y;
-		t = (d->i * v.i + v.k * d->k + v.j * d->j) / (d->j * d->j + d->k * d->k + d->i * d->i);
-		real nt;
-		real x;
-		real y;
-		real z;
-
-		if (0.f > t)
-			t = 0.f;
-		else if (t > 1.f)
-			t = 1.f;
-		nt = 0.f - t;
-		x = d->i * nt + v.i;
-		y = nt * d->j + v.j;
-		z = nt * d->k + v.k;
-		return z * z + y * y + x * x;
+		vector3d_from_points3d(a, b, &v);
+		real t = dot3f(&v, d) / length_sq3f(d);
+		vector3f diff;
+		vector3f_add_scaled(&v, d, -(t < 0.f ? 0.f : (t > 1.f ? 1.f : t)), &diff);
+		return length_sq3f(&diff);
 	}
 	else
 	{
 		vector3f u;
-
-		u.j = a->y - b->y;
-		u.i = a->x - b->x;
-		u.k = a->z - b->z;
-		return u.k * u.k + u.j * u.j + u.i * u.i;
+		vector3d_from_points3d(b, a, &u);
+		return length_sq3f(&u);
 	}
 }
 
@@ -552,47 +557,42 @@ real function_11e6f0(
 	}
 }
 
-// review (machine 3, 2026-11-26): the form in the next note (109) is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (126) stays.
-// score 126 (the held form described here scored 109): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
+// score 109 (was 126): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
+// M3 lane 12 r195: applied together with 0x11e000's helper form (see there). On it: locals renamed to sort in
+// retail's slot order 109 (slots here do not follow names); GA's 27 form re-measured 27 (the two index loads tie at
+// allocator priority 84, creation order puts i1 in eax); on it the row read through a short pointer 36, i0 read
+// first 62, long indices 64; a forced-ranking search finds no single decision (best 29).
 // @retail 0x11e800
 bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {
-	real w[3];
-	real e2[3];
-	real e1[3];
+	vector3f w;
+	vector3f e2;
+	vector3f e1;
 	vector3f n;
 	real d;
 
-	w[0] = p->x - a->x;
-	w[1] = p->y - a->y;
-	w[2] = p->z - a->z;
-	e1[0] = c->x - a->x;
-	e1[1] = c->y - a->y;
-	e1[2] = c->z - a->z;
-	e2[0] = b->x - a->x;
-	e2[1] = b->y - a->y;
-	e2[2] = b->z - a->z;
-	n.i = e1[2] * e2[1] - e1[1] * e2[2];
-	n.j = e2[2] * e1[0] - e1[2] * e2[0];
-	n.k = e1[1] * e2[0] - e2[1] * e1[0];
-	d = n.j * w[1] + n.k * w[2] + n.i * w[0];
-	if ((n.k * n.k + n.j * n.j + n.i * n.i) * 0.0001f > d * d)
+	vector3d_from_points3d(a, p, &w);
+	vector3d_from_points3d(a, c, &e1);
+	vector3d_from_points3d(a, b, &e2);
+	cross3f(&e2, &e1, &n);
+	d = dot3f(&n, &w);
+	if (length_sq3f(&n) * 0.0001f > d * d)
 	{
 		short axis = function_120850(&n);
 		bool positive = n.n[axis] > 0.f;
 		short const *indices = g_440b94[axis * 2 + positive];
 		long i0 = indices[0];
 		long i1 = indices[1];
-		real w1 = w[i1];
-		real e2_1 = e2[i1];
-		real e2_0 = e2[i0];
-		real w0 = w[i0];
+		real w1 = w.n[i1];
+		real e2_1 = e2.n[i1];
+		real e2_0 = e2.n[i0];
+		real w0 = w.n[i0];
 		real ca = w1 * e2_0 - e2_1 * w0;
 
 		if (ca > -0.0001f)
 		{
-			real e1_1 = e1[i1];
-			real e1_0 = e1[i0];
+			real e1_1 = e1.n[i1];
+			real e1_0 = e1.n[i0];
 			real cb = e1_1 * w0 - w1 * e1_0;
 
 			if (cb > -0.0001f)
