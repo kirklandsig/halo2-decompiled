@@ -1640,6 +1640,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `sqrt(length_sq3f(input))` 297; `sqrt(dot3f)` + history `length_sq3f` 488; typed output struct 495; `gravity = false` at first-arm
 // top 193; flags without `!= 0` 192 (3050 B); dropping parens on `magnitude`/`maximum` 293/215; 2-caller `project_onto_plane` helper
 // (inline/forceinline/dot3f/add_scaled) 494/494/483/449; direct `state->normal` 549; both dots before projections 286.
+// GB24 (62 fast trials across 4 batches with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0 MATCH; 198 unchanged): Arm 3 direct
+// member stores (`T02`, al=122, 3037 B) or `vector3f_add(&limited, current, ...)` (`T04`, al=131, 3047 B) trigger retail's
+// exact Arm 1 `jmp 0x1f0f58` tail-share and Arm 3 output; `real drop` + Arm 2 direct stores + Arm 3 `vector3f_add` (`D06`)
+// reaches al=114 (3052 B, 273) matching Arm 2's `movaps xmm1, xmm0` and `movss [edi+0x14], xmm1` verbatim, but whenever Arm 2
+// ends in xmm1 VC commutes Arm 3's out.k to `addss xmm2, [eax+8]` (suppressing Arm 1 tail-share, +5 B), while whenever Arm 2
+// ends in xmm0 (`T02`, `C01` real_point3d_set 562, `C02` vz first 390 al=127 at 3047 B) Arm 2 also tail-shares (-5 B). Also
+// tried: Arm 2 direct stores 545 / both direct 311 (3052 B) / +direct-first 307 / +vector3f_add 471/469; Arm 3 no scaled 499 /
+// in-place desired 501 / reuse desired 442 / norm delta+original 428; high-norm / rot.y / cross3f swaps 198; low-norm
+// cross(up,forward) 379, 1f087b 383, cross before forward copy 351 (3070 B), no forward copy 497, dot kji 352, side.j first
+// 200; Arm 1 cross written out 545; mag kji 198; Arm 2 vx/vy 321/311, pluseq 448/275, drop last 543, k first 389, step<norm 471.
 // M3 lane 13 r162 (h2m fast with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 198, masked-aligned 143): the earlier
 // existing-helper forms re-measured on the 198 body: the input length through magnitude3d 297 (3036 B); both lengths
 // through magnitude3d 487; the general arm's output through vector3f_add(current, &limited, out) 542; the direct arm's

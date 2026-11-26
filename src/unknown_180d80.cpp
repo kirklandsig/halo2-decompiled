@@ -465,6 +465,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // record element through a pointer used for its stores and the distance terms 588 (2690 B); the time stamp stored
 // ahead of the point copy 111; the definition's type word read once into a named short for both tests 166; the vertex
 // loop's counter declared in the `for` after the luminance store 142 (masked aligned unchanged at 27).
+// M3 lane 3 r315 (H2M_FAST with 0x180b60 and 0x17cfa0, both MATCH; control 91): the centre vector cleared by one chained
+// assignment 93; the three range tests spelled `0.5f >= hi - lo` 91; the squared distance summed x, y, z 91; the luminance
+// default declared after the colour/vector record 91; the count sum declared ahead of the centre vector 91 (same code
+// each but the first). The transform rows are the shape of 0x142570, which retail expands here four times; its file is
+// another lane's this round. Body unchanged.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

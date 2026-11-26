@@ -1026,6 +1026,16 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // the turn weight's half factor folded into local_26 (`local_26 *= 0.5f;` ahead of the dot, then `local_24 *=
 // local_26;`) 476 (3507 B); both 479 (3507 B); the +0x7c axis pointer as a typed member address beside forward 462 and
 // as `&local_1->forward + 1` 462 (same code each). Body unchanged.
+// M3 lane 11 r173 (H2M_FAST with GB15's companion list, all companions as in the control; control 462). Retail's side
+// select computes the y row in each arm (`A = r; y = r * h + py` and `t = 0 - r; A = t; y = t * h + py`, each arm in its
+// own registers, so the rows exist before allocation) and the x row after the join; ours merges any y row written per
+// arm back into one row on the selected value, even with different operands per arm. Forms: an if/else with the y row
+// in each arm on the selected value and the else value as `0.0f - local_23`, x after the join, 719 (3502 B, frame
+// 0x90: the y row merged after the join and stored); the same with the true arm's row on local_23 itself 719 (same
+// code); the y row as a second select whose else arm multiplies `(0.0f - local_23)` 734 (3521 B); the y member assigned
+// first from a `0.0f - local_23` select 706 (3499 B, first difference +0x4e); that with both clamps as `MIN(1.0f,
+// ratio)` and the first and last frame-velocity dots axis first 707 (3499 B, +0x4e). Re-measured: those two forms alone
+// 457 (a gain of 5, under the bar); the else value as `0.0f - local_23` alone 462 (same code).
 // GA22 (12 fast trials on calibrated companion list, control 462 at 3504/3499 B, +0x100, fr=0x88, pos=+0x8c, al=178, mk=64, 0x1f38c0 MATCH, body unchanged):
 // value-returning point2f_add_scaled_val in if/else (xy or yx) 793 (3555 B, fr=0x8c, pos=+0x84), ternary yx 838 (3590 B, fr=0x94);
 // symmetric if/else with same arm-local s (y before x or x before y) 729 (3527 B, fr=0x8c, pos=+0x84, ins=846/844: moves pos below local_14 but spills point2f to x87 fsub);

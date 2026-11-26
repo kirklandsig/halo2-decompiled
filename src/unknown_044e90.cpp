@@ -708,6 +708,11 @@ struct s_visibility_bound_record
 // copy of the lookup taking the entry pointer, removed): alone 449 (1760 B) [244/208/75]; with the two-arm query
 // 481 (1777 B) [213/184/71], and then the entry is in EBX from the first instruction with the tag read through it and
 // the geometry in EDI, as retail; the table is still loaded inside the tag arm.
+// M3 lane 16 r194 (h2m fast with 0x458d0, 0x45a80, 0x44720 and 0x45560, all MATCH; control 430 at 1751 B): the frustum
+// transform read once ahead of the view loop 483 (1780 B, first difference +0x7); the plane taken through 0x1428b0 from
+// the source into the copy, with a plain copy in the else arm, 440 (1760 B); the plane stored as an aggregate assignment
+// and its distance negated after 431 (1767 B); the four counts cleared by four statements 430 (same code); the
+// containment flag declared ahead of the part loop and cleared in it 430 (same code). Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

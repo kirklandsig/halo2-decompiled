@@ -411,6 +411,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // through the statistics address with the row formed after it, on main's bool body with long limits 83 (434 B), on the
 // 70 form 79 (429 B); on the 70 form the counter pointer ahead of the limits 70, the store clamping a `value` copy 70
 // (same code each), the index test nested inside the enable test after the limits 106 (425 B).
+// M3 lane 7 r234 (fast screen with 0x1ea770, 0x1e9ce0, 0x1e9df0 and 0x1e9fa0, MATCH each run; control 76 at 432 B).
+// Reading: retail's player block is 0x1968b0's body expanded (its own enable and lock tests, the enable byte re-read
+// after the counter store) where the team block calls it, the same one-site expansion as 0xb8bd0 in 0xbd090; both
+// helpers' file (/Ob1) was on this round's avoid list. Forms: the old maximum through a plain call of the existing
+// 0x196960 141 (420 B), the team maximum so 103 (425 B), both 140 (423 B: the getter stays a call); the row formed
+// ahead of the enable read 94 (434 B); the clamp's upper test as its own `if` (no else) 96.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

@@ -2469,6 +2469,11 @@ bool function_1900a5(long index);
 // + last_write 674; polls as `state != 0 && state != 1` / `state == 0 || state == 1` 633 (al=374, mk=251); `pstate` local in
 // request loop 633; `buffers` declared first 633. All retail-aligned structural forms shift positional rows up behind the
 // three cross-file/flag blockers (0x1900a5 cmovne /arch:SSE, 0x647a0/0x647d0 and 0x75890 /Ob1).
+// M3 lane 12 r194 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x72700, 0x75890, 0x6c7e0, all MATCH;
+// control 633): the opening test through the existing logon helper 0x6c7e0 itself 763 (its /Ob1 file keeps it a call); the
+// request gate through the existing elapsed-time function 0x75890 itself 646 (a call, same file reason); the delay as one
+// conditional expression 633 (same code); the property value as `= 0` then `if (type)` 642; the team flag declared ahead of
+// the valid flag 633 (same code).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

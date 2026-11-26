@@ -3200,6 +3200,16 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // stored 16 (folded); the sound index stored first after the clear 24; the request priority declared first with the
 // default object index stored ahead of the marker 16; the lookup un-nested (`entry_index` reassigned, then `entry_index !=
 // NONE && 0x114520`, the index declared in the request block) 22.
+// M3 lane 11 r173 (H2M_FAST; control 16). The allocator's ledger costs a reference to the NONE constant at half a
+// variable's (its stores 1, its compares 0) where the index's and the request priority's cost 2, so with retail's
+// references it cannot pass the index (14 against 48); costed as a variable (its load and compares at 2 as well) it
+// would reach about 66 and colour first, the one decision the forced-ranking search's match needs. No local spelling
+// keeps it a variable: a `long` local holding NONE 16, bound through a `long const &` 16, assigned through a `long &`
+// 16, read through a pointer 16, given a second NONE definition in the fallback block 16 (each propagated, same
+// code). Forms: the sound index store written in both extra arms 16 (same code: merged after allocation; NONE then
+// has seven references but falls to 9, the arms' blocks being light), at the end of both arms 71 (223 B); the out
+// value's NONE store written in both arms of the fallback test 16 (same code), with the sound index in both extra
+// arms as well 90 (260 B); the definition and sound index stores in both extra arms 69 (254 B).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

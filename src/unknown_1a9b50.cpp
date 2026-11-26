@@ -1658,6 +1658,11 @@ static __forceinline long real_to_long(real value);
 // || f2d)` 382, the far-limit flag declared ahead of the limit 382, the result declared ahead of the slot pointer 382
 // (same code each); `local_2 = true` after the two lookups 389; the prop pointer declared ahead of the tag lookup 496
 // (1913 B). Still BLOCKED-BY 0x25d740's expansion at this site.
+// M3 lane 5 r252 (H2M_FAST with 0x25d740, 0x25d690, 0x1a9d80 and 0x1a9e00, all MATCH; control 382 at 1904 B): the
+// timeout's frame count computed inside its real_to_long call (no float local) 382 (same code); the near flag declared
+// bare and cleared at the top of the far arm 383; the object velocity pointer declared just ahead of the facing test
+// that first uses it 446 (1908 B); the result declared ahead of the slot pointer 382 and the near-limit flag ahead of
+// the limit 382 (same code each). Body unchanged; the false exit still lands last (first difference +0xf, its jump).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

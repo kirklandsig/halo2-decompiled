@@ -3270,6 +3270,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // (2880 B, masked 20); the first form with the reset arm first (`if (slot == NONE) {...} else {...}`) 159; `if
 // (established) {bonus; positive = ...} else if (!(far && slow)) positive = ...` 219 (2880 B). Re-measured the note's
 // joined form, `if ((visible || established) && (established || !(far && slow)))`, 224 (masked 20). Body unchanged.
+// M3 lane 3 r315 (H2M_FAST with 0x26be00, 0x26be30, 0x25d690, 0x25d740, 0x25d810, all MATCH; control 158): the node loop's
+// `if (!view) continue;` folded into the state test (`node->state >= 1 && view`) 158, with the 0x25d690 test joined as
+// well 158; the iterator's index read at both uses (no `index` local) 158 (same code each); the second 0x25d690 call
+// replaced by the `state` local 425 (retail calls it twice); the players loop's unit index read ahead of the player test
+// 162. The two player searches stay this body's code because their own definitions (0x1c8150, 0x1c8180) sit in an /Ob1
+// file whose seven other retail callers keep them as calls. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
