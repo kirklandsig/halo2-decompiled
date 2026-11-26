@@ -1194,6 +1194,13 @@ real function_30bf0(vector3f *vector);
 // Forms (all 84, the same code): the seat buffer declared at the top of the facing block; `side` and `up` declared
 // apart, up first; the occupant pointer to const; the two facing maxima declared ahead of the crosses; the facing flag
 // set by an `if`. Body unchanged.
+// GB22 (26 fast trials with 0x263740/0x26d370/0x25c9d0/0x263d70 MATCH, control 84 at 1310/1308 B; body unchanged):
+// nested 0x26d370/amount if 84 (on PIN+split with extra guard 247); inline pin_real helper 97 (1308 B, range->xmm0);
+// !(distance_squared >= limit) compares 89; parameter address reads (like file peers) actor_ref 152 (143 on PIN+split),
+// mode_ref 164, origin_ref 170 (breaks peer); while (i < count) seat=&seats[i++] 182 (1308 B; 174 on PIN+split);
+// on PIN+split (76): inline posture_scale helper 76 (+ seat ptr 70, al 12, mk 19), plane.d z+y+x 76; direct &secondary/&primary
+// with MAX ternary, real* pointers, reversed if, or real limits[2] array all cleanly pair amount+distance_squared (+0x1c/+0x18)
+// with result=+8 and range=xmm0 but keep seat-loop xmm1/xmm2 reloads (190/190/190/195 at 1331-1334 B).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
