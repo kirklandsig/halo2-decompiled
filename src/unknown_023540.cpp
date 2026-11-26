@@ -374,7 +374,7 @@ static inline bool structure_has_matching_samples(void)
         *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
 }
 
-// score 209 (was 226; earlier 223, was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
+// score 194 (was 209; was 226; earlier 223, was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
 // false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
 // rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
 // Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22889);
@@ -412,6 +412,21 @@ static inline bool structure_has_matching_samples(void)
 // used by 0x23690) 252 -> 223 plain, kept. Left: frame 0x64 against 0x68 and 18 bytes short (969/987).
 // M3 lane 14 r116: `inline` on 0x22750's definition (kept for 0x22cf0) gives this function retail's reload of the
 // fraction into XMM0 before each 0x22750 call: 226 -> 209 at retail's 987 bytes (plain).
+// M3 lane 1 r170 (h2m fast with 0x22750, 0x143600, 0x12a50, 0x2ca00 and 0x23690; aligned counts in brackets): kept
+// 194 = the three coefficient calls written out with their copy back as retail has them (0x12a50 152 and 0x2ca00
+// MATCH in the fast, --fast and plain checks; 214 alone, aligned 187 -> 153), plain `(long)` casts in place of the asm
+// truncation helper (retail converts straight from XMM0/XMM3; 229 alone, 203 with the calls), and the phase stored and
+// the stored value clamped (retail's store, compare, second store; 195 fast, 194 plain). Left: frame 0x60 against 0x68
+// (retail has an untouched 8-byte home between the scalars and the two arrays), the angle test's zero held in a
+// register (retail compares with the constant in memory) and the rotation's schedule. On the kept form: a samples
+// pointer shared by both tail branches 215 (972 B), in the interpolation branch only 195 (same code); the angle in a
+// named local 205; the angle tested without `!= 0.0f` 195 (same code); the period test written `0.0f <` 195 (same code).
+// Rotation forms: named sine products after the cosine 186 (974 B; three new names, not kept), after the complement 211
+// (996 B), after the squares 211 (1002 B; retail's x87 i product and SSE j/k products, but the k complement is then
+// computed early and spilled), after the k complement 225 (1013 B); named i/j/k off-diagonal products 203 (995 B),
+// with named sine products 211/232/228; the rotation as matrix3x3 211 (same code as the array). LEADS (match-only
+// forms): the k complement written at each use with named sine products ahead of the squares and the complement
+// after the squares 157 (987 B, aligned 114), the sine products declared j, i, k 151 (988 B).
 // @retail 0x22850
 void function_22850(void)
 {
@@ -452,13 +467,13 @@ void function_22850(void)
             rotation[6] = k_complement * axis->i + axis->j * sine;
             rotation[7] = k_complement * axis->j - axis->i * sine;
             rotation[8] = (1.0f - square_k) * cosine + square_k;
-            for (real *coefficients = (real *)(sample + 0xc);
-                coefficients != (real *)(sample + 0x78); coefficients += 9)
-            {
-                real result[9];
-                function_143600(rotation, 3, coefficients, result);
-                memcpy(coefficients, result, sizeof(result));
-            }
+            real result[9];
+            function_143600(rotation, 3, (real *)(sample + 0xc), result);
+            memcpy(sample + 0xc, result, sizeof(result));
+            function_143600(rotation, 3, (real *)(sample + 0x30), result);
+            memcpy(sample + 0x30, result, sizeof(result));
+            function_143600(rotation, 3, (real *)(sample + 0x54), result);
+            memcpy(sample + 0x54, result, sizeof(result));
         }
         --remaining;
     }
@@ -467,10 +482,11 @@ void function_22850(void)
         real previous = g_5093ec;
         g_5093ec = (real)g_4858a0;
         real phase = (g_5093ec - previous) / *(real const *)((byte *)g_4e0344 + 0x34) + g_5093f0;
-        phase -= real_truncate(phase);
+        phase -= (long)phase;
         g_5093f4 = true;
-        if (phase < 0.0f) phase = 0.0f;
         g_5093f0 = phase;
+        if (g_5093f0 < 0.0f)
+            g_5093f0 = 0.0f;
         if (count == 1)
         {
             byte *samples = *(byte **)(source + 0x3c);
@@ -482,8 +498,8 @@ void function_22850(void)
         {
             real step = 1.0f / (count - 1);
             real inverse = 1.0f / step;
-            long index = real_truncate(phase * inverse);
-            real fraction = (phase - index * step) * inverse;
+            long index = (long)(g_5093f0 * inverse);
+            real fraction = (g_5093f0 - index * step) * inverse;
             byte *sample = *(byte **)(source + 0x3c) + index * 0xdc;
             function_022750((real *)(sample + 0xe8), 3, (real *)(sample + 0xc), g_4b8940, fraction);
             function_022750((real *)(sample + 0x10c), 3, (real *)(sample + 0x30), g_4b8964, fraction);

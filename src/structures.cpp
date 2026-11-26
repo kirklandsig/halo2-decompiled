@@ -433,6 +433,10 @@ static __forceinline bool structure_bsp_collision_available()
 // availability test 99; that with an if/else flag (cleared in the else arm), the model result stored in `result` and
 // g_4687bc read into a local at the join 131 (312 bytes); the 0xbf9a0 result tested through a `bool const &` 53 and the
 // model-index field named as a `long *` for both of its uses 53 (same code each).
+// Roasted-Codes (#1523 comment, 2026-11-26; fast reduced-image scores): after 0x14ac60 matched with its compiled-out
+// `do {} while (false)`, that marker inside the arms instead of at the join (the notes have the join): after the
+// requery's assignments, in the excluded early-return arm, and in a new empty found-miss else arm, 53 each (286 B, the
+// body's code).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {

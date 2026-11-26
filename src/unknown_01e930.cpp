@@ -692,6 +692,12 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // both initialized with a clamped local or direct clamp input 278/279.
 // NOT kept: the timeout-only form ties and the starting clock forms keep the
 // 0x3c frame or shrink it to 0x30. The two early status-slot zeros remain absent.
+// M3 lane 1 r170 (h2m fast over this file's markers and 0x12bf90, in place; control 272, aligned 162): the not-loading
+// byte as `bool skippable = true; if (function_2148b0(0)) skippable = false;` stored after 246 (1102 B, aligned 157:
+// retail's `mov byte [esp+7], 1` and the reload after the call; a flag set by a test, kept only with a match, and the
+// direct form `function_2148b0(0) ? false : true` reads 272, the same code as main); that with `dword large` and
+// `(large | 0x40) << 16` 273; the existing function_80e14 for the retry loop (with its header) 305 (1077 B,
+// re-measured); `void *block = NULL;` declared after the start time 281.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

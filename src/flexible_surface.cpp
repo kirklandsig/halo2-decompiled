@@ -1010,6 +1010,15 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // cosine named just before the rotation call 152; a `vector3f *direction = &g_55ecd4` local for the rotation and the
 // limit call 130 (same code); the sine named ahead of the axis draw 154; the axis copy `const` 130 (same code); the
 // cosine named before the call 155. Body unchanged.
+// M3 GB r17 (fast with 0x118140, 0x117c80, 0x2551f0, 0x1ff360, 0x1161f0, 0x1e5bb0, 0x26d570; control 130; 23 real trials):
+// in shared `include/axis_rotation.h`, `vector_j`+`vector_k` locals with `j+k+i` dot + `cross_j,k,i` or inline `cross_i` or
+// staged cross order recover retail's `0x20` frame, `[esp+0x18]` sample slot, and all 53 wave-tail insns (`+0x2a`, `883/880 B`,
+// 148-150; `0x1161f0` 144 -> 113 at `1369 B`), but break matched `0x2551f0` (63-70); 3 scalars (`vi`/`vj`/`vk` in ijk/jki/kij)
+// hit `880/880 B` (`163-164`) but break `0x2551f0` (113-116) and `0x1ff360` (148); `0x11d180`-style / `j+k+i` plain ptr 147
+// (`884 B`, breaks `0x2551f0` 122); `vector3f input = *vector` 161-184; `dot3f`+`cross3f` 157 (`880 B`, breaks both);
+// keeping `vector_k` with `projection*axis` first or `cross_j,k,i` ties 130 (all peers intact). In `0x117dd0` alone:
+// `s_random_globals *random = g_4e7408` before/after `definition` 130, `axis` at function top 130, `oscillation` ahead of
+// `fraction` 199 (`880 B`, folds 1/65535*0.15), `double oscillation` 131, reversed cmp 175. Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
