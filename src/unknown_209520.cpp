@@ -1089,7 +1089,7 @@ long __stdcall function_2093d0(long expression_index, bool option)
 
 typedef void (__stdcall *t_script_value_formatter)(long, long, char *, long);
 void __stdcall hs_boolean_format(long unused, bool value, char *buffer, long maximum_count);
-void __stdcall hs_real_format(long unused, real value, char *buffer, long maximum_count);
+void __stdcall hs_real_format(long unused, long value, char *buffer, long maximum_count);
 void __stdcall hs_short_integer_format(long unused, short value, char *buffer, long maximum_count);
 void __stdcall hs_long_integer_format(long unused, long value, char *buffer, long maximum_count);
 void __stdcall hs_string_format(long unused, char const *value, char *buffer, long maximum_count);

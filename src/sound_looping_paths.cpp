@@ -1055,6 +1055,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // detail tag as one conditional expression 837 (same code); the inside test written `clusters[0] == cluster` 837 (same
 // code); the audible flag through an if/else 895 (3305 B); the portal distance as one conditional expression 838; the
 // blend's square named once for both terms 838. Body unchanged.
+// M3 lane 7 r231 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730 and
+// 0x18dc90; control 837, 0x18bb80 MATCH each run): the three choice levels as `flags & 1 ? field : 1.0f` assignments 922
+// (3289 B); the decibel pin as an if / else if / else chain 837 (same code); `0.0f - target->step` as both target pins'
+// lower bound 837 (same code); the decibel pin as a single-exit result on today's base 869 (3297 B); a `char` choice count
+// 903. Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
