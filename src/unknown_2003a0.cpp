@@ -3224,6 +3224,14 @@ bool __stdcall function_20ba60(short arg_0, long arg_1, long arg_2, long arg_3, 
 // (all the same code). Kept: the loop over the parameter itself in place of pointers to both parameters 107 (same
 // code). A forced-ranking search: the group pointer in EBP (its priority 304 under the masked index's 232) leaves
 // only register names in six places; the choice in EBX and the inherited choice in ESI follow from that.
+// M3 lane 6 r247 (fast; control 107): the definition's bit read as bit 8 of the word at +0x23, as matched 0x202be0
+// reads it, 107 (same code); the arm in 0x202be0's shape (a pending word, the choice word started at NONE and set in
+// the arms, one follow-up test) with the passed-down choice set in the follow-up and NONE in its else 116 (479 B),
+// without that else 150 (482 B); one choice word read from the record, cleared in the arms that find none and copied
+// to the passed-down choice ahead of the follow-up 164 (500 B), the same as a short 148 (487 B). A forced-ranking
+// search: the record's priority (304) has to fall under the index's (232) so the index takes EDI and the record EBP
+// (95); the inherited choice in ESI (retail EBX), the zero-extended 0x1c load into EAX and the definition-table load
+// order still differ after that.
 // @retail 0x202a00
 void __stdcall function_202a00(long arg_0, long arg_1)
 {

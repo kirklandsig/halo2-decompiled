@@ -403,6 +403,14 @@ static inline long bungienet_user_voice_setting(short kind)
 // availability helper as one returned `&&` with `(flags & 2) != 0` 4; the kind compared at the call with the selector
 // taking a `bool` 4; the handler's request parameter `*const` 4 (the three 4s the same code). Re-measured: no
 // old-setting local, the stored setting compared in the test, 4.
+// M3 lane 15 r150 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4). Allocator reading: the request and the
+// kind both rank 20 from the entry block alone; the tie goes to the request because its parameter definition is stamped
+// later (8) than the kind's load (6) (inside one block an earlier definition stamps higher, a later block higher still),
+// so only a kind definition or reference outside the entry block can flip it. Forms, all with the existing kind read: both
+// handlers' request parameter as a reference (with the handler type) 4 (same code); the notify call reading the request's
+// index field again (the lookup on the local) 27 (99 B), that with the index read after the selector 23 (99 B); the kind
+// tested in the handler around a seeded availability helper, `kind == 1 ? helper() : 1`, 12; an early-return availability
+// helper under `if (kind == 1) ... else setting = 1;` 4 (same code).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

@@ -959,6 +959,15 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Start with one square at entry or after velocity capture and finish at the
 // normalization or rotation join: 141/142/141/142. Start with the planar sum
 // at those sites: 253/254/253/254. NOT kept: all move the difference to +0x50.
+// M3 lane 13 r161 (fast, control 107): the three normalizes through the existing normalize2d_fast with the caller's
+// `== 0.0f` fallback (forward/heading/blend as vector2f) 260 (1124 B: the zero test after scaling is threaded away);
+// `left` computed just ahead of blend_left 158; the heading copy ahead of the forward normalize 130 (1149 B); dt read
+// at entry 286; the normalizer taking references 107 (same code). Reading: the allocator ranks the 1.0 constant (73)
+// just above heading.x (68); a forced-ranking search with 1.0 below heading.x gives 1.0 XMM3 and 94, but the entry
+// schedule and each normalize's product sides remain (retail ranks y above the reciprocal and x below it, so y is
+// loaded ahead of the divide; ours ranks the reciprocal above both). Diagnostics, reverted: a pointer to y, y read
+// into a local after the reciprocal, k declared at the top: 107 each (same code; copies propagate and the ranks
+// follow first assignment).
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -4115,6 +4124,10 @@ real g_47ff30 = 2.5f;
 // errors first 672. With independent final mass reads: 710/710/696/710.
 // NOT kept: shorter forms move away from retail length; the 0xfc frame forms
 // still spill acceleration at +0x20 against retail's +0x34.
+// M3 lane 13 r161 (fast, control 672): the forward speed through the existing dot3f 721 (3223 B); up built as the
+// existing vector3f_add_scaled of the global up vector and the facing scaled by its -k 683 (3246 B; retail builds it on
+// the x87 stack); `facing` dropped, the local velocity read through the vehicle at each use 795 (3289 B); the bank
+// limit as a ternary with the turn-rate boost under one test 717; the climb field read at each use 738 (3223 B).
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -7533,6 +7546,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // matrix outputs: 959/1101/959/960/1009/1084/1009/1014. NOT kept: the expired flip output
 // shrinks the frame to 0xdc and raises the score. The handle and displacement
 // registers remain exchanged and retail reserves 0xd8.
+// M3 lane 13 r161 (fast, control 959): `bool boosting` (retail keeps a byte at [esp+0x63]) 1111 (5112 B); `speed`
+// computed after the velocity correction (retail reads +0x354 there) 1043; both 1014 (5123 B); the pitch's planar
+// root and the horizontal speed through the existing magnitude2d 959 each (same code). Reading: the vehicle index
+// ranks 8 (one web from entry to the side-flip test, EDI, since `forward` holds ESI across it) where retail ends
+// the index's register web at 0xf44a0 and re-reads the parameter home after it, so the index takes ESI and the
+// offset EDI; the search found no cut of that web (the parameter is not a split candidate here).
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
