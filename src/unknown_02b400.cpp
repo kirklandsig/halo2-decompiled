@@ -82,15 +82,21 @@ struct s_short_bounds_3f660
 	short top, left, bottom, right;
 };
 
-// score 33 (was 33): 0.5f in XMM4 (retail XMM5) and crop arm schedule; blocked by g_4ba019 not yet living in an
-// address-escaping render-globals aggregate (caller 0x13c20 passes global &g_4b9da0 as view, so volatile through view
-// is forbidden). Tried (22 trials, 14 matched peers MATCH): splitting `new_width = view->crop_scale * width;` and
+// The volatile crop pointer, the two volatile out[3] reads and the reference that delays the offset arm's out[1]
+// store stand for retail's reloads after the g_4ba019 store: in retail the flag lives in a larger address-taken
+// aggregate (0x13c20 copies 0x120 bytes to 0x4b9ef0, ending at 0x4ba010), so its store may alias view and out.
+// Without each of them: crop pointer 77, crop out[3] 30, offset out[3] 51, reference 19, all four 88 (492 B).
+// Earlier forms (score 33 before the match): 0.5f in XMM4 (retail XMM5) and crop arm schedule; caller 0x13c20 passes
+// global &g_4b9da0 as view. Tried (22 trials, 14 matched peers MATCH): splitting `new_width = view->crop_scale * width;` and
 // `new_height = view->crop_scale * height;` with `out[0..3] = x/y +/- new_w/h * 0.5f` fixes 0.5f in XMM5 and all crop
 // arithmetic/stores (6, first +0x106); ordering x before height and dropping crop_scale's volatile and right_result hits
 // 0 (MATCH, not kept: still uses main's volatile crop pointer through view); same clean body with zero volatile and a
 // diagnostic escaped g_4ba019 hits 0 (MATCH, not kept); clean body without escape 86-88 (492-494 B), only out[3]
 // volatile 77 (503 B, +0xbd); early return in crop 40; x-then-y crop 55; inline width/height 74; box2f view 55;
 // vertical_scale first 129; inline crop helper 61; local box2f copy 166; scenario helper 123 (loses 0x3f660).
+// M3 lane 15 r149 (MATCH): the crop sizes named once (new_width/new_height, each read twice) with the crop_scale volatiles
+// dropped 21; the half step parenthesised, `((center + 1.0f) * 0.5f) * size`, 9 (the chain no longer reassociates
+// the size ahead of 0.5f); the four outputs in index order 0 (every other order of the four 10-25).
 // @retail 0x2f970
 bool function_2f970(s_2f970_view const *view, real *out)
 {
@@ -110,14 +116,14 @@ bool function_2f970(s_2f970_view const *view, real *out)
     {
         real width = out[1] - out[0];
         real height = *(real const volatile *)&out[3] - out[2];
-        real half_width = *(real const volatile *)&view->crop_scale * width * 0.5f;
-        real half_height = *(real const volatile *)&view->crop_scale * height * 0.5f;
-        real x = (view->center_x + 1.0f) * 0.5f * width + out[0];
-        real y = (view->center_y + 1.0f) * 0.5f * height + out[2];
-        out[0] = x - half_width;
-        out[2] = y - half_height;
-        out[3] = half_height + y;
-        out[1] = half_width + x;
+        real new_width = view->crop_scale * width;
+        real new_height = view->crop_scale * height;
+        real x = ((view->center_x + 1.0f) * 0.5f) * width + out[0];
+        real y = ((view->center_y + 1.0f) * 0.5f) * height + out[2];
+        out[0] = x - new_width * 0.5f;
+        out[1] = new_width * 0.5f + x;
+        out[2] = y - new_height * 0.5f;
+        out[3] = new_height * 0.5f + y;
     }
     else if (view->offset)
     {
