@@ -200,6 +200,17 @@ __inline void quaternion_rotate_point(
 // square and dot locals and w2 computed after d, plus the existing point3f_scale for the scaled position: 8 (was 35),
 // and 0x11dd80 4 (was 48). The locals and the w2 placement are statement and operand order, kept only with a byte
 // match. Left at 8: the dot sums (j + i) + k in retail and cy multiplies q->i * v->z.
+// M3 lane 13 r163 (h2m fast with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820; main 35): the held form rebuilt 8 (0x11dd80
+// 4). Its rotate already has the shape of the vector twin in src/unknown_141590.cpp. The two spots left are operand-rank
+// ties: in the commutative sorts the field loads rank by their address temporaries, here q.j and v.x 6, q.w 4, q.i and
+// v.z 2, v.y and q.k 0 (units of 0x2000), so the dot's i and k terms tie and keep the k term first, and cy's q.i * v.z
+// keeps v.z first; retail's order needs v.z alone at 0 or 1. On the held form: cy as `v->z * q->i` 8 (same code); the
+// helper's definitions reordered (dot and d first 79, w2 before the dot 66, cy/cx/cz 8, cz/cy/cx 27, cx/cz/cy 27,
+// cross products first 93, dot before m 8, dot before the square 8, cy/cz/cx 8, cz/cx/cy 27, w2 last 88, w2 after cx 8,
+// w2 between cy and cz 78); `2.f *` spellings of m, d and w2 8; the cross product into a named vector 83 (0x11dd80 92),
+// through the existing cross3f the same ranks; `out->scale = a->scale * b->scale` 8; the position sum as `+=` 8; the
+// copies through memcpy 8, with `out == a` tests the same ranks, from `*out` 35 (the copy reads EDX). Diagnostics: without
+// the copies only v.x moves (to 5); without the tail or the 0x11d820 call nothing moves.
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,

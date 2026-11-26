@@ -2116,6 +2116,14 @@ long function_10f5f0(long object_index);
 // indexed with direct/reused mask index 561/561, with bitfield admission
 // 571/571. A cursor to the array end gives 593/599 or 604/604 with bitfield
 // admission. NOT kept: the frame stays 0x1990 and the changed scores rise.
+// M3 lane 13 r163 (h2m fast with 0xef4f0, 0xf06c0, 0x10f5f0, 0x113e40 and 0xf6d10's callees, all MATCH; base 561 at
+// 2264 B; sequence-aligned [slots masked, registers masked] 234/113): the six stored-bit tests through a file-local
+// two-definition helper (`result = false; if (bit < 32) result = (flags >> bit) & 1;`) re-measured 574 (2312 B) [238,
+// 111]; that with the point sum as `i != count` 545 (2228 B) [218, 94], with the sum as a guarded do-while countdown 542
+// (2232 B) [217, 93]; `i != count` alone 648 (2180 B); the one-definition helper (`TEST_FIELD_BIT`) with `i != count` 631,
+// with the do-while 615. So the rolled sum costs 84 bytes less than the unrolled one and retail is 36 bytes longer still
+// than the helper + rolled form; the stores and the rolled loop each need a steering form (a two-definition result, a
+// changed loop guard or a hand-inverted loop), none kept.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -6608,6 +6616,14 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 767/819/786; steering and speed 827, steering and turn 777, speed and turn
 // 844, all 853, all with a separate entry definition 786. NOT kept: the
 // handle lookups enlarge the body and change the prologue. The zero and result registers still differ.
+// M3 lane 13 r163 (h2m fast with 0xefde0's neighbours and 0xf78e0, 0xf78b0, 0xf8070, 0x24590, all MATCH; base 759,
+// sequence-aligned [slots masked, registers masked] 182/79): `result` declared ahead of `forced` 759 (same code); the
+// `tags` local dropped, the global read at each use 835 (3065 B: it is re-read after every call); the two steering-angle
+// cases (0x900000e, 0xa00000f) through the existing 0xf78e0 with limits 6 and 7, 773 (2942 B, called, not expanded);
+// `*active = forced || result > 0.0f` 759 [184, 82]; the unknown-name default as a single exit through a `known` flag 760
+// (2977 B) [171, 79]. Retail loads the definition into EBP at entry but re-derives it at each expanded 0xf78e0 site and
+// passes each expanded limit through a stack temporary (`fstp [esp+0x2c]; mov reg, [esp+0x2c]; push reg`), the shape of an
+// expanded call returning a float; still the file's inlining setting (see the held lead above).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

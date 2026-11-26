@@ -1621,6 +1621,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // takes ECX, the first register free at its turn; the pool would need 45 more, or the index 45 less, to keep ECX. Forms
 // in the arm: `long const` index 20; the mirrored default declared ahead of the parent 22; the index declared ahead of
 // both defaults 20; the test as `NONE != parent_index` 20; the index typed `dword` 20 (same code but the 22).
+// M3 lane 7 r234 (fast screen; control 20 at 1399 B). Allocator reading: the pool is one value from the entry lookup
+// to the no-model arm (ranked 34: the entry lookup, the early-return test, the current-object lookup and the arm's
+// lookup), the arm's parent default and index rank equal at 78 (the default is the later one, so it takes EAX first and
+// the index ECX). Forms in the arm: the object's own mirrored flag named at the arm top for the 0xbdc40 call 92 (1403
+// B); the scale named there 100 (1411 B); the parent's flags word in a named dword ahead of the bit test 20; the parent
+// node in a named long at the arm top 20; the index and the node both read at the arm top ahead of the defaults 20
+// (same code each).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
