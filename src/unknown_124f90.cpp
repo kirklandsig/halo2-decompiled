@@ -4158,6 +4158,16 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // value in ESI and its latch load moves ahead of the ternary again); only the sound pointer through `sounds` 163
 // (index 55); the entry reading the global with `sounds` set only at the latch 78; the first absolute index named
 // ahead of the datum 78 (ranks unchanged). All restored.
+// M3 lane 3 r312 (H2M_FAST, control 8; the no-default form re-measured 78 at index 59 against voice 60). The index at
+// 61 is also a byte match, so two points from any loop block work too: one candidate fewer in a block the index only
+// crosses (the voice crosses only the two blocks after the owner load), or one fewer in the voice-element block, where
+// the voice counts 8 a candidate and the index 4. That block's six candidates are all in retail's code (the voice
+// index, its sign extension, the voice array global, the voice, the owner load, the index); the crossed blocks hold
+// hoisted constants (1 for the bit tests, 0 for the null tests and the mode dispatch, -1, 0xffff, 7, 0xe, 0x1f).
+// On the no-default form: the source-updated test as `!((sound->flags >> 5) & 1)` 122, the mode's flag test as
+// `((sound->flags >> 4) & 1)` 98 (both fold into `test byte ptr`, one constant fewer, registers then retail's); the
+// object index named for the callback 78, the start time named for the loop-top test 78, the marker address named 78
+// (all three forward-substituted, ranks unchanged). On main's body: the same two bit tests 117/100.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

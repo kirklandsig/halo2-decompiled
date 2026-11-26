@@ -2504,6 +2504,15 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // read on opposite sides of individual spawn stores, A first scores
 // 184/184/184/184 and B first scores 185/185/185/185.
 // NOT kept: every split grows the frame to 0x48 and the body to 572 bytes.
+// M3 lane 2 r154 (fast with 0x178eb0/0x179020, matched unless given; control 128). Ranking on the early-colour form (colour
+// locals read after set_location, ahead of the spawn stores): in the entry block (nine candidates) the type object scores 90,
+// the system's piece 58 (three references: the location index, the 0x1751d0 call and the colour call) and each colour 36 (one
+// read, one use), so the system piece keeps EDI and colour B cannot take it. On the lead (location_point_in_zone_inline for
+// both zone tests, both queries as the colour call's arguments; re-measured 166 at 552 B): the spawn record as an aggregate
+// initialiser declared after set_location 166 (same code); that with both colour locals read ahead of it 190 (568 B); the
+// tint named with `multiplied()` as the argument 172 (556 B); `&effect->location` named for the test, set_location and both
+// zone calls 166 (same code); that with the spawn stores as unknown, scale, location 164 (0x178eb0 4 and 0x179020 6, lost).
+// Body unchanged.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {

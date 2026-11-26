@@ -2393,6 +2393,10 @@ struct s_actor_looking_structure_view
 // through include/axis_rotation.h's in-place helper with sine and cosine locals in the loop body 246 (892 B), with a named
 // angle and the trig as arguments 245 (893 B); the direction counter as `long` 219 (898 B); the selected test as
 // `best_index > NONE` 24; the score read through a `vector3f const &` bound to the candidate at the score 43. Restored.
+// M3 lane 3 r312 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): forward declared
+// and then assigned from the actor 23; the length test written `0.f < function_30bf0(&forward)` 23; the clamp's arms
+// swapped (`score > 0.6f ? score : 0.6f`) 25; the angle with an implicit conversion (`i * 0.785398185f`) 23; the best
+// test as `best_score < score` 23 (the 23s the same code). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

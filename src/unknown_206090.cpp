@@ -1059,6 +1059,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the existing out-of-line magnitude (inlined) 1624 (5990 B); the sign flip as `local_11 *= ... ? -1.0f : 1.0f` 1345,
 // the gain as `1.0f + rate * local_15` 1345 and the speed sum passed as `local_18 + local_17` 1345 (all three the same
 // code); the steering product negated on its first factor (`-field_74.j * x`) 1349 (6243 B). Body unchanged.
+// M3 lane 16 r193 (H2M_FAST with 0x2056e0, MATCH each run; the reduced image builds this body at 1346 like the full
+// build; control masked-aligned 922): retail adds the base velocity first (`local_4.k + cross.k`); the wheel loop's add as
+// the existing vector3f_add(&local_4, local_10, local_10) 1346, the contact loop's as well 1346 (same code: the sum's
+// operands follow ranks); the wheel loop's velocity cross through this file's k-first cross helper 1405 (6238 B), through
+// cross3f_staged 1421 (6238 B); the centre (+0x60) typed as a point with both lever arms through the existing
+// vector3d_from_points3d 1344 (1455 instructions like retail, masked-aligned 946). Retail's contact loop recomputes its
+// three element addresses with `imul` from the counter each pass and reloads the state pointer from its argument slot,
+// where ours steps induction pointers.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

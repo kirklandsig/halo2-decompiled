@@ -926,6 +926,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // fields read in place with no pointers 18 (pair unchanged); a `point2f const &` with the two pointers 2; the alpha
 // product written scale-first 2; the alpha named ahead of the product 2; the colour through a `real const *` to its
 // first component 2; the size local const 2 (same code each).
+// M3 lane 5 r249 (H2M_FAST, control 2): the alpha product converted into a named long, then narrowed to the byte, 2;
+// the first texture handed to 0x14390 through a named pointer 2; the size's first value written `64.f * 0.5f` 2; both
+// readiness tests written `!= 0` 2 (all the same code); the first quad's first coordinate pair with its half products in
+// parentheses 377 (2289 B: the products are scheduled ahead of the first reservation). The two reloads stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

@@ -235,7 +235,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 144 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
+// score 95 (was 144): The 0xa4 frame and attachment agree. The selected segment still uses EDI/ECX and +0x20 against EDX and +0x14, and the rotation homes differ.
 // MiniMax H (11-20): no new form, no lower score (144): retail keeps the selected segment pointer in EDX and spills it at esp+0x14 while ours keeps it in EDI and ECX and spills it at esp+0x20, and that one choice drives the rest: retail's copy of the node position uses ECX as its base and stores z before y, ours uses EDX and stores x, y, z in order, and the 0x211060 set-up takes the mover-settings index in EAX in ours and ECX in retail; the call's ten stack arguments and the EAX first argument are the same on both sides and the body is 1371 bytes against retail 1368.
 // earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // Frame 0xa4 and attachment setup agree. The first exit span differs, followed by the segment address in EDI and ECX instead of EDX and different rotation homes.
@@ -1090,6 +1090,19 @@ void __stdcall function_1160c0(real dt)
 // the existing vector3f_add 204 (retail's 1368 B, masked 35); the velocity through the existing scaled_difference3f
 // 171 (1369 B); the blend's complement named once 262 (1355 B). A forced pick of EDX for the segment (diagnostic, not
 // source) 120, as lane 3 r304 measured.
+// M3 lane 8 r241 (H2M_FAST with 0x116750, 0x1160c0, 0x17c540 and the helpers' files listed; control 95 at 1371 B, now that
+// 0x211060 takes the position ahead of the velocity): only the rotation block and the segment/scale/sine cell (+0x20, retail
+// +0x14) differ. Existing rotation helpers called in place of the header's: 0x1ecf50's file's direction rotation 95, 0x170d70's
+// file's vector rotation 95 (same code each), 0x146320's file's scalar-axis rotation 192 (1368 B, one cell fewer). The header
+// rotation itself spelled projection, cross_k, cross_j with cross_i in its row 59 (1369 B) but matched 0x2551f0 15 and
+// 0x1ff360 60 (0x117dd0 158, 0x1e5bb0 129, 0x26d570 42); without its vector_k local 59 (0x2551f0 123, 0x1ff360 111);
+// projection, cross_j, cross_k (retail's computation order here) with cross_i in its row 95, both matched users kept.
+// Diagnostic: 1-7 dead locals at the top 95/95/100/100/100/95/95, ahead of the rotation 95 each.
+// The header rotation's spelling across its six users (this, 0x2551f0, 0x1ff360, 0x1e5bb0, 0x26d570, 0x117dd0; main
+// 95/0/0/111/26/130), 20 spellings: with vector_k and the projection first, cross_j named before cross_k (any place for
+// cross_i) is main's state; cross_k before cross_j 59/15/60/128/42/158; the projection after the crosses 98 here and
+// 0x2551f0 54-87, 0x1ff360 79-113; without vector_k 0x2551f0 122-123. No spelling keeps both matched users and lowers
+// another. Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

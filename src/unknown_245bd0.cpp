@@ -365,6 +365,13 @@ bool function_2461a0(
 // both pairs (vw -16, b -12, a -4, uv -2; not reached by any form). Tried: the direction parameter at each use
 // instead of `u` (205), c from length_sq3f(&w) (205), uw and vw from dot3f (211), vw alone from dot3f (206), uw
 // alone from dot3f (206), disc as `b * b - den * c` (73).
+// Round 171: the ranking in the allocator's own words: uv 185 = 144 (first block, 9 float candidates) + 22 + 4 + 32 - 17,
+// vw 197 = 176 (second block, 11 candidates) + 32 + 4 + 4 - 19, a 153, b 160 = 132 + 28; one more float candidate
+// referenced in the first block would give uv 201 > vw 197 > den 196 > a 165 > b 160, retail's xmm0..xmm4; a forced
+// uv/vw flip alone is worse (209). Tried: vw as dot3f(&w, &capsule->vector) 205 (844 B); uw and vw both w-first
+// dot3f 210; q from vector3f_add_scaled(&w, u, t_enter, &q) 76; along from dot3f(&capsule->vector, &q) 207,
+// dot3f(&q, &capsule->vector) 208; first-block screens (uu from dot3f, a from dot3f, den as a * uu - uv * uv, uu
+// computed first) leave the ranking or make it worse.
 // @retail 0x246360
 bool function_246360(
 	vector3f const *direction,

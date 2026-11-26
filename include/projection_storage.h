@@ -43,7 +43,8 @@ struct s_projection_storage
     } group_b8;
 };
 
-extern s_projection_storage g_projection_storage;
+#include "render_view_storage.h"
+#define g_projection_storage (g_render_view_storage.projection)
 #define g_4b9e14 (g_projection_storage.group_0.field_0.value)
 #define g_4b9e20 (g_projection_storage.group_0.field_c.value)
 #define g_4b9e2c (g_projection_storage.group_0.field_18.value)

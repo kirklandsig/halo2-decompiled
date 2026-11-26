@@ -52,7 +52,9 @@ struct s_view_context_storage
     };
 };
 
-extern s_view_context_storage g_view_context_storage;
+#include "render_view_storage.h"
+#define g_view_context_storage (g_render_view_storage.view_context)
+#define g_4ba010 (g_render_view_storage.field_270)
 #define g_4b9ed4 (g_view_context_storage.field_0)
 #define g_4b9ed8 (g_view_context_storage.field_4)
 #define g_4b9edc (g_view_context_storage.field_8)
