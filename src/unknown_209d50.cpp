@@ -366,6 +366,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // the volatile pointer and the result each cast from a void allocation local 71 (277 B). The allocator's colouring
 // order for the volatile-free body has the pointer, the allocator's return and the result as one candidate (the result
 // copy is sunk into the two exits), so exit-side spellings do not separate them.
+// M3 lane 8 r240 (fast screen with 0x2099f0, which stays matched; control 12). The kept body's colouring order is already
+// retail's (the first allocation's return in EBX, the result in EAX, the first frame in EAX), so the 12 is the volatile
+// reload alone; in every volatile-free body the merged pointer/result candidate's return preference scores EAX against
+// the first frame, so the frame takes ESI and the pointer EAX. Volatile-free: the arm stepping the pointer with the
+// result copy kept 95 (266 B); a `long *const` copy of the pointer made just before the test, the result copied from it
+// 95; `return NULL;` in the arm 90 (277 B); a thread pointer local, the init block reading its frame field 95; `long
+// *result;` declared first and set in an else arm 90 (277 B). A forced-ranking search on the kept body: nothing below 12.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
