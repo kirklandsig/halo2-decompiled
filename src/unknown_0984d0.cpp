@@ -11,7 +11,6 @@ void function_98ac0(c_handle_table_450cd0 *self, long handle);
 void function_98b60(c_handle_table_450cd0 *self, long handle);
 void function_98bf0(long handle, c_handle_table_450cd0 *self, dword mask);
 void simulation_write_entity_identifier(long identifier, s_bitstream *stream);
-void function_194710(s_bitstream *stream, bool discard);
 
 /* the handle-table messages each start with a 3-bit kind; the stream keeps
    the position before it, so that a message without room can be taken back */
@@ -45,7 +44,7 @@ bool function_98620(c_handle_table_450cd0 *self, s_bitstream *stream, long index
 			function_98bf0(handle, self, released);
 		return true;
 	}
-	function_194710(stream, true);
+	stream->function_194710(true);
 	return false;
 }
 
@@ -66,7 +65,7 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 		result = true;
 	}
 	else
-		function_194710(stream, true);
+		stream->function_194710(true);
 	return result;
 }
 
@@ -118,7 +117,7 @@ bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index
 		}
 		return true;
 	}
-	function_194710(stream, true);
+	stream->function_194710(true);
 	return false;
 }
 
@@ -152,7 +151,7 @@ bool function_988f0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 		local_0 = true;
 	}
 	else
-		function_194710(stream, true);
+		stream->function_194710(true);
 	return local_0;
 }
 
@@ -175,7 +174,7 @@ bool function_989f0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 		function_98bf0(handle, self, released);
 		return true;
 	}
-	function_194710(stream, true);
+	stream->function_194710(true);
 	return false;
 }
 

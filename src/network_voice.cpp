@@ -4083,6 +4083,19 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // with malformed packets returning immediately or sharing the ordinal-based exit:
 // 167 in all eight indexed and walking forms. NOT kept: each folds to the same indexed
 // walk and shortens the body to 477 bytes.
+// M3 lane GA r11 (fast with 0x564c0/0x54810/0x55b40/0x54a20/0x565c0/0x56df0/0x53890/0x53720 and 0x57360, all MATCH
+// across 22 trials; control 139 at 488/488 B, mk=41; body unchanged): plain arm using `voice_available() &&
+// voice_xhv_has_remote_talker` directly (indexed 150, cursor 170 at 477 B, nested `if` 170) or inline clamp (indexed
+// 156, cursor 160, both 156) lets the ternary clobber ECX and naturally emits retail's immediate `add edi, 2`, though
+// retail's `mov eax, [ebp+0xc]` ahead of `je` confirms the plain arm really inlines `voice_has_remote_talker`;
+// `0x55c40`'s `packet_size = 11; packet_size += 2 * (relay != 0);` (indexed 139, cursor 164, guarded two-return 160 at
+// 490 B, mk=30); `if (relay) packet_size += 2` cursor 158 (494 B); guarded two-return + direct avail 157 (488 B) or
+// + `consumed = 2; size -= consumed; packet_size = ...; packet = data + 2;` 160 (490 B, mk=30); `memset(&route)` cursor
+// 170; step-in-arms + direct avail 165 (494 B: spills member, stride takes EBP); `packet = data; packet += 2;` 164;
+// plain-first + direct avail 156 (488 B: spills member, `lea ebp, [edi+3]` steals EBP); rewriting
+// `voice_has_remote_talker_inlined` with `&&` / ternary / early-return `if` ties 139 indexed and 162 cursor (guarded +
+// `&&` leaves it out of line, 187 at 456 B, mk=27, spilling member while stride takes EBP). Channel EBP vs member EBP
+// remains unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

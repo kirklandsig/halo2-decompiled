@@ -2633,6 +2633,17 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // the inverse from the `maximum` local 433; the in-loop count test against `maximum` 469; the damage target as an
 // if/else, the effect index as one conditional, the material test with the flag first, a function-scope material
 // declaration and `long` effect flags (all the same code).
+// M3 lane 3 r310 (fast screen with 0xa84e0, 0xfcea0, 0xfcbc0, 0x1697c0, 0xd7b80, 0xd6660 and 0xd6c80; control 255). The
+// frame packer orders 4-byte cells by references per byte: retail's material/parent cell sits second and the
+// definition's cell lower, because retail keeps the material index wholly in memory (word stores to its home, the
+// NONE test against it there) and the definition in EBX through the tail. Ours ranks the material 14 in the first
+// colouring pass, so it takes EBX before the definition's tail piece (11, a later pass) and is stored only for the
+// 0xa84e0 call. LEAD (match-only form, not kept): 0xa84e0 reading its material pointer through the pointer
+// parameter's own address (`short *const *` to it, read once) marks this function's material as captured: 237 at
+// 2176 B (aligned rows 134 -> 102; material in memory, definition in EBX as retail; 0xa84e0 still MATCH). Left on it:
+// the material copies as dwords where retail moves words, and the homes of the header offset, the centre and the
+// probe vectors. Tried: the damage scale declared after the three bools 252 (declaration order only), with the lead
+// 237; 0xa84e0 copying the material by memcpy 255; the material declared bare at the top 255, with the lead 237.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {

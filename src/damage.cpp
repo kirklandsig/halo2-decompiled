@@ -2850,6 +2850,11 @@ struct s_unit_event
 // drop blocks (ours still forms one data-plus-offset sum per block), the constant 1 spilled into the region slot at
 // the update, the vehicle block's constant 1 in ESI, the section scan's count/cursor pair, and scratch rotations in the
 // seat and event blocks.
+// The region and permutation registers remain exchanged. Short displacement,
+// long displacement, combined byte offset and staged byte offset score
+// 420/420/429/420. With a named full-width destruction bit, each scores 528.
+// NOT kept: the inline shifts tie or regress. The named bit shortens the
+// body by 16 bytes and leaves the same entry difference.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3962,6 +3967,12 @@ enum
 // chained child defaults 308; single child flags word 309; native child permission masks 309; shared
 // primary pass Boolean 540; nested damage-report admission 309; late absorption initialization 449;
 // separate region span and flag tests 310; separate shield-and-body gate 309.
+// Clear permissions on exclusion 493, explicit defaults in no-info arm 352,
+// snapshot of flags used at the two child gates 538, selected flags then both
+// permissions 355, defaults at info lookup 457, counted single-target append 309,
+// combined event mask 473, rolling damage initialized first 484.
+// NOT kept: the counted append ties and the rolling damage form only fixes length.
+// The child-permission homes and parent count register still differ.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -5765,6 +5776,10 @@ struct s_damage_object_creation
 // the code): the detach test as `section_mask_a | section_mask_b` gives the second mask a value in the entry block, the
 // bit then takes EDX as retail's does, but that value holds EDI and the count is spilled, 128 (811 B); retail's extra
 // entry-block value must be one that gets no register there (a constant or a parameter value like the first mask's).
+// Section membership by union equality for primary/secondary/both 199/197/202;
+// by bit-removal inequality 200/200/202; full intersection equality 200;
+// complement exclusion 203. The section count and primary mask still compete
+// for registers. NOT kept: the alternate tests lengthen the loop and raise the score.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

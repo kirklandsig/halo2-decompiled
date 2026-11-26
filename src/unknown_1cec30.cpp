@@ -3246,6 +3246,11 @@ struct s_1cf531
 // the correction named or unnamed, 62 each of six (915 B, the subtraction sinks past the scale call); re-measured:
 // corrected in place in local_13 with `splat * local_13` 23 (908 B), with the splat bound through `__m128 &` 5 (905 B,
 // the local_13 load hoisted above the fstp). All restored.
+// M3 lane 15 r147 (fast screen, 2; the 7 form re-measured 7): on the 7 form, the final declared first in the
+// length-test block and written only at the end 8 (frame 0x64, the final takes a new 0x60 slot); the final product
+// named outside the final's block, the block holding only the store and the call 7 (same code); local_13 declared
+// with local_7 in the outer block 7; local_14 declared ahead of local_13 7. On the kept body: the copy written through
+// a reference to local_13 with the corrected vector a value 2 (same code). All restored.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
