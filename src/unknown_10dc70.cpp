@@ -216,12 +216,18 @@ inline real function_10e8e0(real t);
 
 #define VIBRATION_VERSION 0x96c
 
-// score 18 (was 256) in a full build with stand-in SDK headers: the key pointer steps in the loop body ahead of the
+// score 12 (was 18) in a full build with stand-in SDK headers: the key pointer steps in the loop body ahead of the
 // `t_key > time` test (retail 0x10e145 `add esi, 4` precedes 0x10e148), and the blend, magnitude test and
 // insert/replace section run only when the channel has keys and is not skipped: retail's 0x10e07e (jle, key_count
-// <= 0) and 0x10e086 (jne, skipped) jump to the channel loop's latch at 0x10e3fd, past 0x10e258-0x10e3fc. Left: the
-// channel pointer's home store sits before the loop guard (retail: in the preheader, 0x10e02b), push esi before
-// push edi, one preheader xmm load one slot early.
+// <= 0) and 0x10e086 (jne, skipped) jump to the channel loop's latch at 0x10e3fd, past 0x10e258-0x10e3fc. The channel
+// loop counts c and takes the channel and prior-value pointers from it, so the channel pointer's home store is in the
+// preheader as retail's (0x10e02b); the comma-stepped pointer loop had it ahead of the guard (18). Left: push esi
+// before push edi (retail pushes esi after the memset), and the preheader loads XMM5 from +0x1c ahead of XMM1 from
+// +0x2c (retail XMM1 first, 0x10e004). Tried (round 248): `previous[c]` read directly with the channel pointer (386,
+// 1571 B), both read through `channels[c]`/`previous[c]` (386), `real prior = previous[c];` (328, 1616 B), the channel
+// pointer from `&curves->channels[c]` (262), the counted loop with both pointers declared before it and stepped at the
+// end of the body (22); on the kept form the key floats declared v_first first, t_first/t_last first, or the four
+// endpoints after the five others (12 each).
 // @retail 0x10de40
 void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, real time, real blend, bool skip_special)
 {
@@ -254,11 +260,10 @@ void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, rea
 			s_vibration_channel *channels = curves->channels;
 			s_vibration_key *keys_base = (s_vibration_key *)(channels + channel_count);
 			real t_first, v_first, t_last, v_last, t_key, t0, v0, t1, v1;
-			s_vibration_channel *channel;
-			real *prior;
-			long c;
-			for (c = 0, channel = channels, prior = previous; c < channel_count; c++, channel++, prior++)
+			for (long c = 0; c < channel_count; c++)
 			{
+				s_vibration_channel *channel = &channels[c];
+				real *prior = &previous[c];
 				s_vibration_key *keys = keys_base + channel->key_offset;
 				real result = 0.0f;
 				bool skip = skip_special && (c == 0x12 || c == 0x13 || c == 0x14);
