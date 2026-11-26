@@ -1609,6 +1609,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // through object_header_get's object with the flag through object_get 20, the reverse 20 (same code each). Allocator
 // reading: the no-model index ranks 78 and takes ECX, the first free register at its turn (EAX and EDX hold the two
 // defaults), so the pool loaded at the current-object lookup is reloaded.
+// M3 lane 1 r170 (h2m fast with 0xb8bd0, 0xbdc40, 0xbc820, 0xbd020, 0xbee60, 0xbfa40 and 0xbdb60, all MATCH; control 20 at
+// 1399 B). BLOCKED-BY 0xb8bd0: retail's arm reads as that call expanded at link time (the pool kept, data re-read, node
+// read after the parent object), which its file's flags rule out here. Forms: the flag read first, then the matrix,
+// both through the accessors 25; the parent index and node read through the object view's typed fields 20; the node
+// in a named long ahead of the matrix 20; the matrix through object_header_get's object with the flag through
+// object_get 20 (re-measured); one parent-object local for both reads 44 (1390 B).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

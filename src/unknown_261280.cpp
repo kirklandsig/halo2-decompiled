@@ -223,6 +223,12 @@ struct s_reference_filter_view
 // (jne/!flag/true vs retail je/true/!flag); single-exit bool result = true with s_type_d4fbfa::flags0e & 0x20 != 0
 // matches bytes 0..+0xfc and retail's 295 B; else-if allow_any inlines the else block (66, 285 B); orig else 29;
 // inverted !require_flag 67; boolean/ternary/or forms 66-136.
+// M3 lane 13 r160 (fast; control 6): the else arm as `if (!require_flag) { allow_any ? true : !flag } else flag` 67;
+// the else arm as `result = allow_any ? true : !flag` 66; one ternary `require_flag ? flag : allow_any || !flag` 103 (256 B);
+// `result = flag;` then the else arm under `if (!require_flag)` 91 (282 B); else arm `result = true; if (!allow_any)
+// result = !flag;` 82 (283 B), `result = !flag; if (allow_any) result = true;` 29 (295 B); the three tests as an
+// early-return inline predicate 66 (the same code as the else-if allow_any form: every true-first spelling lays the
+// else block inline). All restored.
 // @retail 0x2623a0
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference)
 {
