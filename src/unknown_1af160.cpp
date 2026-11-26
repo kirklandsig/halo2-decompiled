@@ -374,6 +374,19 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // clear first 29; the 0x261280 result declared bare and assigned on its own line 12; both 0x1f4a20 flags declared ahead of
 // the 0x262b40 call 12 (same code each); the rounded delay stored into its own long instead of the long output 25; the
 // 0x2626b0 guard testing the 0x1f4a20 result first 15.
+// M3 lane 8 r239 (h2m fast with 0x1e1f20, MATCH; control 12). Frame packer (from a slot trace): the dword cells in
+// creation order are the 0x261280 result, the long output, the 0x265c30 flag with the 0x25d690 pointer, the actor, the
+// scratch pair, the offset temporary with the 0x262b40 result, the bool output, the saved reference group and the node;
+// the two ties (actor and temporary 4 refs each, bool output and node 2 each) leave the back end's middle-pivot sort the
+// other way round from retail. A replay of that sort gives retail's layout when the flag's cell is made after the
+// temporary's, when the bool output has no cell of its own, or when the node's cell is among the first six; making the
+// temporary's cell after the bool output's fixes both pairs but swaps the 0x261280 result with the flag's cell, which is
+// another tie. Retail's code is ours instruction for instruction, so the order comes from statement order that leaves
+// the code alone. Forms: round 164's lead (the clear after the if/else under `if (!local_5)`) re-measured 31 (homes
+// retail's; the clear becomes its own threaded block with the result store first); the clear written first under
+// `if (unknown227)` with the arms after it 205 (984 B); the result cleared first and the actor flag cleared from it 12;
+// the clear through a named actor pointer 12 (both the same code); the 0x265c30 flag declared after the 0x1e5280 lookup
+// 16, ahead of the 0x1e1f20 call 24; declared inside `if (local_24)` re-measured 19.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

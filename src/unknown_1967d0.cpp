@@ -1134,6 +1134,14 @@ static inline long team_score_195ed0(long team)
 // with/without signed count sample 160/160, one-based comparison 187. Inclusive negative/upper/
 // both score boundaries 101/100/101, both with the native query on admission 191.
 // NOT kept: the ties leave the flag read early and the other forms grow the body or raise the score.
+// M3 lane 11 r169 (h2m fast with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310, all MATCH; control 100). The team
+// test's mask written bit first, the mask word or the bit in a named local, the clamped score in a named local stored
+// after, the team rank in a named local: 100 each (same code). Diagnostics (byte offsets off the results block, not
+// keepable): the flag read as the block's byte +0x12b in both loops 100 (the same code as main: the player loop still
+// reads it ahead of the copy); in the player loop only 333 (the player loop unchanged, the first loop then carries the
+// flag in BL from ahead of the loop to a store after it). So the first loop reloads the flag only while its references
+// form one web with the player loop's; retail's player-loop read after the copy needs the record stores to reach the
+// flag, which splits that web unless the first loop's own team-entry stores reach it too (r125's 328 form).
 // Signed-byte team/player/both rank ordinals 181/165/196, with matching signed
 // count snapshots 181/165/196. Separate unsigned bytes 198, shared signed byte 196.
 // NOT kept: narrow team ordinals compare to an immediate and add a byte spill

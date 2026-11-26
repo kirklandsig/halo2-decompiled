@@ -781,6 +781,12 @@ PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b);
 // axis.i in place by the dot where retail copies the dot, the row-i cross term loads axis.k and multiplies by limited.j
 // from memory where retail loads limited.j, and the allocator still ranks the row-i result first (it takes XMM0 where
 // retail has the row-k result, the dot in XMM1 and the row-i result in XMM4), so up stays in XMM4-6.
+// M3 lane 15 r148 (h2m fast with 0x30bf0 and 0x1e5af0, both MATCH; control 235). Reading: up's three components (live
+// from the copy to the forward crosses) colour after every rotation-block value and take XMM4-6 from the free list. The
+// rotation dot unparenthesized: i, j, k 251 (1247 B); k, j, i 175 (1233 B, but it compiles to (i + j) + k, not retail's
+// (k + j) + i, so the parenthesized form stays for the sum order); axis-first i, j, k 253 (1248 B). `angle` declared
+// ahead of `limited` 245; the rows stored i, j, k 233 (1239 B, under the bar). Lane 2 r145's 166 lead (cross terms in
+// the rows) re-measured 166 at 1231 B. Body unchanged.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result,
     s_shape_carrier_contact const *state)
@@ -2166,6 +2172,11 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // normalize's three scalings, the inner loop's candidate pointer (retail keeps it in [esp+0x20] and steps it in EBX), the
 // dot's first product (retail's accumulator holds the j product), the count-2 arm's address forms and cross operand
 // sides, the final loop's height sum (retail loads the request height first) and its projection's first product.
+// M3 lane 15 r148 (h2m fast with 0x1f19c0, 0x1f2e60, 0x1f2a80, all MATCH unless noted; control 413). The keepable parts
+// of lane 2 r145's 279 lead alone on this body: the file's bit-3 helper at both settings tests 464 (2105 B); the
+// one-contact arm's scaled normal named through vector3f_scale 435 (2109 B, a re-measure); both 462; that arm as
+// vector3f_add_scaled(&desired, normal, -minimum, &direction) 475 (2109 B); a plain `long count = 0;` between the two
+// NONE stores 530 (2092 B; 0x1f19c0 drops to 11). Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

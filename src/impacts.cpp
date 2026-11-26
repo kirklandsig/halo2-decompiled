@@ -1985,6 +1985,23 @@ void function_2294a0(
 // at 1989 bytes. A transform-scope position pointer with stores or setter 485 each.
 // Common transform for both endpoints or its returned second endpoint 781 each.
 // Endpoint and separation names 231, original point snapshot at publication 519.
+// M3 lane 7 r230: a byte MATCH (fast, plain and full check), NOT kept: the whole-image check then loses matched
+// 0x185be0 (2, +0x21c) and 0x24cf66 (2, +0x3bd), which flip with the whole image. The matching form, on the earlier
+// lead of existing helpers: the keep test's dot through a new file-local inline helper taking the impact and the
+// constraint (`return dot3f(&impact->normal, &constraint->normal);`), the test held in `bool keep`; unknown44 and
+// unknown40 cleared between the normal and the position defaults; the midpoint through vector3f_add_scaled; the normal
+// sum written out as now and the position sum through vector3f_add; the average and the tangent's scale through
+// vector3f_scale (normalize3d.h included); the relative velocity formed in velocity_a and the tangent and linear-velocity
+// differences through vector3d_from_points3d; the two dead point-velocity calls into scoped locals; the first rigid body
+// through a pointer local. Dead-local scans and a link-time lab showed the five offset-0 float pairs follow the
+// function's symbol count (no count fixes all five) and change with the inlined helpers' shapes; the one-caller helper
+// is what moves the keep test's dot i-term alone. Ablations (lab, exact rows against retail): without the helper 2,
+// without the bool 12, without the pointer 40, the midpoint as now 11, any one velocity/average block as now 8-15; the
+// earlier lead's three one-use component_b locals are not needed (0 with none, or with one or all three). Whole-image
+// diagnostics: normalize3d.h's include alone loses 0x185be0 and the accepted 0xc2d00; the midpoint helper alone or the
+// position-sum helper alone does the same; every matching variant tried (none, one or three component_b locals, either
+// normal-sum spelling, a scale-only header instead of normalize3d.h) loses 0x185be0 and 0x24cf66 and keeps 0xc2d00.
+// Body unchanged (231).
 // @retail 0x228770
 void function_228770(
 	long impact_index,
