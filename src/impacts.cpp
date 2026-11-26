@@ -1524,6 +1524,13 @@ PRIVATE __forceinline byte *function_2284c1(long arg_0)
 // the material names, their declaration order, component_index first in each arm, the condition negated with the arms
 // exchanged, member-wise copies, a constructed copy for the self-store: 50 each; short locals 112 (241 B); initialisers
 // at the declarations with a single if 96 (279 B).
+// GA23 (15 fast trials, 0x2285d0 untouched/MATCH, 0x2294a0=586): retail 0x2294a0 sets up `mov ecx, ebx` last after all
+// 10 stack pushes (confirming `impact` is param 1). On HEAD without touching 0x2285d0: macro 2284c1 / swap decl order /
+// helper plain locals / symmetric bool helper / direct no-helper / non-const impact / swap both material assigns /
+// `inline_depth(1)` diag all 81 (same code); `component_index` first in both arms 83 (270 B); both `component_a` and
+// `component_b` locals 91 (272 B, al 111->65, `impact` moves to EDX, confirming `lea eax,[..+0x5c]` setup order follows
+// 0x2285d0's parameter order); dead object header in helper 93; default-init single if 96; in-place material swap 100
+// (253 B); call-args locals at top diag 122; plain inline helper 125 (226 B, 0x2294a0->754). Body unchanged.
 // @retail 0x2284c0
 void impact_material_effects_get(
 	s_impact const *impact,
