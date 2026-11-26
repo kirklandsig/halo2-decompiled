@@ -1054,6 +1054,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // and `cmove ebx` without touching `*position = *q`, but shrinks frame to 0x20 and breaks 0x1eb6f0 (score 22, pushes `b`
 // instead of EDX): with `PIN` 726 (+ qr_rate/ticks 693, mk 311; + unfold/dir/cmps 736, al 646, mk 301); with original `if`
 // 718 (+ ticks 718, + qr_rate/ticks 749, + unfold 740, + direct limit 762, + unfold/cmps 742, mk 306).
+// M3 lane 16 r192 (H2M_FAST with 0x1eb6f0, 0x1ed4a0, 0x30bf0; control 567, aligned 681, masked 268): `cnt` as a plain
+// real 709 (2849 B); the output written through `out->position` at each use (no position pointer) 653 (2887 B);
+// `s->limit` read at each use (no limit local) 681 (2879 B); the activation displacement through the existing
+// vector3d_from_points3d(pos, b, &delta) 665 (2880 B; aligned 629, masked 246, both below main's: a part for a combined
+// form only); both activation step counts as `e > 0.001f ? rem / e + 6.f : 6.f` 677 (2879 B). Body unchanged.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,
