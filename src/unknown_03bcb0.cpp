@@ -1151,6 +1151,15 @@ s_3c9a0_matrix g_4c1b68;
 // overload 227, the first tangent through the double overload 227. Diagnostic (reverted): a float-consistency pragma around
 // the body 433 (1545 B: tan becomes a library call, so retail is not built that way, though the divide and compare then
 // turn SSE).
+// M3 lane 3 r309 (H2M_FAST; 0x3c9a0 MATCH and 0x3c3c0 74 throughout; control 291 at 1330 B). Retail gives the first
+// tangent, the view tangent and the near corner_x memory homes (the x87 result stored as a float, then an SSE divide and
+// SSE/integer copies); ours keeps them on the x87 stack. None of these moves it: the tangent or the view tangent as a
+// real product `(real)tan(...) * x` 291 / 291, both 291 (same code); both with no casts 291; every local declared bare
+// at the top 291; the clamp's first test as `!(width_scale > 1.0f)` 306 (1321 B: the second compare folds away, so the
+// `<=` / `>` pair is retail's). On the reused corner pair (r151's held form, re-measured 239 at 1387 B, 229 with the
+// two-multiply angle): tangent2 computed ahead of the near corner 239; the width scale in one expression 239; no casts
+// 239; the `!(... > 1.0f)` test 249; bare top declarations with the two-multiply angle 229. Reading: retail keeps one
+// home for corner_x across its near (x87) and far (SSE copy) values, ours splits the two.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1244,6 +1253,14 @@ long function_40de0(long index, bool first, bool second);
 // ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
 // Also tried (@coldspear, #104 2026-11-02): index as long in all five declarations: 0x41040 315, and the matched caller
 // 0x44ac0 stops matching (137), 0x44c90 107 -> 149. Not a lead.
+// M3 lane 3 r309 (H2M_FAST with 0x44ac0, 0x44c90 and 0x402b0, MATCH throughout; control 300). Retail ORs the incoming
+// index register into the handle raw (`or ebp, edx`) and sign-extends it only for the entry lookup (`movsx esi, dx`); its
+// callers pass 32-bit loop counters in EDX. Index as `long` in the definition and all four declarations, the three
+// `(short)` casts dropped at the calls, the entry read as `g_4ba138[(short)index]` and the handle OR-ing `index` 315
+// (1076 B: retail's raw `or`, every caller still MATCH); on it a local copy of the tag table for the two lookups ahead
+// of the first call 314, `long kind` 309, the material as a ternary 302 (cmove), all three 316. On the short form: the
+// tag-table local 301 (1079 B: the table load moves to the entry as retail's, the registers stay ours), `long kind`
+// with the material ternary 305, the tag-table local with the ternary 307.
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -1340,6 +1357,16 @@ void function_41040(short index, long part_index, long group, byte weight,
 // tricks (none), statement-order permutations of result/out/key/index (305-360), key as long (341), group as switch or
 // if-chain (switch gives sub/dec instead of test/cmp; the nested != 1 form gives retail's cmp), selection as byte with one
 // movsx (closer to retail, score 340-361 only because the size changes: 1196 vs 1204 bytes).
+// M3 lane 15 r147 (fast screen, 305): retail splits the tag parameter: its early uses (the 0x15d70 call, the case 18
+// and 19 definition reads) come from ebp, the override in cases 18/19 is stored to the parameter's own slot and the
+// material lookup reads it back from there; stage is in edi only up to the switch, pass stays in its slot. Ours keeps
+// one tag web in edi to the material lookup, pass in ebp, stage in memory. Forms: the source fields for the 0x15d70
+// call read as g_4ba138[index] with the pointer formed after the call 376 (1248 B, the pointer is never formed); the
+// override in a separate `material_tag` local initialised from tag 316 (1204 B, retail's length: pass now stays in its
+// slot as retail, but tag takes edi and stage ebp, and the copy is stored to tag's slot); (void)& on tag/pass/stage
+// 305 (same code), with the separate local 316; the 0x4cbb0 call reading out->value10 as retail does 305 (same code:
+// the stored value is forwarded); the selection switch's default listed with cases 1-3 365 (1164 B). Retail's primitive
+// switch shares one block for cases 1-3 and the default (same register), and tests the 0x4cbb0 result as a byte.
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
@@ -1858,6 +1885,13 @@ extern long g_485a60;
 // slot is stored as a dword), values 0..255 so no behaviour change. 0x100000 test: retail `shr edx,0x14; test dl,1` but
 // every spelling (TEST_FIELD_BIT, bool local, (x >> 20) & 1) folds to `test [mem],0x100000` here (380 in all four).
 // Also tried: definition first then part_index/value/index (402), index kept as long raw_index + short (393), value first (404).
+// M3 lane 3 r309 (H2M_FAST; control 380). Retail decodes part_index as `xor ecx, ecx; mov cl, al; ... and ecx, 0xff`
+// and reads it back as a short (`movsx eax, word ptr [esp + 0x34]`): `short part_index = (short)(packed & 0xff);` gives
+// that exact sequence but 417 (part_index stays in EDI where retail spills it); with it, the definition lookup first
+// 414, the definition and the tag store first 414, definition/part/value/index 406, definition/index/part/value 406.
+// Other spellings: `short part_index = (byte)packed;` 401 (1399 B, `movzx di, al`), `(byte)packed & 0xff` into a long
+// 401 (1400 B, `movzx ecx, al`), `(short)((byte)packed & 0xff)` 401 (1399 B). Lead: the short form plus whatever makes
+// part_index spill.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

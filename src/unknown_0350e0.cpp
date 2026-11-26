@@ -76,6 +76,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // them to the helper; the forms that compute the trig inside the helper measured 355-357 and lost the matched caller
 // 0x137ed0 whose inputs are doubles, so the body stands.
 // score 334 (was 334): the builder's squares spill where retail keeps them in XMM1/XMM4/XMM6 and re-reads the axis.
+// GB r11 lead, held as a patch (not kept: the forms are kept only with a byte match): 224 against 334: transform4x3f rotation builder (with matrix3x3 *rotation = &matrix->rotation, axis_squares squared in place, sine_axis, and symmetric cross terms in up.j/left.k order) and in-place rotate_axis_vector match retail's 338-insn schedule across both rotation passes (aligned 642->135, 0x137ed0 MATCH); still differs: frame 0x8c vs 0x90 (one fewer pre-sine_axis spill slot), opening axis load order j/k/i vs i/j/k, and x87 i*sine product.
+// GB11 (11-25, 34 trials): decal-style matrix3x3 builder on matrix3x3 body 382; transform4x3f + in-place rotate_axis_vector 350, with axis_squares squared in place 330, vector3f_scale 350, up.j before left.k 332 (exact 1779 B, aligned 176), forward-first 337, single-expr rotate 356, out-of-place rotate 361, xy-only 350, angle-inside-builder 348, 4-trig-locals diag 350 (fr=0x90), matrix3x3 + in-place 350, matrix-vector-rotate 444; combining up.j-first + axis_squares name + squared-in-place + matrix3x3* rotation pointer gives 224 (1762 B, 338/338 insns, al=135, plain-confirmed, kept); with forward.j/k reuse 222 (al=128), yz inlined 222/324, jk order 222, vector3f_scale 319, struct-copy *axis 364, brace init 332, 4-trig diag 195 (fr=0x90, fd=+0x10, not kept: one-use trig locals), direct matrix->rotation.* 340, direct matrix3x3* with scale/pos 353.
 // MiniMax A (11-18): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7
 // with the squares in xmm1, xmm4 and xmm6, takes the cosine on the x87 stack before the cross terms and forms them as
 // (inverse * j) * i, (inverse * k) * i and (inverse * k) * j, while this build keeps the axis in xmm4, xmm5 and xmm6,
@@ -581,6 +583,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // first/second/both direct in-place turns 432/349/379, copied in-place rows 540,
 // and fresh per-row output 469. NOT kept: all move the 0x90 frame and grow
 // the body. The first-axis register and square spills still differ.
+// M3 lane 15 r147 (fast screen with 0x137ed0, MATCH each run; control 334): each pass's three rotated rows as one
+// matrix3x3 aggregate initialiser stored by aggregate assignment 408 (1839 B); the angles as `0.5f * step` and
+// `0.3f * step` 334 (same code); `inverse` computed ahead of the squares in the builder 332 (1782 B; two points, not
+// kept); the rotated rows' products written vector component first 334 (same code); the diagonals written
+// `xx + (1.0f - xx) * cosine` 334 (same code). Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4982,6 +4989,16 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // point pointer 502/499, point reference 502/499, scalar outputs 502/499.
 // NOT kept: returned points enlarge the frame. Output arguments retain
 // 0x60 and shorten the body. The independent velocity reads still differ.
+// Immutable moved point, immutable projected points, immutable saved points, fixed position/velocity
+// receivers, named projected points with compound offset updates, scoped speed limiter, and one
+// particle position receiver 486 each. Signed screen difference helper 498; shared scaled-add
+// for the moved point 556. NOT kept: the signed difference increases the score and length;
+// the scaled-add shortens the body to 1964 bytes and raises the score. The frame, stored-velocity
+// reloads and projection homes remain different.
+// M3 lane 15 r147 (fast screen with 0x259d0, MATCH; control 486): the cycle flag alone read from the flags' low byte, as
+// retail's `mov al, byte ptr [state + 0x94]`, 485 (2035 B, retail's length; one point, not kept); the camera delta alone
+// read from the stored copy at view + 0x110 513 (2004 B), with the byte read 513; the reset flag as `(flags >> 1) & 1`
+// without `!= 0` 486 (same code), with both others 513. Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5830,6 +5847,8 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // MiniMax E (11-20): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the four spill homes (y, z, radius, negated radius) still sit at other offsets than retail's (y+4, radius+8, -radius+0xc, z+0x10); the forms recorded below land at 225/226 with a longer body.
 // MiniMax I (11-19): no new form, no lower score (231): the frame is still 0xd0 against retail's 0xe0 and the radius, the negated radius and the scaled zero still take other spill slots; the four-channel colour and the `-radius` forms recorded below still land at 225/226 with a longer body, so the body is unchanged.
 // score 231 (was 231): The frame is 0xd0 against retail’s 0xe0. The radius, negative radius, and scaled zero still occupy different homes.
+// GB r11 lead, held as a patch (not kept: the forms are kept only with a byte match): 211 against 231: four-channel color4f recovers retail's exact 0xe0 frame (collision.unknown24 at +0xac, collision at +0x88, color.alpha at +0x78, first diff +0x2->+0x38), and accumulated rx/ry/rz rows with origin-first vector3f_add match retail's 411/411 instruction count and D3D push-buffer alignment (masked diffs 99, 0x141710/0x1697c0 MATCH); still differs: radius spills at +0xc vs retail's +8, x-row sums left+forward+up where retail sums forward+up+left, and Corner 2 CSEs scale*radius.
+// GB11 (11-25, 50 trials): three-term x-row local products scalar 401, color4f 226, alpha-only color4f 223, split apply_point 218/223, in-place corners 367, real_point3d_set offset 376, local out 372; rx/ry/rz += with forward+up+left recovers all four retail spill slots (+4/+8/+0xc/+0x10) and masked diffs 89 at 1797 B (406/411 insns, positional 375 across split/single-sum/in-place/mul-assign/origin-first/explicit-offset/offset-first/add-after; real_point3d_set 395, direct origin add 387 at 1819 B, field += 718, local world 722, neg_radius 407); rx up+forward+left 355 (410/411 insns, with xzy scale 221 at 411/411); rx left+forward+up + ry/rz up+left+forward + origin-first vector3f_add + color4f hits 211 (1825 B, fd=+0x38, fr=0xe0, n=411/411, mk=99, plain-confirmed, kept; same 211 split or alpha-only; rx forward+left+up 376; 1eff40 x + ry/rz += unsplit 365 mk=82, split 211).
 // Earlier (231, was 231): Frame 0xd0 versus 0xe0. The radius, negative radius and scaled zero occupy other spill slots.
 // MiniMax H (11-06): no new form, no lower score (231).
 // The corner geometry does not match retail: retail's four corners are (-r,-r), (-r,+r), (+r,+r) and
@@ -6114,6 +6133,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // scalar pointers 438/418, scalar references 438/418, typed point
 // receivers 1139/1136, returned planar points 493/493.
 // NOT kept: none recovers the radius/depth homes and extent.
+// M3 lane 15 r147 (fast screen with 0x1697c0, 0x141710 and 0x142570, all MATCH; control 231): the corner helper's x row
+// in 0x142570's up, left, forward order 231, the origin added first 231, both 231; the opacity and collision tests as
+// one negated early return 231; the radius renamed to sort ahead of the helper's scaled x, y and z 231 (all the same
+// code: the spill homes ignore names). Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

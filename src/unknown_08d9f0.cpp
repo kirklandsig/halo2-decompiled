@@ -279,6 +279,36 @@ void function_8dd70(void);
 // handler's gateway and the gateway's handler are written through the existing gateway and handler
 // locals instead: 226 at 894 bytes (the link local alone 243).
 // The empty entry frame, stacked link-success byte and outlined calls still differ.
+// The four-byte entry frame and the link byte are still the first gap. Carrying
+// the entry decision through link, observer, or sessions scores 235/228/225.
+// Carrying it through link and observer, link and sessions, observer and sessions,
+// or all three scores 227/232/233/224. Link and trim scores 244.
+// NOT kept: the 224 form restores the frame and length but gains two, with the
+// entry load and expanded registration calls still different.
+// Separate, shared, link-to-observer and observer-to-list enum states
+// 235/226/249/229. With success assigned in branches 238/255/254/232.
+// NOT kept: the shared enum ties at retail length but still keeps the link
+// result in a register and the registration calls remain expanded.
+// The entry frame, link byte and registration call boundaries still differ.
+// One continuing short/bool link-to-observer outcome 234/227, failure outcome 244/236,
+// clear on observer failure 235/233, or reuse that result through the list clear 228/223.
+// NOT kept: the 223 form gains three points. The result sharing remains match-only.
+// The missing four-byte frame, byte link result and expanded registration calls remain.
+// Explicit conditional link result 232; carry link into observer 224; carry observer
+// into the list clear 229; carry both 227; first session via handler 237;
+// handler link via gateway 224; handler message table via gateway 231;
+// positive short readiness tests 226. NOT kept: the best forms gain two points.
+// M3 lane 6 r245 (h2m fast with 0x8dd70, 0xb2cc0 and 0x662f0, all MATCH each run; control 226). BLOCKED-BY 0xb2cc0 and
+// 0x662f0: both are small single-caller functions LTCG expands here, where retail calls them (0xb2cc0 registers one
+// message type, like 0xb2de0, which already has a noinline declaration; 0x662f0 sits in another lane's file). Diagnostics
+// on the current body, none keepable: a noinline declaration for 0xb2cc0 266 (831 B); with one for 0x662f0 in its header
+// 344 (764 B); plus 0x8dd70's memset reading `g_510564` through its address (as it reads three other pointers) 277 (821 B:
+// the nine registration calls and their reloads are then retail's); with the entry flag tested again ahead of the
+// failure call 281 (827 B, the entry `sete`/`cmp` is retail's); instead a `bool` link result 275 (829 B, retail's `push
+// ecx` frame); both 249 (835 B, first difference +0x13). What is left then: retail normalises the link result into its
+// stack byte (`test al, al; setne`), the gateway set-up's dead `lea ecx, [eax + 8]` (a member passed by reference to an
+// inline set-up), the observer and session results built as bytes (`mov al, 1; jmp; xor al, al; cmp al, bl`) and the four
+// other pointers reloaded after each store, as for address-taken globals.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {

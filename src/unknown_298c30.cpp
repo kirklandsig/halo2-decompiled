@@ -95,6 +95,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 }
 
 // score 305 (was 305): m3 lane 1 r129 lead 310 plain / 284 fast below, not kept. The 0x64 frame and seven-argument cleanup agree. Unity uses XMM1 here and XMM2 in retail. The cosine spill and candidate ordinal still differ.
+// GB r11 lead, held as a patch (not kept: the forms are kept only with a byte match): 256 against 305: frame 0x64, `ret 0x1c`, entry through +0x163 (unity in XMM2, global count in BP, outer counter in EBX) now match retail; loop-head distance compare/order, near cosine/sine spill slots (+0x14/+0x28 vs +0x28/+0x1c) and `cos*y` operand order, second normalization store order, and emitter angle load remain.
 // MiniMax G (11-20): no new form, no lower score (305, 1732 bytes, retail 1732): the near arm's y row written as one
 // expression (arg_3->x * local_12 + arg_3->y * local_11) takes the y row in SSE as retail does, but the cosine goes into
 // the register and the facing y into the memory operand (retail the other way round), the y*cos product moves after the
@@ -845,6 +846,30 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 356/352/360, positive-negative/positive-distant/negative-distant 370/403/399,
 // all 445, cosine and sine on all 478. NOT kept: each grows the 0x64 frame and
 // regresses. Unity, rounded cosine and candidate ordinal still differ.
+// M3 lane GB r11 (fast with 0x29a190 and 0x298c30 MATCH, then plain-confirmed with 0x29a190/0x298c30 MATCH and 0x299460 569;
+// control 305, 36 trials): lead 305 -> 256, held as a patch (not kept: a new one-caller helper, store and condition order and rereads are kept only with a byte match; the counter and sine forms alone give 460) (1738/1732 B, frame 0x64, first difference +0x57 -> +0x163, aligned 175 -> 51,
+// register-masked 479 -> 57): alias-safe `rotate_vector2d_298d90` (y staged before x/y stores, called in both near `if/else`
+// arms and the far arm, replacing staged `turned_y`), direct `g_504938` counter, retail `function_2992ba` store order
+// (field_4, field_0, field_1, field_c), `!local_4` second-side branch, `>= 0.0f` wrapped angle reading `local_19[local_20]`
+// directly, and `(real)(local_7 == 0 ? sin(-local_22) : sin(local_22))`. Not kept (fast): clean far+emit alone 302 (+vec2d 347),
+// clean far alone 317 (+vec2d 362), global count with staged `turned_y` 457 (+vec2d 440, caller 684), near `if/else` without
+// staged y 400 (1674 B, caller MATCH), sine-only `if/else` 379 (caller 684), whole-near `if/else` 451 (caller 684), `rotate_vector2d`
+// with ternary sine 432 (caller 684), inline `cos()` args 363, with `byte local_6` 373, `emit_near_298d90` helper 257 (+vec2d 333),
+// x-first rotate helper 328, (cos, sin) param order 332, emitter member stores 435 (caller 684), emitter `real const *arg_2` 253
+// (1734 B, al 36; pointer to local, match-only), kept `local_21` 290, old `-(double)local_22` 272 (1732 B), old emitter order 267,
+// in-place rotate helper 555, diagnostic double distance local 284 (224 with vec2d).
+// M3 lane 16 r190 (fast screen with 0x29a190 and 0x298c30, both MATCH each run; control 305, aligned 260; body unchanged).
+// The near arm's y row only. Retail keeps each quarter turn's cosine and sine in float cells read by both an SSE
+// product and an x87 load, forms y times cosine in SSE and loads x before it branches for the sine's argument, and
+// keeps that product in XMM1 across the branch; main's staged `turned_y = y * cosine` is an x87 product on the cosine
+// still on the stack. Forms: the staged y as one sum after the sine, `x * sine + y * cosine`, 365 (1745 B, aligned
+// 253: both cells and both SSE products as retail, but the y product comes after the sine and is formed cosine
+// first), written `y * cosine + x * sine` 365 (same code), with the sine assigned inside the sum 365 (same code: the
+// sine's branch is still evaluated ahead of the whole sum); the sine written inside the staged sum and again in
+// the x row 389 (1756 B, aligned 273); the staged product kept and the later sum written `x * sine + turned_y`
+// 305 (same code as the body); no staging, the x row then the y row as plain sums after the sine 382 (1692 B,
+// aligned 242). So the SSE y product follows from the y row being one sum; what moves it ahead of the sine's
+// branch is not found here (an identical product in both arms of a side test, hoisted, would give it).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
