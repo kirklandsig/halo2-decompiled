@@ -1319,6 +1319,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // classifier clamp with the upper bound tested first 238; the classifier as the plain range test `value < 1 || value >
 // 16` 355; the root walk written in the body instead of the walk helper 238 (same code); the key adjustment through a
 // named first->next node 310. Body unchanged.
+// M3 lane 15 r152 (h2m fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the data word as an
+// anonymous three-view overlay (dword for the zero test, long for the classifier, byte pointer for the byte test) 320
+// (1243 B: the views still share one load, the compiler unifies them); only the byte test through the pointer view 238
+// (same code); the classifier reading the long view and comparing against the dword view 238 (same code); the overlay
+// with three body pointer locals, one per test 319 (1243 B, one load); the root's type test as a one-case switch 301
+// (the type is then loaded into ECX as retail, but tested with `dec ecx`, not `cmp ecx, 1`). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -1047,6 +1047,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // re-measured 43; the camera arm's forward through one pointer for the copy and both products 223 (1272 B);
 // previous_up bound by const reference to the player state 277 (1237 B: retail copies it before the length call).
 // Body unchanged.
+// M3 lane 15 r152 (h2m fast with 0x1f0870, 0x130f60 and 0x3c9a0, 0x130f60 and 0x3c9a0 MATCH; control 45). A forced-ranking
+// reading: the first product's three components are colour candidates in one block, ranked right.k 162 > right.i 144 >
+// right.j 108 here (retail's colours need right.j above right.i); with a staged second product all three tie at 108 and
+// the tie order (right.i, j, k) is the reverse of retail's colours. Forms: the second product through the existing
+// contact_cross of src/unknown_1f03e0.cpp 57 (1264 B), both products through it 57; the second product through the
+// existing staged matrix_cross of src/unknown_03bcb0.cpp (k, j, i with retail's operand spelling) 217 (1270 B, the same
+// code as cross3f_staged: operand order follows rank, not spelling), both products through it 221 (1272 B), the first
+// product alone 49 (1264 B). Diagnostic (reverted at once): 1 to 7 unused locals on this body 45/49/49/219/219/49/49
+// (219 at retail's 1261 B with the first product's loads moved), on the staged second product 217..223. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
