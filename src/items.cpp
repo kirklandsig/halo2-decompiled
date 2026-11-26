@@ -1329,11 +1329,11 @@ void function_10ca80(long object_index, long owner_index)
 void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward, vector3f const *up);
 void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f const *new_parent);
 
+// score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
+// depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // MiniMax E (11-20): no new form, no lower score (130): our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the alignment dot as its own statement gives retail's j, i, k order (175) and writing the cross out in place also gives retail's frame and 848 bytes but scores 173.
 // MiniMax E (11-20): no new form, no lower score: our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the inverted threshold test with a split dot scores 199.
 // MiniMax B (11-20): no new form, no lower score (130): the cross result keeps a 12-byte stack home because its address is passed to the scale helper, which makes our frame 0xc0 against retail's 0xb4 and our locals sit 12 bytes higher; retail multiplies the dot as j, i, k and keeps the cross in registers, and a dot written as a separate statement reaches that product order but moves the old vector's components into other registers. Writing the cross out in place gives retail's frame and 848 bytes but scores 159.
-// score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
-// depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
 // The square's products come out i, k, j whatever their source order; retail's j, i, k come only
 // from a separate statement for the dot product, which then folds facing loads into mulss: 173-175.
@@ -1485,6 +1485,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // or full diagonal before the cross 141/189, or between cross and scale 184/190.
 // With a shared cross weight 182/188/128, early diagonal and reciprocal 218.
 // NOT kept: the 128 form gains two and leaves the extra axis frame space.
+// AO r6 (fast with 0x10b850; control 130): the address-free axis (cross written out, scaled by a named reciprocal)
+// re-measured 159 at 848 B; with the reciprocal first in each row 159; with the alignment dot's operands swapped 159;
+// on this body the alignment dot's operands swapped 130, through dot3f 130 (same code: the products stay i, k, j); the
+// marker vectors read through the marker at each use (no up/forward pointer locals) 180 (856 B); the transform declared
+// ahead of up 130; the marker declared at the top of the function 130.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1701,7 +1706,6 @@ struct s_item_flags_view_10b850
 // carrier_delta/collision with the 0x12c form 940 each.
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
-
 // MiniMax I (11-19): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still extracts the two flag bits into a byte in the frame (mov byte ptr [esp+8], al) where this build tests them in place.
 // MiniMax I (11-16): no new form, no lower score (824): retail extracts the two flag bits into a byte in the frame (mov byte ptr
 // [esp+8], al) where this build tests them in place, and this build's frame is forty bytes larger (0x154
@@ -2097,6 +2101,11 @@ struct s_item_flags_view_10b850
 // on bit_vector_test + ternary value_13a 861 (exact 4096/4096 B, fr=0x134, ins=876/877, al=461, mk=210, ray/flow shared at [esp+0xb8]; renaming ray/flow 861;
 // item_spin_vector 860; outer-cast / <=254 ternary 885; + case 4: only 876; no ctor 894 fr=0x12c +0x3e; entry local bools diag 891 fr=0x12c +0x3e);
 // calling noinline function_16a040 on clean stack 938 (4013 B, fr=0x12c, +0x3e). Still blocked on entry dead-byte stores (carrier slot reuse) and noinline 0x16a040.
+// AO r6 (fast with 0x10d710; control 813): one `flag_set` bool for both entry tests 813; the flags_c1 bit and the
+// carrier result in one bool 813; both 813 (same code: the tests stay in registers); the entry tests through the existing
+// bit_vector_test 897 (4132 B); a two-assignment (if/else) flag for each entry test 858; the carrier add through
+// vector3f_add with the carrier first 813; the second gravity product as `dt * gravity` 813 (still one product); the
+// incoming velocity copy renamed `incoming` 813, carrier_delta renamed to sort last 813.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
