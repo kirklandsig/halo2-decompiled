@@ -1090,6 +1090,10 @@ static inline bool teams_enabled_19e1c0()
 // entry or on rejection, with engine success publication or miss-length
 // selection: 663/659/490/626/664/659/490/626. NOT kept: count rises, and the 0x204
 // form merges name tails. Token preload and EBP capacity still differ.
+// M3 lane 2 r154 (fast with 0x19e0f0/0x19ea60/0x19eae0, MATCH each run; control 390 at 1437 B): the side-switch arm's
+// negative result as `result = remaining;` like the other format arms 431 (1398 B: its tail then joins theirs); the local
+// team as a `long` (retail sign-extends it into EDI and jumps into the cause-team score arm's tail) 393; the fallback
+// clamp as one ternary 395; both 398; the event teams read at each use 394 (re-measured). Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

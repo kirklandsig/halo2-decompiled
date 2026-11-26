@@ -1132,6 +1132,19 @@ void function_245400(s_source_245400 const *source, long index,
 // lead (re-measured 50 at 789 B, aligned 40): 0-7 unused initialised longs at the top 50/50/52/52/52/48/48/48 (no phase
 // break); the plane test as `(local_2 ^ local_3) & 0x7fff` 190 (783 B); the first side bit as `(bool)((dword)code >> 15)`
 // 173, the second 167. On this body: both side bits as `((dword)code >> 15) & 1` 226 (760 B). Body unchanged.
+// M3 lane 8 r241 (H2M_FAST with 0x245aa0, 0x245400, 0x244de0, MATCH unless noted; control 163). LEAD 138 (787 B, first
+// difference +0x35, frame 0x2c; not kept: a later plane-table declaration and a moved edge statement are match-only): the
+// second material through a record pointer read twice (compare, long copy), both codes read through their records, named
+// masked plane indices, the plane table read after the long codes, the sides as `((dword)code >> 15) & 1`, and the edge
+// formed after the side bits. Everything through the plane decode is then retail's but the edge's XMM numbers (ours
+// XMM0-2, retail XMM3-5); the cross operand sides, the scaled copy and the row orders are left. Steps: plane table after
+// the edge 203 (787 B, 0x245aa0 3); with the record pointer and codes through the records 210 (0x245aa0 3); with the
+// shifted sides 190 (783 B, 0x245aa0 MATCH, retail's first 15 instructions); with named indices 191; with the edge after
+// the sides 179. On 138: the edge scaled into a copy then matrix_transform_vector 212 (823 B), function_2477b1 221 (833 B),
+// in-place scale with function_2477b1 242 (849 B); 0x16f570's file's in-place vector transform (scale test on scalar
+// copies, rows up + left + forward) 172 (791 B: it gives retail's copy-before-test select), 0xe59e0's file's 172; that
+// helper on main 163, on the 190 form 170. On main's statement order: record pointer and codes through the records 213,
+// with named indices 213, with the shifted sides 225 (762 B); named indices alone 163. Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

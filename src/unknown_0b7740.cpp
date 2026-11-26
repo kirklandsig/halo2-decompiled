@@ -1615,6 +1615,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // both through the accessors 25; the parent index and node read through the object view's typed fields 20; the node
 // in a named long ahead of the matrix 20; the matrix through object_header_get's object with the flag through
 // object_get 20 (re-measured); one parent-object local for both reads 44 (1390 B).
+// M3 lane 7 r232 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B). Allocator reading: the pool value is
+// one candidate from the entry lookup to the no-model arm (34: five referencing blocks, seven it only lives through); the
+// arm's index (78: test block of six values, lookup block of nine) ties the parent default (78) and loses the tie, so it
+// takes ECX, the first register free at its turn; the pool would need 45 more, or the index 45 less, to keep ECX. Forms
+// in the arm: `long const` index 20; the mirrored default declared ahead of the parent 22; the index declared ahead of
+// both defaults 20; the test as `NONE != parent_index` 20; the index typed `dword` 20 (same code but the 22).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

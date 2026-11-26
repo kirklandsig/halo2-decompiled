@@ -67,6 +67,13 @@ bool function_7af40(s_type_99af70 const *address);
 // `result` declared bare and set false in both arms 48 (callers lost); `result` initialised from the two tests and
 // reused for the low-byte test 48 (114 B); `if ((byte)output == 0) result = true;` 14 (as the if-form); a `dword
 // swapped` local stored and tested 28 (four callers lost). All restored.
+// Round 171 (if-form tail, fast with the same five callers/peers): a forced-ranking search on the if-form matches
+// with one decision, the address up two (30 -> 32) or the inlined loop counter down two (31 -> 29); the swap block
+// holds four candidates (the address, the value, the output pointer, zero), and a fifth one there would give the +2,
+// but every spelling stays at 14 (address in EDX, 0x783d0, 0x784a0 and 0x7ab60 lost): the field read through `dword
+// const &value = address->ipv4_address`, through `s_type_99af70 const &source = *address`, stored and tested through
+// `*ipv4_address` with no output reference, a `dword *output` pointer for the store and test, `result` declared
+// before the output reference.
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {
