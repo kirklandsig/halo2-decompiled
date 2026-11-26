@@ -381,6 +381,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // loop as a guarded do/while over an explicit zero-initialised byte offset 24 (416 B); both resets are retail's (text `and`,
 // model `mov`) and the earlier loops keep retail's registers; left are the `xor ebx, ebx` ahead of the pane call and the
 // model loop's `mov eax, esi`. Without the byte offset 25 (model reset back to `and`); with the zero after the lookup 69 (418 B).
+// M3 lane 7 r232 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23). Allocator reading: in the model loop
+// the screen parameter is one function-wide value with no register (its loop uses are the call's ESI load and the push
+// base); the push's base is a scratch copy of ESI, where retail's push reads ESI itself. Forms: `bool const animating` 23;
+// the model definition as `pane->models + i` 23; the text definition as `pane->texts + i` 23; the model loop's flag test
+// as `animating == true` 24; the model's type read as `(*screen).animation.type` 23; the type named right after the
+// model call (re-measured) 23.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
