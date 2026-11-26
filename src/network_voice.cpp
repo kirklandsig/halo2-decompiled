@@ -1497,6 +1497,16 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // flag is not inlined (182/287); do/while `++i < 16` 287. Outside piece voice_get_unknown00 (ternary / early-return
 // body) 96 each, not kept. Lead: the unbiased IV and one 0x5c0 step in retail need the flag made while channels is
 // still in ebx; every order that does that makes the allocator move channels to ebp or edi instead of the flag.
+// M3 lane 6 r249 (fast with 0x54990, MATCH unless said; control 94). Allocator ledger: the flag ranks 18 (+88 from
+// its definition and four product-block reads, -70 over ten blocks where it is live and unread: the four mask tests
+// and the four cursor steps); each mask test's bool result ranks 40 and takes EAX first, so the flag gets the BL left
+// over. With the flag above 40 it would take EAX and the results ECX, as in retail. Retail's product blocks also hold
+// the channel value in its own register (EBP) and add 2 before the total, one or two more values per block than ours
+// (`imul ecx, [mem]` and one `lea`); a forced-ranking search over 128 decisions finds no single one that matches.
+// Forms: a separate result variable with the total local to the block 94 (same code); the cursor declared ahead of the
+// total (cursor, total, flag: the last of the six orders) 99 (350 B); the element pointer from the index each pass
+// 109 (fixed offsets as retail but biased +0x17c, channels on the stack; 0x54990 1), as `channels->channels + i`
+// 109 (1), declared ahead of the loop and assigned at its top 109 (1). Body unchanged.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {

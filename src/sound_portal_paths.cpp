@@ -339,6 +339,12 @@ __forceinline long portal_path_gain(real distance, real range)
 // cluster's index as `short` 287; the side as `portal->clusters[encoded < 0]` 359 (1368 B); the portal index as
 // `(short)encoded & 0x7fff` 287; the seed distance stored as integer zero 287; the seed bit through the existing
 // bit_vector_set 287 (the same code each but the side form). Still BLOCKED-BY 0x14b240's write summary.
+// M3 lane 16 r194 (h2m fast with 0x18dc90 (295 throughout), 0x14b240, 0x249d60, 0x18ae50; control 287): the count reset
+// ahead of the sort 325 (1383 B); the destination cluster read through `bsp->clusters[other_index]` at each use (no
+// pointer) 368 (1383 B); a short walk counter 318; the output loop's break as its own `else if (count)` arm 287 (same
+// code); the index output stored after the gain 288. The only known source of 0x14b240's write summary is a reference or
+// pointer to one of its whole locals (lane 13 r110), a form this round's rules revert even with a match, so the summary
+// blocker stands. Body unchanged.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -812,6 +818,12 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // distances 295 (same code each), the valid clear and the cluster pointer in the lead's order 296, the path list formed
 // ahead of the seed test 358; on the held form the path list ahead of the seed test 363. Still BLOCKED-BY 0x14b240's
 // write summary (its may-write form raises 0x18ae80, another lane's file).
+// M3 lane 13 r164 (H2M_FAST with 0x18d730 and the callees; control 295): lane 5 r242's held 21 form re-applied, 21 (0x18ae80
+// 913). The allocator's ranking there: the widened index 134 (walk head +144 at weight 2 with 12 values referenced, stores
+// +36, -46 where it is live but unread), the cluster 124 (entry block +144 with 12 values, seed +32, -84 live in the walk).
+// On that form: the side bit as `(encoded >> 15) & 1` 22, `(word)encoded >> 15` 247, `(encoded & 0x8000) != 0` 21,
+// `(encoded & 0x8000) >> 15` 22; the cluster pointer ahead of the bit-vector clear 21. Still BLOCKED-BY 0x14b240's write
+// summary.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

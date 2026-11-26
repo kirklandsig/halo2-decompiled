@@ -264,6 +264,13 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // (0x112fd1) but j and k in place (0x112fd5, 0x112fd9); ours copies for j. No spelling of the three products moves it
 // (i = inverse * i, j * inverse, *=, every order), nor `real const inverse`, an initialised inverse or an inline
 // pointer helper (all 64). Calling function_142700 instead of the body: 329 (not inlined in the fast build).
+// GA22 (34 fast + 8 plain trials; exact byte MATCH 0 at 627/627 B held as a patch, body unchanged):
+// accessing direction only by pointer across all four boundaries (inline inverse-point transform matching
+// function_142700's body, normalize_particle_direction_2b(&direction) from reciprocal_normalize.h dropping
+// function_112e21, and matched function_11df30((vector2f *)&angles, &direction)) matches 627/627 bytes (0 diffs;
+// plain check verified all 44 file peers including caller 0x1132f0 and all 5 callees MATCH, 298 targets verified,
+// 0 differ). Held because any net function addition (+1..+4) to this TU flips whole-image LTCG watch functions
+// (0x24cf66:2 and either 0x1c4590:5 at +1/+2 fns or 0x185be0:2 at +3/+4 fns); 0-new-function forms score 91 (624 B).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -2279,6 +2286,18 @@ bool __stdcall function_110ab0(long unit_index)
 // the interruptible test as `if (... & 0x10) interruptible = true;` 463 (1805 B), with `bool result = true;` and no
 // state-switch default 491 (1837 B), with depleted typed bool 472 (1777 B); the helper in the && form for both
 // functions 484 (1817 B; 0x110ab0 164, same code).
+// GA22 (19 fast trials with 0x10ff40/0x111650/0x110ab0 + 6 matched peers, control 445 at 1793/1793 B, +0x2, fr=8, al=347, mk=394, body unchanged):
+// bool depleted + bool overlay_interruptible 475 (1777 B); + 0x600008d if/else 532 (1729 B; ternary 532; + if-interruptible 539);
+// second seat object_get 445 (same code). With bool depleted + bool overlay_interruptible + bool result = true + no state default +
+// `if (requested != 0x600008c) result = interruptible;` + `if (requested == 0x400000c) result = allow;` + 0x600008d if/else:
+// 497 (1761 B, +0x3, exact fr=0xc, al=195, mk=156, callers unchanged: 0x10ff40 12, 0x111650 557, 0x110ab0 164 -- no unit_ref/volatile needed).
+// On that fr=0xc base (all keeping fr=0xc, +0x3 and callers unchanged): original 0x600008d || 459 (exact 1793/1793 B, ins=473/475, al=209, mk=170);
+// `if (requested != 0xc000043 && requested != 0xd000042) result = interruptible;` 460 (1793/1793 B, ins=472/475);
+// ternary 0x400076c/0x700005c arms 475 (1785 B, al=201, mk=139); byte depleted 489; byte overlay_interruptible 498;
+// headers reload2 515; headers in if 522; decl reorder + inline overlay_interruptible 534.
+// Changing interruptible to `if (... & 0x10) interruptible = true;` drops back to fr=8 and regresses 0x10ff40 to 217 (567; unit_ref/volatile
+// diag forms keep callers unchanged at 563/524/550/550, fr=8). Still blocked by requested taking EDI instead of staying in [esp+0x24]
+// (pushing result from DL into [esp+0x20]) and the overlay switch staying at the end instead of joining mid-switch at 0x11053a.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

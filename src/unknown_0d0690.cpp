@@ -2243,6 +2243,19 @@ real function_30bf0(vector3f *vector);
 // retail; 6, under the bar), as `i*i + j*j + k*k` 483 (1894 B); `mobile` started false and set by an `if` 362 (retail
 // stores the zero in the entry block; match-only, the direct test is main's), with the k, i, j spelling 356; the shared
 // rotation helper reading the axis through `vector3f const &` 515 (1837 B, 0xd37f0 610, 0x3db00 lost).
+// M3 lane 5 r252 (H2M_FAST with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10 and 0x117c80; control 378). Reading: retail's
+// script-globals table (the type/address pairs at 0x471e94-0x471eb4) holds the addresses of g_467484 and g_467494, so
+// retail cannot move the angle's load above the stores into direction2; nothing takes their address in this build, so
+// ours loads g_467494 ahead of the direction2 copy. On main's body a file-scope pointer set to &g_467494 (diagnostic)
+// 378, with one to &g_467484 too 381. On lane 2 r146's lead (295, 0xd37f0 182) the same diagnostic 258, the angle load
+// then retail's; with it, the shared rotate computing the projection ahead of its cross product 197 (0xd37f0 stays 182;
+// the dot spelled three ways and through dot3f in either order 197 each, same code: the sum is reassociated (j + k) + i
+// where retail has (k + i) + j); the projection after the cross in retail's spelled order 259 (0xd37f0 262); the rotate
+// through include/axis_rotation.h's in-place helper 296 (0xd37f0 427); on 197 the mobile flag started false and set
+// 181 (first difference +0x57: the first normalize's x87 squares run k, j, i where retail runs i, k, j); on 181 the
+// normal copied component by component in four orders 181 each (same code), normalize_inline 263 (1876 B), the main
+// file's ordered-square helper with `(k*k + i*i) + j*j` 354 (x87 squares then retail's, but its j and k scaling loads
+// the inverse first), that helper scaling through vector3f_scale 357. All diagnostics restored; body unchanged.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

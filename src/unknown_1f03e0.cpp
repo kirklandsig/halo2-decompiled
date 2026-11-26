@@ -1640,11 +1640,33 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `sqrt(length_sq3f(input))` 297; `sqrt(dot3f)` + history `length_sq3f` 488; typed output struct 495; `gravity = false` at first-arm
 // top 193; flags without `!= 0` 192 (3050 B); dropping parens on `magnitude`/`maximum` 293/215; 2-caller `project_onto_plane` helper
 // (inline/forceinline/dot3f/add_scaled) 494/494/483/449; direct `state->normal` 549; both dots before projections 286.
+// GB24 (62 fast trials across 4 batches with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0 MATCH; 198 unchanged): Arm 3 direct
+// member stores (`T02`, al=122, 3037 B) or `vector3f_add(&limited, current, ...)` (`T04`, al=131, 3047 B) trigger retail's
+// exact Arm 1 `jmp 0x1f0f58` tail-share and Arm 3 output; `real drop` + Arm 2 direct stores + Arm 3 `vector3f_add` (`D06`)
+// reaches al=114 (3052 B, 273) matching Arm 2's `movaps xmm1, xmm0` and `movss [edi+0x14], xmm1` verbatim, but whenever Arm 2
+// ends in xmm1 VC commutes Arm 3's out.k to `addss xmm2, [eax+8]` (suppressing Arm 1 tail-share, +5 B), while whenever Arm 2
+// ends in xmm0 (`T02`, `C01` real_point3d_set 562, `C02` vz first 390 al=127 at 3047 B) Arm 2 also tail-shares (-5 B). Also
+// tried: Arm 2 direct stores 545 / both direct 311 (3052 B) / +direct-first 307 / +vector3f_add 471/469; Arm 3 no scaled 499 /
+// in-place desired 501 / reuse desired 442 / norm delta+original 428; high-norm / rot.y / cross3f swaps 198; low-norm
+// cross(up,forward) 379, 1f087b 383, cross before forward copy 351 (3070 B), no forward copy 497, dot kji 352, side.j first
+// 200; Arm 1 cross written out 545; mag kji 198; Arm 2 vx/vy 321/311, pluseq 448/275, drop last 543, k first 389, step<norm 471.
 // M3 lane 13 r162 (h2m fast with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 198, masked-aligned 143): the earlier
 // existing-helper forms re-measured on the 198 body: the input length through magnitude3d 297 (3036 B); both lengths
 // through magnitude3d 487; the general arm's output through vector3f_add(current, &limited, out) 542; the direct arm's
 // output as three statements (i, j, then k, retail's store order) 545; those two together 471 (masked-aligned 127, the
 // closest structure, but every row after the direct arm shifts). Body unchanged.
+// M3 lane GA r24 (30 fast trials across 2 batches with 0x1f0450, 0x24590, 0x30bf0, 0xa75d0, 0x1f03e0 all MATCH unless noted;
+// control 198 at 3047/3047 B, 626/626 insns, al=142, mk=95; body unchanged): renaming delta/limited in Arm 2 (raw_delta/
+// clamped_delta), Arm 3 (applied/unclamped), or both, or declaring limited before delta in Arm 3 / both, all 198 (same code:
+// multi-word struct homes do not follow alphabetical name order here); commuting rotated.y and high-normal desired.j 198;
+// magnitude as (j2+i2)+k2 or k2+(j2+i2) 198; low-normal side computed j, i, k 200 (al=141); flying 3rd cross / all flying
+// crosses / low-normal cross via function_1f087b 370/477 (al=134, mk=92)/383; 3-statement output stores in Arms 2 and 3
+// 311 (3052 B, 626/626 insns, al=127, mk=79: Arm 2 output store order and Arm 3 i/j stores exact, Arm 3 k commutes to
+// addss xmm2,[eax+8] preventing Arm 1 tail-merge; commuted limited+current 311, vel ptr 323, Arm 2 k-first 389, Arm 2 len
+// local 552, Arm 2 step before delta 563 at 3047 B matching rotated lines 84-96, Arm 2/3 field copy 574/508, Arm 2
+// point2f_set 647 breaking 0x1f0450, Arm 3 vector3f_add either arg order 471 at 3047 B, Arm 2 only 3 stores 545); Arm 3
+// only 3 stores 562 (3037 B: reproduces Arm 1 + Arm 3 exact movss [edi+0x14],xmm0 tail-merge verbatim, but Arm 2 also
+// tail-merges; with Arm 2 real_point3d_set 562, with Arm 2 limited+=current 564).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
