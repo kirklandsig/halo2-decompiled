@@ -616,10 +616,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 10 (was 52; earlier 115): head, both planes, remainder classification, all three unrolled copies' term order,
-// clip denominator (i,k,j) and intersection rows match retail; left are only 8 masked instructions (al=10): the first
-// unrolled classification row's j operand order (+0x28a), the clip distance i term's operand order, and `total` in ECX
-// instead of EAX at the projection entry.
+// score 5 (was 14; earlier 52, 115): head, both planes, all four unrolled classification rows, remainder classification,
+// clip denominator (i,k,j), clip distance i term, intersection rows, and the entire projection loop (including `total`
+// in EAX and `add edi, 0x18` after the `total` store) match retail; left are only 5 instructions (1851/1851 B): the clip
+// distance y*j operand order (+0x456, 2 insns) and the projection header store order `segment/segment_count/total` (3 insns).
 // M3 lane 6 r223 (h2m fast; control 115): plane 0's normal negated k, j, i (d last) 141; the negated forward vector
 // computed ahead of plane 0's copy 426 (first +0xab); plane 0's d through vector_products.h's basis_dot_xzy (i, k, j
 // with a staged j product), camera vector first 284 (1867 B), with plane 1 too 284 (1867 B), normal first 265 (1867 B),
@@ -1447,6 +1447,19 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // term, leaving only `total` in ECX vs EAX, but breaks 0x1648d0 by 8 on a 2-insn `origin->z * normal.k` swap); `y*j; +=
 // z*k + i*x` 10 (0x1648d0 8); projection entry statement orders (`out;cur;cul;tot` puts `total` in EAX, 10 al 13 / 6
 // al 9 on 2-stmt offset; `out;tot;cul;cur` 10; `tot;out;cul;cur` 11; `source` ptr 10-11).
+// GB r16 (fast with 0x1648d0, 0x320b0, 0x168b40, 0xbc070 all MATCH; control 14 at 1851 B; 91 trials): dropping the
+// artificial `cursor`/`out` locals in the projection loop and indexing `projected_points[total] = s;` with `total++;`
+// inside the k-loop reproduces retail's exact projection entry (`mov eax, [esp+0x20]; mov esi, 2; add eax, esi; mov
+// edx, edi; mov byte [esp+0x13], 0; mov ecx, ebx; mov [esp+0x20], eax; add edi, 0x18`) AND fixes +0x28a and +0x46d,
+// dropping 0x1652e0 from 14 to 5 (+0x456, 1851/1851 B, 0x1648d0 untouched MATCH; kept, plain verified). With `total`
+// declared before `segment` (match-only order) it scores 2 (+0x456, only `y*j` left; without `outside0` 2 at +0x46d,
+// only `i*x` left); `point3f *out = &projected_points[total];` + `total++;` scores 4 (7 without `total` first); combining
+// `out = &projected_points[total]` + `total++;` + `total` first + no `outside0` + 2-stmt offset in shared
+// `ray_plane_distance_1648d0` hits 0 (MATCH) on 0x1652e0 but breaks matched 0x1648d0 by 8 (`directions[i].i * distance`
+// operand swap), so not kept. Also tried (not kept): `cursor++` in k-loop without `out` 320-359; `cursor[k]` 231/131;
+// `total += 2`/`cursor += 2` after k-loop 130-138; `src` ptr 10/471; `index0` local 11/4/2; dropping `outside0` alone
+// 12/9; dropping `t` 11/2; direct `vector3f_negate` into `planes[1].n` 467; `if` `near_distance` 73; `for` segment loops
+// 145/1869; `plane_distance_to_point` in `outside[i]` 49 / in rpd 13/6; rpd early return 248 / `== 0` 15 / 3 named terms 8/6.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
@@ -1533,15 +1546,11 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 	long total = 0;
 	if (segment_count > 0)
 	{
-	point3f *cursor = projected_points;
 	do
 	{
 		if (!segment_culled[segment])
 		{
 			culled = false;
-			total += 2;
-			point3f *out = cursor;
-			cursor += 2;
 			for (long k = 0; k < 2; k++)
 			{
 				point3f t;
@@ -1553,7 +1562,7 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 				s.y = t.y * factor;
 				s.z = t.z;
 				if (projected_points)
-					*out = s;
+					projected_points[total] = s;
 				if (bounds->x0 > s.x)
 					bounds->x0 = s.x;
 				if (s.x > bounds->x1)
@@ -1566,7 +1575,7 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 					bounds->z0 = s.z;
 				if (s.z > bounds->z1)
 					bounds->z1 = s.z;
-				out++;
+				total++;
 			}
 		}
 		segment++;
