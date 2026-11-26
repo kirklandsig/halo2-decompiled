@@ -288,6 +288,13 @@ void function_e3f00(long object_index);
 // with the named materials pointer 8, everything after the 0xd6660 setup then retail's. Lead: retail reads the index as
 // an expression temporary ahead of the NONE store (EDX by rotation) and names the materials pointer; every natural way
 // to read it first makes it a named value, which takes EAX. All of these are one-use or order forms: match only.
+// M3 lane 12 r192 (fast with 0x1da550 and 0x1da9e0, both MATCH): the element pointer + named index + owner store
+// first rebuilt at 5; a forced-ranking search on it: the index forced into EDX gives 2 (the materials pointer then
+// stays EDX), so two allocator picks remain and both follow from the index being an expression temporary in retail.
+// The NONE store written as a plain field store (the other d6660 callers' form) in place of the constructor 47 (the
+// store still precedes the index load: its dependence is real, not the inlined constructor's pointer), with the three
+// match-only forms 5, with the index declared ahead of the damage limits 5; the store-form with the element pointer
+// and the owner store first (index as a temporary) 41; the event declared ahead of the damage limits 47.
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {

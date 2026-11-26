@@ -1425,6 +1425,12 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // definition and promotion pointers 2 (same code); a `dword` index 85 (298 B); the curve as `== 0 ? true : false` 2
 // (same code); the definition looked up by `(word)` index 49. By the free-number reading above, the order flips if the
 // curve's dropped AND-1 constant or the fade's index copy were not freed ahead of the first index.
+// M3 lane 7 r232 (h2m fast with 0x126df0, 0x12a810, 0x21be20 and 0x21b870; control 2). The two reloads are an equal
+// height tie in the post-call block and come out in code-generation order (first index, then count). The split pass
+// draws pieces for NONE, zero, 0xffff, the first index, the count, then the two hoisted global loads; the 0x80 constant
+// draws none. Forms: const-qualified parameters 2; the curve as a `short` from `? 0 : 1` 28; the promotion index named
+// `class_index` 2; the ring index named `sound_index` 2; the curve as `(~flags & 0x400) != 0` 4. Diagnostic: five, six or
+// seven dead longs 2 each (no symbol-count phase).
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {

@@ -882,7 +882,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
+// score 198 (was 234): symmetric low-normal projection (`projected = normal * d1 + forward`, `desired = input.j * side + projected * input.i`) matches desired and both speed-band lerps at 3047/3047 B. Declaring `direct` ahead of `damping` then gives 194 (damping in EDX, as retail) but is declaration order, kept only with a byte match, so it is held as a patch. Left: damping's first extraction register, gravity store before input lea, first/flying cross operand sides, delta/limited homes, and vertical store sharing.
 // MiniMax D (11-20, round 132): no new form, no lower score (234): the body is unchanged. The first cross still
 // multiplies two of its six products with the arguments the other way round, and the shared cross helper compiles to the
 // same code for all sixty-four operand spellings and is used by nine matched functions in this file, so that product
@@ -1632,6 +1632,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // three flag bits as `(state->flags >> n) & 1` without `!= 0` 232 (not kept: two points), only damping so 590, only direct
 // and gravity so 594; the input pointer declared after the flying test 248; the side vector through the existing cross3f
 // 234 (same code), through cross3f_staged 501; cross3f on the 232 form 232. Body unchanged.
+// M3 lane GA r19 (36 fast trials with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0, all MATCH; 234 -> 194 plain, 3047/3047 B, +0x31; kept 198, see below):
+// low-normal arm symmetric projection (`projected = normal * d1 + forward`, `desired = input.j * side + projected * input.i`) 208 (-26),
+// dropping the extra inner parens on `desired.k` 198 (-36; also fixes all 8 speed-band lerp lines), plus declaring `direct` ahead of
+// `damping` (use order, damping in EDX) 194 (-40; declaration order, held as a patch, not kept). Tried and not kept: low-normal in-place forward/left 507; `dot3f` in low arm
+// 215; `vector3f_add_scaled` on projected/side/both 500/504/483; flying 2nd cross `function_1f087b` 371 (`cross3f` 234), both 384;
+// `sqrt(length_sq3f(input))` 297; `sqrt(dot3f)` + history `length_sq3f` 488; typed output struct 495; `gravity = false` at first-arm
+// top 193; flags without `!= 0` 192 (3050 B); dropping parens on `magnitude`/`maximum` 293/215; 2-caller `project_onto_plane` helper
+// (inline/forceinline/dot3f/add_scaled) 494/494/483/449; direct `state->normal` 549; both dots before projections 286.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1718,18 +1726,17 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
                 vector3f const *normal = &state->normal;
                 real d1 = 0.0f - shape_dot(*normal, forward);
                 vector3f projected;
-                projected.i = (normal->i * d1 + forward.i) * state->input.i;
-                projected.j = (normal->j * d1 + forward.j) * state->input.i;
-                projected.k = (normal->k * d1 + forward.k) * state->input.i;
+                projected.i = normal->i * d1 + forward.i;
+                projected.j = normal->j * d1 + forward.j;
+                projected.k = normal->k * d1 + forward.k;
                 real d2 = 0.0f - shape_dot(*normal, left);
                 vector3f side;
                 side.i = normal->i * d2 + left.i;
                 side.j = normal->j * d2 + left.j;
                 side.k = normal->k * d2 + left.k;
-                desired.i = state->input.j * side.i + projected.i;
-                desired.j = state->input.j * side.j + projected.j;
-                // retail adds projected.k before input.k (0x1f1333-0x1f1337); VC re-associates a bare chain
-                desired.k = ((state->input.j * side.k + projected.k) + state->input.k) * 5.0f;
+                desired.i = state->input.j * side.i + projected.i * state->input.i;
+                desired.j = state->input.j * side.j + projected.j * state->input.i;
+                desired.k = (state->input.j * side.k + projected.k * state->input.i + state->input.k) * 5.0f;
             }
             function_30bf0(&desired);
             if (*(real *)(state->settings + 0x58) >= desired.k)

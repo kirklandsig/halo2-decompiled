@@ -1181,6 +1181,11 @@ void function_2640c0(long object_index, s_object_motion_view *result);
 // threaded); the first lookup on the copy (the parameter dead after the copy) 12 (same code); the parameter itself
 // updated in place, no copy, 101 (the prologue changes); direct returns 50 (the NULL lookup's return 0 becomes an
 // in-line `xor ax, ax`); `short result = 0` with the chain nested under `!local_1 || !flag1` 17 (316 B).
+// M3 lane 12 r192 (h2m fast with 0x25c9d0, MATCH; control 12): `result = 0;` right after the squad lookup 12; the
+// lookup as an if/else 12, with the copy at the top of the last arm 84 (threaded), the copy there with `result = 0`
+// after the lookup 84; the lookup as NULL then an if 92; the flag test held in a bool 12, with the copy in the last
+// arm 84; the flag test negated with its `result = 0` arm last 71; the call's result set after `result = 0` 93
+// (323 B); the copy declared after the first lookup call 113 (302 B).
 // @retail 0x25cb60
 short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *arg_4, long arg_5, short arg_6)
 {

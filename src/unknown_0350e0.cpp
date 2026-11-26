@@ -6749,6 +6749,11 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 // no value local / pow(*strength) / if (*strength) before pow / combined if (*strength && 30830) / early return / double-cast pow / raw before PIN /
 // else-if (value > 0) all 43; assign *strength after if 191 (637 B); else { *strength = value; } 119 (659 B); else { *strength = 0.0f; } 118 (666 B);
 // exponent ternary 108 (664 B); 0.0f < value/strength 99 (632 B); nested if (curve) 55.
+// M3 lane GB r21 (12 compiled fast trials on the 20 base with 0x50650/0x13bb90 MATCH, 0x30830 195): typed definition/state/curve structs 20;
+// early return on count <= 0 20; nested projected check 20; inline state projection helper 293 (537 B); inline (dir, pos) wrapper 20;
+// inline curve tail helper 166 (542 B); curve read at each use 187 (682 B); curve 2-pass loop 231 (703 B); real atan2 local 21;
+// hoisted projected 20; pos/dir local pointers 20; bool ok from 0x30830 20. Confirms all 20 lines depend solely on 0x30830's
+// d-before-a parameter order and bool return (still blocked by contributor-claimed caller 0x4f7e0).
 // @retail 0x4ff50
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
     real cosine, real *strength, real *horizontal, real *vertical, real *out)
@@ -7012,7 +7017,6 @@ void function_30ed0()
 
 
 #include "index_cache_storage.h"
-extern bool g_4ba010;
 long function_b8c40(long object, short node);
 struct s_light_frame_ab;
 struct s_light_shape_ab;

@@ -1154,6 +1154,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // 0xffff]`, as matched 0x151ea0's getter does): R with the header test through it 77, the object read through it 77,
 // both 77 (160 B each: same code as R); this body with the object read through it in place of the word read 42, with the
 // header test through it as well 42 (the scaled index is shared again). Body unchanged.
+// M3 lane 5 r249 (H2M_FAST; control 8). The base type's own field store (`c_object_type_definition::v21`, matched,
+// another file, the same `if (index != NONE) field_d4 = field0` that retail runs here) called directly in place of the
+// second store and the hand store 77 (160 B: inlined and merged with the header lookup); with the second store kept
+// ahead of it 42 (the data pointer is reloaded, but the scaled index is shared); the second store kept and 0xbb780 given
+// the re-read field 42; the header test on the re-read field with that call 77; that call, then the second store 72.
+// Reading: retail keeps the table global in EDX but reloads the data field and recomputes the index from EAX, so at the
+// merge the object read uses a value the header test does not share; no form here does that.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1766,6 +1773,15 @@ bool c_projectile_type::v8(long a, long b)
 // setter 0xbfe20 (`(dword *)&result`, bit 11 and/or 10, true) 12 for the 0x800 bit, the 0x400 bit or both, 5 with the
 // word read (its shifted constant folds before allocation). Wanted: a 0x800 test (or bit set) whose constant is not
 // shared at allocation and still assembles as `test edi, 0x800`. Word-read body kept (5).
+// M3 lane 5 r249 (H2M_FAST; word read 5, mask control 12). Allocator ledger of the mask form: the flags 37 (entry +40 at
+// n10, the 0x800 test +4, -3/-4 over the 0x400 blocks), the object 36 (tie 14 against 13, so one point either way flips
+// it); the entry counts ten values because the two 0xffff masks become one shared constant counted in the entry (the
+// word read leaves nine, and the object is then referenced in the index block by a separate narrow load that is merged
+// into `movzx eax, ax` only after allocation; retail emits that merge as movzx elsewhere, 67 times, so retail's `and`
+// is a real full-width mask). Forms with the full-width mask: `(dword)index % 0x10000` 12, `index & 0xffffu` 12,
+// `(dword)index << 16 >> 16` 12 (each still one shared constant); the volatile copy typed as the derived type 12; the
+// power value named once for the 0x400 compare and copy 19. Diagnostic (removed at once): a compiler barrier between the
+// NONE test and the mask 9 (190 B: object ESI and flags EDI as retail, but the NONE test compares memory and reloads).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

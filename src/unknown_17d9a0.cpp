@@ -54,21 +54,22 @@ long function_17e490(long excluded, short cluster_index, point3f const *point, r
 			g_4e7411 = true;
 			count = function_14a5b0(cluster_index, point, radius, 512, clusters);
 			g_4e7411 = false;
-			if (count > 512)
-				count = 512;
 		}
 		else
 		{
-			clusters[0] = cluster_index;
 			count = 1;
+			clusters[0] = cluster_index;
 		}
 	}
+	if (count > 512)
+		count = 512;
+	long cluster_count = count;
+	long result = 0;
 	dword visited[32];
 	memset(visited, 0, sizeof(visited));
-	long result = 0;
 	if (excluded != NONE)
 		visited[excluded >> 5] |= 1 << (excluded & 31);
-	for (long i = 0; i < count; ++i)
+	for (long i = 0; i < cluster_count; ++i)
 	{
 		s_decal_cluster_17e490 *cluster = &((s_decal_bsp_17e490 *)g_4e0348)->clusters[clusters[i]];
 		for (long j = 0; j < cluster->count; ++j)
@@ -78,12 +79,14 @@ long function_17e490(long excluded, short cluster_index, point3f const *point, r
 			if (!(visited[index >> 5] & bit) && result < maximum_count)
 			{
 				s_decal_bound_17e490 *bound = &((s_decal_bsp_17e490 *)g_4e0348)->bounds[index];
-				real x = point->x - bound->center.x;
-				real z = point->z - bound->center.z;
-				real y = point->y - bound->center.y;
-				real distance = x * x + z * z + y * y;
 				real total_radius = bound->radius + radius;
-				if (total_radius * total_radius >= distance)
+				real x = point->x - bound->center.x;
+				real y = point->y - bound->center.y;
+				real z = point->z - bound->center.z;
+				real distance = x * x;
+				distance += z * z;
+				distance += y * y;
+				if (distance <= total_radius * total_radius)
 				{
 					output[result++] = bound;
 					visited[index >> 5] |= bit;
