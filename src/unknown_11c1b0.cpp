@@ -12,7 +12,7 @@ extern s_bsp3d *g_4e033c;
 extern s_slot_entry_list *g_4e0340;
 extern s_connection_counter g_4e6398;
 
-void function_d4e60(short arg_0);
+void __stdcall function_d4e60(short arg_0);
 void function_137da0();
 void function_137d40();
 bool cache_files_load_structure_bsp(s_structure_bsp_reference *arg_0);

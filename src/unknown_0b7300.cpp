@@ -37,6 +37,13 @@ struct s_scenario_block
 	byte *elements;
 };
 
+/* the scenario's cluster references block at +0x380 */
+struct s_scenario_cluster_view
+{
+	byte unknown000[0x380];
+	s_scenario_block cluster_references;
+};
+
 /* an object the scenario places (a datum of a per-type block) */
 struct s_type_4f0dcc
 {
@@ -94,15 +101,19 @@ struct s_object_placement_data
 struct s_placement_object
 {
 	long tag_index;
-	struct
+	union
 	{
-		dword unknown0 : 7;
-		dword hidden : 1;
-		dword unknown8 : 1;
-		dword unknown9 : 18;
-		dword hidden_by_bsp : 1;
-		dword : 4;
-	} flags;
+		struct
+		{
+			dword unknown0 : 7;
+			dword hidden : 1;
+			dword unknown8 : 1;
+			dword unknown9 : 18;
+			dword hidden_by_bsp : 1;
+			dword : 4;
+		} flags;
+		dword flag_bits;
+	};
 	byte unknown08[0xc];
 	long parent_object_index;
 	byte unknown18[2];
@@ -433,45 +444,43 @@ s_scenario_cluster_reference *cluster_reference_upper_bound(s_scenario_cluster_r
 
 /* whether an object is in one of the clusters a pair of structure bsps
    share (true when the scenario lists none) */
-// score 59 (was 71, full build; the reduced image disagrees): result as a byte. Retail walks the
-// references through a pointer to their cluster field and aligns the loop; the loop as while with
-// a break after the increment 75, a break at the end 81, the result test last 80, a do-while 78;
-// a volatile cluster read, the flags in the other order or the call in a nested if no change.
 // @retail 0xd5390
 bool function_d5390(long object_index, long key)
 {
-	s_scenario_block *references = (s_scenario_block *)((byte *)g_4e0350 + 0x380);
-	byte result = false;
+	s_scenario_cluster_view *scenario = (s_scenario_cluster_view *)g_4e0350;
 	bool listed = false;
+	bool result = false;
 
-	if (references->count > 0)
+	if (scenario->cluster_references.count > 0)
 	{
-		s_scenario_cluster_reference *first = (s_scenario_cluster_reference *)references->elements;
-		s_scenario_cluster_reference *last = first + references->count;
+		s_scenario_cluster_reference *first = (s_scenario_cluster_reference *)scenario->cluster_references.elements;
+		s_scenario_cluster_reference *last = first + scenario->cluster_references.count;
 		s_scenario_cluster_reference *lower =
 			cluster_reference_lower_bound(first, last, &key, cluster_reference_less_than_key);
 		s_scenario_cluster_reference *upper =
 			cluster_reference_upper_bound(first, last, &key, cluster_reference_key_less_than);
+		s_record_pool *objects = g_4e0300;
 
 		for (s_scenario_cluster_reference *reference = lower; !result && reference < upper; reference++)
 		{
-			short cluster_index = reference->cluster_index;
-
-			if (cluster_index != NONE)
+			if (reference->cluster_index != NONE)
 			{
 				result = false;
 				listed = true;
+				long cluster_index = reference->cluster_index;
+
 				if (object_index != NONE &&
-					function_11c470(cluster_index, &PLACEMENT_OBJECT(object_index)->field_x221477))
+					function_11c470(cluster_index,
+						&((s_placement_object_header *)objects->data)[object_index & 0xffff].object->field_x221477))
 				{
 					result = true;
 				}
 			}
 		}
-		if (listed)
-			return result;
 	}
-	return true;
+	if (!listed)
+		return true;
+	return result;
 }
 
 /* whether an object placed on one structure bsp stays on another */
@@ -535,35 +544,35 @@ __forceinline void object_placement_unhide(long object_index)
 }
 
 /* hides an object that isn't on the current structure bsp, or deletes it */
-// score 70 (was 89): retail stores the flag word twice (hidden, then hidden_by_bsp from the same
-// register) where ours computes hidden_by_bsp from hidden with shl/xor, and it materializes the
-// placed test with setne before testing it. Retail re-reads the object array after the first
-// test; ours keeps it. The persistent test as a bool local gives retail's block order, and
-// hidden_by_bsp copied from hidden helps too. The second lookup read through a volatile pool
-// gives 17, but that cast isn't kept without a byte match. No effect: the flags as dword ors in either order or both, the value
-// stored twice by hand, a volatile first store, a fresh lookup for the second store (40); the
-// placed test as a bool, byte, long or 0/1 local, negated, as == false, != true or !(&&).
 // @retail 0xd52b0
 void function_d52b0(long object_index)
 {
+	s_record_pool *objects = g_4e0300;
 	s_placement_object *object = PLACEMENT_OBJECT(object_index);
-
 	bool persistent = object->unknownac != NONE || function_d5990(object->type, object->tag_index);
 
 	if (persistent)
 	{
-		s_placement_object *current = PLACEMENT_OBJECT(object_index);
+		s_placement_object *current = ((s_placement_object_header *)objects->data)[object_index & 0xffff].object;
 
 		function_b7300(object_index);
 		if (TEST_FIELD_BIT(current->flags.unknown8))
 			function_b87b0(object_index);
-		current->flags.hidden = true;
-		current->flags.hidden_by_bsp = current->flags.hidden;
+		dword *flags = &current->flag_bits;
+		*flags |= 0x80;
+		current->flag_bits |= 0x8000000;
 	}
-	else if (g_4e6948->mode != 4 || object->unknownd4 == NONE)
+	else
 	{
-		function_b83b0(object_index, true);
-		function_b8460(object_index, true);
+		bool attached = false;
+
+		if (g_4e6948->mode == 4)
+			attached = object->unknownd4 != NONE;
+		if (!attached)
+		{
+			function_b83b0(object_index, true);
+			function_b8460(object_index, true);
+		}
 	}
 }
 
@@ -581,29 +590,35 @@ void function_d4ff0(long object_index)
 	}
 }
 
+/* an iterator over placed objects: the current pointer, then the object iterator */
+struct s_placement_object_iterator
+{
+	s_placement_object *object;
+	s_type_f1af8e iterator;
+};
+
 /* keeps the placed objects in step with a structure bsp switch */
 // @retail 0xd4e60
-void function_d4e60(short bsp_index)
+void __stdcall function_d4e60(short bsp_index)
 {
 	short previous_bsp_index = g_4e0324->unknown0;
 
 	if (previous_bsp_index != bsp_index)
 	{
-		s_type_f1af8e iterator;
-		s_placement_object *object;
+		s_placement_object_iterator iteration;
 
-		function_bae80(&iterator, NONE, 0);
-		for (object = (s_placement_object *)function_baeb0(&iterator); object;
-			object = (s_placement_object *)function_baeb0(&iterator))
+		function_bae80(&iteration.iterator, NONE, 0);
+		for (iteration.object = (s_placement_object *)function_baeb0(&iteration.iterator); iteration.object;
+			iteration.object = (s_placement_object *)function_baeb0(&iteration.iterator))
 		{
-			if (object->parent_object_index != NONE || object->placement_source == NONE)
+			if (iteration.object->parent_object_index != NONE || iteration.object->placement_source == NONE)
 				continue;
 
-			s_type_4f0dcc *datum = ((1 << object->placement_source) & 3) ?
-				function_d5260(object->type, object->placement_index) : NULL;
-			bool hidden_by_switch = TEST_FIELD_BIT(object->flags.hidden_by_bsp);
-			bool hidden = TEST_FIELD_BIT(object->flags.hidden);
-			long object_index = iterator.object_index;
+			s_type_4f0dcc *datum = ((1 << iteration.object->placement_source) & 3) ?
+				function_d5260(iteration.object->type, iteration.object->placement_index) : NULL;
+			bool hidden = TEST_FIELD_BIT(iteration.object->flags.hidden);
+			bool hidden_by_switch = TEST_FIELD_BIT(iteration.object->flags.hidden_by_bsp);
+			long object_index = iteration.iterator.object_index;
 			bool stays = function_d54e0(object_index, datum, bsp_index, previous_bsp_index);
 			bool keep = function_beb30(object_index) ? true : stays;
 
@@ -614,7 +629,7 @@ void function_d4e60(short bsp_index)
 				if (hidden_by_switch)
 				{
 					object_placement_unhide(object_index);
-					object->flags.hidden_by_bsp = false;
+					iteration.object->flags.hidden_by_bsp = false;
 				}
 			}
 			else if (!keep)
@@ -623,7 +638,7 @@ void function_d4e60(short bsp_index)
 				continue;
 			}
 			if (bsp_index != NONE)
-				object->bsp_index = (char)bsp_index;
+				iteration.object->bsp_index = (char)bsp_index;
 		}
 	}
 	g_4e0324->unknown0 = bsp_index;

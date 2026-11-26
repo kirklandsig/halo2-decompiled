@@ -1276,6 +1276,16 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // lookup as `[portal_index * 9 + 1]` of a long array 105 (same code each); the plane store as one ternary 115 (425 B).
 // On the offset lead (re-measured 11) a forced-ranking search (40 builds) moves only the key to EDX (13): the camera
 // table is a scratch temporary, not a ranked candidate (its parameter has one reference). Body unchanged.
+// Roasted-Codes #1542 (released 2026-11-26; fast reduced-image scores with 0x1730a0 and 0x163db0, MATCH at every run,
+// control 105, 434 B unless stated). On the camera-address local (the 22 lead), the rectangle pointer assigned through a
+// non-const reference to a pointer local, the call taking the reference: 83, and from the key load to the call the code is
+// retail's (key EDX, table ECX, the add ahead of the key push, then lea ecx,[esi+0xc]); left: collection and entry_index
+// exchange EDI and EDX from the function top, and the table still loads after the count store (not keepable as written).
+// The same local with the rectangle bound as a const reference to the member, or the key copied into a local after the
+// camera address: 22; the volume pointer assigned inside the call's last argument: 13. The five pointer parameters as
+// references 105; __stdcall with a const cameras pointer, non-const lists and unsigned scalars, on the offset lead, 11;
+// function_163db0 declared with the rectangle after the identifier (0x163db0, 0x1733e0 and 0x441b0 stay matched) 105,
+// and 13 on the offset lead. The portal index test as a switch on NONE: 117 (423 B).
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

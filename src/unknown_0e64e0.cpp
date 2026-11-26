@@ -69,22 +69,20 @@ void function_e64e0(vector3f const *reference, vector3f const *direction, vector
 		real direction_dot;
 		real perpendicular_dot;
 
-		axes[1].i = -axes[0].i;
-		axes[1].j = -axes[0].j;
-		axes[1].k = -axes[0].k;
-		axes[3].i = -axes[2].i;
-		axes[3].j = -axes[2].j;
-		axes[3].k = -axes[2].k;
+		for (long component = 0; component < 3; ++component)
+			axes[1].n[component] = -axes[0].n[component];
+		for (long component = 0; component < 3; ++component)
+			axes[3].n[component] = -axes[2].n[component];
 		if (three_dimensional)
 		{
-			direction_dot = dot3f(direction, &axes[0]);
 			fallback_dot = dot3f(fallback, &axes[0]);
+			direction_dot = dot3f(direction, &axes[0]);
 			perpendicular_dot = dot3f(direction, &axes[2]);
 		}
 		else
 		{
-			direction_dot = direction->i * axes[0].i + direction->j * axes[0].j;
 			fallback_dot = fallback->i * axes[0].i + fallback->j * axes[0].j;
+			direction_dot = direction->i * axes[0].i + direction->j * axes[0].j;
 			perpendicular_dot = direction->i * axes[2].i + direction->j * axes[2].j;
 		}
 
