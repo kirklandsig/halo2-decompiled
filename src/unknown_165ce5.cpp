@@ -2208,6 +2208,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // 172/383; both banks and count before lookup 361. NOT kept: the output bank
 // gains one and the early count changes its read phase. The byte offset grows
 // the frame to 0x30. The unit and mode slots remain exchanged.
+// M3 lane 16 r192 (H2M_FAST with 0x165dc1, 0x166561, 0x11eed0; control 172, aligned 76, masked 73): the exchanged
+// unit/mode homes against name order: `mode` renamed to a name sorting after `unit` 172, `unit` renamed to one sorting
+// before `mode` 172, both 172 (same code each: these homes do not follow names); the unit local replaced by a pointer to
+// its aiming velocity (the only member read) 562 (2189 B); the look angles read from the table at each use (no look
+// pointer) 408 (2208 B). Body unchanged.
 // GA16 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 172, 2196 B, 50 trials):
 // LEAD, match-only (build/ga16/lead-0x166d75-score3.patch): on the r232 match-only lead, scoping
 // `s_animation_state *animation = &weapon->animation;` to 1..4 uses (`update`, `channels[0]`,

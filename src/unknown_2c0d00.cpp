@@ -1036,6 +1036,15 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // entry flags declared first 852; that flag declared ahead of the self-unit and actor pointers 848; the actor pointer
 // declared ahead of the self-unit pointer 846; the flag left uninitialised and set false in an else of the actor test 819
 // (3745 B).
+// M3 lane 16 r192 (H2M_FAST with 0x2c41b0 and 0x29cbb0; control 838, difflib-aligned 180, registers and stack
+// offsets masked 72: the positional count is mostly the one-row shift of the missing no-actor store): the object's
+// position (+0x30) and velocity (+0x88) read through the existing s_ai_object view 838 (same code); `dword moving` 838
+// (same code); the combined flags as `moving | (sphere_flags | obstacle_flags)` 838 (same code); the object gate as
+// `if (distance_squared > object_radius * object_radius) continue;` 838 (aligned 188, masked 67); the sphere gate as
+// `if (squared > combined_radius * combined_radius) continue;` 833 (masked 65), both gates 833 (masked 60); either gate
+// as `r * r < d` 838. Diagnostics: 1..7 unused function-scope locals 717/717/862/862/862/862/843 (masked
+// 75/77/83/83/76/76/66, no phase near retail); 1..3 redundant float parentheses on the entry dot or on the type-0 offset
+// change nothing. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
