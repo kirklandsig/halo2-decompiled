@@ -398,6 +398,9 @@ void function_254200(void)
 // three reloads, all at the same scheduling height, so the scheduler keeps their insertion order (x, y + size, depth);
 // one forced decision, the y + size reload's height lowered by one, gives retail's order in the first of the two
 // groups (4 -> 2). No source form here changes that height or the insertion order.
+// M3 lane 2 r153 (single-address H2M_FAST, control 4): the bitmap choice as an if/else assignment 4; the two dimension
+// locals as `short` 224 (1113 B); the dimensions read straight into their stores 8 (width loaded first); the readiness
+// tests held in a named bool 4; the point copied member by member 88 (1117 B).
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

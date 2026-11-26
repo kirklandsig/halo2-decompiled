@@ -843,6 +843,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // the arm's block through the cache-block getter (0x12e210's spelling) 115 (293 B), with the count stored after the
 // read 115. The release callee is a contributor's /Ob1 function: an inlined callee taking the block (whose parameter
 // copy would be retail's `mov esi, edx`) is not available.
+// M3 lane 2 r153 (h2m fast with 0x12e210, which stays matched; control 27): the release base from the guard's physical
+// block local 87 (248 B, the pointer is held across the loop); the time fix reading the physical block getter at each use
+// with no local 27 (same code); a physical block local inside the release arm 27 (same code); the loop reading the block
+// field at each use with the base named in the arm and the tail through one block local 51 (EDI/EBP swap); that with a
+// group named in the arm instead 51.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
