@@ -473,6 +473,10 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // up or both unit tests 94 each. With both tests plus ordered basis dot 70, staged left cross
 // 94, both alternate normalizations 92, or ordered dot and staged cross 70.
 // NOT kept: the indexed form ties and the independently walked forms raise the score.
+// M3 lane 14 r156 (h2m fast with 0x16fe90 and 0x170d70, MATCH; control 64): the last group's call arm first on
+// `group >= 5` 216 (1395 B); the time step as `t = times[group]` then `t -= step` 134 (1403 B); the time table in a
+// `real const *` local ahead of the loop 103 (1395 B, first +0x18); the values array and its cursor declared after the
+// coefficient cursors 67; the copy loop's index declared ahead of its loop 64 (same code). Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {

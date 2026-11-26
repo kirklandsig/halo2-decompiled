@@ -387,6 +387,16 @@ static inline long bungienet_user_voice_setting(short kind)
 // tested ahead of the kind in the selector 16 (first difference +0x0, the global test leads); the controller looked up
 // ahead of the selector 15 (the tie stays: 24 each); diagnostic, a plain read with `__assume(kind >= 0 && kind <= 2)`
 // in place of the volatile read 4 (same code; the range is not known to hold).
+// M3 lane 6 r245 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4): the body inside `do { } while (false)`
+// 96 (150 B: the 0x18fe9e call is then expanded in place; the pair stays EAX/CX), inside `for (;;) { ...; break; }` 4,
+// inside `while (true) { ...; return true; }` 4 (both the same code: no block boundary is left ahead of the kind's load);
+// plain reads of the result word as the high half of the header's `unknown0c` dword, `(short)(unknown0c >> 16)`, the same
+// through a dword cast, or from a named long copy 32/32/32 (95 B each: narrowed to the same folded word compare).
+// Allocator reading: an equal ranking is decided by where each value was last defined, later blocks first and, inside
+// one block, the earlier definition first; the request's load always precedes the kind's in the entry block, so the tie
+// cannot flip there. The r104 chain wins by ranking instead (kind 20 over request 16): its `kind == 0` compare is still
+// there when registers are chosen and goes when the arms merge afterwards. A second compare of the kind outside the
+// entry block is the only reference found that leaves no code, so a legal form needs arms that really differ.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

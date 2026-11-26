@@ -687,6 +687,11 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Late shared width/height/both and publication reads 271/272/272/272. With
 // the bitmap format passed to the bit-depth call 273/274/273/274. NOT kept:
 // the one-point gain is below the threshold and the native call lengthens the body.
+// Initialized shared clock at start, timeout or both 278/272/278; raw start or
+// raw timeout with the other clock initialized 283/324; local start assignment 278;
+// both initialized with a clamped local or direct clamp input 278/279.
+// NOT kept: the timeout-only form ties and the starting clock forms keep the
+// 0x3c frame or shrink it to 0x30. The two early status-slot zeros remain absent.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

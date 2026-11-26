@@ -1906,6 +1906,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Codex F498: the joined material store (a second local assigned in both arms, then copied into material) gives 132 in the
 // plain check, the two adjusted addresses joining at retail's material store: a steering copy, kept only with a byte match;
 // reverted at review, code as before (158).
+// M3 lane 14 r156 (h2m fast with 0xdfa60 and 0xe59e0, MATCH; control 158): the facing vector declared ahead of position
+// 158; velocity declared ahead of position 158; boost declared after facing 158 (the three the same code: declaration
+// order does not move the packing, as the frame reading above says); the animation-flags pointer declared after the
+// state pointer 174 (first +0x23); material declared after facing 159. Body unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

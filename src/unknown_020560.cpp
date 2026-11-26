@@ -1559,6 +1559,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // X and pair with live entries in the opposite scan 555.
 // NOT kept: The cached-entry forms retain 0x1c. Live entries reach 0x20 and one family reaches 2122
 // bytes, with higher scores.
+// M3 lane GA r11 (fast with 0x22750, 0x22c30, 0x24550, all MATCH; control 418 at 2094/2122 B, fr 0x1c; 14 trials):
+// struct-copying delta (`delta_raw` -> `delta`) on samples 439 (2122 B, fr 0x24, mk 152; recovers retail's `offset.i`
+// dead store before `jb` without a one-caller helper, though all 3 delta components spill), with first ahead + nested
+// second + closest first 443 (fr 0x24, mk 143), on entries + first ahead (copy/assign) 572/572 (fr 0x28), member copy
+// on samples/entries 439/554 (folds); `point3f first_pos = first->position` copy on samples/entries 417 (fr 0x28)/572
+// (fr 0x2c, +0x9); `*position` copy for delta on samples/entries 418 (fr 0x28)/575 (fr 0x2c, +0x9); existing
+// `vector3f_negate_ab` on samples/entries 400 (2122 B, mk 119, non-retail `0.0f -` ops)/569; existing
+// `particle_direction_squared_2b` on offset 646, on dvec + delta_raw copy 442 (fr 0x24). Body restored at 418.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
