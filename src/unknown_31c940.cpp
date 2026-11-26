@@ -1675,7 +1675,7 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 					solver_step_31c940 *parameters = step;
 					scalar_work.fallback_scalar = target_a * parameters->friction_scale - projection_pool.circular_first * parameters->velocity_scale;
 					// Retain the row target before its scale product.
-					float const &target_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
+					float target_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
 					scalar_work.pair_a = target_b * parameters->friction_scale
 						- projection_pool.circular_second * parameters->velocity_scale;
 					float maximum = operation_float(op, 12);
