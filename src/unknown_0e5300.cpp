@@ -166,7 +166,11 @@ PRIVATE inline long e5470_unit_current_weapon(long unit_index)
 // unit_get_current_weapon 99; non-inline helpers after 37 (clean 140); player_unit helper 33 (NOT
 // kept: 1-caller helper); byte cast/ptr arg/two player ptrs/player_weapon helper/rename 37;
 // player_unit ref/ptr 145; function_cbd50 forms 99-145; /Ob1, const player, nested weapon if 37;
-// early return 134; player_weapon inside if 131; direct return weapon 128.
+// early return 134; player_weapon inside if 131; direct return weapon 128. GB20 (18 fast trials + 1 diag,
+// 0xe5300 MATCH): const ref arg / both const ref 37; &player->unit_index at all 4 sites 145; s_player_datum
+// type 37; dword unit_index 37; function_cbd50 inlined (direct or objget) 145 (519 B); two modes / nested
+// weapon if / split pos decls / mask at call / player_get like objget / player method / actor local 37;
+// char weapon 55; record pool lookup 121; header-first objget 140; inline_depth(1) diag 37.
 // @retail 0xe5470
 bool __stdcall function_e5470(long player_index, long unit_index)
 {
