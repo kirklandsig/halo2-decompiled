@@ -2450,6 +2450,13 @@ bool function_1900a5(long index);
 // (matches retail's exact `setle` / `and 0x48c10` / `add 0x7d0` at lines 141-147 verbatim; 640 alone, 633 together). Also tried on the 636 base: existing_record pointer 636,
 // completion values pointer 636, typed query_restore_pending pointer 636, fill element pointer 636, users player pointer 638, records_used++ after fill 639, dup continue 684;
 // with `/arch:SSE` on this file (0 peer regressions): SSE alone 751 (2862 B), + properties pointer 759, + online_logon_connected() 692, + both 687, + space 757, + dup+space 769.
+// M3 lane GB r21 (25 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x80940, 0x80aa0, 0x80bf0, 0x80d70 all MATCH; control 643 at 2878/2862 B, aligned 361 / masked 272; body unchanged):
+// three-use s_cache_property *properties pointer in main's store order with j < record->count and properties_used += record->count 636 at retail's 2862 B (rolled property fill, -7 pts, one short of keep bar, not kept);
+// on that 636 form: + record_space/property_space 643 (aligned 403 / masked 311), + two-use last_read 639, + two-use last_write 640, + both 643, + space + last_read/last_write/both 645/642/644,
+// + space + read_record_count > 0 guard 656 (+ both times 639), + space + nested variant 643 (+ both times 644), + space + both times + real XUID/word/dword fields 644 (all 2862 B except rcount 2878 B);
+// on 643 base: real XUID/word fields on s_cache_property_record/s_cache_property (+ XUID team_owner, or + dword count) 643/643/643 (+ space 643 at 2862 B, aligned 359 / masked 261);
+// properties pointer with properties_used += 6 736 (2926 B, unrolled; + space 704, + XUID/word + space 704, + dup continue + space 730);
+// nested if (variant) + space 643 (2862 B, aligned 358 / masked 260); while duplicate scan 643; read_record_count > 0 guard + space 642; if (variant) ... else state=1 + guard 736 (2942 B).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

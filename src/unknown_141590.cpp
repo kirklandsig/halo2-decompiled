@@ -1389,6 +1389,11 @@ void function_143250(
 // r2_r2_s105_s21_s2 before matrix[19] / in preamble 1314 (10773 B) / 1563; unparenthesizing (r2_r2_s105*s21_s2) 1260;
 // dropping band-3 r5_r0/r5_r1/r5_r5 locals 1466; matrix[8] direct += accumulation 939 (same code); on 0x143250 param
 // order + matrix[28] T1-(T2+T3): matrix[25] sub-pair 1152, grouped 1225, matrix[28] factored 936. Body unchanged.
+// M3 lane 8 r241 (H2M_FAST with 0x143250 MATCH; control 939). On lane 6 r245's 918 lead (`s35_r2_r3_r3` right after
+// `s35_r2`, re-measured 918 at 10773 B), aimed at the root-105 r1-square cell: its r6 product right after its r7 product
+// 1583 (10722 B), the r0 and r3 squares' the same 1582/1583, all four 1619 (10684 B); the r1 square's r6 product moved up
+// into the r6 group 981, moved after the r0 square's r6 product 919; the r1 square and its r7 product declared just ahead of
+// its r6 product 1554 (10750 B); the r7 product alone moved there 1504 (10741 B). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

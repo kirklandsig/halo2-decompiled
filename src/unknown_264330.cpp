@@ -1067,6 +1067,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // code); the 0x26be00/0x26be30 walk (round 220's form) re-measured 446 at 1632 B, with the function-scope update flag
 // 447. So holding the actor index in a register in that screen does not make it a register argument here. Still
 // BLOCKED-BY 0x2641c0's noinline declaration (src/unknown_265cb0.cpp, another lane's file this round).
+// M3 lane 15 r150 (h2m fast with 0x1e34e0 (25 throughout), 0x263210, 0x264330, 0x265680, all MATCH; control 404): the
+// tracked-prop tests written field first at all three sites 406; the prior state read ahead of the next link 404 (same
+// code); the prior state read after the 0x263670 call 434 (1620 B); the sampling test with `actor[0x48]` first 429; the
+// tail on a fresh actor lookup after the walk 421 (1632 B). Every form keeps `ret 4`. Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

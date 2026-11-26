@@ -6,7 +6,6 @@
 #include "globals.h"
 #include "unknown_11cb00.h"
 #include "unknown_11cc90.h"
-#include "vector_products.h"
 #include <math.h>
 #include <xtl.h>
 
@@ -245,6 +244,15 @@ static __inline point3f *point3f_scale(point3f const *p, real s, point3f *result
 	return result;
 }
 
+// score 48 (was 48): with main's rotate helper the products and schedule differ from +0x3. With the held rotate form
+// (named square and dot, w2 after d; see 0x11dbb0) 4 are left at +0x178: retail loads the -1 before the x component
+// of the second scale and stores `out->scale` before the last z store. Tried on the held form: `out->scale = inv;`
+// between the two scales 9 (the -1 load then matches, the scale store moves to the top), ahead of both 18, the
+// branches storing `out->scale` directly 47 (440 B); the scale helper as `p->x * s` 4; the second scale through the
+// first's returned pointer 9, through a named position pointer 19 (430 B) or 56 (400 B); inv as one conditional
+// expression 4/9/18 (same three placements); the inverse scale as an inline helper 58-60 (432 B); a named -1 constant
+// at file scope 4 (also for w: 4), as a local 14. Dead-local scans at three anchors: the rotate moves with period 8
+// (4 only at 0, 8, 16), the tail never.
 // @retail 0x11dd80
 void function_11dd80(
 	real_quaternion_transform const *in,
@@ -276,27 +284,46 @@ vector2f *function_11df30(
 	return angles;
 }
 
-// score 37 (was 77): vector_products.h helpers (length_sq3f, vector3d_from_points3d, dot3f, vector3f_add_scaled) and inline ternary clamp match lines 1-46; left: two-return tail schedule and else subtraction order. Single-exit `real result;` matches byte-for-byte (0, 290/290 B; also improves 0x260670) but triggers LTCG auto-inlining in matched 0x1a8fa0 (435), so held as a patch; in-place v 48 (inlines 0x1a8fa0); kji/jki return sums 39; parenthesized xyz return 41; if/else clamp with helpers 78.
+// review (machine 3, 2026-11-26): the form in the next note (37) is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (77) stays.
+// score 77 (the held form described here scored 37): vector_products.h helpers (length_sq3f, vector3d_from_points3d, dot3f, vector3f_add_scaled) and inline ternary clamp match lines 1-46; left: two-return tail schedule and else subtraction order. Single-exit `real result;` matches byte-for-byte (0, 290/290 B; also improves 0x260670) but triggers LTCG auto-inlining in matched 0x1a8fa0 (435), so held as a patch; in-place v 48 (inlines 0x1a8fa0); kji/jki return sums 39; parenthesized xyz return 41; if/else clamp with helpers 78.
 // @retail 0x11e000
 real function_11e000(
 	point3f const *b,
 	point3f const *a,
 	vector3f const *d)
 {
-	if (length_sq3f(d) > 0.0001f)
+	if (d->j * d->j + d->k * d->k + d->i * d->i > 0.0001f)
 	{
 		vector3f v;
-		vector3d_from_points3d(a, b, &v);
-		real t = dot3f(&v, d) / length_sq3f(d);
-		vector3f diff;
-		vector3f_add_scaled(&v, d, -(t < 0.f ? 0.f : (t > 1.f ? 1.f : t)), &diff);
-		return length_sq3f(&diff);
+		real t;
+
+		v.k = b->z - a->z;
+		v.i = b->x - a->x;
+		v.j = b->y - a->y;
+		t = (d->i * v.i + v.k * d->k + v.j * d->j) / (d->j * d->j + d->k * d->k + d->i * d->i);
+		real nt;
+		real x;
+		real y;
+		real z;
+
+		if (0.f > t)
+			t = 0.f;
+		else if (t > 1.f)
+			t = 1.f;
+		nt = 0.f - t;
+		x = d->i * nt + v.i;
+		y = nt * d->j + v.j;
+		z = nt * d->k + v.k;
+		return z * z + y * y + x * x;
 	}
 	else
 	{
 		vector3f u;
-		vector3d_from_points3d(b, a, &u);
-		return length_sq3f(&u);
+
+		u.j = a->y - b->y;
+		u.i = a->x - b->x;
+		u.k = a->z - b->z;
+		return u.k * u.k + u.j * u.j + u.i * u.i;
 	}
 }
 
@@ -397,6 +424,37 @@ PRIVATE __forceinline void point_out_11ea30(point3f const *origin, vector3f cons
 	out->z = direction->k * parameter + origin->z;
 }
 
+/* the segment parameters when the directions are parallel: each is the mean of the clamped parameters of the
+   other segment's two ends projected onto it (shared by 0x11ea30 and 0x11e130) */
+PRIVATE __forceinline void parallel_parameters_11ea30(vector3f const *u, vector3f const *v, vector3f const *delta, real *ta, real *tb)
+{
+	real uv = dot_11ea30(u, v);
+	real uu = u->j * u->j + u->k * u->k + u->i * u->i;
+	if (uu > 0.0001f)
+	{
+		real inverse = 1.0f / uu;
+		real start = dot_11ea30(u, delta) * inverse;
+		real end = uv * inverse + start;
+		*ta = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
+	}
+	else
+		*ta = 0.0f;
+	real vv = v->j * v->j + v->k * v->k + v->i * v->i;
+	if (vv > 0.0001f)
+	{
+		real inverse = 1.0f / vv;
+		real start = 0.0f - dot_11ea30(v, delta) * inverse;
+		real end = uv * inverse + start;
+		*tb = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
+	}
+	else
+		*tb = 0.0f;
+}
+
+// Matched (was 23): the parallel arm is an inline helper shared with 0x11e130 that writes both parameters through
+// its out-pointers (one dot text at every site), and the final test compares the squared distance against
+// `radius * radius`.
+// Before:
 // score 23 (was 652) in a full build with stand-in SDK headers: the cross and the point helpers write through
 // out-pointers instead of returning vectors by value (the by-value forms were built as 21 dword copy pairs, frame
 // 0x28 against retail's 0x1c), cross and dot are interleaved as in 0x11e130, the delta is computed before the
@@ -444,36 +502,14 @@ long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vect
 		}
 	}
 	else
-	{
-		real uv = dot_11ea30(u, v);
-		real uu = u->j * u->j + u->k * u->k + u->i * u->i;
-		if (uu > 0.0001f)
-		{
-			real inverse = 1.0f / uu;
-			real start = dot_11ea30(u, &delta) * inverse;
-			real end = uv * inverse + start;
-			ta = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			ta = 0.0f;
-		real vv = v->j * v->j + v->k * v->k + v->i * v->i;
-		if (vv > 0.0001f)
-		{
-			real inverse = 1.0f / vv;
-			real start = 0.0f - dot_11ea30(v, &delta) * inverse;
-			real end = uv * inverse + start;
-			tb = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			tb = 0.0f;
-	}
+		parallel_parameters_11ea30(u, v, &delta, &ta, &tb);
 	point3f point_a;
 	point_out_11ea30(a, u, ta, &point_a);
 	point3f point_b;
 	point_out_11ea30(b, v, tb, &point_b);
 	vector3f difference;
 	vector3d_from_points3d(&point_a, &point_b, &difference);
-	if (radius * radius >= dot_11ea30(&difference, &difference))
+	if (dot_11ea30(&difference, &difference) <= radius * radius)
 		return 1;
 	return 0;
 }
@@ -516,38 +552,47 @@ real function_11e6f0(
 	}
 }
 
-// score 109 (was 126): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
+// review (machine 3, 2026-11-26): the form in the next note (109) is held, not applied: on its own it moves 0x24cf66 (a link-time layout flip) out of its match; main's form (126) stays.
+// score 126 (the held form described here scored 109): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
 // @retail 0x11e800
 bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {
-	vector3f w;
-	vector3f e2;
-	vector3f e1;
+	real w[3];
+	real e2[3];
+	real e1[3];
 	vector3f n;
 	real d;
 
-	vector3d_from_points3d(a, p, &w);
-	vector3d_from_points3d(a, c, &e1);
-	vector3d_from_points3d(a, b, &e2);
-	cross3f(&e2, &e1, &n);
-	d = dot3f(&n, &w);
-	if (length_sq3f(&n) * 0.0001f > d * d)
+	w[0] = p->x - a->x;
+	w[1] = p->y - a->y;
+	w[2] = p->z - a->z;
+	e1[0] = c->x - a->x;
+	e1[1] = c->y - a->y;
+	e1[2] = c->z - a->z;
+	e2[0] = b->x - a->x;
+	e2[1] = b->y - a->y;
+	e2[2] = b->z - a->z;
+	n.i = e1[2] * e2[1] - e1[1] * e2[2];
+	n.j = e2[2] * e1[0] - e1[2] * e2[0];
+	n.k = e1[1] * e2[0] - e2[1] * e1[0];
+	d = n.j * w[1] + n.k * w[2] + n.i * w[0];
+	if ((n.k * n.k + n.j * n.j + n.i * n.i) * 0.0001f > d * d)
 	{
 		short axis = function_120850(&n);
 		bool positive = n.n[axis] > 0.f;
 		short const *indices = g_440b94[axis * 2 + positive];
 		long i0 = indices[0];
 		long i1 = indices[1];
-		real w1 = w.n[i1];
-		real e2_1 = e2.n[i1];
-		real e2_0 = e2.n[i0];
-		real w0 = w.n[i0];
+		real w1 = w[i1];
+		real e2_1 = e2[i1];
+		real e2_0 = e2[i0];
+		real w0 = w[i0];
 		real ca = w1 * e2_0 - e2_1 * w0;
 
 		if (ca > -0.0001f)
 		{
-			real e1_1 = e1.n[i1];
-			real e1_0 = e1.n[i0];
+			real e1_1 = e1[i1];
+			real e1_0 = e1[i0];
 			real cb = e1_1 * w0 - w1 * e1_0;
 
 			if (cb > -0.0001f)
@@ -618,6 +663,9 @@ PRIVATE __forceinline void point_11e130(point3f const *origin, vector3f const *d
 	out->z = direction->k * parameter + origin->z;
 }
 
+// Matched (was 24): the parallel arm is the inline helper shared with 0x11ea30, which writes both parameters
+// through its out-pointers.
+// Before:
 // score 24 (was 243) in a full build with stand-in SDK headers: the delta between the points is computed before the
 // normal's cross product, which shifts every product's operand order to retail's, and the final difference has its
 // own local instead of reusing delta. Left: cross_a's j row (retail copies delta.k and folds [v.i]) and the sum
@@ -665,29 +713,7 @@ real function_11e130(point3f const *a, vector3f const *u, point3f const *b, vect
 		}
 	}
 	else
-	{
-		real uv = dot_11ea30(u, v);
-		real uu = u->j * u->j + u->k * u->k + u->i * u->i;
-		if (uu > 0.0001f)
-		{
-			real inverse = 1.0f / uu;
-			real start = dot_11ea30(u, &delta) * inverse;
-			real end = uv * inverse + start;
-			ta = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			ta = 0.0f;
-		real vv = v->j * v->j + v->k * v->k + v->i * v->i;
-		if (vv > 0.0001f)
-		{
-			real inverse = 1.0f / vv;
-			real start = 0.0f - dot_11ea30(v, &delta) * inverse;
-			real end = uv * inverse + start;
-			tb = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			tb = 0.0f;
-	}
+		parallel_parameters_11ea30(u, v, &delta, &ta, &tb);
 	point3f point_a;
 	point_11e130(a, u, ta, &point_a);
 	point3f point_b;
