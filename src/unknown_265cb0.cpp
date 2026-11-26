@@ -1187,6 +1187,13 @@ real function_30bf0(vector3f *vector);
 // sharing one `posture == 0 ? 0.3f : 0.7f` assignment 214 (1312 B); the posture tested by an `if` with that conditional
 // 181 (1311 B); the whole scale as one nested conditional at its declaration 219 (1308 B); an explicit `default: break;`
 // 84 (same code); the clip clamp as a conditional assignment 84 (same code). Body unchanged.
+// M3 lane 12 r193 (H2M_FAST with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84). Frame packer reading:
+// cells are packed by size, then references, and a joining value tries the newest cells first, so the clip amount (2
+// references) meets the seat loop's two compiler temporaries (3 references each, packed before it) and joins the newer
+// one; retail's pairing with the squared distance needs those temporaries to interfere with it or to pack after it.
+// Forms (all 84, the same code): the seat buffer declared at the top of the facing block; `side` and `up` declared
+// apart, up first; the occupant pointer to const; the two facing maxima declared ahead of the crosses; the facing flag
+// set by an `if`. Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
