@@ -1296,6 +1296,15 @@ bool function_143c0(long, short, short, real);
 // which also gives retail's zero in ESI, the records pointer in EDI through the loop and the pop order. The allocator
 // ranks the second alpha (-6, created later) ahead of the constant 2 (-6 to -10 in these forms); a forced-ranking
 // search that puts the constant first gives aligned 34. 0x36b50 now pushes the state as retail (aligned 173 both).
+// Round 159 (m3 lane 14, fast): the mode word read at every use (no bool) 366; a fresh mode compare at the begin arms
+// only 173 (re-measured), there and at the point-scale call test 167 (the constant 2 then sits in EDI from entry as in
+// retail), in the loop as well 363. On the 167 form: the point arm first on the fresh `!= 2` compare 111, with the
+// player count as a short (retail's 16-bit compares) 86 at 1420 B; the line arm first with the short count 145. Match-
+// only lead (a bool and fresh compares of the same word mixed): left on it are the shader slot read (retail add 0xb0
+// then load +4; a typed slot read, a slot pointer and an index spelling all fold to one load, 86; the existing 0x1cc30
+// stays a call 343, 0x1cbe0(0, 0, 22) 313), the sete / flag order at entry, the point-scale zeroes stored straight from
+// XMM0, and retail testing the bool (not the word) before the point-scale call. Without the 167 form the constant
+// stays out of EDI: the short count alone 204, with the point arm first 265, the typed slot read alone 189 (same code).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
