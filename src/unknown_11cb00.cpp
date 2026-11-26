@@ -245,6 +245,15 @@ static __inline point3f *point3f_scale(point3f const *p, real s, point3f *result
 	return result;
 }
 
+// score 48 (was 48): with main's rotate helper the products and schedule differ from +0x3. With the held rotate form
+// (named square and dot, w2 after d; see 0x11dbb0) 4 are left at +0x178: retail loads the -1 before the x component
+// of the second scale and stores `out->scale` before the last z store. Tried on the held form: `out->scale = inv;`
+// between the two scales 9 (the -1 load then matches, the scale store moves to the top), ahead of both 18, the
+// branches storing `out->scale` directly 47 (440 B); the scale helper as `p->x * s` 4; the second scale through the
+// first's returned pointer 9, through a named position pointer 19 (430 B) or 56 (400 B); inv as one conditional
+// expression 4/9/18 (same three placements); the inverse scale as an inline helper 58-60 (432 B); a named -1 constant
+// at file scope 4 (also for w: 4), as a local 14. Dead-local scans at three anchors: the rotate moves with period 8
+// (4 only at 0, 8, 16), the tail never.
 // @retail 0x11dd80
 void function_11dd80(
 	real_quaternion_transform const *in,
@@ -397,6 +406,37 @@ PRIVATE __forceinline void point_out_11ea30(point3f const *origin, vector3f cons
 	out->z = direction->k * parameter + origin->z;
 }
 
+/* the segment parameters when the directions are parallel: each is the mean of the clamped parameters of the
+   other segment's two ends projected onto it (shared by 0x11ea30 and 0x11e130) */
+PRIVATE __forceinline void parallel_parameters_11ea30(vector3f const *u, vector3f const *v, vector3f const *delta, real *ta, real *tb)
+{
+	real uv = dot_11ea30(u, v);
+	real uu = u->j * u->j + u->k * u->k + u->i * u->i;
+	if (uu > 0.0001f)
+	{
+		real inverse = 1.0f / uu;
+		real start = dot_11ea30(u, delta) * inverse;
+		real end = uv * inverse + start;
+		*ta = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
+	}
+	else
+		*ta = 0.0f;
+	real vv = v->j * v->j + v->k * v->k + v->i * v->i;
+	if (vv > 0.0001f)
+	{
+		real inverse = 1.0f / vv;
+		real start = 0.0f - dot_11ea30(v, delta) * inverse;
+		real end = uv * inverse + start;
+		*tb = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
+	}
+	else
+		*tb = 0.0f;
+}
+
+// Matched (was 23): the parallel arm is an inline helper shared with 0x11e130 that writes both parameters through
+// its out-pointers (one dot text at every site), and the final test compares the squared distance against
+// `radius * radius`.
+// Before:
 // score 23 (was 652) in a full build with stand-in SDK headers: the cross and the point helpers write through
 // out-pointers instead of returning vectors by value (the by-value forms were built as 21 dword copy pairs, frame
 // 0x28 against retail's 0x1c), cross and dot are interleaved as in 0x11e130, the delta is computed before the
@@ -444,36 +484,14 @@ long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vect
 		}
 	}
 	else
-	{
-		real uv = dot_11ea30(u, v);
-		real uu = u->j * u->j + u->k * u->k + u->i * u->i;
-		if (uu > 0.0001f)
-		{
-			real inverse = 1.0f / uu;
-			real start = dot_11ea30(u, &delta) * inverse;
-			real end = uv * inverse + start;
-			ta = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			ta = 0.0f;
-		real vv = v->j * v->j + v->k * v->k + v->i * v->i;
-		if (vv > 0.0001f)
-		{
-			real inverse = 1.0f / vv;
-			real start = 0.0f - dot_11ea30(v, &delta) * inverse;
-			real end = uv * inverse + start;
-			tb = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			tb = 0.0f;
-	}
+		parallel_parameters_11ea30(u, v, &delta, &ta, &tb);
 	point3f point_a;
 	point_out_11ea30(a, u, ta, &point_a);
 	point3f point_b;
 	point_out_11ea30(b, v, tb, &point_b);
 	vector3f difference;
 	vector3d_from_points3d(&point_a, &point_b, &difference);
-	if (radius * radius >= dot_11ea30(&difference, &difference))
+	if (dot_11ea30(&difference, &difference) <= radius * radius)
 		return 1;
 	return 0;
 }
@@ -618,6 +636,9 @@ PRIVATE __forceinline void point_11e130(point3f const *origin, vector3f const *d
 	out->z = direction->k * parameter + origin->z;
 }
 
+// Matched (was 24): the parallel arm is the inline helper shared with 0x11ea30, which writes both parameters
+// through its out-pointers.
+// Before:
 // score 24 (was 243) in a full build with stand-in SDK headers: the delta between the points is computed before the
 // normal's cross product, which shifts every product's operand order to retail's, and the final difference has its
 // own local instead of reusing delta. Left: cross_a's j row (retail copies delta.k and folds [v.i]) and the sum
@@ -665,29 +686,7 @@ real function_11e130(point3f const *a, vector3f const *u, point3f const *b, vect
 		}
 	}
 	else
-	{
-		real uv = dot_11ea30(u, v);
-		real uu = u->j * u->j + u->k * u->k + u->i * u->i;
-		if (uu > 0.0001f)
-		{
-			real inverse = 1.0f / uu;
-			real start = dot_11ea30(u, &delta) * inverse;
-			real end = uv * inverse + start;
-			ta = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			ta = 0.0f;
-		real vv = v->j * v->j + v->k * v->k + v->i * v->i;
-		if (vv > 0.0001f)
-		{
-			real inverse = 1.0f / vv;
-			real start = 0.0f - dot_11ea30(v, &delta) * inverse;
-			real end = uv * inverse + start;
-			tb = (clamp_11ea30(start) + clamp_11ea30(end)) * 0.5f;
-		}
-		else
-			tb = 0.0f;
-	}
+		parallel_parameters_11ea30(u, v, &delta, &ta, &tb);
 	point3f point_a;
 	point_11e130(a, u, ta, &point_a);
 	point3f point_b;

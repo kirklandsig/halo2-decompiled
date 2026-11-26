@@ -171,6 +171,15 @@ PRIVATE inline long e5470_unit_current_weapon(long unit_index)
 // type 37; dword unit_index 37; function_cbd50 inlined (direct or objget) 145 (519 B); two modes / nested
 // weapon if / split pos decls / mask at call / player_get like objget / player method / actor local 37;
 // char weapon 55; record pool lookup 121; header-first objget 140; inline_depth(1) diag 37.
+// M3 lane 5 r249 (H2M_FAST; control 37). Allocator reading: the player's unit index read for the second weapon lookup
+// is one merged value (rank 33) kept in EAX into the position call, where retail reads it again through the player; the
+// player and the second weapon result then tie at 26 and the weapon wins on creation order (EDI), so the player takes
+// EBP. A forced-ranking search: the second weapon result in EBP alone gives 23 (left: the merged read and the argument
+// registers of the two 0xcd7b0 calls). Forms (all 37, the same code): a dead pointer to the player's unit index field;
+// that index read inside a small inline helper's own local, with or without a dead field pointer there; a dead copy of
+// the index after the second lookup; a dead second player lookup after the first weapon; the second lookup (or the
+// first) through the header's plain current-weapon inline in place of the file's twin. Diagnostic: the object getter
+// without its dead header address 140 (487 B: the object lookups merge), so that address is what keeps retail's reloads.
 // @retail 0xe5470
 bool __stdcall function_e5470(long player_index, long unit_index)
 {
