@@ -483,6 +483,13 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // once and the products as rate * i, j * rate, k * rate 320; the j and k components read into named locals ahead of
 // the products 319 (same code); the pointer local, the named rate and the object index read again for the position
 // move 325 (1180 B); the named rate and the second index read alone 325.
+// M3 lane 1 r174 (fast screen with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0 and 0x1c4a80, all MATCH each run; control 319
+// at 1176 B). Retail reads the shape pointer from the input again in each out-of-line type arm and keeps the state in no
+// register (loaded into EAX at the switch and in case 6); still BLOCKED-BY 0x1ec690 (input in EDI). Forms: the velocity
+// reference bound ahead of the first store 331; the countdown as `if (state[1]) state[1]--;` 320; the +0x64 vector
+// copied from the velocity just cleared 345 (1168 B); the mode payload `state + 0x10` named once for the five calls 317
+// (retail's 1164 B, but the add is hoisted ahead of the jump table where retail adds in each case); the velocity
+// reference bound only in the flag block 325 (1180 B). Body unchanged.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

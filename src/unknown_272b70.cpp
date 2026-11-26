@@ -961,6 +961,12 @@ inline void actor_274f30_update(long actor_index, bool flag)
 // taking short/word 177 (64 B, update no longer inlined, breaks 0x274f30/0x2a55a0) or dword 47; update taking short 50
 // (movzx, 178 B, breaks 0x274f30); update written out in this body (0x274f30 untouched) with a lookup per branch 48 or
 // one shared lookup 47: the product is still hoisted and shared.
+// GB r25 (fast with 0x274f30 and 7 peers MATCH, 13 fresh trials): __forceinline erase alone 176 (64 B, update stops
+// inlining, breaks 0x274f30/0x2a55a0); mismatched array-index vs byte-offset mul (both directions), mismatched dword vs
+// long mask inside lookup (both directions), masked-slot helper in erase, per-arm flag008 stores, while(actor) loop
+// (nested and early-return), mismatched padded 0x888 s_actor_274e70 pointer arithmetic (update-only and erase-only),
+// shift-mask in erase, and direct update with iterator.actor_index + erase with actor_index all tie 47 (product still
+// shared).
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
