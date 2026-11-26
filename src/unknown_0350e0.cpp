@@ -3102,6 +3102,14 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // i, j, k 504, with the delta through vector3d_from_points3d 518 (2302 B). A forced-ranking search (12 of 2692
 // candidates) found no single allocator decision that lowers 281: the first difference is in the scheduler, not the
 // colouring. Body unchanged.
+// M3 lane 11 r173 (H2M_FAST with 0x2f2d0/0x2e3f0/0x222d0/0x2df00/0x20d80; control 281, difflib-aligned 142). Retail keeps the
+// attenuation in its stack cell with a register copy: the 1.0 default stored after the tint, each arm of the distance clamp
+// copying and storing its result, the equal-bounds path reloading the cell. Forms: the distance and angle factors as
+// named locals defaulting to 1.0 and multiplied with the alpha clamp at the end 506 (2271 B, aligned 163); attenuation
+// declared bare beside the decoder outputs and its default assigned in place 281 (same code); the distance attenuation
+// as an if/else on equal bounds (1.0 in the taken arm) 496 (retail's 2285 B, aligned 184); the far distance named once
+// for its two reads 492 (aligned 146); the alpha clamp as the attenuation's initial value with the distance clamp
+// multiplied in 488 (aligned 205).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
