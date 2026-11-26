@@ -1001,6 +1001,19 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // translation of the position or displacement copy 719/737; completed planar request copy 588;
 // both planar points immutable 668. NOT kept: the naming forms tie, and the other forms
 // raise the score. The position output still needs ESP+0x80 with the query output at +0x8c.
+// M3 lane 14 r157 (fast screens with GB15's companion list; control 462 at 3504 B, aligned 193, registers and stack
+// offsets masked 66). Frame reading from the back end's packer: the position's 12-byte slot has 7 references (583 per
+// 1000 bytes) and the slot shared by the translated target (4), the pre-turn copy (3) and 0x1f9760's unused output (1)
+// has 8 (666), so the shared slot sorts nearer ESP; the frame is otherwise retail's slot for slot. Forms: the two velocity
+// dots axis first (`dot3f(local_4, &local_1->velocity)`, `dot3f(local_28, &local_1->velocity)`) 458; with both clamps
+// as `MIN(1.0f, ratio)` 457 (aligned 180, masked 58: the cross product's six products are left, retail a.j, a.k, a.k,
+// b.k, a.i, a.j first); on that, the override read straight into the result (`local_24 = override; if (local_24 ==
+// 0.0f) {...}`) 663 (3511 B); the velocity vector built member by member 457 (same code), with the override form 663;
+// local_6.i/.j set ahead of the k test 675 (3475 B, 839 instructions, aligned 123, masked 44); that with the override
+// test written `== 0.0f` and the override in the else arm 655 (3499 B, but 850 instructions). A forced-ranking search
+// on the 457 form found no single allocator decision that lowers it (12 of 2718 candidates). The middle dot axis first
+// too (all three) 663 (3499 B, first difference +0x60: the frame's homes move). NOT kept: 457 is a gain of 5, under
+// the bar.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

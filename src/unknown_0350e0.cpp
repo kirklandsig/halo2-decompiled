@@ -3092,6 +3092,16 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // the setter 281/503, with the attenuation default at its original point or with the tint.
 // NOT kept: in-place doubling reaches the 2285-byte extent at a higher score. The camera
 // displacement registers and the early attenuation store still differ.
+// M3 lane 14 r157 (fast screens with 0x2f2d0, 0x2e3f0, 0x222d0 and 0x497a0; control 281 at 2286 B, aligned 143, masked 63).
+// Reading: our loop head carries a `jmp` and 9 pad bytes that retail's does not, because our code ahead of the loop is
+// about 10 bytes short (retail's four extra spills in the delta/forward/attenuation block), so the pad is a result, not a
+// cause. Retail's needed leaf ranks are the forward dot's six leaves read right to left (axis.k, delta.k, axis.i,
+// delta.i, delta.j, axis.j), as if the dot were their first reference. Forms: the three differences written inside the
+// forward dot with the delta vector filled after it 490; the axis read through a const reference to the camera's
+// forward 500; the attenuation default declared ahead of the delta (after the tint) 503 (2290 B), with the delta filled
+// i, j, k 504, with the delta through vector3d_from_points3d 518 (2302 B). A forced-ranking search (12 of 2692
+// candidates) found no single allocator decision that lowers 281: the first difference is in the scheduler, not the
+// colouring. Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
