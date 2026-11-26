@@ -1059,6 +1059,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // `s->limit` read at each use (no limit local) 681 (2879 B); the activation displacement through the existing
 // vector3d_from_points3d(pos, b, &delta) 665 (2880 B; aligned 629, masked 246, both below main's: a part for a combined
 // form only); both activation step counts as `e > 0.001f ? rem / e + 6.f : 6.f` 677 (2879 B). Body unchanged.
+// M3 lane 2 r155 (fast with 0x1eb6f0, 0x1ed4a0, 0x30bf0; control 567, masked 267): the first activation's ramp terms run
+// in tree order here (half the 4e term subtracted before the third is formed) because they reuse one XMM register;
+// retail gives the third, 4e and the down term their own registers and the scheduler then forms the third first.
+// Tried: the first activation length as `(real)sqrt(length_sq3f(&delta))` 668 (2880 B, masked 242), the second
+// length that way 668, both 668 (same code each); the impulse added through the existing vector3f_add 678 (2876 B);
+// the alignment as dot3f(a, d) 567 (same code). Body unchanged.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

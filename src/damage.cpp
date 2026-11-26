@@ -2879,6 +2879,10 @@ struct s_unit_event
 // into a named two-use local in each 0xb58c0 block 420 (same code); the permutation pointer in one expression 558 (1852
 // B); the reference read moved to the 0xa8360 argument 420 (same code); the state update as `x = x | bit` 420 and OR-ing
 // `(word)(1 << permutation_index)` 420 (same code each). Body unchanged.
+// M3 lane 5 r250 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd9d60; control 420): the permutation pointer defined after the
+// mode block 573 (first +0x3); the permutation pointer in one expression without the region pointer re-measured 558; the
+// two ejection tests in the other order 420 (same code); the mode block's attachment reads through `object` 559; the
+// marker flag passed as an expression instead of a named bool 420 (same code). Body unchanged.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5818,6 +5822,12 @@ struct s_damage_object_creation
 // a pointer to its header element 167 (same code); the section stores as `field = field | (word)(1 << i)` 167 (same
 // code); the counter declared ahead of the `for` 167 (same code); the piece search's result declared at its
 // computation with no NONE initialiser 167 (same code). Body unchanged.
+// M3 lane 5 r250 (fast with 0xdb810/0xdbb40; control 167): the one-use first-mask local re-measured 112 (first +0x5d: its
+// zero-extension still ahead of the count guard, and the creation block's +0x28/+0x2c reads then swap order); a two-use
+// first-mask local at function scope serving the section loop and the detach test 169; the piece search as a NONE-start
+// for/break on main's body 223 and on the one-use mask local 247 (both frame 0x13dc: the detached mask takes ESI, where
+// retail keeps it in memory and reloads it at the loop head); one function-scope counter for the section and node loops
+// 167 (same code); the section count read from the record at each test 179. Body unchanged.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

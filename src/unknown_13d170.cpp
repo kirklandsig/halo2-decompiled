@@ -1105,6 +1105,12 @@ struct s_physical_block_iterator
 // one to seven unused initialised locals at the top 40 each (no phase effect); the datum index read into a local ahead of
 // the overlap test 40 (same code). The allocator's ranking of the lead's walk
 // was read: the overlap sum is formed in the best-offset copy where retail forms it in the page count's register.
+// M3 lane 3 r314 (H2M_FAST with 0x13d320, MATCH each run; control 201, aligned 118): retail clamps both default-arm ages
+// with the unsigned `x > 0 ? x : 0` mask (here `MAX(0, x)` on the unsigned difference folds away) and loads best.pages
+// into EAX for `imul eax, ecx`. Forms: the second age as `MAX(physical->time - best.time, 0)` 209 (1228 B; candidate time
+// and age land in EAX against retail's ECX, the best.pages product still folds the stack operand); that with both
+// products written age first 209 (same code); with best_age computed first 217; with the time read once into a `now`
+// local used by both ages 209 (same code); case 0 as an if/else on equal times 284 (1182 B). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
