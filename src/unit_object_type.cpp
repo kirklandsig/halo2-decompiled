@@ -9937,6 +9937,14 @@ struct s_unit_melee_collision
 // 532; definition after weapon_index 425 (al 166, mk 87); s_record_pool *objects = g_4e0300 547/573 (fr 0x180);
 // damage_index before hit_index 501, before material_index 429; unit_at_masked_index on 390 form 390 (same code);
 // swapped ray operands/orders on 390 form 390 (same code). Body unchanged.
+// M3 lane 15 r149: a 390 form (was 447; frame 0x17c as retail's, 2219 B against 2229) is held as a patch, code back to
+// main, because it costs matched 0xc2d00 (0 -> 2, the /GL coin flip) with either scale helper: no aim pointer
+// (unit->unknown168 at each read), the cross product through cross3f, the range field read in each ray row, both
+// seat-flag tests through TEST_FIELD_BIT, the gotos replaced by nested tests, and across/up scaled through the existing
+// forced-inline direction_scale of src/unknown_24f590.cpp with the half width and half height passed straight in.
+// Variants: named width/height locals 546, gotos kept 390 (same code), without TEST_FIELD_BIT 397, without the scale
+// helper 551, the cross written out 530, a pool local for every unit lookup 547. The prologue still differs (retail
+// loads the unit index first, tag table in ESI, pool in EDI, NONE in EBP for the weapon slot's compare).
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

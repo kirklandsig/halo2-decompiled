@@ -1113,6 +1113,19 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // `0x1544e0`-style scalar squares + `vector3f sine_axis` 165 (851 B), direct `D3DDevice_SetTextureStageState` 189 (858 B),
 // `kji` squares + `ijk`/`jki` `sine_axis` + shared xy/xz/zy with/without `inverse` and swapped bump operands 76-177 (with
 // typed `s_3c650_state const *water` matching `values` at 76/86, confirming bump operand order is symbol-canonicalized). Body unchanged.
+// M3 lane 15 r149 (h2m fast; control 84). Lead, match-only: plain `real sine`/`cosine` locals, `vector3f squares` and
+// `vector3f sine_axis` filled i, j, k, `(1.0f - cosine)` written in each shared product (xy = (1.0f - cosine) * axis->i *
+// axis->j, xz, zy), 0x1544e0's store order (scale, forward.i, left.i, forward.j, left.j, up.i, forward.k, up.k, up.j,
+// left.k) and atan2 without the `(double)` casts: 18 at 845/845 B (first +0x88; the head, frame and x87/SSE split are
+// retail's). Left there: the xy/xz chains sorted j before i (retail i, j: four more symbols ahead of `axis` fix both, 14
+// with four unused longs), stage 3's state load ranks below the matrix (one grouping pair in any stage 1 or stage 2
+// product fixes it: 10, or 6 with the four longs), then two schedule spots (the cosine load ahead of the x87 sine
+// product; up.j's subtract ahead of the left.k store). Not kept: `(1.0f - cosine)` at each use replaces a named local
+// (with `inverse` named it measures 115-165), and the grouping pair and the longs only steer. Also on the 18 form:
+// squares k, j, i 169-174; product text orders 18 (canonical); `inverse` after forward.i 164, after axis 115; axis
+// declared at the top 66-70, after view_forward 18, read through g_4687b0 18; the parameter alias `values` 18 (119 with
+// the grouping pair); the angle offset named 164; the two vectors declared ahead of axis 10 (same); position zeroed z, y,
+// x or x, y, z 18; stage 2 as unary minus 18; sine_axis in every order 6-7 or 185, placed after scale 31 or forward.i 38.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1219,6 +1232,11 @@ s_3c9a0_matrix g_4c1b68;
 // memcpy 298; `if (width_scale > 1.0f)` clamp 306; `fabs` distance 347; `1.0f >= width_scale` 291; `real (*matrix)[4]`
 // pointer 260 (1402 B, 292 insns, mk 215 worse: indirect loads); constant-LHS clamps 291; `transform_point_3x4` helper 291.
 // Body unchanged.
+// M3 lane 15 r149 (h2m fast; 0x3c9a0 MATCH, 0x3c3c0 74; control 291). Retail stores the first tangent as a float at
+// once and divides and compares in SSE; ours keeps it on the x87 stack across the inlined 0x16a90 test. Tried: the clamp
+// as one ternary 306 (1321 B); the near angle through the float tan overload 291; the tangent without casts with the view
+// tangent folded into `tan(half_angle) * aspect / tangent` 291; the field of view (+0x7c) named for its five reads 333;
+// the tangent scale (+0x80) named for its two reads 313.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
