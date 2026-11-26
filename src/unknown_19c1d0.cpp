@@ -390,6 +390,14 @@ void function_19c6d0(s_record_pool *data, long key0)
 // EBX and flagged_count moves into EBX after loop 1); while loop 1/2 with temporary 149; data_iterator_new inline 149;
 // iterator declared at top initialized late 149; interleaved flagged/keys 157; __stdcall with temporary 149; indexed
 // datum store 149; for(table && i<table->count) / if(table=get_table_c()) 157; dword flagged 149. Body unchanged.
+// M3 lane 1 r173 (fast with 0x19c6d0, 0x19c190; control 108): on the callers' `long temporary;` form (re-measured 149,
+// 375 B) the allocator ranks the hoisted valid flag -35 and the globals pointer -36 above the pool -43; a forced-ranking
+// search putting the pool at -34 gives retail's frame (0x198) and a shorter instruction distance but 152, because the pool
+// then becomes a register parameter (no entry load from the stack, `ret` without 4) where retail keeps the stack parameter
+// and loads it into EBX at entry. The two arrays have equal frame density (3 references each); retail's slot order needs
+// its scratch slot at least as dense as the flagged count's. Forms: on the temporary form, the walk's datum declared in the
+// while condition 149, the flagged count `unsigned long` 149, the entry key read once into a named local 152 (371 B); on
+// this body the flagged count `unsigned long` 108 (same code), the named entry key 134.
 // @retail 0x19c7e0
 void function_19c7e0(s_record_pool *data)
 {

@@ -3241,6 +3241,15 @@ bool __stdcall function_20ba60(short arg_0, long arg_1, long arg_2, long arg_3, 
 // flag, flag16-first, typed views, squad loop step, De Morgan if, no local_3, local_2 outside while all tie 67. Lead
 // (not kept): arm-1 separate group lookup / a __forceinline 0x202e30 flips EDI<->EBP so all 4 callee-saved registers and
 // lines 65-148 match retail verbatim (al=41, 476/476 B) but duplicates the 0x38 multiply in arm 1 (118).
+// M3 lane 15 r151 (H2M_FAST with 0x202be0, 0x202e30, 0x20ba60, 0x290cd0 and 0x2093d0, MATCH throughout): the arm with
+// one word choice read from the record (`xor eax, eax; mov ax` as retail), cleared in the arms that find none, the
+// follow-up setting the passed-down choice and NONE in its else 120 (476 B: the follow-up test is threaded away);
+// without that else 140 (484 B); the passed-down choice set ahead of the follow-up 164 (500 B); 0x202be0's exact
+// shape (pending word, choice started at NONE) re-measured 116 (479 B: the follow-up test stays as retail, but the
+// record's next-script index is stored to its slot on the field path where retail keeps it in BX); this body with
+// the 0x1c choice typed `word` 120. Ranking (0x202be0 shape): the record 304 over the index 214 (retail needs the
+// index first), and the passed-down choice (72, first pass) colours ahead of the inherited one (64, second pass),
+// which is why they take EBX/ESI the other way round.
 // @retail 0x202a00
 void __stdcall function_202a00(long arg_0, long arg_1)
 {

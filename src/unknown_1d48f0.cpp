@@ -578,6 +578,12 @@ const dword g_455978[81] = {
 // gives 133 (not source: the trio then colours j, i, k, so retail's i, j, k needs i above j as well). The 278 form is held as a patch by the coordinator. Still
 // needs 0x1d01c0's release helper in a shared header for the first release and a non-steering way to keep 0x11bed0 out
 // of line (BLOCKED-BY 0x11bed0's expansion here).
+// M3 lane 5 r252 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): 0x11bed0 given the
+// transform's position ahead of the copy to arg_11 (`function_11bed0(arg_5, &local_22.position); *arg_11 = ...`) 273
+// (2090 B); a short direction counter 330 (2072 B); the sample point built in a point3f local and copied to arg_11 465
+// (2107 B); the direction table typed `vector3f const [27]` with its float values (no casts at the two reads) 268 (same
+// code); the transform's unit scale stored after the rotation rows 268 (same code). Body unchanged; the keepable
+// route for the first release (0x1d01c0's release helper moved into a shared header) needs an edit in 0x1d01c0's file.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

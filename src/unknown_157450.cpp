@@ -6202,6 +6202,15 @@ void __stdcall function_d6bc0(long object_index);
 // helper's displacement declared at its top 21, the reset displacement declared at the object block's top 21,
 // case 0's distance tested without the named local 21, the reset block's likewise 21, `kind` read ahead of the delay
 // call 21; 1-7 unused locals in the helper or at the function's top 21 each (diagnostic).
+// M3 lane 13 r163 (h2m fast with 0x15c150, MATCH each run; base 29; flag recipe rebuilt 7 at 869 B, its field-test form
+// 172 at 858 B). Allocator reading on the field-test form: `entries` is coloured in the fourth pass at 8 (the loop-top
+// index read 24, both reset arms 16 each, the zero test 16, the index test 12, the countdown's index read 12, the 0xd6bc0
+// argument 8, the 0x15aad0 call 28; -124 over 37 blocks where it is live and not referenced) and takes EDI, so it has to
+// fall to 0 or below to stay in memory as in retail; a forced-ranking search over 12 single decisions again found 24 at
+// best (the object block's table pointer in EDI). New forms: the placement's kind byte read at each use with no `kind`
+// local 29 on main's body, 172 on the field-test form (same code each); the object's NULL declared ahead of the engine
+// lookup and the 0x15a090 call 207 (879 B) on main's body, 201 (864 B) on the field-test form; the field-test form with the
+// flag declared false at the loop top 172 (same code). Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

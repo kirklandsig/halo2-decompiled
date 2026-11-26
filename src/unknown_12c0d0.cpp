@@ -1225,6 +1225,14 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // `restricted`, or renamed `bitmap_texture`/`a_texture`/`m_restricted`/`z_wait` all 191/193/220); `level` `if` 214/191;
 // `do-while` calling `12c990` 191; `(dword)block_index & 0xffff` 193; pointer-range loop 223/214; `restricted` before
 // `result` 202/200; bit-shift flags with direct `bitmap` 193. Body unchanged.
+// M3 lane 15 r151 (H2M_FAST with 0x12c960 and 0x12ccf0, MATCH throughout): the block index read at each use in the
+// block loop (no local) 193 (same code: the reads merge); the block's time store through a file-local inline taking
+// the index 193 (same code); the result declared first 194; the parameter copy declared after the result 193; the
+// scale as one sum 195; the shared-texture getter setting its result ahead of the build call re-measured 220.
+// Readings: retail masks the block index twice in the loop (`mov ecx, eax; and ecx, 0xffff` for the entry, `and
+// eax, 0xffff` for the physical block), which every source spelling here merges into one mask; a forced-ranking
+// search puts the result's second web in ESI for 183 (then the bitmap takes EBP as retail, but the zero register
+// in EBX after the load call and the loop's homes still differ).
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

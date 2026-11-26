@@ -351,40 +351,6 @@ bool function_2461a0(
 	return result;
 }
 
-// score 70 (was 73): the plane rows go through vector3f_add_scaled, whose pointer parameter gives the axis i load
-// retail's place (loaded ahead of `back`, then multiplied). Left: the a/b and uv/vw register pairs and the vw i row.
-// At 73 (in a full build with stand-in SDK headers, was 104): the capsule's vector is read through the capsule
-// at each use instead of through a `v` pointer local, and the first product is dot3f.
-// Earlier (104, was 106): every sum now associates as in retail (the compiler reorders unparenthesized
-// sums of three products); what still differs is scheduling of the first block: retail multiplies
-// v.k by u.k from memory before summing a, and keeps a in XMM3 and uv in XMM0 (ours XMM4, XMM1), which
-// swaps registers to the end. Tried: any subset of the four parenthesized sums (151-214), w computed
-// k, j, i by hand (211), a or uu parenthesized (180, 206), uv unparenthesized in any order (214),
-// uv as += statements (182), a/uv/uu statement orders (104-217), den = a * uu (104).
-// Round 248: the allocator ranks vw (197) above uv (185) and b (160) above a (153), so vw takes XMM0 and b XMM3
-// first; a forced-ranking search that lifts a to 161 alone gives 38 (a in XMM3; uv/vw still swapped and the
-// vw i row's operands reversed). By the priority sums, one fewer candidate in the w/uw/vw/b/c block would flip
-// both pairs (vw -16, b -12, a -4, uv -2; not reached by any form). Tried: the direction parameter at each use
-// instead of `u` (205), c from length_sq3f(&w) (205), uw and vw from dot3f (211), vw alone from dot3f (206), uw
-// alone from dot3f (206), disc as `b * b - den * c` (73).
-// Round 171: the ranking in the allocator's own words: uv 185 = 144 (first block, 9 float candidates) + 22 + 4 + 32 - 17,
-// vw 197 = 176 (second block, 11 candidates) + 32 + 4 + 4 - 19, a 153, b 160 = 132 + 28; one more float candidate
-// referenced in the first block would give uv 201 > vw 197 > den 196 > a 165 > b 160, retail's xmm0..xmm4; a forced
-// uv/vw flip alone is worse (209). Tried: vw as dot3f(&w, &capsule->vector) 205 (844 B); uw and vw both w-first
-// dot3f 210; q from vector3f_add_scaled(&w, u, t_enter, &q) 76; along from dot3f(&capsule->vector, &q) 207,
-// dot3f(&q, &capsule->vector) 208; first-block screens (uu from dot3f, a from dot3f, den as a * uu - uv * uv, uu
-// computed first) leave the ranking or make it worse.
-// Round 233: the operand order of each product follows its operands' ranks; a load through the capsule's own
-// offset ranks lowest, a load through an inlined helper's pointer parameter ranks by that parameter's number, so
-// the helper fixed the plane i row; the vw i row (w.i ahead of the axis i) needs the same. Tried, on the plane
-// helper unless given: vw from shape_dot_reverse(&capsule->vector, &w) 206 alone (vw then exact, but uw's j/i pair
-// flips), 112 with the plane helper, and with uw from dot3f(u, &w) or dot3f(&w, u) 92/92; vw from
-// shape_dot_reverse(&w, &capsule->vector) on the plane helper 113; the plane helper with uw
-// from dot3f 209; plane->d from dot3f + radius 207, from shape_dot_reverse + radius 207; q from vector3f_add_scaled
-// 73; along from shape_dot_reverse 69 and with the q helper 69 (both new wrong rows; the drop is pad and relocation
-// noise). The ranking is unchanged (vw 197, uv 185, den 180, b 160, a 153): the second block's eleven float
-// candidates are disc, the radius load, the zero, b, vw, the three w values, den, uv and a; uw and c are computed in
-// place and do not count.
 // @retail 0x246360
 bool function_246360(
 	vector3f const *direction,
@@ -393,19 +359,20 @@ bool function_246360(
 	real *t,
 	plane3f *plane)
 {
-	vector3f const *u = direction;
 	real a = length_sq3f(&capsule->vector);
-	real uv = dot3f(&capsule->vector, u);
-	real uu = length_sq3f(u);
+	real uv = shape_dot_reverse(&capsule->vector, direction);
+	real uu = length_sq3f(direction);
 	real den = uu * a - uv * uv;
-	if (den == g_45dbd8)
+	if (den == 0.f)
 	{
 		return false;
 	}
 	vector3f w;
 	vector3d_from_points3d(&capsule->origin, start, &w);
-	real uw = (u->j * w.j + u->i * w.i) + u->k * w.k;
-	real vw = (capsule->vector.k * w.k + capsule->vector.j * w.j) + capsule->vector.i * w.i;
+	real uw = direction->j * w.j;
+	uw += direction->i * w.i;
+	uw += direction->k * w.k;
+	real vw = shape_dot_reverse(&capsule->vector, &w);
 	real b = vw * uv - uw * a;
 	real c = ((w.k * w.k + w.j * w.j) + w.i * w.i - capsule->radius * capsule->radius) * a - vw * vw;
 	real disc = b * b - c * den;
@@ -470,9 +437,9 @@ bool function_246360(
 	}
 	*t = t_enter;
 	vector3f q;
-	q.i = u->i * t_enter + w.i;
-	q.j = u->j * t_enter + w.j;
-	q.k = u->k * t_enter + w.k;
+	q.i = direction->i * t_enter + w.i;
+	q.j = direction->j * t_enter + w.j;
+	q.k = direction->k * t_enter + w.k;
 	real along = ((capsule->vector.k * q.k + capsule->vector.j * q.j) + q.i * capsule->vector.i) / a;
 	real back = 0.f - along;
 	vector3f_add_scaled(&q, &capsule->vector, back, &plane->n);

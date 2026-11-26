@@ -58,8 +58,8 @@ struct s_object_view
 	byte unknown08[0x14 - 8];
 	long parent_index;
 	byte unknown18[0x30 - 0x18];
-	point3f bounding_sphere_center;
-	real bounding_sphere_radius;
+	point3f bounds_center;
+	real bounds_radius;
 	point3f world_bounding_sphere_center;
 	real world_bounding_sphere_radius;
 	point3f dynamic_light_sphere_center;
@@ -797,7 +797,7 @@ bool __stdcall function_bdef0(long object_index)
     bool from_physics = false;
     if (component_index != NONE && ((1 << object->type) & 0x800) && TEST_FIELD_BIT(object->physics_active))
     {
-        from_physics = function_1d44f0(havok_component_get(component_index), &object->bounding_sphere_center, &object->bounding_sphere_radius);
+        from_physics = function_1d44f0(havok_component_get(component_index), &object->bounds_center, &object->bounds_radius);
     }
     if (!from_physics)
     {
@@ -805,7 +805,7 @@ bool __stdcall function_bdef0(long object_index)
         point3f center;
         real_point3d_set(&center, definition->bounding_offset.x,
             definition->bounding_offset.y, definition->bounding_offset.z);
-        point3f *output_center = &object->bounding_sphere_center;
+        point3f *output_center = &object->bounds_center;
         if (matrix->scale != 1.0f)
         {
             center.x *= matrix->scale;
@@ -818,12 +818,12 @@ bool __stdcall function_bdef0(long object_index)
             matrix->forward.j * center.x + matrix->position.y;
         output_center->z = matrix->up.k * center.z + matrix->left.k * center.y +
             matrix->forward.k * center.x + matrix->position.z;
-        object->bounding_sphere_radius = object->scale * definition->cull_radius;
+        object->bounds_radius = object->scale * definition->cull_radius;
     }
     real secondary_radius = definition->dynamic_light_sphere_radius;
     if (secondary_radius > 0.0f)
     {
-        point3f *primary_center = &object->bounding_sphere_center;
+        point3f *primary_center = &object->bounds_center;
         point3f *secondary_center = &object->dynamic_light_sphere_center;
         secondary_center->x = primary_center->x + definition->dynamic_light_sphere_offset.x;
         secondary_center->y = primary_center->y + definition->dynamic_light_sphere_offset.y;
@@ -832,8 +832,8 @@ bool __stdcall function_bdef0(long object_index)
     }
     else
     {
-        object->dynamic_light_sphere_center = object->bounding_sphere_center;
-        object->dynamic_light_sphere_radius = object->bounding_sphere_radius;
+        object->dynamic_light_sphere_center = object->bounds_center;
+        object->dynamic_light_sphere_radius = object->bounds_radius;
     }
     point3f center;
     real radius;
@@ -844,8 +844,8 @@ bool __stdcall function_bdef0(long object_index)
     }
     else
     {
-        center = object->bounding_sphere_center;
-        radius = object->bounding_sphere_radius;
+        center = object->bounds_center;
+        radius = object->bounds_radius;
     }
     bool moved = true;
     if (active)

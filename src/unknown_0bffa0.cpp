@@ -1390,6 +1390,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // and assigned 701 (2977 B); the shape kind in a `short` local for the count and the arm test 661 (2807 B); the sphere
 // arm's position copy ahead of the up negate 368 (2828 B); the loop bound read into a local 663 (2799 B); the sphere
 // arm's scale store ahead of the position copy 306. Body unchanged.
+// M3 lane 16 r194 (h2m fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290): the reference axis
+// as one conditional of the two copies 643 (2797 B); the entry pointer and its memset ahead of the bounds copy 305; the
+// sphere arm without its two false flag stores 670 (2766 B: retail stores them after the clear); the reference held as a
+// pointer to the chosen table vector 685 (2757 B); the copy through a conditional pointer 654 (2785 B). Re-measured
+// (listed): the tail flags in member order 290; the corner loop 528. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

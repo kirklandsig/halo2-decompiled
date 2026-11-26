@@ -1145,6 +1145,16 @@ void function_245400(s_source_245400 const *source, long index,
 // copies, rows up + left + forward) 172 (791 B: it gives retail's copy-before-test select), 0xe59e0's file's 172; that
 // helper on main 163, on the 190 form 170. On main's statement order: record pointer and codes through the records 213,
 // with named indices 213, with the shifted sides 225 (762 B); named indices alone 163. Body unchanged.
+// M3 lane 4 r266 (H2M_FAST with 0x245aa0, 0x245400, 0x244de0, 0x142640, 0x142570, MATCH unless noted; control 163; lane 5
+// r213's saved lead re-measured 50 at 789 B). On the lead, the first three parameters in each of the five other orders
+// (definition, declaration and the 0x245aa0 call): source/matrix/index 50, index/source/matrix 50 (0x245aa0 16),
+// index/matrix/source 50 (0x245aa0 16), matrix first 163/163 (754 B). The existing matched vector transform 0x142640
+// (copy, scale under the test, rows) called for the edge: on this body 377 (613 B), on the lead 359 (631 B), each with
+// the point through 0x142570 too 576/560: it stays a call, its file being /Ob1. An `inline` re-declaration of it in
+// this file 359 (still a call). LEAD, not kept (`inline` on its definition is a held form): with `inline` on 0x142640's
+// definition, on this body 163 (same code), on the lead 110 at retail's 783 B: the inlined copy gives retail's scale
+// select (copies, `jnp`, scaled copies) row for row; left are the three rows' operand sides in both transforms and the
+// cross, all operand-rank ties (the field loads' ranks fall on a mod-8 grid).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

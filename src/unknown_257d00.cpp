@@ -3013,6 +3013,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // the state parameter's address 604 (forwarded); the request flag set after the type store in all four request
 // cases 604 (same code); the switch's type as a named local also used by the two type-19 tests 558 on the lead (the
 // actor's piece 172, still exchanged) and 539 on main (2432 B); that with case 18's two references read in place 553.
+// M3 lane 1 r173 (fast with 0x258a00, 0x258cf0, 0x25a130; control 429): in the pass that colours them the actor ranks
+// 184 over the state's 180 on main; the turn vector as an aggregate copy drops the actor to 167 against the state's 178
+// (exchange), and a forced-ranking search with the actor first then gives 457 at best. Forms: that aggregate copy 608
+// (2404 B), without the turn_facing pointer 608; case 4's facing read straight from the state 611 (2400 B); both 623
+// (2384 B); case 1's range argument formed from the state view's +8 member 429 (same code), with the aggregate copy 608.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
