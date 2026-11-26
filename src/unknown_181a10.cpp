@@ -1315,6 +1315,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // distance sum written radius first 238 (same code); the publish test as `contact->normal.k > scale && valid` 283
 // (1243 B); `index` and `other_index` declared separately, other_index first 237 (one point, a declaration order);
 // the root test with `root->entity == NULL` on its own return line 238 (same code). Body unchanged.
+// M3 lane 5 r250 (fast; control 238): the root's type compared constant-first (`1 != root->type`) 238 (same code); the
+// classifier clamp with the upper bound tested first 238; the classifier as the plain range test `value < 1 || value >
+// 16` 355; the root walk written in the body instead of the walk helper 238 (same code); the key adjustment through a
+// named first->next node 310. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

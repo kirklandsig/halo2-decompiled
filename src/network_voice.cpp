@@ -4129,6 +4129,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // bit-test and clear blocks and loses 4, 6, 2 and 8 in the kind test, members load, talker and delivery blocks). On the
 // cursor form: the cursor stepped first 167; the size test as `packet_size > size` 164; the counter declared outside the
 // loop 164. On main: `size -= consumed` after `consumed = 2` 139 (same code); the route brace-initialised 139 (same code).
+// M3 lane 3 r314 (H2M_FAST with 0x564c0, MATCH each run; control 139, masked-aligned 50; cursor form re-measured 164 at
+// 478 B, masked 39, with the same ranking: channel 14 against member 20). The cursor declared ahead of `consumed` 139
+// (folds back to this body's code); the cursor form with `member` declared once outside the loop 164 (same code); the
+// cursor form with the non-relay arm first 157 (488 B); the non-relay arm first on this body 162 (490 B); the cursor
+// form with the kind test ahead of the member call and the NONE test alone after it 145 (478 B, member still in EBP).
+// Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

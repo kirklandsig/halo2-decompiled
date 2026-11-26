@@ -232,6 +232,13 @@ inline real function_10e8e0(real t);
 // ahead of the clear); the first-key value assigned before the first-key time 17 (fixes the preheader load order,
 // swaps the body order); the four endpoint floats declared in the channel block 12, with `used` after the clear 11.
 // A forced-ranking search on the 11 form finds nothing lower: the push placement is not an allocator decision.
+// M3 lane 2 r155 (fast): the scheduler generates the ESI and EDI saves first in the clear's block (both ahead of the
+// `used` store and the clear), so the ESI save follows them only if it is generated in a later block; retail is the
+// only function in the image with a clear followed by a sunk ESI save. The six preheader loads tie in the scheduler and
+// keep their generated order. Tried: the index test reading `output->indices[i]` at each use 470 (1647 B); `used`
+// declared after the array 12 and the counter declared ahead of the loop 12 (same code each); the index as a signed
+// char 440 (1632 B); the fill loop as while 382 (1536 B, not unrolled) and as do-while 685 (diagnostics); the last-key
+// pointer as if/else 265; the first key through `keys->` 12 and the time products scale-first 12 (same code each).
 // @retail 0x10de40
 void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, real time, real blend, bool skip_special)
 {
