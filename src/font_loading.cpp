@@ -1096,6 +1096,13 @@ static inline word font_character_pixel(long alpha, long color)
 // with pair and fill windows 184/184/184/184; cursor distance with count-only
 // tally 220/287; count advanced at pair or all single stores 155/155.
 // NOT kept: all raise the score and change the matched pixel-copy caller.
+// GB15 (fast with 0x140960/0x122540/0x122570 MATCH; control 41 at 508/504 B, +0x24; 31 trials, body unchanged):
+// Clean control flow on score-41 base: type==3/else-if type==2 chain 191; type<=1 first 175; no length local with
+// remaining-=3/source+=3/continue 84 or -=2/+=2 88; type==2 before else 100. Literal probes on score-12 base (504 B):
+// source[1] shift-split <<8 outside + (word)source[2] 11 (504 B, movzx ecx/eax; shl; or); (word)source[2] + (dword)s1<<8
+// (either order) 12; source[1] mask-split, source[2] word mask-split / outer word cast, s1&0xff<<8, long s1<<8, word
+// ptr>>8, word value, (short)source[2] with dword/long/short s1, (word)s2|0, 2-step loop, and &0xff00 all fuse to 90
+// (496 B); 4-channel word ARGB 135; (word)/(short) over dword shift-split 102; color-then-pixel 178/192; &0xffff 82.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

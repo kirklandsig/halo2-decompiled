@@ -3984,6 +3984,13 @@ enum
 // combined event mask 473, rolling damage initialized first 484.
 // NOT kept: the counted append ties and the rolling damage form only fixes length.
 // The child-permission homes and parent count register still differ.
+// GB15 (fast with 0xd9b60/0xdb210/0xd8cb0; control 309 at 1885/1880 B, +0x21, fr=0xf4; 14 trials, body unchanged):
+// consistent accumulator.field_4_2-> replacing all info-> after assignment / in damage block / after 0xd9110: 324 each
+// (1883 B, fixes all 5 flag homes and definition/info homes, but 0xd8119 reads [eax] where retail reads [esi]); + body
+// first 322 (+0x32), + record-order node stores 399 (1880 B), + all retail orders 396 (1880 B, +0x32), + while loop 324,
+// + i > NONE 329. Dropping `current` (DAMAGE_OBJECT at owner stores) 466 (1902 B, naturally recovers retail's `lea eax,
+// [reg - 1]; test eax, eax; jl` loop head), + consistent accumulator.field_4_2-> 462. `kill` after owner stores 396
+// (1888 B, al 221); `(bool)` cast on kill 309; named `damage_tag` local 309; `if/do-while` parent walk 309 (all same code).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
