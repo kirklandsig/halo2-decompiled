@@ -3415,6 +3415,13 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // NONE) return;` and `return` at the hit 30 (all the same direct EBX load). A forced-ranking search (12 decisions) moves
 // nothing below 20, and that only by forcing a register for a temporary this build does not have: retail's head is a
 // separate load temporary copied into the id, a difference in the intermediate code, not in register choice.
+// M3 lane 6 r246 (h2m fast with 0x2c9a58 and 0x2c9ac4, both matched in each; control 30): the map entry bound to an
+// `s_map_entry const &` for the lookup's argument 30; the iterator declared at the top with its index store ahead of
+// the id read and the other two stores in the guard 30 (first difference +0x6); the lookup's result kept as its own
+// return type and read through the definition view at the compare 30; the matched datum index named before the
+// selection 30; the walk's call tested `!= false` 30 (all the same direct EBX load). Re-measured: the iterator's stores
+// pool, datum index, index 29; `return` at the hit 30; `if (map_id == NONE) return; else` 30; the iterator by
+// aggregate initialiser 13 (84 B, the extra datum store).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
