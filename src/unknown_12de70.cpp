@@ -830,6 +830,19 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // stored at the end of the loop body 68 (266 B); the release's physical block named inside the arm 27; the arm's
 // release reading the guard's physical block local re-fetched in place 27; one physical-object local at the guard's
 // top for the time fix and the arm's page shift 84 (266 B); the loop's block local as a const pointer to const 27.
+// M3 lane 4 r262 (h2m fast with 0x12e210, which stays matched; control 27, round 85's field-pointer form re-measured 14
+// at 266 B). Tracer reading: on this body the loop's block (one value for the test and the release) is coloured after
+// the task count (56 against 44) and takes ESI by its call-argument preference, as the count is dead by then. On the 14
+// form the arm's second load is a value of its own, and the code generator emits it after the address chain (last in
+// its scheduler region), when EDX already holds the pool data, so it stays a load; retail's `mov esi, edx` before
+// `mov edx, [eax + 0x44]` reads as a copy made before that chain (it delays the data load by an anti-dependence).
+// Forms: the count named and stored after the block read (the count then live across it) 73 (266 B: the block's ESI
+// preference pushes the count to EDI and the cache block to EBP), that with the flag read into a named bool ahead of
+// the store 73; the count stored after the read with the arm on the field pointer 39 (268 B: count ESI as retail, the
+// test's block in EAX and its flag in CL, the store still after the read), with the arm reading the field directly 39;
+// the arm's block through the cache-block getter (0x12e210's spelling) 115 (293 B), with the count stored after the
+// read 115. The release callee is a contributor's /Ob1 function: an inlined callee taking the block (whose parameter
+// copy would be retail's `mov esi, edx`) is not available.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

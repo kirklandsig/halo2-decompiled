@@ -312,6 +312,14 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // as a named `s_3dd10_object_header *` local 21; the sample time named (`dword`) for the elapsed time and the NONE test 21
 // (same code each); `else update = false;` as a third arm after the hidden return 222. Re-measured: update ahead of force
 // 218, the not-force arm first in braces 25, the object looked up ahead of update elapsed 215.
+// M3 lane 4 r262 (h2m fast with 0xd1850 and 0x3d2c0, both MATCH; control 21). Frame packer reading: the object's
+// home counts four references before allocation (its store, one reload in each arm of the force test, the late reload)
+// and the force flag's three, so the object's slot is made first and sits lowest; retail's three final references to
+// the object's home (store, force-arm reload, late reload) would rank it below the force flag. A forced-ranking search over 102
+// single decisions on the object's candidates (pieces, priorities, splits) finds nothing below 21, so the EAX head piece
+// is decided before allocation. Forms: force typed `byte` 106 (833 B); force written with `== false` tests 21 (same
+// code); force started true and cleared under `if (initialized && valid)` 49 (830 B); the hidden test through a `(bool)`
+// cast 21 (same code); the force arm as `update = force;` 52.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
