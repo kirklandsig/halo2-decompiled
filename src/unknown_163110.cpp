@@ -1460,6 +1460,15 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // `total += 2`/`cursor += 2` after k-loop 130-138; `src` ptr 10/471; `index0` local 11/4/2; dropping `outside0` alone
 // 12/9; dropping `t` 11/2; direct `vector3f_negate` into `planes[1].n` 467; `if` `near_distance` 73; `for` segment loops
 // 145/1869; `plane_distance_to_point` in `outside[i]` 49 / in rpd 13/6; rpd early return 248 / `== 0` 15 / 3 named terms 8/6.
+// M3 lane 15 r149 (h2m fast and a reduced image with 0x320b0, 0x1648d0, 0x168b40, 0xb7740; control 5). Reading the
+// allocator's operand ranks on the `total`-first form (2, only the clip distance's y*j left): the y*j product's two
+// loads tie (level 6 each; plane i/j/k at 1/6/0, start point x/y/z at 0/6/0) and the tie resolves start point first.
+// Tried on that form: the helper's first term written `plane->normal.j * origin->y` 2 (5 on main; 0x1648d0 MATCH: ties
+// ignore text order); 0-7 unused longs at the top x 0-3 paren pairs on the near sum, best 2 (others 49-232); 1-7 unused
+// longs after the projection loop or in the clip block 2 or 130 (the tied pair keeps its levels); outside1 named 210;
+// the culled test unparenthesised 2; no plane cast 2; p1 declared first 4; `real const t` 2; intersection declared
+// first 2; one ternary store 351; `++segment` 2; the delta written out in all six orders 255-256 (first +0xb3); the
+// clip call's start point as `&local_points[segment * 2]` 6, its plane as `&planes[pass]` 278, both 278.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

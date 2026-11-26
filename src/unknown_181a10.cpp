@@ -1310,6 +1310,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // classifier's result preset to 1 and bound by reference 325 (1243 B, aligned 212: `mov ecx, 1` and `mov ecx, 0x10`
 // preloads and the separate third load, but the two relational compares stay value-first and the zero test's load
 // is still the classifier's). None kept: each raises the count and each is a match-only form.
+// M3 lane 1 r171 (fast screen with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the classifier
+// helper returning `limited != value` 320 (1243 B: the in-range compare folds away, not retail's three loads); the
+// distance sum written radius first 238 (same code); the publish test as `contact->normal.k > scale && valid` 283
+// (1243 B); `index` and `other_index` declared separately, other_index first 237 (one point, a declaration order);
+// the root test with `root->entity == NULL` on its own return line 238 (same code). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
