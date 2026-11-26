@@ -2513,6 +2513,15 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // tint named with `multiplied()` as the argument 172 (556 B); `&effect->location` named for the test, set_location and both
 // zone calls 166 (same code); that with the spawn stores as unknown, scale, location 164 (0x178eb0 4 and 0x179020 6, lost).
 // Body unchanged.
+// M3 lane 2 r155 (fast with 0x178eb0/0x179020, matched throughout; control 128). The matched 0x174a30 writes this sequence
+// as retail orders it: the colour read into a local ahead of the spawn stores, the 0x1751d0 result named, and both type
+// queries as the colour call's arguments. Here: that shape with both colours read early 187 (568 B, frame 0x48: both
+// colours spill), without the named result 187; the named result with both queries as arguments and the colours read at
+// the call 146 (552 B); that with colour B read early 130, with colour A read early 130 (552 B, frame 0x44, everything
+// from the colour call on is retail's; colour A then sits at retail's frame +0). Left on the colour A form: retail
+// reads colour B early into EDI and keeps the system in ESI only up to the 0x1751d0 call; ranking reading on the
+// both-early form: colour B 36 (two references in the nine-candidate block) below the system's 52, so the system takes
+// EDI and colour B spills. A lead for a match only (one-use named result and a moved read).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4116,6 +4125,24 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // re-measured 108 (0x176f60 25): its frame then has no argument home, so the tint and the flag that main keeps in the
 // effect index's slot (as retail) go to frame cells, and the effect index arrives in EAX with the system index in ECX;
 // with an unused initialised local at the top or in the block 108 each, with the colours B first 108. Body unchanged.
+// M3 lane 2 r154 (fast with 0x176f60; control 93, caller matched unless given). Match-only leads: both type queries as the
+// colour call's arguments with the second 0x1751d0 result named 68 (334 B; registers and convention retail's, left the frame
+// 0x4c against 0x54 and the cached word mode); that with the particle-location cursor as a spawn record's location index
+// 54 (334 B, frame 0x54 as retail: the record's 8 unused bytes are retail's gap at +0x14; only the cached mode is left,
+// retail spills the definition and reads the mode at each call). Queries as arguments without the named result 120 (325 B,
+// 0x176f60 25). On the 54 form, the mode read at each call 103 (331 B, 0x176f60 25): ranking reading, the effect index
+// (112, entry block of eight) is then coloured before the effect pointer (107: the colour block has ten candidates, not
+// the cached form's eleven, so the effect loses 6) and takes EAX, so LTCG passes it in a register; with an unused
+// initialised local at the top or in the block 103 each (diagnostic); with the tint named 126 (352 B, caller matched:
+// the convention returns but the definition takes EBX and the system EDI); with both queries named 127 (357 B).
+// Body unchanged.
+// M3 lane 2 r155 (fast with 0x176f60; control 93). The spawn-record lead rebuilt: 54 (334 B, first +0x57; its entry is
+// retail's down to the effect pool base in EBX). On it: the mode read at each call 103 (331 B, 0x176f60 25); that with the
+// effect index read once through its own address 86 (337 B; the effect index stays on the stack but the system index
+// arrives in ECX, 0x176f60 18); that with the parameters declared (effect index, system index) at the definition, the
+// declaration and the 0x176f60 call 91 (340 B, 0x176f60 matched: retail's convention, system in EAX, but the address read
+// loads the effect index first and folds the pool base, so EBX is pushed late); that with the system looked up first, or
+// with only the address taken ahead of the system lookup, 116 each (342 B). Body unchanged.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

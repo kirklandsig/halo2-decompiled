@@ -617,6 +617,14 @@ __forceinline bool function_184448(long arg_0)
 // material count is loaded into EBX ahead of its compare, and the vertex loop keeps the two axis offsets pre-scaled
 // (`axis * 4 - 8` from a pointer stepped through the vertex array) with the table row offset saved for the sample loop,
 // which is the axes-read-at-each-use form already listed at 974/970. Still BLOCKED-BY 0x48e70 for the reloads after its calls.
+// M3 lane 5 r251 (fast screen with the callers 0x9cca0/0x184060/0x184250, all MATCH each run; control 965). Reading of
+// the head: retail keeps the record pointer (local_5) in memory from the start (one immediate NULL store, +0x98) and the
+// material record (local_9) in memory as well (+0xe0, NULL stored from a zeroed EDX). Forms: local_5 started NULL at its
+// declaration with the NONE arm setting local_6 only 966; the material count named ahead of its compare (retail loads
+// it into EBX first) 965 (same code); the start face as a named element pointer read at +6 965 (same code); the three
+// together 966; local_5 and local_6 as two conditional initialisers 965 (same code). 0x48e70 is machine 3's now, but its
+// lever (its register use hidden from link-time code generation: an `inline` definition or a separate non-LTCG build)
+// is a held or flag-only form, so this stays BLOCKED-BY 0x48e70.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

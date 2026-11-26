@@ -94,6 +94,15 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
 // the existing vector3f_add_scaled for the update and the length squared written twice all give the same code (205).
 // A forced-ranking search on it: the three segment reloads tie (i, j, k by creation); j one below k gives retail's
 // segment registers (197, update order still differs), j above the rest 29.
+// M3 lane 2 r155 (fast). Allocator reading on the i, j, k dot form: the three segment reloads are second-pass pieces
+// with equal weight (110 each: the length block, the dot block and the update block), so creation order decides; the
+// updated i and j of the first block are first-pass values (144 each) coloured before them, and the update block
+// computes k last in the negated scale's own register where retail computes it first in the segment k register (the
+// second block runs i, k, j in both builds). A forced-ranking search: the updated i dropped below 48 gives 25, below
+// 110 gives 35; the segment j raised to 170 gives 29. Tried on that form (fast): the update through the existing
+// vector3f_add_scaled into a separate vector 205, in place with `-t` as the scale 205, the squared distance as
+// dot3f(&delta, &delta) 205 (same code each); the update as vector3f_scale into an offset then vector3f_add 243
+// (1560 B). On this body: the update through vector3f_add_scaled in place 78 (same code); into a separate vector 222.
 // @retail 0x1a83e0
 bool __stdcall function_1a83e0(long arg_0, short *arg_1, real *arg_2, point2f *arg_3, bool *arg_4)
 {

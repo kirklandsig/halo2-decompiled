@@ -2411,6 +2411,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // 551 (same code); as three divisions by `(real)count` 578 (2891 B); that with the tallies declared edge count, edge
 // radius, face count, face radius 577; that with the normal-ray arm first (`if (use_normal)`) 536 at 2882 B (an arm swap:
 // lead only, held as a patch); that with `radius * radius` at its one use 543 (2886 B). Body unchanged.
+// M3 lane 4 r265 (fast screen, control 551 at 2877 B): `result = true` first in both average arms 536 (a statement
+// move: lead only; the tail's count and output loads take retail's scratch registers); the clamps and count
+// increments ahead of the sum adds in both arms 570 (2887 B); the prism index declared with the tallies 551 (same
+// code); `face_sum = edge_sum = *g_468788;` 551 (same code); the final tests as `>= 1` 549 (2879 B); the averages
+// as the sum scaled in place by vector3f_scale and then copied out, result last or first, 642 (2940 B, the copy
+// stays); the midpoint rows z, y, x 551 (same code); the half rows k, j, i 552; the sum adds z, y, x 551 (same
+// code). Retail colours the midpoint's x, y, z into XMM0, XMM1, XMM2 at the sum adds, ours the other way round.
+// Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

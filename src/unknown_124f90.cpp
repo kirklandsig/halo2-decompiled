@@ -1933,6 +1933,14 @@ long function_2197f0(real gain);
 // after the previous-ambience block, with the current arm's clamp in place (t = ambience_fade / fade_in, then 1.0f unless
 // 1.0f > t): 54 (678 B), first difference +0x53; the gain bypass and the tail cross-jump are gone, elapsed is still in
 // XMM2 and the fade-out time is reloaded. Not kept (a one-use local and a flag).
+// M3 lane 11 r172 (reduced image with 0x221810, control 87; aligned 54). Lead: the first arm's clamp as a ternary,
+// `real t = 1.0f > time * inverse ? time / ducking->fade_in_time : 1.0f;` (or the same as an if/else, both 143 at 681 B,
+// aligned 53) gives retail's shape there exactly: the division made before the compare and 1.0 moved only on the other
+// path (`ja`, `movaps xmm1, xmm4`); left in that arm are the colours (elapsed XMM2 for retail's XMM3), the fade-out time
+// reloaded from memory where retail keeps it in XMM1 from its test, the gain added from memory where retail loads it
+// into a register, and the arm-3/arm-4 join. On the ternary: without the fade-in copy 162 (648 B: the division merges
+// into the reciprocal), with a fade-out local used by both tests and the product 148, with both 171 (644 B). On main:
+// that fade-out local 92, with the inverse from the field 98 (683 B).
 // @retail 0x127010
 long function_127010(short class_index)
 {

@@ -3186,6 +3186,11 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // submission predicate for first/second/both 369/368/368. Explicit unsampled
 // arm for first/both 369/368. NOT kept: both copies still expand at 1595 bytes
 // and the entry register allocation diverges earlier.
+// M3 lane 6 r248 (H2M_FAST with 0x235a0/0x23600/0x22850/0x23ca0/0x23540/0x73360; control 354 at 1595 B; body unchanged):
+// retail's two sample blocks keep the orders written here (first: copy, sample source, determinant, inverse, rotations;
+// second: copy, determinant, inverse, sample source, rotations). Forms: the sample flag initialised from the test
+// directly 384; the bucket pair read through a short pointer 354 (same code); the zero-size exit as a nested test
+// around the allocation 354 (same code); the direct flag with each of those 384/384.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3637,6 +3642,13 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // and bias/half-scale loops, separate scale/bias and half-scale loops, or three loops:
 // 339/333/333/339/339/333/339/339. NOT kept: the loops shorten the body and raise the score.
 // The x87 store still leads the SSE subtraction in the restored form.
+// M3 lane 6 r248 (H2M_FAST with 0x144f0/0x1cc30/0x2a2f0, all MATCH; control 54; body unchanged): the scheduler issues an
+// x87 and an SSE instruction in the same cycle; up to the first corner's 0.5 multiply both builds emit the same pairs,
+// and from the contested store on retail emits the SSE instruction of each pair first, which is what our order gives
+// if every x87 step from that store on were one cycle later (the multiply-to-store latency is 3 cycles here). Forms on
+// round 139's extra-pair lead: the pair alone 54, the two trig values passed by const reference 54, the scale by const
+// reference 54, the second statement written `1.0f + (...) * scale` 54, a matching extra pair in the second
+// statement 89; the trig values by const reference on main 54.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

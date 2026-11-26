@@ -2270,6 +2270,11 @@ void function_27dd10(void)
 // `(local_2 & 1) == 1` 2 (0x288570 3, 0x289580 78). quaternion_multiply's sign mask as a float array (a float
 // constant in the intermediate code) 2 here, 0x281b60 245, 37 matched samplers lost; the mask as `{ 0 }` with its
 // last element stored after 2 here, 0x281b60 297, 37 lost. All restored.
+// M3 lane 13 r162 (H2M_FAST with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): the walk's
+// count as `long const &` with pass 0 given the settings global's node count 292 (1742 B; every sibling regresses); the
+// group end computed at the outer body's top, ahead of the empty-group test, 303; node_destination_get's map entry as a
+// short 382 (1753 B; 0x288570 and 0x289580 keep); the bit-flag pointer selected ahead of the output target 2 (0x288570
+// 3, 0x289580 78); the blend-1 rotation's destination as the cursor cast to the rotation type 2 (same code). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2583,6 +2588,12 @@ void function_2818e0(void)
 // M3 lane 6 r246 (fast over all 78 functions of the file, control 76 of 78; 0x27dff0 2 throughout): the walk trials
 // listed above 0x27dff0's marker, all 2 here; quaternion_multiply's sign mask as a float array 245 (1685 B) and as
 // `{ 0 }` with its last element stored after 297 (1685 B), each losing 37 matched samplers. All restored.
+// M3 lane 1 r172 (h2m fast with 0x27dff0 and the four matched walk users; control 2). Scheduler reading: in the inner
+// loop's latch block the count reload (ECX) and the bit-flags reload (EBX) have equal heights and no use in the block,
+// so they go out in code-generation order, count first; retail has the flags first. In function_288572: the count
+// parameter as `long const` 2, as `long const &` 2 (same code); the group end as `arg_5 + 8 < arg_7 ? arg_5 + 8 : arg_7`
+// 53 (every sampler moves); the outer loop test as `arg_7 > arg_5` 8 (0x285750, 0x288570, 0x289580, 0x28aaa0 6 each);
+// the inner loop test as `local_3 > arg_5` 10 (0x288570 124). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

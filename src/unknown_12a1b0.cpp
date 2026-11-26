@@ -1425,6 +1425,12 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // definition and promotion pointers 2 (same code); a `dword` index 85 (298 B); the curve as `== 0 ? true : false` 2
 // (same code); the definition looked up by `(word)` index 49. By the free-number reading above, the order flips if the
 // curve's dropped AND-1 constant or the fade's index copy were not freed ahead of the first index.
+// M3 lane 7 r232 (h2m fast with 0x126df0, 0x12a810, 0x21be20 and 0x21b870; control 2). The two reloads are an equal
+// height tie in the post-call block and come out in code-generation order (first index, then count). The split pass
+// draws pieces for NONE, zero, 0xffff, the first index, the count, then the two hoisted global loads; the 0x80 constant
+// draws none. Forms: const-qualified parameters 2; the curve as a `short` from `? 0 : 1` 28; the promotion index named
+// `class_index` 2; the ring index named `sound_index` 2; the curve as `(~flags & 0x400) != 0` 4. Diagnostic: five, six or
+// seven dead longs 2 each (no symbol-count phase).
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {
@@ -3142,6 +3148,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // true : false` 597 (same code); `bool alternate = flags & 1;` 597 (same code); `result` declared above `alternate` 597
 // (same code); the resume test as `state == 0 && (flags & 0x10)` 632 (2499 B); the missing-definition path as an early
 // `return true` in place of the final else 779 (2497 B). Body unchanged.
+// M3 lane 4 r265 (plain, control 597): the constant 1 is one allocator candidate from the entry into the loop's
+// start block, live across the whole loop, so it is never given a register; retail reloads EBX = 1 inside that
+// block (flag test, the start call's 1, the fade curve, the fade-in call's 1) and holds it at the entry. Tried:
+// the two guards joined with && 782 (2489 B, 0x18a7b0 lost); `created` declared above `combine_sources` 632;
+// `result = true` ahead of the lookup call 600; the start block's arms swapped (fade arm first) 646; `alternate`
+// inside the definition guard with `result = true` ahead of the lookup 620 (2500 B). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
