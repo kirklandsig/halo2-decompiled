@@ -1743,6 +1743,15 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // the V sum after both scalings 231; v read ahead of u_step 234; the outer vertex's u and v written first 219; the
 // source scale read once into a function-scope local 600. 1..9 unused initialised locals at the top 433..492,
 // 10..32 285 (measured on the 285 body).
+// M3 lane 3 r315 (H2M_FAST with 0x42c50/0x42b20/0x43720/0x43740, all MATCH each run; control 217). Frame view: retail's three
+// top objects are 8-byte spill temporaries (the u step, the V end, case 0's copy of the point's y), ours are the two named
+// 4-byte homes (2 references each, among the density-500 cells) and the 12-byte `first` aggregate, whose home takes case 0's
+// spilled piece (our x copy, retail's y copy). The allocator leaves the u step, v and the V end uncoloured (negative weight:
+// live over the loop, one use per pass). Case 0 forms: the point's position bound to a `point3f const &` for the six reads 212
+// (a reference that only renames a field: match-only; first.z moves to XMM5); x, y, z named in one declaration 385; named in
+// z, y, x order 417; in y, x, z order 353; first and second as aggregate copies with the z offsets applied after 693 (2676 B).
+// The half width computed ahead of the tint block 525 (2588 B); the outer vertex pointer declared at the top of the loop body
+// 217 (same code); both 525.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
