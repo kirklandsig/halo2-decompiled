@@ -4123,6 +4123,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // written `(1 << member) & members` 164; `size -= consumed` after `consumed = 2` with the cursor from `data + consumed`
 // 164; `consumed` declared ahead of the packet size 168; the cursor declared ahead of `size -= 2` 139 (the cursor folds
 // back into `data + consumed`, this body's code). Body unchanged.
+// M3 lane 16 r193 (H2M_FAST with 0x564c0, MATCH each run; control 139). Allocator reading of the packet-cursor form
+// (re-measured 164 at 478 B): the channel loses 2 to 3 in each entry block, 10 in the setup block (ten candidates
+// referenced there) and 5 at the loop head, ending at 14 against the member's 20 (the member gains in its definition,
+// bit-test and clear blocks and loses 4, 6, 2 and 8 in the kind test, members load, talker and delivery blocks). On the
+// cursor form: the cursor stepped first 167; the size test as `packet_size > size` 164; the counter declared outside the
+// loop 164. On main: `size -= consumed` after `consumed = 2` 139 (same code); the route brace-initialised 139 (same code).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

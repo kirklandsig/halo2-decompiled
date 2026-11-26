@@ -6186,6 +6186,19 @@ void __stdcall function_d6bc0(long object_index);
 // declared ahead of the index read 172; the countdown block's index read into the loop-top `index` for its test and
 // 0x158ff0 172; the countdown decremented in the field (`if (--entries[i].value04 == 0)`) 172; 0x15aad0 given
 // `&entries[0]` 172; the reset arms in the other order 172 (all the same code).
+// M3 lane 3 r312 (h2m fast with 0x15c150, MATCH each run; base 29). Lead, not kept (a new helper with one caller): the
+// whole schedule block (zero test, index test, mode switch, delay and its store) as a file-local forced-inline helper
+// taking (entries, i, placement, index, object) with early `return`s where this body has `continue`, called in
+// place of the block: 21 at 869 B, so every failed schedule falls into the countdown block as in retail with no
+// flag or label. Left: the index test on the local (`cmp ebx, -1`, retail compares the field) with case 1's bit in
+// CL, and the reset block's first squared distance now summed j, i, k where retail (and this body) sums k, j, i:
+// with the helper inlined, that displacement's three members get other symbol numbers (k lowest). On the helper
+// form: parameters as (entries, i, placement, object, index) 21, placement first 21, `static inline` 21, an entry
+// pointer for the zero test and the store 21, the index test inside the helper on `entries[i].index` (no index
+// parameter, `short` or `long` i) 21/21 (that read is merged with the loop-top read: still `cmp ebx, -1`), the
+// helper's displacement declared at its top 21, the reset displacement declared at the object block's top 21,
+// case 0's distance tested without the named local 21, the reset block's likewise 21, `kind` read ahead of the delay
+// call 21; 1-7 unused locals in the helper or at the function's top 21 each (diagnostic).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

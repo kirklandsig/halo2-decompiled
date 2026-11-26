@@ -8,6 +8,7 @@
 #include "data_array.h"
 #include "unknown_0259d0.h"
 #include "vector_products.h"
+#include "normalize3d.h"
 #include "unknown_1cec30.h"
 #include "impacts.h"
 #include "unknown_1428b0.h"
@@ -1933,7 +1934,21 @@ void function_2294a0(
 	impact->unknown11 = false;
 }
 
-// score 231 (was 485): the midpoint through the existing vector3d_from_points3d + real_point3d_set (Gemini lane GA
+/* the alignment of an impact's normal with a constraint's */
+static inline real impact_constraint_alignment(s_impact const *impact, s_havok_component_element48 const *constraint)
+{
+	return dot3f(&impact->normal, &constraint->normal);
+}
+
+/* updates an impact from its constraints: position, normal, tangent velocity and peak speed */
+// Matched (was 231): M3 lane 12 r192 applied lane 7 round 230's byte-matching form, whose whole-image losses (0x185be0
+// and 0x24cf66) no longer occur on current main (full check: nothing lost). The form: the keep test's dot through a
+// file-local helper taking the impact and the constraint, the test held in `bool keep`, unknown44 and unknown40
+// cleared before the default position, the midpoint through vector3f_add_scaled, the constraint position sum through
+// vector3f_add, the average and the tangent's scale through vector3f_scale, the relative velocity and the tangent and
+// linear-velocity differences through vector3d_from_points3d, the two dead point-velocity calls into scoped locals
+// and the first rigid body through a pointer local. Earlier notes:
+// Earlier 231 (was 485): the midpoint through the existing vector3d_from_points3d + real_point3d_set (Gemini lane GA
 // round 5, cut down at coordinator review 2026-11-25): retail's 0x70 frame and EBX = &impact->position come back;
 // 1988 B against retail's 1981, first difference +0x248; whole-image check on main 12,400 matched, nothing lost.
 // Earlier 485 (was 485): walked statement by statement against retail 0x228770-0x228f2a (2026-11-05): fields, offsets,
@@ -2068,16 +2083,13 @@ void function_228770(
 			havok_component_get(impact->component_b)->rigid_body_matrix_get(rigid_body_index_b, &matrix);
 			function_2281a1(&matrix, &impact->local_position_b, &position_b);
 			vector3d_from_points3d(&impact->position, &position_b, &delta);
-			real_point3d_set(&impact->position,
-				impact->position.x + delta.i * 0.5f,
-				impact->position.y + delta.j * 0.5f,
-				impact->position.z + delta.k * 0.5f);
+			vector3f_add_scaled((vector3f const *)&impact->position, &delta, 0.5f, (vector3f *)&impact->position);
 		}
 	}
 	normal = *g_4687a4;
-	position = *g_468788;
 	impact->unknown44 = 0.0f;
 	impact->unknown40 = 0.0f;
+	position = *g_468788;
 	if (impact->shape.type == NONE)
 	{
 		real mass_ratio = 1.0f;
@@ -2112,16 +2124,15 @@ void function_228770(
 				distance_squared = delta.i * delta.i;
 				distance_squared += delta.k * delta.k;
 				distance_squared += delta.j * delta.j;
-				if (distance_squared < 0.25f ||
-					distance_squared < 16.0f && dot3f(&impact->normal, &constraint->normal) > g_55c2d0)
+				bool keep = distance_squared < 0.25f ||
+					(distance_squared < 16.0f && impact_constraint_alignment(impact, constraint) > g_55c2d0);
+				if (keep)
 				{
 					impact->unknown40 = MAX(constraint->impulse * mass_ratio, impact->unknown40);
 					normal.i = constraint->normal.i + normal.i;
 					normal.j = constraint->normal.j + normal.j;
 					normal.k = constraint->normal.k + normal.k;
-					position.x += constraint->position.x;
-					position.y += constraint->position.y;
-					position.z += constraint->position.z;
+					vector3f_add((vector3f const *)&position, (vector3f const *)&constraint->position, (vector3f *)&position);
 				}
 				else
 				{
@@ -2137,60 +2148,51 @@ void function_228770(
 	}
 	if (impact->reference_count != 0)
 	{
-		vector3f velocity_a;
-		vector3f velocity_b;
-		real inverse_count;
 		vector3f velocity;
 		real speed_squared;
 
 		impact->normal = normal;
 		function_1201a0(&impact->normal, g_4687b0);
-		havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_a, component, &impact->position);
+		{
+			vector3f point_vel_a;
+			havok_component_rigid_body_point_velocity_get(&point_vel_a, rigid_body_index_a, component, &impact->position);
+		}
 		if (impact->component_b != NONE)
 		{
-			havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_b, havok_component_get(impact->component_b), &impact->position);
+			vector3f point_vel_b;
+			havok_component_rigid_body_point_velocity_get(&point_vel_b, rigid_body_index_b, havok_component_get(impact->component_b), &impact->position);
 		}
 		if (impact->shape.type == NONE)
 		{
-			vector3f relative_velocity;
-			real dot;
+			vector3f velocity_a;
+			vector3f velocity_b;
 
 			havok_component_rigid_body_point_velocity_get(&velocity_a, rigid_body_index_a, component, &impact->position);
 			if (impact->component_b != NONE)
 			{
 				havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_b, havok_component_get(impact->component_b), &impact->position);
-				relative_velocity.i = velocity_a.i - velocity_b.i;
-				relative_velocity.j = velocity_a.j - velocity_b.j;
-				relative_velocity.k = velocity_a.k - velocity_b.k;
+				vector3d_from_points3d((point3f const *)&velocity_b, (point3f const *)&velocity_a, &velocity_a);
 			}
-			else
-			{
-				relative_velocity = velocity_a;
-			}
-			dot = dot3f(&impact->normal, &relative_velocity);
-			impact->unknown50.i = relative_velocity.i - dot * impact->normal.i;
-			impact->unknown50.j = relative_velocity.j - impact->normal.j * dot;
-			impact->unknown50.k = relative_velocity.k - impact->normal.k * dot;
+			real dot;
+			vector3f scaled_normal;
+			dot = dot3f(&impact->normal, &velocity_a);
+			vector3f_scale(&impact->normal, dot, &scaled_normal);
+			vector3d_from_points3d((point3f const *)&scaled_normal, (point3f const *)&velocity_a, &impact->unknown50);
 			impact->unknown44 = function_30bf0(&impact->unknown50);
 			if (impact->unknown44 == 0.0f)
 			{
 				impact->unknown50 = *g_4687b0;
 			}
 		}
-		inverse_count = 1.0f / impact->reference_count;
-		position.x = inverse_count * position.x;
-		position.y *= inverse_count;
-		position.z *= inverse_count;
+		vector3f_scale((vector3f const *)&position, 1.0f / impact->reference_count, (vector3f *)&position);
 		impact->position = position;
 		impact_local_positions_update(impact, rigid_body_index_a, rigid_body_index_b);
-		velocity = component->rigid_bodies.data[rigid_body_index_a].linear_velocity;
+		s_havok_component_rigid_body const *primary_body = &component->rigid_bodies.data[rigid_body_index_a];
+		velocity = primary_body->linear_velocity;
 		if (impact->component_b != NONE)
 		{
 			s_havok_component_rigid_body const *rigid_body_b = &havok_component_get(impact->component_b)->rigid_bodies.data[rigid_body_index_b];
-
-			velocity.i -= rigid_body_b->linear_velocity.i;
-			velocity.j -= rigid_body_b->linear_velocity.j;
-			velocity.k -= rigid_body_b->linear_velocity.k;
+			vector3d_from_points3d((point3f const *)&rigid_body_b->linear_velocity, (point3f const *)&velocity, &velocity);
 		}
 		speed_squared = velocity.i * velocity.i;
 		speed_squared += velocity.k * velocity.k;

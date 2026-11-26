@@ -1354,6 +1354,14 @@ long function_40de0(long index, bool first, bool second);
 // main's material lines and context->active: 189 (1065/1089 B; 0x44ac0, 0x44c90 and 0x402b0 MATCH). The kind re-reads and
 // record->active are second reads (match-only) and the ternary changed nothing; byte reads of +0x16 on this form give 277
 // and 0x44ac0, 0x44c90 and 0x402b0 stop matching.
+// M3 lane 13 r161 (fast with 0x44ac0, 0x44c90 and 0x402b0, MATCH throughout; control 189): the 24 missing bytes and
+// the 12-byte frame gap are the delta vector: retail keeps it in three stack cells across the 0x40e10 call (each
+// component stored as it is computed, read back for the depth), as if that call clobbered every xmm register; ours
+// keeps it in xmm0-2. Diagnostics, reverted: delta in memory 156 at 1089 B (first difference +0x47); 0x40e10 built
+// without link-time code generation gives the same 156 at 1089 B but 0x40e10 itself then differs (3), so that is not
+// retail's form. Forms: the kind word read through `part` at every use, no local 272 (1077 B); the depth through the
+// existing dot3f 189 (same code); the values copy tested on record->active 192 (1062 B), with the dot3f depth 192;
+// delta declared at function scope 189 (same code).
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,

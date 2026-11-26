@@ -9690,6 +9690,8 @@ struct s_unit_melee_collision
 	short bsp_surface_index;
 };
 
+void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forced inline in src/unknown_24f590.cpp */
+
 /* the unit's melee strike: casts a 5 by 5 fan of rays over its weapon's
    melee box along its aim, keeping the best hit (a biped first, else the
    nearest object; the first surface otherwise), picks the melee damage by
@@ -9704,7 +9706,9 @@ struct s_unit_melee_collision
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 447 (was 484): The frame remains 0x180 against 0x17c. The unit and both fan ordinals still use different homes.
+// score 397 (was 447): the frame is now 0x17c as retail's, the body 2214 bytes against 2229; the prologue still differs
+// (retail loads the unit index first and keeps the tag table in ESI and the pool in EDI, with NONE in EBP for the
+// weapon slot's compare; this build loads the pool first and materialises NONE in EAX).
 // Earlier detail: The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
 // MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the
@@ -9955,6 +9959,16 @@ struct s_unit_melee_collision
 // Variants: named width/height locals 546, gotos kept 390 (same code), without TEST_FIELD_BIT 397, without the scale
 // helper 551, the cross written out 530, a pool local for every unit lookup 547. The prologue still differs (retail
 // loads the unit index first, tag table in ESI, pool in EDI, NONE in EBP for the weapon slot's compare).
+// M3 lane 13 r161 (fast with 0xcfc90, 0xcf040, 0x24f590 and 0x185be0 MATCH; 0xc2d00 flips to 2 with this body, an
+// accepted whole-image flipper): the held 390 form kept without the bool-cast seat tests, 397 (2214 B): no aim pointer,
+// cross3f, the range field in each ray row, the existing direction_scale for across/up, nested tests for the gotos.
+// Lead (match-only, a cast that only steers): TEST_FIELD_BIT at the two seat-flag tests 390 (2219 B). On 390: the damage
+// direction through the existing forced-inline vector3f_negate (src/unknown_0b7740.cpp) 390 (same code); the origin and
+// position copies chained 390 (same code); the case-4 test as `type == 0 && (hit_type != 0 || hit_t > t)` 515 (2213 B);
+// a pool local for the unit and weapon lookups 479 (2238 B); the NONE defaults ahead of the weapon index 532 (2216 B).
+// A forced-ranking search over 20 decisions found nothing below 390. Left: the prologue (retail holds the pool in EDI,
+// re-reads its data pointer at the weapon lookup and compares the weapon slot against NONE held in EBP), and the j/k
+// ray rows (retail sums the up product first and loads the aim component ahead of the range).
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
@@ -9980,23 +9994,13 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		point3f center;
 		vector3f across;
 		vector3f up;
-		vector3f const *aim = &unit->unknown168;
 
 		hit_seat = local_67e06b[0x1fc] & 0x3f;
 		function_cafc0(unit_index, &center);
-		function_30bf0(function_11d000(aim, &across));
-		up.i = aim->j * across.k - aim->k * across.j;
-		up.j = aim->k * across.i - aim->i * across.k;
-		up.k = aim->i * across.j - aim->j * across.i;
-		real width = *(real *)(local_67e06b + 0x1b0) * 0.5f;
-		real height = *(real *)(local_67e06b + 0x1b4) * 0.5f;
-		real range = *(real *)(local_67e06b + 0x1b8);
-		across.i *= width;
-		across.j *= width;
-		across.k *= width;
-		up.i *= height;
-		up.j *= height;
-		up.k *= height;
+		function_30bf0(function_11d000(&unit->unknown168, &across));
+		cross3f(&unit->unknown168, &across, &up);
+		direction_scale(&across, *(real *)(local_67e06b + 0x1b0) * 0.5f, &across);
+		direction_scale(&up, *(real *)(local_67e06b + 0x1b4) * 0.5f, &up);
 		for (long i = -2; i <= 2; i++)
 		{
 			for (long j = -2; j <= 2; j++)
@@ -10004,9 +10008,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				vector3f ray;
 				s_unit_melee_collision collision;
 
-				ray.i = (real)i * across.i + (real)j * up.i + aim->i * range;
-				ray.j = (real)j * up.j + (real)i * across.j + aim->j * range;
-				ray.k = (real)j * up.k + (real)i * across.k + aim->k * range;
+				ray.i = (real)i * across.i + (real)j * up.i + unit->unknown168.i * *(real *)(local_67e06b + 0x1b8);
+				ray.j = (real)j * up.j + (real)i * across.j + unit->unknown168.j * *(real *)(local_67e06b + 0x1b8);
+				ray.k = (real)j * up.k + (real)i * across.k + unit->unknown168.k * *(real *)(local_67e06b + 0x1b8);
 				collision.material_type = NONE;
 				if (!function_1697c0(0x2480000f, &center, &ray, unit_index, NONE, (s_collision_result_1697c0 *)&collision))
 				{
@@ -10095,32 +10099,27 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 	else
 	{
 		hit_index = unit->parent_index;
-		if (hit_index == NONE || unit->parent_seat_index == NONE)
+		if (hit_index != NONE && unit->parent_seat_index != NONE)
 		{
-			goto impact;
-		}
-		s_unit_definition *parent_definition = (s_unit_definition *)UNIT_DEFINITION_GET(UNIT_GET(hit_index));
-		if (!((*(dword *)&UNIT_SEATS((byte *)parent_definition)[unit->parent_seat_index].flags >> 11) & 1))
-		{
-			goto impact;
-		}
-		damage_index = definition->unit.boarding_melee.boarding_melee_damage.tag_index;
-		self_damage_index = definition->unit.boarding_melee.boarding_melee_response.tag_index;
-		long graph_index = parent_definition->object.model_tag_index;
-		if (graph_index != NONE)
-		{
-			byte *graph = g_4e3b44[graph_index & 0xffff].bytes;
-
-			if (*(long *)(graph + 0x60))
+			s_unit_definition *parent_definition = (s_unit_definition *)UNIT_DEFINITION_GET(UNIT_GET(hit_index));
+			if ((*(dword *)&UNIT_SEATS((byte *)parent_definition)[unit->parent_seat_index].flags >> 11) & 1)
 			{
-				material_index = c_type_47f957(*(short *)(*(byte **)(graph + 0x64) + 0xce));
+				damage_index = definition->unit.boarding_melee.boarding_melee_damage.tag_index;
+				self_damage_index = definition->unit.boarding_melee.boarding_melee_response.tag_index;
+				long graph_index = parent_definition->object.model_tag_index;
+				if (graph_index != NONE)
+				{
+					byte *graph = g_4e3b44[graph_index & 0xffff].bytes;
+
+					if (*(long *)(graph + 0x60))
+					{
+						material_index = c_type_47f957(*(short *)(*(byte **)(graph + 0x64) + 0xce));
+					}
+				}
 			}
 		}
 	}
-	if (damage_index == NONE || (hit_index == NONE && surface_type == NONE))
-	{
-		goto impact;
-	}
+	if (damage_index != NONE && (hit_index != NONE || surface_type != NONE))
 	{
 		s_unit_melee_hit hit;
 
@@ -10132,13 +10131,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		/* the header types this byte as a bool, but retail stores the seat group byte unchanged */
 		*(char *)&hit.unknown18 = hit_seat;
 		hit.unknown14 = 0.0f > scale ? 0.0f : (scale > 1.0f ? 1.0f : scale);
-		if (unit->parent_index != NONE && unit->parent_seat_index != NONE &&
-			!((*(dword *)&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index].flags >>
-				11) & 1))
-		{
-			goto impact;
-		}
-		if (!flags)
+		if ((unit->parent_index == NONE || unit->parent_seat_index == NONE ||
+			((*(dword *)&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index].flags >>
+				11) & 1)) && !flags)
 		{
 			if (function_a76b0(unit_index, 0))
 			{
@@ -10150,7 +10145,6 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 			}
 		}
 	}
-impact:
 	if (global_material_get(material_index.m_index))
 	{
 		function_ceee0(unit_index, damage_index, material_index.m_index, &point, &normal);

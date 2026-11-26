@@ -967,6 +967,12 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // 1.0f` 4 and height declared first 4 (both only swap the two default copies' registers); the sizes as two ternaries on
 // the texture 142. On the every-case-ascending form (6, re-measured): ternary sizes 140, height declared first 8, height
 // from width 6, the else-arm sizes 115.
+// M3 lane 3 r312 (h2m fast with 0x19ca0/0x19be0): a scheduler trace shows the 12/13 tail's two stores emitted in
+// code-generation order, so the pair is decided before scheduling (the tail merge). The colour case's `else` dropped
+// after the first branch's return 2 (same code); the colour read through a named `color3f const *` 131 (0x19ca0 130:
+// any extra register in this body moves the caller); the size branch as `else if (component != 4)` with the colour
+// arm last 127 (708 B); the mode switch as an if/else chain 215 (712 B; 0x19be0 36, 0x19ca0 58); case 13 placed above
+// case 9, storing its zeros and falling into 9's width/height 99 (708 B), its zeros ascending 99.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
