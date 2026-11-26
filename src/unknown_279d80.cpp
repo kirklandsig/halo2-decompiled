@@ -2594,6 +2594,13 @@ void function_2818e0(void)
 // parameter as `long const` 2, as `long const &` 2 (same code); the group end as `arg_5 + 8 < arg_7 ? arg_5 + 8 : arg_7`
 // 53 (every sampler moves); the outer loop test as `arg_7 > arg_5` 8 (0x285750, 0x288570, 0x289580, 0x28aaa0 6 each);
 // the inner loop test as `local_3 > arg_5` 10 (0x288570 124). All restored.
+// M3 lane 2 r156 (h2m fast with 0x27dff0 2 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in the
+// pass-0 join block the count reload and the bit-flags reload both have height 2+1 and no use in the block, so they go
+// out in code-generation order, count first (both symbols are named local_2, but round 140's renames showed the order is
+// not a name tie). Forms: the bit taken into a bool and the flags shifted at the iteration's top 382 (1658 B, every walk
+// user regresses); function_288572's output cursor declared ahead of the in-place flag 2 (0x288570 3, 0x289580 78); the
+// non-interpolated arm's apply index as `arg_1 != 0 ? local_4 : arg_5` 2, the interpolated arm's so 2, the root-offset
+// test as `!(arg_3 || local_0)` 2 (the three the same code, every user matched). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

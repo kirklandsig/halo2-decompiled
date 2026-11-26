@@ -387,6 +387,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // the model definition as `pane->models + i` 23; the text definition as `pane->texts + i` 23; the model loop's flag test
 // as `animating == true` 24; the model's type read as `(*screen).animation.type` 23; the type named right after the
 // model call (re-measured) 23.
+// M3 lane 12 r194 (h2m fast with 0x22fa5b/0x22facd/0x22f9bf/0x22fa7d, all MATCH; control 23): the model helper's parent
+// parameter typed as the screen (its only callers pass screens; 0x22fa5b and 0x22facd stay matched) 23; the text local
+// typed as its helper's own return type 23; the block-24 and block-18 locals typed as their helpers' return types 23;
+// one widget local declared at the pane block's top and reused by all five loops 23; the block-18 inner counter declared
+// at the pane block's top 23 (all five the same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

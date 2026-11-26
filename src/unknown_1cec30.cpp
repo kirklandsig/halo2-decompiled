@@ -3264,6 +3264,15 @@ struct s_1cf531
 // get_inverse_scale()` 2 (same code). Diagnostic: the correction stored back into local_18 2 (same slot). Reading: retail's
 // layout follows if the vector passed to the call is its own object with four references (placed after the 4-reference
 // impulse, ahead of the rsqrt temporary, and joining the impulse's slot); with two it comes after every 3-reference object.
+// M3 lane 2 r156 (h2m fast, 2): the frame packer's 16-byte order on lane 14's 7 form is local_7 (7 references),
+// local_13 (copy and correction, 4), the rsqrt temporary (3, opens 0x40), the square's spill (2), the velocity (2, its
+// address reaches a call, so it interferes to the end of its block and opens 0x50) and the final (2), which joins the
+// newest slot it does not interfere with, 0x40; to land in 0x30 it has to be placed ahead of the rsqrt temporary, so it
+// needs exactly four references. Forms: the scaled impulse as its own `__m128` normalized in place with the copy and
+// correction one `__m128` and a block-local final 62 (915 B, the subtraction sinks past the scale call); lane 14's 7
+// form re-measured 7; on it the final stored by `_mm_store_ps(&final(0), ...)` 23 (907 B, the store goes through ECX),
+// the copy into local_13 moved after the velocity call 82 (frame 0x44), the reference spelled as a pointer to local_13
+// 7 (same code); on main the correction bound as `__m128 const &corrected` 2 (same code). All restored.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
