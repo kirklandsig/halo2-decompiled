@@ -1127,6 +1127,21 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // with the parameter first 4 each. A 600 s permuter run (60 tries) found nothing below 2. Next: a legal form that keeps
 // `complete` out of the register candidates (retail's address-taken flags, see `special`), or one more removed
 // temporary ahead of that split. Body unchanged.
+// M3 lane 2 r158 (fast screens with 0x270930, 0x210a30 and 0x2104b0; body unchanged). Lane 11 r71's flag form rebuilt on
+// today's file is 2 again (held as a patch). A forced-ranking search on it finds only scheduler-height changes in the
+// latch's reload block: the two reloads tie and are emitted in split-piece order, the steps piece numbered 47 and the
+// scan index's 83. The integer split pass takes its numbers from a free stack (8, 7, 6, 4, then the six float values
+// split before it, 49 down to 29) and the index is the first piece past its end; a throwaway branch on a new constant
+// at the traversal loop's end (diagnostic, wrong code) adds one dead value, the index takes 30 and the pair comes out in
+// retail's order. So retail has one more dead value ahead of that pass, or one piece fewer, with no code of its own.
+// Forms on the 2 (2 each unless said): `2.0f * margin`; the latch storing `previous` first 4; `real distance` declared
+// at the scan body's top; the count and complete updates swapped 4; `1.2f * radius`; the 0xffff test on `(word)` 13;
+// 0x210a30's own sum orders in both arms 8, in the second only 2; the three projection rows in place of
+// vector3f_add_scaled; the upper clamp named once; `1600.0f < distance`; one shared difference vector; the magnitude
+// call ahead of the offset 214; dot3f(&v, &v) for both distances; `margin * 2.0f` named before the loop 89; the vertex
+// tests as `(dword)x != 0xffffffff` or plain `x != NONE`; the 0xffff test as `(word)NONE` or `0xffffu`. Diagnostic,
+// restored: 0x210a30 and 0x210850 made inline with the lead calling 0x210a30 426 (0x210850 stays a call; without an
+// inline-depth region around 0x210a30 539 and 0x210a30 itself 120).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

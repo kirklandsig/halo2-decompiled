@@ -490,7 +490,9 @@ static __forceinline void actor_looking_rotate(vector3f *vector, vector3f const 
 
 static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, real angle)
 {
-	actor_looking_rotate_in_place(vector, axis, (real)sin(angle), (real)cos(angle));
+	real sine = (real)sin(angle);
+	real cosine = (real)cos(angle);
+	actor_looking_rotate_in_place(vector, axis, sine, cosine);
 }
 
 /* function_1697c0 fills 0x5c bytes; the shared result type covers the first
@@ -500,9 +502,8 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 239 (was 270): Frame 0xa8 agrees; the pitch axis's `j * scale` is now retail's. The startup zero register (XMM1
-// against XMM2) and the axis j register, the two trig transfer slots (pitch sine and cosine swapped) and the yaw rotation's
-// schedule differ.
+// score 270 (was 239): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch
+// differ. The 239 form (r157, below) is restored to main's body: on the tree merged with main it lost 0x1c4590 and 0x24cf66.
 // MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
 // and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
 // still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
@@ -1142,6 +1143,9 @@ struct s_collision_result_buffer_1697c0
 // dot product named ahead of the versine product 295 (1439 B); the fallback test on `!result` in place of `!clear` 344
 // (1423 B, but 0x297660 10); early returns in place of the result flag 341 (0x297660 13); `clear` initialised true at
 // its declaration as well 239 (same code).
+// M3 lane 2 r158: the r157 form (sine and cosine passed straight in, the pitch axis through vector3f_assign), 239, lost
+// 0x1c4590 (5) and 0x24cf66 (2) in the full check of the tree merged with main (as lane 12 r193 had seen); restored to
+// main's 270 form, held as a patch.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1150,8 +1154,7 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 	real best_fraction = 0.f;
 	vector3f best_direction = *g_4687a8;
 	bool clear;
-	vector3f pitch_axis;
-	vector3f_assign(&pitch_axis, -forward->j, forward->i, 0.f);
+	vector3f pitch_axis = { -forward->j, forward->i, 0.f };
 	if (actor_looking_normalize3d(&pitch_axis) == 0.f)
 		pitch_axis = *g_4687ac;
 	for (short attempt = 0; attempt < 10; ++attempt)
