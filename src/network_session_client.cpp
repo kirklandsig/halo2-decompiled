@@ -1101,6 +1101,17 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // Forms: on the 36 form the variant read in place at the call 39 (session 105: its definition block drops 10, the call
 // block gains 16), the summary declared above the variant 36, the variant declared just above the member count 36; the
 // variant read in place on the 8 form 45 and on main 55 (both callers lost in each).
+// M3 lane 8 r247 (fast reduced-image screens with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the 8 and 36
+// forms rebuilt). Ledger: the 8 form's opening blocks give the session 2 + 2 (one candidate each), the pair's arm 16
+// (two session uses among four candidates) less 2 for its test block, so the pair adds a net 10 to the session (99
+// against 89, the index unchanged at 90; a tie goes to the index); the index gains over the session only in the latch
+// (48), so one more candidate there or 9 fewer session points outside the loops is needed. Forms on the 36 form: the
+// pair set under two separate flag tests 149 (495 B; the tests are not merged), the same with the copy under `if
+// (member_count > 0)` 149; the NULL presets in an else arm 36; the pair through a file-local inline getter with
+// out-parameters (bool result, outputs set under the flag) 36, a void one with NULL presets 36 (the outputs are
+// promoted: the pair's code and ranking), on main's body 46/46; the member count read from the session at both uses (no
+// local) 132 (495 B: reread in the copy loop), on the 8 form 138; the player loop's two tests as `continue`s 36; the
+// opening test written `!(flag && &first && &second)` 22, on the 8 form 8 (same code each).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

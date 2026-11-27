@@ -1104,6 +1104,15 @@ PRIVATE __forceinline void function_2922b5(vector3f *arg_0, vector3f const *arg_
 // function-scope local_13): GA r7's 184 lead + rotate_direction 97 (2892 B) + tail ijk 76 (2888/2886 B, 574/590 insns
 // before the tail byte-exact; rotate_vector_170d70 76; v-first ijk/kji 76/97; drop local_19 250; direct stores 439;
 // manual scale 425/427; cross-first 149).
+// GB32 (42 valid fast trials across b1-b3, 4/4 peers MATCH; control 265 at 2889/2886 B, +0x1d; body unchanged): on 265
+// base, all-4 cross3f 449, f4 mul swap 265, two-ret + local_6 first 623 (al 240, mk 136), local_6 before if 647, tail
+// local_9-first 465, sep tail temps 265, 3scales+2adds 648 (2886 B), staged oi/oj/ok 282, 2scales+add+add_scaled 591,
+// scale+add_scaled+scale+add 591; on 76 lead (control 76, 2888/2886 B, 667/667, al 142, mk 57): tail/all cross3f 88/280,
+// local_9-first 308/310, mat3 rows 544, scale kji 445, f4 mul swap / local_20 early / sep temps / v-first up 76, l18
+// before l17 76 (al 130), staged oi/oj/ok 93, 2nd += 445, all += 428, mat3x3_rotate 656, inline rays / f4 *arg_3 316/315,
+// 2scales+add+add_scaled 451 (al 123, mk 45; without k_real_max 554 at 2886 B), scale+add_scaled+scale+add 451 (al 119,
+// mk 54: matches all 57/57 Rotation 2 insns and final 30 tail insns verbatim, +1 pad at loop from symbol shift; without
+// k_real_max 551 at 2886 B).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

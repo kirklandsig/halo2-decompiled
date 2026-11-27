@@ -1325,7 +1325,7 @@ bool function_25ab50(long reference)
 	return result;
 }
 
-real function_210b60(s_type_c3b527 const *arg_0, point3f const *arg_1);
+inline real function_210b60(s_type_c3b527 const *arg_0, point3f const *arg_1);
 real normalize2d(point2f *v);
 bool function_1f50e0(long actor_index);
 bool function_1f57f0(long actor_index, long animation, long const *target);
@@ -3035,6 +3035,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // retail's), case 2's x-term order, case 6's first flag store and result-pointer load, case 18's selector load. On 216:
 // the fill helper's stores in other orders 215 to 216 (two orders exchange actor and state, 506 to 508); case 18's
 // selector stored before the 0x20 field 218. Held as a patch (match-only forms).
+// M3 lane GA r33 (46 fast trials, 0x258a00/0x258cf0/0x25a130/0x259ec0 MATCH, 0x110ab0 164; control 429 at 2416/2396 B,
+// body unchanged): on the clean 2396 B retail-shaped lead (no volatile, no match-only swaps, actor EDI / state EBX),
+// passing local_0->unknown018 in cases 5/9/11 495 (2396 B; + cs_dist_sq_kji 474 at 2396 B; on main 465 at 2416 B);
+// scalar 2-D inits / scalar +0x468+0x470 / direct case 20 pos / all combined (+ pub1/pub2/no-c4/no-c18/assign-c2)
+// 562-677 (main + scalar +0x468 619, flips); arg_2 direct 613; bool local_3 / separate tail state / byte bitfields /
+// TEST_FIELD_BIT byte / local_2 after local_3 495 each; direct return-1 epilogues 507; case-1 early return 622;
+// actor ref 489; pub2_member alone 590 (EDI), + any 1-4 u18 sites flips state to EDI and overshoots actor to EBP
+// (act=EBP, dat=EBX, st=EDI: 450-566; same with c2_mem + 4 u18 518); ZERO-VOLATILE EXACT RETAIL REGISTERS
+// (act=EBX, dat=EBP, st=EDI, +0x51, automatically matching retail's case 1/5/21 arg_2 live-range splits) reached by
+// u18 (4 sites) + pub2_member + direct case-18 reads (noc18) 454 (2412 B, 623/623 insns), + cs_dist_sq_kji + case-2
+// type/mode/vector order 433 (2412 B; fewer u18 sites or single-ref case 18 revert to EDI 605-633).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
