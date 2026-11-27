@@ -2456,6 +2456,11 @@ struct s_actor_looking_structure_view
 // each (same code: an inline helper's parameter positions do not reach these ranks); the in-place helper
 // `__forceinline` 23; the angle wrapper without its forceinline declaration 468 (670 B: it stays out of line); the
 // pathfinding pointer as a conditional initialiser 207. Restored.
+// M3 lane 12 r198 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the score's
+// forward members read through a `vector3f const &` bound to forward at the score 142 (928 B), through a `vector3f const *`
+// to forward declared ahead of the candidate array 142 (928 B); the clear as `forward.k = 0;` 23 (same code); the angle as
+// `(real)(i * 0.785398185)` (a double product) 150 (928 B); the angle wrapper passing `(real)sin(angle)` and
+// `(real)cos(angle)` straight to the in-place helper 23 (same code here; 0x296e60 269). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

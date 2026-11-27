@@ -2522,6 +2522,19 @@ bool function_1900a5(long index);
 // without due flag (two-use last_read/last_write, main fill store order) 579 (still needs /arch:SSE and inline 0x647d0).
 // Remaining 38 masked diffs on 113: identity carried in (ecx,edx,esi) instead of (eax,ecx,edx) with lea esi,[ebx-0x14],
 // cmp [mem],reg on variant->field_8 at both sites, and lines 217-230 IV load order.
+// M3 lane GA r32 (30 real + 1 flag diag fast trials across 2 batches with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x80940,
+// 0x80aa0, 0x80bf0, 0x80d70, and 0x647d0/0x18fd94 on getter trials, all MATCH; control 633 at 2862/2862 B, al=400, mk=574;
+// body unchanged): `inline` on existing `0x647d0` (`network_session_interface_get_user_properties`) in `src/unknown_054fe0.cpp`
+// and `src/unknown_190001.cpp` (0x647d0/0x18fd94 stay MATCH) 716 (2878 B, al=392; checked or direct call identical; + logon
+// switch 767, al=362; + in-loop `variant->type` 716, al=391; + both poll switches + `query_time_now()` if/return 727; diag
+// + `/arch:SSE` 759 at 2862 B, al=378, reproducing all 120 users-loop instructions verbatim); on clean 633 base, in-loop
+// `variant->type` 633 (al=399, LICM hoists after `jle` as retail), `dword j` fill 633, `switch` read poll 633 (2878 B, al=396),
+// `switch` write poll 640 (al=392), both poll switches 654 (al=388), `query_time_now()` if/return 656 (2846 B; + switches 673),
+// read-fail cleanup order 633, `j < 6` with `+= record->count` 643 (2862 B, stays rolled), `records_used++` after `record->type`
+// 634 (2862 B, al=395), `properties_used += 6` after rolled `j < record->count` loop 736 (2926 B, recovers retail's carried `+0x60`
+// properties cursor; + `record_space`/`property_space` 704 at 2910 B, al=343, mk=533; + `last_write` 706, al=337; + `if (variant)`
+// per-arm `failed = true` 711, al=337, mk=492; + `dup continue` 742, al=345, mk=486; with `j < 6` 696; carried `next_properties`
+// 736 / + space 704). Positional score remains gated by `/arch:SSE` (`0x1900a5` `cmovne`) and `/Ob1` helper inlining blockers.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

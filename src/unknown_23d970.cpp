@@ -1056,6 +1056,14 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // code as cross3f_staged: operand order follows rank, not spelling), both products through it 221 (1272 B), the first
 // product alone 49 (1264 B). Diagnostic (reverted at once): 1 to 7 unused locals on this body 45/49/49/219/219/49/49
 // (219 at retail's 1261 B with the first product's loads moved), on the staged second product 217..223. Body unchanged.
+// M3 lane 11 r177 (H2M_FAST with 0x1f0870 and 0x130f60; control 45, difflib-aligned 26). Allocator reading: the first
+// product's components rank right.k 162 (11 references) > right.i 144 (9) > right.j 108 (7), so right.i takes XMM1;
+// retail's colours need right.j above right.i, which follows from retail's second product consuming right.j in place
+// (its k, j, i schedule) where ours consumes right.i. Diagnostics (dead initialised longs, restored): on cross3f_staged
+// for the second product K = 0..31 at the function top gives 217/221/223 in a period of 8 (1267-1272 B), never retail's
+// operand orders; on the else arm's forward pointer (re-measured 43) K = 0..15 gives 43/47/219, the 219 at 1261 B but
+// aligned 38 against main's 26, and the same with the anchor just ahead of the first product; the pointer with the
+// staged second product K = 0..7 217..223. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -1028,6 +1028,18 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // (-56) would flip them. Forms, each on that base: the duplicate branch's search compares `cluster->instances[j]` 99
 // (1364 B), the stamp store through `cluster->instances[j]` 228, the append argument so 230, the stamp test so 171, the
 // 0x132e60 argument so 127, `long instance_index` 116. Body unchanged (11).
+// M3 lane 11 r177 (H2M_FAST with 0x163c80 and 0x163d20, both MATCH; control 11): the list's add() member at both
+// append sites 321 (1373 B: it expands, but the in-front term is then computed ahead of the capacity test), at the
+// instance site only 16 (the first plane test's products flip); the cluster filter search through the list's find() 50
+// (find expands to retail's loop; the first plane test's products flip); the else arm's entry bit through
+// bit_vector_set 11 (same code), with the cluster flag through it too 52; the 0x132b10 packer for the instance flags 11
+// (same code), 70 on the late store. On the late store (70): the visible test held in a named bool 69; centre and radius
+// locals for both calls 365 (369 on this body: the radius is then not re-read). Allocator reading on the late store:
+// the centre pointer (call block 112, plane test 120, minus 28) ranks 204 under the zero-extended instance index 216
+// (loop head 128, call block 56, duplicate search 96, minus 64); a forced-ranking search (30 builds) finds nothing
+// better than 20, and that only by moving the duplicate branch's list register. Diagnostic: dead initialised longs at
+// the function top on the late store, K = 0..11, give 70/69/109/109/111/110/109/109/70/70/110/110 (the tie does not
+// move with the symbol count). Body unchanged (11).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
