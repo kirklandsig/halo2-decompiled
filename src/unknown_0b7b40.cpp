@@ -11,6 +11,7 @@
 #include "effects.h"
 #include "unknown_16d180.h"
 #include "bit_vector.h"
+#include "placement_identifier.h"
 #include <string.h>
 
 struct s_object_list;
@@ -70,9 +71,8 @@ static inline void flags_set_bit(dword *flags, long bit, bool value)
 		*flags &= ~(1 << bit);
 }
 
-// Not matched yet (2150 of 2150 bytes). Retail inlines function_b9c60 and function_d5c90 here. Left: retail goes
-// straight to the exit when the placement has no definition, and it loads NONE two instructions later in the
-// new-identifier arm.
+/* creates the object a placement describes and returns its index, NONE when it
+   cannot be created. Retail inlines function_b9c60 and function_d5c90 here. */
 // @retail 0xb7b40
 long __stdcall function_b7b40(void *creation)
 {
@@ -80,10 +80,9 @@ long __stdcall function_b7b40(void *creation)
     long result = NONE;
     bool failed = false;
     if (!(*(dword *)(placement + 0x18) & 0x10) && *(long *)placement != NONE) function_108a40((long *)placement);
-    long tag = *(long *)placement;
-    if (tag != NONE)
+    if (*(long *)placement != NONE)
     {
-        byte *definition = g_4e3b44[tag & 0xffff].bytes;
+        byte *definition = g_4e3b44[*(long *)placement & 0xffff].bytes;
         short type = *(short *)definition;
         byte *object_type = (byte *)g_468630[type];
         byte *model = 0;
@@ -99,14 +98,15 @@ long __stdcall function_b7b40(void *creation)
             header->flags |= 8;
             header->type = *definition;
             *(long *)object = *(long *)placement;
+            s_scenario_identifier_ab *identifier = (s_scenario_identifier_ab *)(object + 0xa4);
             if (placement[0xb] == 0xff)
             {
                 long identifier_type = *(short *)definition; /* read before the counter moves, as retail does */
                 *(long *)((byte *)g_4de2f4 + 0x18) += 1;
-                object[0xaa] = (byte)identifier_type;
-                object[0xab] = 2;
-                *(short *)(object + 0xa8) = NONE;
-                *(long *)(object + 0xa4) = *(long *)((byte *)g_4de2f4 + 0x18);
+                identifier->type = (char)identifier_type;
+                identifier->source = 2;
+                identifier->origin_bsp = NONE;
+                identifier->unique_id = *(long *)((byte *)g_4de2f4 + 0x18);
                 *(short *)(object + 0x1a) = NONE;
                 object[0xae] = (byte)g_4686c4;
             }
