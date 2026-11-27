@@ -1930,6 +1930,12 @@ long function_1e4a10(long index);
 // body with 6 probes ahead of the body damage (the listed 4): the body damage moves behind the constants (zero 22,
 // 1.0f 23, 0.0001f 24, body 25) and the scaled shield keeps 20; the probes declared after the shield damage instead,
 // 5 / 6 / 7 / 8 / 13 / 14 of them, 8 / 4 / 4 / 7 / 8 / 8 (the numbering follows the count of symbols, not their place).
+// M3 lane 13 r167 (fast screen, control 8): a forced-ranking search on the six-name set (4) finds one single decision
+// that halves it, a scheduling height step for one reload after function_d6a70 (4 -> 2), so each of the two shield/zero
+// pairs is its own tie. Forms on main: the shield-damaged compare as `vitality < threshold` 8; the overflow sum as
+// `overflow * (1.0f / multiplier) + body_damage` 8, as `(1.0f / multiplier) * overflow` 8; the scaled shield damage
+// through a `real &` bound to the shield damage 8; the maximum as a `real const &` bound to the call result 8 (all the
+// same code). All restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

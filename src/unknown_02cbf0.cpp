@@ -20,6 +20,7 @@
 #include <string.h>
 #include <xtl.h>
 #include "unknown_030290.h"
+#include "floor_to_long.h"
 
 
 
@@ -34,20 +35,7 @@ void *function_44940(short index, bool instance);
 long function_2d000(long object_tag, long tag, long index);
 __declspec(noinline) void *function_449e0(short index, bool instance, bool load);
 
-/* retail inlines 0x16ae0's body at the first two uses in 0x2cbf0 */
-static __forceinline long floor_to_long_inline(real value)
-{
-	__asm {
-		movss xmm0, value
-		cvttss2si eax, xmm0
-		cvtsi2ss xmm1, eax
-		cmpneqss xmm1, xmm0
-		cmpltss xmm0, g_45dbd8
-		andps xmm0, xmm1
-		movmskps ecx, xmm0
-		sub eax, ecx
-	}
-}
+/* retail inlines 0x16ae0's body (include/floor_to_long.h) at the first two uses in 0x2cbf0 */
 // MiniMax D (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, the kind's shift still lands in the copy to esi where retail shifts the call's result in eax, and the pool's argument copy still sits below the jbe; the two masked words are the only part of the body that still differ, so the chain's operand order and the shift's target are the whole of the remaining difference.
 // MiniMax E (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind's shift still lands in the copy to esi where retail shifts the call's result in eax; the pool's argument copy still sits below the jbe.
 // MiniMax A (11-12): no new form, no lower score (10): the OR chain written right-nested and the pool pointer typed as the pool (the cast moved to the active check) both give byte-identical code, and shifting the kind in place (kind = kind << 29) rebuilds the body at 79, so the first word still reads the entry own word before the flags term where retail reads the flags first, the kind shift still comes after the copy to esi where retail shifts before it, and the pool argument is still copied to edx inside the branch where retail copies it before the jbe.

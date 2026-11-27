@@ -1053,6 +1053,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // drop `local_31/32/33` 696; scalar `vx/vy/vz` frame_velocity 673; `vector3f_add_scaled` frame_velocity diff 672 (+0xf9, pos=+0x64); `vector3f_add(&local_7, &local_6, &local_6)` 664 (3499 B, +0x60); `0.99` dot swapped / ji 464/462;
 // turn factor `MAX(dot, 0.0f)` single expr 671; `dot_product2d` before `local_26` 461 (-1); `basis_dot_xzy(&local_9, &local_9)` + `vector3f_scale` 664 (3499/3499 B, +0x60: matches all 21 `i, k, j` normalize instructions verbatim; + 457 + early `local_6.i/.j` + `byte same` 673); zero-extra-local inline `i*i+k*k+j*j` + `vector3f_scale` 747 (3499 B, +0x100);
 // on the 457 base (MIN(1.0f, ratio) both + axis-first frame_velocity dots): `dot_product2d` before `local_26` 456 (-6, under 8-point keep bar; + tail `dot3f(&local_7, &local_9)` / `0.99` ji / early `field_50` / `cross3f_staged` 456, al=333, mk=104), `local_23 > local_24` 652, single-expr `local_24` 666, `vector3f_add(&local_6, &local_7, &local_6)` 663, single-stmt `local_27` 656, early `field_50` 457 (al=328, mk=97), clean combo 702, turn `MAX` 671.
+// M3 lane 7 r238 (h2m fast with GB15's companion list; control 462; a frame trace of the packer): local_8 (7 refs,
+// density 583) packs above the 12-byte cell of local_14, the copy of local_5 and local_13 (8 refs, 666), the reverse
+// of retail's order (local_8 at 0x80, that cell 12 higher). Tried: the copy of local_5 as its planar part 706 (3485 B;
+// retail copies all three members); the planar view built from the copy's two members (no address) 728 (3476 B);
+// local_13 declared with the opening locals 462; local_14 declared ahead of the 0x26c180 call 462; local_8 declared
+// with local_3 462 (each the same code).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -2279,6 +2279,11 @@ void function_27dd10(void)
 // destination as the output cast to the quaternion type 2; the rotation source as the decode target cast likewise 2;
 // the translation blend's three rows written out 2; the scale blend's row written out 2; the blend-1 arm ending in
 // `return` with the later methods' chain unnested 2 (all the same code).
+// M3 lane 13 r167 (fast screen over all 78 functions of the file; control 76 of 78, this function and 0x281b60 2): the
+// blend's asm as two blocks (the final store in its own) 2; the blend's asm as one `__asm` statement per instruction 2;
+// component_decompress as one call through the selected decoder pointer 2 (0x288570 120, 0x288bd0 71, 0x288f80 63,
+// 0x289580 78); node_destination_get with the identity case last (`if (node_kind != 0) { ... } *index = node_index;`)
+// 2; the scale blend's product with the fraction first 2 (the pair and 0x281b60 unchanged throughout). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
