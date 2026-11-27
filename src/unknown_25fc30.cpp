@@ -1173,6 +1173,17 @@ void __stdcall function_25eea0(
 // Loop 1 `weight*factor` / `score = ...` / inline clamp `253`; inner weight clamp `319`; per-branch weight `313`; `zone`
 // ternary + nested leader `251`; Loop 2 if/else `score +=` `266` (mk 50), `* bonus` `253`, `delta.k`-first `252` (mk 61),
 // nested band `253`; cover if/else `score +=` `260`; `line_pt` + `zone`/`pos_dist`/all-3-direct `247`-`255`.
+// GA32 (59 valid fast trials across 5 batches on the 111 base with 6 callees + 0x1b0780 MATCH; body unchanged):
+// `0x1b0710` param order `(actor_index, object_index, ...)` (backed by both retail callers `0x1b0780` and `0x25f290`
+// setting `EAX` before `ECX`; keeps `0x1b0710`/`0x1b0780` MATCH) gives `109` on HEAD (`-2`, under keep bar). On HEAD:
+// cover/moving locals, commuted score1, if/else cover/moving, `factor < 0.f`, no-`(real)` sqrt, kji sqrt, nested zone,
+// nested loop 1 all `111`; `* 12.f`/`weight *=`/`direct leader`/`le_lt`/`ratio` `245`-`246`; `max_dist`/`pos_dist_in_if`
+// `246`-`309`; `weight <= 4.f` `260`; `cur_dist`/`range`/`else_12` `319`-`334`; `sqrt(real)` `301`; nested `leader_unit`
+// `239` (`mk 13->8`: fixes `0x1df560` SI/CX and all 148 insns of Loop 3/cover/epilogue, flips Loop 2 `+=` to 3-insn).
+// Match-only lead: nested `leader_unit` + `double d` x87 `fst` + `0x1b0710` reorder hits `68` (`1306/1306 B`, `al=126`,
+// `mk=4`; same with `0x1e4a50` do-while, `continue`, `bonus+=score`, `weight*factor`, `score` ptr, outer/inner swap/rename),
+// and adding `ratio`/`excess`/`range_limit`/`weight_ternary`/`l1_bonus`/`num`/`scale`/`max_dist` flips the Loop 2/Loop 3
+// `addss` parity to **`mk=3`** (`100`, 120 consecutive Loop 2 + Loop 3 cover insns exact); `pos_dist` combo hits `fd=+0xc0` (`105`).
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,
