@@ -397,6 +397,12 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // local_23` 12; both half extents written size first 12; the bounds copied with memcpy 12 (the 12s the same code);
 // corners 1 and 3 copying their y from corners 0 and 2 28; re-measured lane 13's named top/bottom edges ahead of the
 // step 23 and named left/right edges after it 37. All restored.
+// M3 lane 1 r177 (fast screen with 0x2008fc 0x200891, control 14; the bounds record through a one-use pointer re-measured 12,
+// only the XMM3/XMM4 pair left): the advance product bound by `real const &` and used by both x steps, on the pointer 53;
+// that with the pulse result bound by `real const &` too 12 (the pair unchanged: the bound temporary stays in a
+// register); the advance so bound without the pointer 55; on the pointer the half height bound by `real const &` 12, the
+// half width so 12 (both the pointer form's code). Allocator ranking re-read: the copy and the advance piece both rank 162 in the
+// draw block (18 candidates), the copy made later is coloured first. All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

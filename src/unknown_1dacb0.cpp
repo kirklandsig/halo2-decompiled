@@ -1818,6 +1818,21 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // B: found_mode takes EBP again, but the copy outranks the request's table temp and takes found_mode's dead home); the
 // copy for the second request only 1008; 0x1dc790's found-flag loop 997; with the copy 997. A forced-ranking search on
 // the probe (16 decisions) found nothing below 804. Body unchanged.
+// M3 lane 12 r197 (fast screen with the twin 0x1dbc80, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x2963f0, 0x1ddc70 and 0x1ddd00, all MATCH; control
+// 812; body unchanged). Allocator reading of the second request's direct kinds: the found mode gets its own piece there
+// (four reads, -52) and so does the shared mode-table address (-49, later tie); the table piece takes EBX first and `this`
+// takes EBP (EBX is held from the inheritance loop's head by the inherited graph), so the mode piece stays in memory.
+// Retail gives `this` EBX and the mode EBP there and reads the table from memory. That one ranking sets the frame: with
+// the mode in a register its four reads become one and the table gains four, so the table (10 references) packs ahead of
+// iterator_mode (8) into found_mode's dead home and the candidate joins it, which is retail's layout. A forced-ranking
+// search that only lifts the mode piece above the table piece gives 789 (instruction distance 1049 -> 461). Forms: the
+// matched siblings' found-flag loop with one return 755 (re-measured, first difference +0x1c: entry, loop and output
+// stores then follow retail's code except the frame; a flag form, held as a lead); on it the three found keys copied
+// into named locals before the 0x1dd9d0 call 755 (same code); the second request on the iterator's graph field 884;
+// the kinds helper without its redundant flag test 755 (same code); the iterator set by an aggregate initialiser 769.
+// On the flag form a forced-ranking search that leaves the table piece uncoloured gives 743 with retail's frame (distance
+// 928 -> 401); left there: the EBP zero of both requests' fifth kind and inheritance start, and `this` and the mode
+// exchanged between EBX and EBP in the second request.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2548,6 +2563,21 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // B: found_mode takes EBP again, but the copy outranks the request's table temp and takes found_mode's dead home); the
 // copy for the second request only 1008; 0x1dc790's found-flag loop 997; with the copy 997. A forced-ranking search on
 // the probe (16 decisions) found nothing below 804. Body unchanged.
+// M3 lane 12 r197 (fast screen with the twin 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x2963f0, 0x1ddc70 and 0x1ddd00, all MATCH; control
+// 812; body unchanged). Allocator reading of the second request's direct kinds: the found mode gets its own piece there
+// (four reads, -52) and so does the shared mode-table address (-49, later tie); the table piece takes EBX first and `this`
+// takes EBP (EBX is held from the inheritance loop's head by the inherited graph), so the mode piece stays in memory.
+// Retail gives `this` EBX and the mode EBP there and reads the table from memory. That one ranking sets the frame: with
+// the mode in a register its four reads become one and the table gains four, so the table (10 references) packs ahead of
+// iterator_mode (8) into found_mode's dead home and the candidate joins it, which is retail's layout. A forced-ranking
+// search that only lifts the mode piece above the table piece gives 789 (instruction distance 1049 -> 461). Forms: the
+// matched siblings' found-flag loop with one return 755 (re-measured, first difference +0x1c: entry, loop and output
+// stores then follow retail's code except the frame; a flag form, held as a lead); on it the three found keys copied
+// into named locals before the 0x1dd9d0 call 755 (same code); the second request on the iterator's graph field 884;
+// the kinds helper without its redundant flag test 755 (same code); the iterator set by an aggregate initialiser 769.
+// On the flag form a forced-ranking search that leaves the table piece uncoloured gives 743 with retail's frame (distance
+// 928 -> 401); left there: the EBP zero of both requests' fifth kind and inheritance start, and `this` and the mode
+// exchanged between EBX and EBP in the second request.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

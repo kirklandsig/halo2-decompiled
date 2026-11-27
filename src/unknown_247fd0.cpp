@@ -1174,6 +1174,13 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // M3 lane 1 r173 (fast with 0x247fd0, 0x248cc0, 0x247470; control 334): the blend as its own point3f local 390 (1617 B,
 // the frame shrinks), with the adds written `+=` 390; the blend adds as `+=` on the record member 334 (same code); the
 // velocity pointer preset to the default and set under `if (local_0 != NONE)` 348; the +0x1c scale written `*= arg_7` 334.
+// M3 lane 4 r269 (H2M_FAST with 0x247fd0, 0x248cc0 and 0x247470, all MATCH each run; control 334). Frame reading: the
+// definition pointer's slot has six references against retail's four (retail holds it in EDI after 0x249170), so it
+// sorts below the gate byte (density 1500 against 1000) where retail puts the byte below it; one fix to the EDI contest
+// would move both. Forms aimed at the shared +0x28 address, all 334 (same code): the collision normal copied with
+// memcpy; the second rotation call's two arguments through one named `vector3f *` local; the definition pointer typed
+// const; the velocity add's x row written `velocity->i + field_28.i` like the y and z rows; the collision result
+// declared ahead of the workspace record. Body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

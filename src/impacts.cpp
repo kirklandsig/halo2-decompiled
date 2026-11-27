@@ -2393,6 +2393,22 @@ s_impact_component_iterator g_5021bc;
 // result stored straight into the global's component field, tested there and then read into the local 162, with the
 // count ternary 162; component_b started NULL and set by an if 168 (674 B); component_b's index named for the test, the
 // lookup and the data's second index 162; the data and impact index declared ahead of component_b 162.
+// M3 lane GA r29 (21 compiled fast trials with 9 matched peers MATCH; control 162 at 672/672 B, +0x1c; body unchanged):
+// on c4 (`movsx` count + impact pointer, 164): `== NONE` 164, `continue` on component_b hit 164, nested `if`s 164,
+// `while` outer loop 164, `for (long count = 0; count <= 0x20; count++)` 211 (687 B), `g_5021bc.component` in outer
+// test with inner `component` 172 (687 B), `component` after active test 172 (687 B), `g_5021bc.component` everywhere
+// 200 (681 B), `havok_component_try_and_get` helper 166, `component_b` after `impact_data_set` 193 (puts component in
+// EBP as retail but moves lookup below data set), `component_b` inside `if (impact_index == NONE)` 193, inline count +
+// iterator-next helpers 164, `continue` on existing impact 164, nested active/count `if`s 164, `constraints` pointer
+// 164, `impact_index = constraint->impact_index` 164; `component_index` local (`datum_index`) 161 on c4 / 151 on base
+// (recovers outer-loop pool in EDX, but grows frame 0x4c -> 0x50 and keeps component in ESI; not kept), `component_a`
+// inside inner `if` 114 (frame 0x50, 675 B, component still ESI; not kept), `rigid_body_index_a` local 177 (frame 0x50,
+// 680 B).
+// M3 lane 7 r238 (fast with 0x226a60 and 0x226f80 MATCH; the ledger as round 162's: component_b 180 = lookup block
+// 160 (cost 8 x w4 x n5) + 56 less 36 across the first find; the component 210): the active test's argument read
+// from the global's component field 162 (forwarded, same code); the count test through a file-local copy of 0x1d5460's
+// impact-count helper 162 (retail's movsx form, as the ternary); the component declared ahead of the loop 162; the
+// constraint index declared in the `for` 162; the impact index declared at the first find 162.
 // @retail 0x226ce0
 void function_226ce0(void)
 {

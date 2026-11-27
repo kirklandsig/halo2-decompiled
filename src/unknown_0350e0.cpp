@@ -1634,7 +1634,6 @@ void function_4b3d0(s_vector_perturbation *state)
 	state->step = state->step_scale * g_509418;
 }
 
-extern real g_485a6c;
 real g_485a30;
 real g_4e69c0[4];
 real g_4c19b0, g_4c19b4;
@@ -3132,6 +3131,13 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // kept forward dot 284, with the dot written delta-first k, i, j 281, axis-first k, i, j 281, delta-first i, j, k 280
 // (one point, not kept); the distance attenuation as a ternary initialiser, unequal bounds first 424, equal bounds first
 // 496 (2285 B). Retail keeps attenuation in its stack cell from the 1.0 default on; none of these moves it there.
+// M3 lane 13 r166 (reduced-image screens, control 281). Reading the operand ranks: the deltas are symbols 0x18/0x1a/0x1e
+// (first mention k, i, j) and the camera axis members 0x2a/0x2b/0x2d, so every forward product copies the axis. Forms:
+// the delta through vector3d_from_points3d with the dot written axis.k * delta.k + axis.i * delta.i + delta.j * axis.j
+// 281 (the deltas are still numbered at the helper's stores, below the axis), with delta.k first in the k product 281;
+// the helper delta with the kept dot 284; the written deltas with that k, i, j dot 281 (same code); the attenuation
+// default between the deltas and the dot (where retail stores 1.0) 503; the deltas written j, i, k with the dot grouped
+// (j + i) + k 487. Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3974,6 +3980,15 @@ real magnitude3d(vector3f const *v);
 // inverse_b locals 170 (all three the same code); the fallback arm first under the negated test 171 (1035 B); the
 // rotation size clamp through this file's color_delta(delta, -step, step) 170 (same code), with `0.0f - step` 170; the
 // fallback's clamp through color_delta 176 (1037 B), both 176.
+// M3 lane 14 r165 (fast screen with 0x24590 and 0x30bf0, both matched; control 170, masked aligned rows 116; the reduced
+// image now builds this body as the full check does). Frame packer reading: the raw current length is a 3-reference
+// temp placed before any later 4-byte slot exists, so it joins `a`; the sine, dot and angle share +8, and the cosine
+// shares +0xc with an 8-byte temp, the dot's double copy (3 references) kept for the arccosine. Forms: the sine and
+// cosine computed ahead of the axis 180 (1033 B); the projection as `(1.0f - cosine) * dot` 170, the rotated rows with
+// the cosine term first 170, the size as `clamp + a` 170 (each the same code); the j and k cross terms named ahead of
+// the rows and the rows written into `first` in place (retail stores the first row into first.i's home) 181 (1030 B,
+// masked 85, the same code as the in-place rotation helper of include/axis_rotation.h): the cosine still takes a
+// register and the dot's double copy stays. Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4528,6 +4543,16 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // (1288 B; retail keeps the found byte in CL); loop 1 through an entry pointer for its flags and the swap 317 (same
 // code), with `first == 0` 436; the swap target spelled `state->entries` 317 (same code); loop 1's flags read at each
 // use with no `flags` local 370 (1338 B).
+// M3 lane 14 r165 (fast screen with 0x4b160, MATCH throughout; control 317, masked aligned rows 93). R149's held recipe
+// re-applied to this body still gives 4 at 1324 B: left are two order ties, the reloads after pass 4's swap (`first`
+// then the state, retail the state first) and the growth loop's head (`mov ecx, esi` ahead of `lea eax, [edi + 0x18]`,
+// retail the other way round); its loop-3 test is always true where it stands, so the recipe stays held. On the
+// recipe's decay and growth forms without that test: alone 373 (1340 B, masked 26), loop 3 tested as `i <= last` 372,
+// the swap target as `state->entries + last` with `--last` apart 373, `--i` ahead of `--last` 372. On the recipe, for
+// the growth loop's tie: its two pointers declared the other way round 4, the start as `&state->entries[0]` 4 (same
+// code each); `limit` itself counted down (no `remaining`) 68: the pointer's `lea` then comes first as retail's, but
+// the count stays in ESI with no `mov ecx, esi` copy; `remaining` declared first with `entry++` and `--remaining > 0`
+// 45 (1326 B). Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

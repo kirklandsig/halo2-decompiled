@@ -1206,6 +1206,12 @@ real function_30bf0(vector3f *vector);
 // crosses reorder); `forward` as a non-const pointer 84 (same code); the seat count as a long 193 (1318 B); `result`
 // renamed so it sorts after the other cells 84 and the seat maxima a and b given longer names 84 (same code: names do
 // not move these homes). Body unchanged.
+// M3 lane 11 r176 (fast screen with 0x263740, 0x26d370 and 0x25c9d0, all MATCH; control 84). The frame packer joins the
+// clip amount (2 references) to the newer of the seat loop's two compiler temporaries (3 references each), giving
+// that cell 5 references beside result, range and scale (5 each), so it sorts lowest. Forms: the clip amount declared
+// at the top of the endpoint block, of the settings block or of the motion-length block 84 each, the squared
+// distance declared at the top of the settings block 84 (same code each: scope does not move the join); the clip
+// amount initialised to zero 263 (1312 B). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
