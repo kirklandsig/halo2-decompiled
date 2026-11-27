@@ -1398,6 +1398,15 @@ void function_143250(
 // `s35_r2_r3_r3` right after `s35_r2_r4_r4` 939 (10777 B). On the lead: the root-105 r1-square pair (square and its r7
 // product) ahead of the r3-square pair 919; the r1 square's r6 product first in its group 977; that r6 product after
 // the r0 square's 919; `r3_r0_r5` declared ahead of `s35_r2` 924 (each 10773 B). Body unchanged.
+// M3 lane 16 r196 (fast with 0x143250 MATCH; control 939). Reading: the frame is all 4-byte cells, so retail's 0x300
+// against our 0x2fc is one more cell, a value that keeps its own home in retail where ours packs it with another; the
+// matrix sits above the cells, so every one of its references is 4 off (most of the count). Counting each frame
+// offset's references in both listings: three of our cells with 7 references stand where retail has four cells with
+// 1, 5, 6 and 9, so the packing differs among a handful of values. Forms: the ten products band 2 and band 3 both form
+// (r3_r0, r4_r1, r6_r3, r6_r6, r7_r7, r6_r0, r0_r0, r1_r1, r3_r3, r4_r4) declared once at the function's scope, set in
+// band 2 and reused by band 3, 1994 (10500 B; retail forms them again in band 3); only r3_r3 and r3_r0 1780 (10689 B);
+// only the six squares 1901; only the four mixed products r3_r0, r4_r1, r6_r3, r6_r0 1831; the matrix declared after the
+// nine rotation scalars 939 (same code). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

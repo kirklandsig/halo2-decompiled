@@ -904,6 +904,16 @@ struct s_41490_record
 // `real delta[3]` / `.n[]` all stay 8 (`movss xmm0, [forward.k]; mulss xmm0, [esp+0x18]`); flat sums / `dot3f` / 3 term locals 9;
 // depth before callback/flags 11-12; `delta.k` after tag 15; 3 scalar reals 120 (`sub esp, 0`); `/O1 /Ob0` 54 (breaks `0x40e10`);
 // diag volatile read on `delta.k` only 7 (`+0x16d`, matches lines 94-101 verbatim but flips `addss xmm1, xmm0`). Restored at 72.
+// M3 lane 11 r174 (h2m fast with 0x40e10, 0x41040, 0x40e30 and the callers 0xd4cf0/0x244630/0x2be670; control 72),
+// all with 0x40e10 moved into this file (its retail neighbour 0x40e30 is here, and retail calls it from both callers):
+// the main body 127 (415 B, ret 0x1c, the three callers lost); without the volatile 156 (387 B, callers lost); round
+// GB r17's word-read flag bits, aggregate position copy and flat negated dot with the volatile delta re-measured 12
+// (426 B, callers kept), without it 146 (396 B); the staged k, i, j depth on that form 17 / 146; the delta through the
+// existing vector3d_from_points3d 146, with the depth through dot3f 146, with the staged depth 146; 0x40e10 defined at the
+// end of this file instead of ahead of its callers 146 / 12 (same code). Without the volatile every form keeps the delta
+// in xmm0-2 across the call (the call carries a register summary). BLOCKED-BY 0x40e10: retail's callers neither inline
+// it nor trust its register summary; the only form known to give both (an `inline` 0x40e10 in a file without inlining)
+// adds `inline` to an existing function, which waits for the user's decision.
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)

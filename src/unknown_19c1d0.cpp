@@ -398,6 +398,16 @@ void function_19c6d0(s_record_pool *data, long key0)
 // its scratch slot at least as dense as the flagged count's. Forms: on the temporary form, the walk's datum declared in the
 // while condition 149, the flagged count `unsigned long` 149, the entry key read once into a named local 152 (371 B); on
 // this body the flagged count `unsigned long` 108 (same code), the named entry key 134.
+// M3 lane GA r25 (25 fast trials with 0x19c6d0/0x19c190/0x19c5f0/0x19c580/0x19c7c0/0x19c7d0/0x19c9a0/0x19c120 MATCH unless
+// noted; control 108 at 393/393 B, +0x11, al 43, mk 27; body unchanged): s_data_datum_iterator-style walk struct 108 (with
+// temporary 149); sort_4byte(&datum_index, ...) 133 (393 B); sort_4byte(&data, ...) 142 (406 B, keeps ret 4 and 0x19c190
+// MATCH but reloads data in loops 2-3); direct/ternary get_table_c 154/132 (breaks 0x19c5f0/0x19c580; direct+temp 153);
+// PRIVATE linkage 108 (+temp 149); for(;;) break walk+temp 149; for(datum=next;datum;datum=next) walk 226 (476 B: hoists
+// data at entry and xor edx,edx as retail, but changes data to register arg EAX and breaks 0x19c190 to 6); if(table &&
+// table->count > 0) 108; entry->flags bitfield 108; direct datum store 108; 2x50 array frame order+temp 137 (383 B);
+// unsigned long count 108 (breaks 0x19c6d0 to 2); data_find_index direct/in iterator helper 109/108 (+temp 149/149);
+// drop dead iterator.datum_index init 108 (+temp 149); out-of-line record_pool_iterator_step 151 (368 B); if(table)+temp
+// +find 157 (370 B); diagnostic high_water_index reload+temp 177 (348 B: promotes data to incoming EBX, breaking 0x19c190).
 // @retail 0x19c7e0
 void function_19c7e0(s_record_pool *data)
 {
