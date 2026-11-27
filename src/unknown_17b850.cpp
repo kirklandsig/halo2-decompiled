@@ -572,6 +572,14 @@ static inline real contrail_scale_if_17c0e0(word flags, word mask, real scale, r
 // Tried (full build with stand-in SDK headers, where this function starts at 54, not the SDK build's 96): the test
 // that the marker has not moved evaluated into a bool first (`bool same_place = false; if (previous) same_place =
 // !memcmp(...) && !force; if (same_place)`) 28; not kept, a test-and-set flag stays only in a byte match.
+// Roasted-Codes (draft #1567, released 2026-11-27; fast reduced-image checks from the same 54 baseline, 1115 of 1111
+// bytes): one instruction is left, retail folds the current point's `velocity.k` into `t` at its last use (`mulss xmm3,
+// [ebx+0x30]` ahead of the j add) where ours loads it separately. Same code as now: either operand or addend order in
+// the k line, the scale product reversed, `1.0f - t` unnamed, `t`/`s` declared per marker, an early `continue` on a
+// failed allocation. The velocity through a `vector3f &` 63 at 1114 B (folds j, not k), through `vector3f_assign` 69,
+// into a local vector then assigned 113 at 1139 B, through an inline interpolate helper 97 at 1117 B; the position
+// stored after the velocity 72; `t` computed ahead of the `j < point_count` test 226 at 1111 B (the division moves
+// ahead of the branch, k still unfolded). The permuter's best of 173 whole-image tries is the bool test above.
 // @retail 0x17c0e0
 void function_17c0e0(long contrail_index, short count, bool force)
 {

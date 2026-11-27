@@ -10011,6 +10011,14 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // store position; statement order, under the bar); the normal copied ahead of the point 397; the owner as a brace
 // initialiser `{ NONE, NONE, NONE, 0 }` 397 (same code); TEST_FIELD_BIT at both seat tests with the material type first
 // 388 (2219 B; both parts match-only); `up` declared ahead of `across` 397 (same code). Body unchanged.
+// GB27 (20 fast trials with 0xcfc90/0xcf040/0x24f590/0xea090 MATCH; control 397 at 2214/2229 B, body unchanged): typed
+// `TEST_FIELD_BIT(UNIT_SEATS(...).flags.bit11)` at both seat tests 390 (2219 B, -7, under 8-pt bar; same 390 with `dealt`
+// flag, inline `g_4e6948->mode != 4` helper, `!flags` first, outer `collision`, `tags` local, or `aim*range`-first `j/k`
+// ray rows); `direction_scale` + `vector3f_add_scaled` ray construction (across/up/aim orders) 518/432/515 (432 at
+// 2229 B); `objects = g_4e0300` for unit/weapon/parent 515 (2230 B, first diff +0xd, mk 113 -> 91, removes tail `or
+// esi,-1`; unit/weapon only 479); inline weapon lookup 505; `damage_index` before `weapon_index` alone 427 (2230 B,
+// mk 76); on GB24's 314 form + typed `TEST_FIELD_BIT(flags.bit11)` 324 (+0x0, with `objects` 475); `objects` +
+// `damage_index` before `weapon_index` (+ `tags` / `col`+sym) 550/550/551.
 // M3 lane 6 r250 (plain checks with 0xcfc90 and 0xcf040 MATCH; control 397; the reduced fast image builds this function
 // at 2182 B, so only plain checks count here). TEST_FIELD_BIT at both seat tests alone 390 (2219 B: both tests become
 // retail's `shr edx, 0xb; test dl, 1`, aligned 183 -> 167); the i ray row spelled up-first like the j and k rows alone

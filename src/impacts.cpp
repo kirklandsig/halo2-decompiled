@@ -1611,30 +1611,28 @@ PRIVATE inline void impact_effect_data_new(s_effect_new_data *data, long definit
 	data->scale_b = scale;
 }
 
-PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definition_index, s_impact_effect_location const *location, real scale)
+/* effect_parameters_initialize_inline's defaults (src/unknown_175bd0.cpp), on this file's view of the parameters */
+PRIVATE __forceinline void impact_effect_data_initialize(s_effect_new_data *data)
 {
 	memset(data, 0, sizeof(*data));
-	data->color_a = 0xff808080;
-	data->color_b = 0xff808080;
-	data->unknown34 = 0;
-	data->unknown38 = 0;
-	data->unknown3c = 0;
-	data->unknown30 = 0;
-	data->unknown5c = 0;
-	data->unknown00 = 0;
+	data->definition_index = NONE;
 	data->unknown18 = NONE;
 	data->unknown08 = NONE;
 	data->unknown10 = NONE;
 	data->unknown0c = NONE;
+	data->unknown34 = 0;
 	data->unknown14 = NONE;
-	data->definition_index = definition_index;
-	data->unknown20 = 1;
-	data->location = location;
-	data->scale_a = scale;
-	data->scale_b = scale;
+	data->unknown38 = 0;
+	data->scale_a = 1.0f;
+	data->scale_b = 1.0f;
+	data->unknown3c = 0;
+	data->unknown30 = 0;
+	data->color_a = 0xff808080;
+	data->color_b = 0xff808080;
+	data->unknown5c = 0;
 }
 
-// score 586 (was 651): statement-by-statement walk against retail found no logic differences. What still differs is
+// score 495 (was 586): statement-by-statement walk against retail found no logic differences. What still differs is
 // register and stack allocation. Retail keeps the impulse block's scale in xmm5 (spilled at [esp+8], reloaded right after
 // each call) where ours reloads xmm0 before each use. It also passes the impact to 0x2284c0 in ECX where ours uses EAX,
 // and passes both materials through stack temporaries ([esp+0x24] and [esp+0x94]) where ours reads material_a directly.
@@ -1697,6 +1695,17 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 // 2 jump targets, `!continuing` dl/al, and 2 lea order before 0x227af0). Still BLOCKED-BY 0x2284c0 (contributor code).
 // m3 review: the shared helper moved to include/effects.h is not inlined here (1187), nor is that copy as plain
 // inline (1197); with impacts.cpp at HEAD the same tree keeps 0x185be0 (0 lost).
+// M3 lane 4 r268 (kept, 586 -> 495 at 2987/2994 B, plain): the GA round 8 form without include/effects.h. The effect
+// fills call this file's copy of the shared initializer's defaults (impact_effect_data_initialize, in
+// effect_parameters_initialize_inline's order, on s_effect_new_data) and then set the effect's fields, as that
+// initializer's callers do; the materials go to 0x2284c0 as by-value c_type_47f957 copies (the two-view local_3 and its
+// cast gone). GA8's whole-image loss was the include, not the body: effects.h alone (no code change) loses 0x185be0,
+// 0x1c4590 and 0x24cf66, and so does any helper added to a file linked ahead of them (keeping function_2294a1 as a
+// wrapper around the initializer: 495, but loses 0x1c4590 and 0x24cf66). Without the unknown00 store at each fill 632.
+// GA8's 68/28/20 leads above were measured on the same code. Still BLOCKED-BY 0x2284c0 (contributor code).
+// On this base: a named previous continuous type for its two reads 495 (same code); the location's tag stored ahead
+// of its normal 493 (statement order, two points); the else block's type read at each use 493, with the named previous
+// type 493; the contact time named once for its two tests 513.
 // @retail 0x2294a0
 void function_2294a0(
 	long impact_index,
@@ -1710,7 +1719,6 @@ void function_2294a0(
 	long impulse_effect_b = NONE;
 	real scale;
 	bool impulse = false;
-	union { short field_0; point2f field_0_1; } local_3;
 
 	effect_location.position = impact->position;
 	effect_location.normal = impact->normal;
@@ -1744,8 +1752,7 @@ void function_2294a0(
 		sound_position.compressed_forward = vector3d_compress(&impact->unknown50);
 		sound_position.velocity = *g_4687a4;
 		sound_position.location = object->location;
-		local_3.field_0 = *(short const *)&impact->material_b;
-		impact_material_effects_get(impact, &impact->position, impact->material_a, *(c_type_47f957 const *)&local_3.field_0, 0,
+		impact_material_effects_get(impact, &impact->position, c_type_47f957(impact->material_a), c_type_47f957(impact->material_b), 0,
 			&sound_a, &effect_a, &sound_b, &effect_b, &sound_c, &effect_c);
 		if (sound_a != NONE)
 		{
@@ -1783,17 +1790,35 @@ void function_2294a0(
 
 			if (effect_a != NONE)
 			{
-				function_2294a1(&data, effect_a, &effect_location, scale);
+				impact_effect_data_initialize(&data);
+				data.unknown00 = 0;
+				data.definition_index = effect_a;
+				data.unknown20 = 1;
+				data.location = &effect_location;
+				data.scale_a = scale;
+				data.scale_b = scale;
 				impulse_effect_a = effect_new_from_parameters((s_effect_parameters *)&data);
 			}
 			if (effect_b != NONE)
 			{
-				function_2294a1(&data, effect_b, &effect_location, scale);
+				impact_effect_data_initialize(&data);
+				data.unknown00 = 0;
+				data.definition_index = effect_b;
+				data.unknown20 = 1;
+				data.location = &effect_location;
+				data.scale_a = scale;
+				data.scale_b = scale;
 				impulse_effect_b = effect_new_from_parameters((s_effect_parameters *)&data);
 			}
 			if (effect_c != NONE)
 			{
-				function_2294a1(&data, effect_c, &effect_location, scale);
+				impact_effect_data_initialize(&data);
+				data.unknown00 = 0;
+				data.definition_index = effect_c;
+				data.unknown20 = 1;
+				data.location = &effect_location;
+				data.scale_a = scale;
+				data.scale_b = scale;
 				impulse_effect_b = effect_new_from_parameters((s_effect_parameters *)&data);
 			}
 		}
@@ -1843,8 +1868,7 @@ void function_2294a0(
 					long effect_b = NONE;
 
 					scale = impact_level_get(impact, impact->type);
-					local_3.field_0 = *(short const *)&impact->material_b;
-					impact_material_effects_get(impact, &impact->position, impact->material_a, *(c_type_47f957 const *)&local_3.field_0, impact->type,
+					impact_material_effects_get(impact, &impact->position, c_type_47f957(impact->material_a), c_type_47f957(impact->material_b), impact->type,
 						&looping_sound_a, &effect_a, &looping_sound_b, &effect_b, NULL, NULL);
 					if (start_looping_sounds)
 					{
@@ -1879,12 +1903,24 @@ void function_2294a0(
 
 						if (effect_a != NONE)
 						{
-							function_2294a1(&data, effect_a, &effect_location, scale);
+							impact_effect_data_initialize(&data);
+							data.unknown00 = 0;
+							data.definition_index = effect_a;
+							data.unknown20 = 1;
+							data.location = &effect_location;
+							data.scale_a = scale;
+							data.scale_b = scale;
 							impact->effect_a = effect_new_from_parameters((s_effect_parameters *)&data);
 						}
 						if (effect_b != NONE)
 						{
-							function_2294a1(&data, effect_b, &effect_location, scale);
+							impact_effect_data_initialize(&data);
+							data.unknown00 = 0;
+							data.definition_index = effect_b;
+							data.unknown20 = 1;
+							data.location = &effect_location;
+							data.scale_a = scale;
+							data.scale_b = scale;
 							impact->effect_b = effect_new_from_parameters((s_effect_parameters *)&data);
 						}
 					}
@@ -1905,7 +1941,7 @@ void function_2294a0(
 		real level = impact_level_get(impact, impact->unknown1d);
 		s_havok_component *component = havok_component_get(impact->component_a);
 		transform4x3f matrix;
-		point2f &size=local_3.field_0_1;
+		point2f size;
 		vector3f velocity;
 		hkRigidBody *rigid_body;
 

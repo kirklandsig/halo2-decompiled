@@ -1760,6 +1760,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // top of the crossing arm, or dy alone at function scope 42 each, `real fraction;` at function scope 42 (same code
 // each: neither declarations nor spelling move these ranks); the deltas through the file's point-difference helper
 // 45 and through vector2d_from_points2d 45. Body unchanged.
+// M3 lane 15 r154 (H2M_FAST with 0x239e50, 0x239d50 and 0x239b80; control 129; on the 42 lead, 888 B): the allocator's
+// float ledger on the lead: the fraction 148 (its divide block 36, five clamp blocks 8 each, the two output products 72),
+// the denominator 92, the zero 54, dy and dx 50 each (their block 64, the output 12, -26 over the six clamp blocks
+// where they are live and unread); retail's colours need dy above all three, about 100 more, which no spelling of the
+// crossing gives. Forms on the lead: the y output written first 47; the denominator written `dx * n.i + dy * n.j` 42,
+// `dy * n.j + dx * n.i` 42; the outputs as `fraction * dx + x` 42 and `x + dx * fraction` 42 (same code each). Body
+// unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
