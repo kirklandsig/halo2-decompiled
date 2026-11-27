@@ -1042,11 +1042,23 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // vector2f perp with dot_product2d at both perpendicular dots 660 (3499 B, +0x60, fr=0x88); normalize_inline on 462 base 763 (3503 B, +0x60);
 // on the 457 base (MIN(1.0f, ratio) both + axis-first frame_velocity dot3f): dot_product2d at 0.99 test 660 (3499 B, +0x60), double-parens 0.99 + cross3f_staged + dot3f(&local_7, &local_9) 467,
 // symmetric if/else s yx 729, direct == local_22 bool flip 661, early field_50 457 (3504 B, al=165, mk=56: under 8-point keep bar).
+// M3 lane 7 r237 (h2m fast with GB15's companion list; control 462): the side point's sum with the two operands swapped
+// 462, local_14 declared with the opening locals 462 (both the same code); the side value as `local_24 = local_23;
+// if (!local_22) local_24 = -local_24;` 649 (3502 B); the side point's y member assigned ahead of its x on the ternary
+// 706 (3499 B, first difference +0x4e: every 4-byte home four bytes lower, as the earlier select form); the direction copied
+// as a brace initializer from the three input members in i, j, k order 764 (3487 B); local_19's test written as
+// `field_14 > 0.0f ? field_14 : ...` 706 (3500 B); local_18 as the float product `field_1c * 0.5f` 703 (3499 B).
 // GB28 (28 fast trials on calibrated companion list, all 8 matched peers including 0x1f38c0 and 0x29b990 MATCH; control 462 at 3504/3499 B, +0x100, fr=0x88, pos=+0x8c; body unchanged):
 // scalar `local_24` + `cy` in arms / `cx` after join 720 (3535 B, fr=0x90: keeps `y` unmerged in both arms but spills `local_24`/`cy`); direct `local_26` in if/else with `local_24` xy 595 (fr=0x88, pos=+0x8c), yx no-s 707; ternary in both coords 589;
 // drop `local_31/32/33` 696; scalar `vx/vy/vz` frame_velocity 673; `vector3f_add_scaled` frame_velocity diff 672 (+0xf9, pos=+0x64); `vector3f_add(&local_7, &local_6, &local_6)` 664 (3499 B, +0x60); `0.99` dot swapped / ji 464/462;
 // turn factor `MAX(dot, 0.0f)` single expr 671; `dot_product2d` before `local_26` 461 (-1); `basis_dot_xzy(&local_9, &local_9)` + `vector3f_scale` 664 (3499/3499 B, +0x60: matches all 21 `i, k, j` normalize instructions verbatim; + 457 + early `local_6.i/.j` + `byte same` 673); zero-extra-local inline `i*i+k*k+j*j` + `vector3f_scale` 747 (3499 B, +0x100);
 // on the 457 base (MIN(1.0f, ratio) both + axis-first frame_velocity dots): `dot_product2d` before `local_26` 456 (-6, under 8-point keep bar; + tail `dot3f(&local_7, &local_9)` / `0.99` ji / early `field_50` / `cross3f_staged` 456, al=333, mk=104), `local_23 > local_24` 652, single-expr `local_24` 666, `vector3f_add(&local_6, &local_7, &local_6)` 663, single-stmt `local_27` 656, early `field_50` 457 (al=328, mk=97), clean combo 702, turn `MAX` 671.
+// M3 lane 7 r238 (h2m fast with GB15's companion list; control 462; a frame trace of the packer): local_8 (7 refs,
+// density 583) packs above the 12-byte cell of local_14, the copy of local_5 and local_13 (8 refs, 666), the reverse
+// of retail's order (local_8 at 0x80, that cell 12 higher). Tried: the copy of local_5 as its planar part 706 (3485 B;
+// retail copies all three members); the planar view built from the copy's two members (no address) 728 (3476 B);
+// local_13 declared with the opening locals 462; local_14 declared ahead of the 0x26c180 call 462; local_8 declared
+// with local_3 462 (each the same code).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

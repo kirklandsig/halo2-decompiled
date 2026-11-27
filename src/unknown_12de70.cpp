@@ -865,6 +865,15 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // stored after the block read re-measured 73. Diagnostic (the callee is a contributor's; measured and put back): the
 // release callee given an unread third parameter that receives the block, last, first or second, 27 each (the same
 // code: an unread register argument leaves no trace at the call).
+// M3 lane 6 r253 (reduced-image screen with 0x12e210, which stays matched; control 27, the each-use loop with a tail
+// block local re-measured 51). The release through a new null-safe inline wrapper (`if (block)` around the call) taking
+// the field read: on the each-use loop 44 (269 B: the null test stays in the code and the block goes to EDX, but the
+// arm reloads), with the tail block local 53 (267 B), on main's block local 27 (same code, the test folds); the arm's
+// test written `linked && block` on the each-use loop with the tail local 53 (267 B, the null test is kept). A
+// forced-ranking search over 60 single allocator decisions on the 51 form finds no match (the search's best 39: the
+// index product picked into EBP, the loop's block still straight in ESI). Rank reading on that form: the index product
+// 18 is coloured ahead of the cache block 16 (6 references against main's 7 and 22), which is the EDI/EBP swap; the
+// loop's block (44) still sees ESI free with its argument preference. Still BLOCKED-BY 0x223e00 (the arm's second use).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

@@ -2480,6 +2480,18 @@ real function_17c900(short function_type, real input);
 // as now and copied to the output in each arm and a final else 390 (1489 B). Diagnostic: the three exits with no salt
 // local (the shift at both uses) 328 (1466 B, the entry then retail's: index from the stack, no EBX save; next the
 // inlined normaliser, where retail holds y and z in XMM2/XMM1), 0xf8eb0 1027 (4699 B).
+// M3 lane 14 r165 (fast screen with 0xf8eb0, 1013 throughout unless noted; aligned = difflib rows, masked = registers and
+// stack offsets masked; control 348, aligned 263 / 119). The three exits as direct component stores (`aim_point->x = ...`,
+// the plain copy in a final else) 377 (1477 B, the same code as the point setters); that with the salt named just ahead of
+// the wander clock 382 (1480 B); the wander range through the existing magnitude3d 348 (same code). Lead, a declaration
+// moved into a branch so kept only with a match: the three direct-store exits with the salt named as the first statement
+// of the wander arm 332 at 1468 B, aligned 174 / 105, 0xf8eb0 1027: retail's whole convention (index on the stack and read
+// again for the salt, output in EBX, first +0x4f), where the salt named just ahead of the clock keeps the index in a
+// register; the same salt placement with the single final copy 366 (1472 B). On that lead the lead field read at each
+// use (retail reads +0x198 again in the lead block) 380 (1478 B: the index goes back to a register). Diagnostic (a value
+// written at each use): the shift at both uses with the direct-store exits 328 (1466 B, aligned 162 / 99). Left on the
+// lead: retail's early SSE zero (xmm4), to_target's j and k kept in XMM2/XMM1 from their x87 transfer through the
+// normaliser to the drift cross, the lead field's second read, and the rotation's register homes. Body unchanged.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2757,6 +2769,13 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // (not kept: operand order; + `center` vec3 27, + inline inverse 27, + 3 store orders 19, held as a lead), `+=` +
 // `vector3f_scale` 208 (gives center-first x/y/z but breaks center scale), plain add 210, `n[0..2]` `+=` 208, `b9a90`
 // inside block 29, uninit `prior_position` inside block 29.
+// M3 lane GA r29 (17 real + 2 diag fast trials with 7 matched peers MATCH; control 29 at 2190/2190 B, +0x37; body unchanged):
+// dropping `definition_bytes` with typed `s_projectile_definition` fields 207 (+ typed `s_projectile` 207, + both scales 207,
+// + late `child_position` 207, + swapped add 207, + `vector3f_scale` + swapped add 205 [fixes x, y stays child-first], + `center`
+// vec3 207, + 3 store orders + scales 202, + swapped add 200); keeping `definition_bytes`: `vector3f_scale` on probe 29, typed
+// `s_projectile` fields 29, typed `s_projectile *parent` 29, `vector3f child_position` + center scale 29, both `vector3f` + scale 29,
+// late `child_position` + scale 29, `center` assign + scale + swapped add 27 (match-only operand order; x fixed, y stays child-first),
+// `parent_index` local 505; diagnostic phase locals k=1,2 before `center` + scale 29/29. `0x1ca690` short arg remains held as a patch.
 // M3 lane 5 r255 (fast screen with 0xf8eb0, 0x1ca690, 0xa84e0, 0xfcea0, 0xfcbc0, 0x1697c0, 0xd6660, 0xd6c80; plain-confirmed).
 // Held, not kept: 0x1ca690's third and fourth parameters `short` (both retail callers load the 16-bit value with `xor ecx,
 // ecx; mov cx, word` and push the dword, as for a 16-bit formal; 0x1ca690 stays matched) 29 -> 12; alone it raises the

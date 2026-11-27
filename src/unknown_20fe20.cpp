@@ -1573,7 +1573,7 @@ real function_210a30(s_type_c3b527 const *a, s_type_c3b527 const *b)
 }
 
 // @retail 0x210b60
-real function_210b60(s_type_c3b527 const *a, point3f const *b)
+inline real function_210b60(s_type_c3b527 const *a, point3f const *b)
 {
 	real distance_squared;
 
