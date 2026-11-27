@@ -1037,6 +1037,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // spelling of the shared helper) 154 (880 B, frame 0x1c); the four globals only this function uses (g_55e710, g_55e714,
 // g_55ecd0, g_55ecd4) declared `static`, all four or the direction alone, 162 each (880 B, frame 0x1c: the limit call's
 // constant push is hoisted into the rotation). Body unchanged.
+// M3 lane 5 r253 (fast screen with 0x2551f0, 0x1ff360, 0x26d570, 0x1161f0, 0x1e5bb0 and 0x118140; control 130). The
+// dot product's order is the reassociation sort: each product ranks by its higher leaf plus twice its lower leaf, and
+// here they sort j, i, k where retail has k, j, i (0x2551f0's retail k, i, j comes from the same helper text). A
+// forced-ranking search over the allocator and the entry block's scheduling (32 decisions) moves nothing. In the shared
+// rotation helper: a j local beside the k local 148 (0x2551f0 59, 0x1ff360 90, 0x26d570 39); the cross terms ahead of
+// the projection 155 (0x2551f0 78, 0x26d570 200); the cross terms computed j, k, i 130 and the j and k rows as
+// `sine * cross` 130 (same code everywhere); an i local beside the k local 150 (all three matched callers lost).
+// Body and helper unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

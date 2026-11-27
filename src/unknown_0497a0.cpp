@@ -766,6 +766,15 @@
 // colour vectors read through their pointers at each scale 639 (2571 B); case 1's scale from `&v2` in place of the
 // selected up pointer 658 (2582 B); the side and vertical shifts passed as fields 537; the shape pointers'
 // declarations swapped 536 (same code). Body unchanged.
+// M3 lane 6 r250 (fast screen with 0x4a1e0, unchanged at 322; control 536). Reading of retail's wave code: the plain sine
+// is stored to its own float cell (+0x1c) right after its fsin, the mixed wave to the cell below it (+0x18), and both
+// are scaled by 0.03 and 0.025 in SSE after reloading; ours folds both scales into the x87 code. Retail's mixed wave
+// leaves sin x, cos 7.8y and cos 7.75y on the x87 stack (popped after the store), where ours stores two of them to the
+// transfer cell with `fst`. Lead: the two waves as two adjacent float cells, a two-element array or a point2f (plain
+// sine in the second member), 634 each (2670-2672 B): frame 0x60 as retail's, both waves stored and scaled in SSE, but
+// the first cross and the adds reorder. Forms: sin x and the two cosines as named doubles 578 (2629 B), the same
+// declared ahead of the plain sine 578, with the fast sine named too 576; the two scales named ahead of the adds 650
+// (2594 B); the point2f form with the first cross staged into w 649 or into its own vector 634. Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1752,6 +1761,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // z, y, x order 417; in y, x, z order 353; first and second as aggregate copies with the z offsets applied after 693 (2676 B).
 // The half width computed ahead of the tint block 525 (2588 B); the outer vertex pointer declared at the top of the loop body
 // 217 (same code); both 525.
+// M3 lane 14 r163 (H2M_FAST with 0x42c50/0x42b20/0x43720/0x43740, all MATCH; control 217). Frame reading: the packer
+// here places named locals by density, so the u step, the V width and v are 4-byte cells of the density-500 group and
+// `first` is a 12-byte home (case 0's spilled x copy); retail's three top cells are allocator spill temporaries (values
+// it coloured, then spilled), 8 bytes each, which is the whole 4-byte frame gap (24 against 20). Forms: the two points
+// and the normal declared at the top of the loop body 217; the normal declared ahead of the points 217; the points
+// declared separately, second first 217 (all the same code); `vertex[0].u = outer->u = u;` 226; the half width as
+// `0.5f * width` 217. A forced-ranking search of 16 decisions found none that moves the frame.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

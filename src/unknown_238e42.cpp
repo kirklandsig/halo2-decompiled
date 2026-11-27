@@ -1478,6 +1478,12 @@ bool __stdcall function_2399da(long controller_index)
 // at their assignments 90; the dispatch as a chain with no early returns and the task index preset to NONE 90; the
 // membership record declared in the block around its call 90; the selected-team record in a block around its call 90
 // (the same code each). Identity ECX / rank EAX remain.
+// M3 lane 2 r158 (fast screens with 0xac050, 0xac360 and 0x2399da, all MATCH; control 90). Allocator reading: the rank (15: the
+// store block counts 9) is coloured in the second pass with no register preference and takes EAX; the identity's piece from
+// the test to the removal (6) exists only in the third, so a forced-ranking search finds the rank's pick moved to ECX as the
+// one decision that gives the byte match. Forms: the rank dispatch as one flat chain (NONE, over-rank refusal, rank 3, set)
+// 90; the rank stored and passed through a pointer to the member record 90; the identity test as an early-return guard with
+// its 0x5c dialog 90; the permission refusal as the first arm 90; the own rank declared with the function's locals 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

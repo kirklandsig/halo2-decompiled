@@ -785,6 +785,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // local used by both routes, read straight from `headers[component->object_index & 0xffff]` (no index locals), case 0
 // as main or through the bit2 view: byte type after the rigid body 136/136 (216 B) [213], before it 117/116 (236 B)
 // [213]; long type after the rigid body 141/141 (212 B) [213], before it 105/105 (256 B) [9]. Body unchanged.
+// M3 lane 16 r196 (fast, caller 0x1d5bf0 in brackets; control 96 [0]). One-read forms with every local used twice
+// (no one-use local): object index, header table, rigid body and a type local read once ahead of the kind test, case 0
+// through `headers[object_index & 0xffff].object` or through havok_object_get(object_index) with the type read from the
+// table directly; all eight declaration orders with the type after its inputs, byte and long type (22 forms): best
+// long type in the order table, object index, type, rigid body 71 (256 B) [168]; object index, type, rigid body 105
+// (256 B) [9] in both families; the rest 111 to 137 (216 to 240 B) [209/213]. A datum-index local
+// (`component->object_index & 0xffff`) shared by the type read and case 0, long or word, byte or long type, in four
+// orders (16 forms) 128 to 141 [209/213]. Every keepable one-read spelling still flips the caller's incoming pair.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

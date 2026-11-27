@@ -579,6 +579,16 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // `result = true` 14 (the first extended index then gets its own `xor eax, eax`, as retail); the seats base read into a
 // local in each pass 26; a while loop with the index declared first 11; the index initialised ahead of the seat pointer
 // inside the guard block 11.
+// M3 lane 3 r316 (fast; control 8). Allocator ledger on the exclusive bound: the index 18 (its guard-block def with five
+// candidates referenced there, the latch's increment and extension at loop weight 2 with three), the count 16 (load and
+// compare in the guard block, the latch compare), both -16 for the three body blocks; so the count needs three more
+// points (two more candidates referenced in the guard block, or one more count reference there). Forms on the
+// exclusive bound: the element as `tag->seats + i` 11; the count and the seats base named in the guard block 24; the
+// seat's flags copied to a local for the test 11; the seat's NULL ahead of `result = true` 14. Lead (match-only, a
+// guard that repeats the loop's bound): the NULL ahead of `result = true`, the index declared in the guard block and
+// `if (tag->seat_count > 0)` around the scan 9 (count ESI, index EBP, `cmp esi, ebp` and the first extended index's own
+// `xor eax, eax` all retail's; left only the index's xor and the NULL store one block early, in the flags block); with
+// the NULL and the index in the guard block 6 (the zero web back in EAX), the guard as `tag->seat_count > i` 6.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -2438,6 +2448,15 @@ void function_1f86a0(long actor_index);
 // cycles) gave nothing below 123. Forms: the decline test's mask as a plain truth test 134; both mask tests as truth
 // tests 134; the entry's element index named once for the lookup and the accept 242; the unit through the existing
 // OBJECT_DATUM_GET macro 123 and through object_header_get 123 (same code each). Body unchanged.
+// M3 lane 6 r251 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123). Allocator reading:
+// the mask byte ranks 88 (its loop-top block references eight values) against the entry's 45; the mask forced down to
+// 40 (a forced compile, not source) gives the 0x14 frame and the mask at +0x13 but 244, the shared flags byte then
+// holding BL across the root calls; a forced-ranking search (30 single decisions) found nothing below 123. Forms: both
+// post-loop 0x20 tests as `(flags >> 5) & 1` 123 (same code); the decline as two tests (`u86 && !bit40`, then
+// `(u86 || specified) && !same`) with two decline calls 256 (881 B: the calls stay apart, so retail has one call
+// site); `same` as `specified == 0x20 ? roots equal : false` 223; the decline's bit 6 as `!((flags >> 6) & 1)` 123
+// (same code); the decline ternary's arms swapped with the test negated 232 (863 B); re-measured the tail's byte flags
+// local 140. Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

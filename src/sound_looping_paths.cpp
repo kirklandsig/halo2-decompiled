@@ -1071,6 +1071,25 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // for the pinned bits 837 on main's body (same code) and 969 on the lists. The lists' frame is 8 bytes over retail's:
 // in the target loop retail's conversions share two slots (value and bits in one slot per conversion), ours keep three
 // separate address-taken temporaries alive across the loop.
+// GA25 (56 fast trials with 0x18bb80/0x188f90/0x18a5a0/0x16b840/0x2195f0/0x2197f0/0x2197b0/0x219650/0x18d730/0x18dc90,
+// all 8 matched peers MATCH throughout; control 837 at 3327/3327 B, +0x2, al=1015, mk=416; body unchanged):
+// On main's 837 base: !target->audible first 837 (same code), + override decibels before gain 893 (3292 B, mk=404),
+// + 0x2195f0/0x2197f0 helpers 873 (al=691), + distance/!(fabs(-range)<0.0001f)/portal 905, + combined flags 4|2 repair 908
+// (mk=388), data_find_index fade scan 844, inline g_4e0348 fade_time both loops 936 (3280 B), retail build target order 897,
+// word_flags_set on audible+muted 860 (3308 B), + early muted + slot pre-inc 840 (3327 B).
+// On count-first POD lists lead (frame 0x4e0, +0x27; diagnostic const-ref pin for g_44a0b4 reloads, NOT kept): !audible 818
+// (3327 B, al=272, mk=140); + distance/portal/target build order 811 (3336 B, mk=130); + tag read before sound ptr 760
+// (3336 B, al=252, mk=119); + 2-caller loop_path_fade_time 765 (3327 B, al=235, mk=107); + single-ptr loop_path_start 788
+// (3304 B, al=229, mk=107; no approach_126660 789; clean without const-ref 861, 3232 B, mk=118); + word_flags_set on
+// audible/muted + early choice->muted + slot=existing.count++ 799 (3290 B, al=211, mk=91; bitfield+val-approach 756 at 3327 B,
+// al=290, mk=106); + shared post-if clamp `real fraction = choice->distance; if (!(fabs(-range)<0.0001f)) fraction /= range;
+// else fraction = fraction < 0.0f ? 0.0f : 1.0f; fraction = PIN_126660(fraction, 0.0f, 1.0f);` -> 785 (3290/3327 B, al=180,
+// mk=79: drops xorps xmm3 hoisting, restores 1.0f=xmm5 / 3.0f=xmm4 / 2.0f=xmm3 across the full body, matches lines 2-145,
+// 240-320, 660-700 and 720-777 verbatim; loop_path_pin same 785; both PIN_126660 772 at 3303 B, al=185, mk=83; direct used
+// OR / pool local / existing-first / nested f1 / while override / 0x11c1b0 all 785, al=180, mk=79; c_static_stack methods
+// or ctor disable existing/gains stack overlay -> 1044-1229 at 3426-3465 B). Remaining 37 B on the 785 lead: targets.count
+// hoisted into EBX across override/first scan (blocking mov ebp, 0xfdff, or ebx, -1 and existing.count reload), first-scan
+// movsx source, and addss operand order in approach.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
