@@ -216,41 +216,17 @@ inline real function_10e8e0(real t);
 
 #define VIBRATION_VERSION 0x96c
 
-// score 12 (was 18) in a full build with stand-in SDK headers: the key pointer steps in the loop body ahead of the
-// `t_key > time` test (retail 0x10e145 `add esi, 4` precedes 0x10e148), and the blend, magnitude test and
-// insert/replace section run only when the channel has keys and is not skipped: retail's 0x10e07e (jle, key_count
-// <= 0) and 0x10e086 (jne, skipped) jump to the channel loop's latch at 0x10e3fd, past 0x10e258-0x10e3fc. The channel
-// loop counts c and takes the channel and prior-value pointers from it, so the channel pointer's home store is in the
-// preheader as retail's (0x10e02b); the comma-stepped pointer loop had it ahead of the guard (18). Left: push esi
-// before push edi (retail pushes esi after the memset), and the preheader loads XMM5 from +0x1c ahead of XMM1 from
-// +0x2c (retail XMM1 first, 0x10e004). Tried (round 248): `previous[c]` read directly with the channel pointer (386,
-// 1571 B), both read through `channels[c]`/`previous[c]` (386), `real prior = previous[c];` (328, 1616 B), the channel
-// pointer from `&curves->channels[c]` (262), the counted loop with both pointers declared before it and stepped at the
-// end of the body (22); on the kept form the key floats declared v_first first, t_first/t_last first, or the four
-// endpoints after the five others (12 each). Round 159 (m3 lane 14, fast): the clear as `real previous[24] = {0};` 343;
-// `used` declared after the clear 11 (its store then follows the clear, retail stores it first; the esi push stays
-// ahead of the clear); the first-key value assigned before the first-key time 17 (fixes the preheader load order,
-// swaps the body order); the four endpoint floats declared in the channel block 12, with `used` after the clear 11.
-// A forced-ranking search on the 11 form finds nothing lower: the push placement is not an allocator decision.
-// M3 lane 2 r155 (fast): the scheduler generates the ESI and EDI saves first in the clear's block (both ahead of the
-// `used` store and the clear), so the ESI save follows them only if it is generated in a later block; retail is the
-// only function in the image with a clear followed by a sunk ESI save. The six preheader loads tie in the scheduler and
-// keep their generated order. Tried: the index test reading `output->indices[i]` at each use 470 (1647 B); `used`
-// declared after the array 12 and the counter declared ahead of the loop 12 (same code each); the index as a signed
-// char 440 (1632 B); the fill loop as while 382 (1536 B, not unrolled) and as do-while 685 (diagnostics); the last-key
-// pointer as if/else 265; the first key through `keys->` 12 and the time products scale-first 12 (same code each).
-// M3 lane 11 r176 (fast screen with 0x10e480, plain check confirmed): `if (used > 0)` around the output loop 2 (the ESI
-// save then follows the clear and the zero-channel exit jumps straight to the epilogue, as retail; only the channel
-// loop's entry loads of the first key's time and value stay swapped); with it, the first and last keys converted
-// through a file-local inline helper (the version test and both conversions, results through pointers) MATCH in
-// the fast and plain checks, but the full check then loses matched 0x1c4590 (5) and 0x24cf66 (2), the pair a new
-// inline helper flips: HELD, held as a patch. The helper alone 10; the helper at every key site 170 (161 with the guard);
-// the two keys' conversions under two separate version tests (no helper) 2. Also on the guard: the first-key value
-// converted first 7, both times first 12, both values first 12, value-time-value-time 8; the first key's time in a
-// local with the value product first 7; the first time in two steps 9, both times in two steps 293. Without the
-// guard: the clear as `= {}` 12 (same code); a guard on the channel loop 425; the fill loop as an inline helper
-// 719 (382 forced inline, not unrolled). A forced-ranking search on the guard form finds only loop-entry scheduler
-// ties.
+/* a key's time and value, converted only for the current curve version */
+static inline void vibration_key_read(s_vibration_curves const *curves, s_vibration_key const *key, real *time, real *value)
+{
+	if (curves->version == VIBRATION_VERSION)
+	{
+		*time = (real)key->time * curves->time_scale;
+		*value = (real)key->value * 0.0001f;
+	}
+}
+
+/* blends each channel's curve value at the time into the previous output and keeps the twelve largest */
 // @retail 0x10de40
 void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, real time, real blend, bool skip_special)
 {
@@ -294,13 +270,8 @@ void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, rea
 				if (key_count > 0 && !skip)
 				{
 					s_vibration_key *last = key_count > 1 ? keys + key_count - 1 : keys;
-					if (curves->version == VIBRATION_VERSION)
-					{
-						t_first = (real)keys[0].time * curves->time_scale;
-						v_first = (real)keys[0].value * 0.0001f;
-						t_last = (real)last->time * curves->time_scale;
-						v_last = (real)last->value * 0.0001f;
-					}
+					vibration_key_read(curves, keys, &t_first, &v_first);
+					vibration_key_read(curves, last, &t_last, &v_last);
 					if (t_first >= time || key_count == 1)
 					{
 						result = v_first;
@@ -384,10 +355,13 @@ void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, rea
 				}
 			}
 
-			for (long i = 0; i < used; i++)
+			if (used > 0)
 			{
-				output->indices[i] = (signed char)out_indices[i];
-				output->values[i] = real_to_signed_byte(out_values[i] * 128.0f);
+				for (long i = 0; i < used; i++)
+				{
+					output->indices[i] = (signed char)out_indices[i];
+					output->values[i] = real_to_signed_byte(out_values[i] * 128.0f);
+				}
 			}
 		}
 	}

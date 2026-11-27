@@ -3282,6 +3282,10 @@ struct s_1cf531
 // 0x50 refuses it), and local_13 refuses it because local_13 reaches a call and corrected is live across the scale
 // call; on the 7 form the block-local final does the same. Retail's 0x30 group needs a member that the 0x40 group's
 // temporaries refuse, or a fourth reference on the object that joins it.
+// M3 lane 12 r198 (h2m fast, 2): the Newton step through the existing forceinline inverse square root of the Havok
+// sphere-box header (`local_18 = inverse * local_7`) 2 (same code); the direction normalized in place in local_7 with
+// local_13 corrected and scaled in place 23 (908 B); local_14 declared with local_7 in the outer block 2 (same code);
+// the final product `corrected * splat` 20 (908 B); local_13 declared with local_7 in the outer block 7 (905 B).
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
