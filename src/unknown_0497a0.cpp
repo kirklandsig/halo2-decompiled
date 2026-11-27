@@ -1752,6 +1752,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // z, y, x order 417; in y, x, z order 353; first and second as aggregate copies with the z offsets applied after 693 (2676 B).
 // The half width computed ahead of the tint block 525 (2588 B); the outer vertex pointer declared at the top of the loop body
 // 217 (same code); both 525.
+// M3 lane 14 r163 (H2M_FAST with 0x42c50/0x42b20/0x43720/0x43740, all MATCH; control 217). Frame reading: the packer
+// here places named locals by density, so the u step, the V width and v are 4-byte cells of the density-500 group and
+// `first` is a 12-byte home (case 0's spilled x copy); retail's three top cells are allocator spill temporaries (values
+// it coloured, then spilled), 8 bytes each, which is the whole 4-byte frame gap (24 against 20). Forms: the two points
+// and the normal declared at the top of the loop body 217; the normal declared ahead of the points 217; the points
+// declared separately, second first 217 (all the same code); `vertex[0].u = outer->u = u;` 226; the half width as
+// `0.5f * width` 217. A forced-ranking search of 16 decisions found none that moves the frame.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

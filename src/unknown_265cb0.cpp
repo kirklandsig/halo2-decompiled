@@ -3276,6 +3276,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // replaced by the `state` local 425 (retail calls it twice); the players loop's unit index read ahead of the player test
 // 162. The two player searches stay this body's code because their own definitions (0x1c8150, 0x1c8180) sit in an /Ob1
 // file whose seven other retail callers keep them as calls. Body unchanged.
+// M3 lane 14 r163 (H2M_FAST with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 158). Reading: retail's player
+// lookup is 0x1c8180 expanded (pointer zeroed at the loop head beside the table load, the index a short widened for a
+// long compare, `movsx eax, si; cmp eax, -1`); this file's written-out search compares the short and zeroes the pointer
+// after it, and the getter stays a call (its file is /Ob1): BLOCKED-BY 0x1c8180's file flags. Forms: the player pointer
+// started NULL at the loop top 365; that plus the found slot in a long local 372; the relative difference ahead of the
+// velocity copy 253; the distance test right after the direction normalize 172; the reference query after the two
+// vectors 283 (2898 B). Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
