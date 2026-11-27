@@ -1111,6 +1111,10 @@ struct s_physical_block_iterator
 // and age land in EAX against retail's ECX, the best.pages product still folds the stack operand); that with both
 // products written age first 209 (same code); with best_age computed first 217; with the time read once into a `now`
 // local used by both ages 209 (same code); case 0 as an if/else on equal times 284 (1182 B). Body unchanged.
+// M3 lane 13 r166 (reduced-image screens, control 201): the two ages with the fold swapped (first `MAX(0, x)`, second
+// `MAX(x, 0)`) 203; the switch written default, case 1, case 0 204; case 0's test as `? true : false` 201 (same code);
+// the comparison as a difference `> 0` (measured only, not overflow-safe) 203; the two weighted products named 201 (same
+// code); best_age first with both ages `MAX(x, 0)` 217. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
