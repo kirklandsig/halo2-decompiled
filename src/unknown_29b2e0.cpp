@@ -979,6 +979,12 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // two sign tests as `0.0f > k` 130 (both the same code: the second axis's four products still load the other operand
 // first); the rotation input copy through the existing vector3f_assign 191 (1679 B); the 3-D input copy at the top
 // through vector3f_assign 413 (1731 B). Body unchanged.
+// GB27 (fast with 0x29b990, 0x170d70, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH; control 130, 30 trials): cross_j/k
+// before inline cross_i (sin/cos 3/4-arg, angle 3/4-arg, proj-first, (i+k)+j parens) 130/130/202/202/130/127; on
+// direct pool lookups + planar-first: same 3-arg/inline/cross_i-last/drop-hdr 129 (1711 B, first diff +0x179, axis.i
+// on retail's side, axis.j still above v.j), 3/4-arg angle 198/199, (i+k)+j 232, cross3f 225, vi/vj locals 150,
+// new i/j/k locals or axis-first products 221; existing function_x84d9e8 151 (1696 B) / 258 on direct+planar;
+// `0.0f - limit` 129 (same code); approach_126660 311; `cur + PIN` 293; direct up cast 190; yaw if/else 284. Restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
