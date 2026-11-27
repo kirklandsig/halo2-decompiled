@@ -1852,6 +1852,20 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // code; 0xd4080 455); with the scan bounded by `block->count` and no count local 568 (same code); `bool result = false;`
 // with `result = true;` closing the found block 590 (2157 B; 0x3db00 lost, 8; 0x3dfe0 35; 0xd4080 508); that with
 // (type, query, block) 590 (0xd4080 495).
+// M3 lane GA r35 (50 fast trials with 0xd4080/0x3db00/0x3dfe0/0xd1e10/0x117c80/0x13b390; control 529, 0xd4080 378,
+// 0x3db00 MATCH, 0x3dfe0 21; body unchanged): on HEAD, ordered first normalize as `(j*j + k*k) + i*i` 529 and `(mask &
+// flags)` 529 (same code). On the retail-order lead: `normalize3d_jki` (`(j*j + k*k) + i*i` with `vector3f_scale`) matches
+// the normal copy stores and first normalize verbatim (186 consecutive insns lines 2-187 minus 1 `test` operand swap);
+// `if (block->count > 0)` wrapping `dword mask = 1 << (type + 1);` + `(mask & flags)` recovers retail's `test eax, ebx`
+// (al 78, mk 55) but adds a second count test (2198 B, 555), while `mask` inside the `for` loop folds back to `test ebx,
+// eax` (2189 B). With `normalize3d_jki`, lightmap-first blend, `two-return` lighting_function, `0xd4080` default-false
+// mobile flag and `lighting_rotate` using `(axis->i * input->i + input->j * axis->j) + axis->k * input->k` ahead of
+// sin/cos and `cosine * input->k`, the match-only lead reaches 145 at 2189 B (al 91, +0x19; lines 2-187 minus 1 insn and
+// 316-567 minus 3 short swaps verbatim) with 0xd4080 at 180 (1870 B) and 0x3db00 MATCH (held as a patch; with
+// cross_after_proj 276 al 83 / 0xd4080 204; with dot3f_kji helper 268 / 0xd4080 197; with blended struct 518, in-place
+// base multiply 512, early inv_square 526, post-pin inv_square LHS 238, mix helper 280, x84d9e8 304). Remaining pockets
+// on the 145 lead: single-test `test eax, ebx`, the 4-reg cyclic shift of limited_base and `1-square` (`xmm3/1/0/2` vs
+// `xmm1/3/2/0`), and lighting_rotate's dot/cross schedule.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

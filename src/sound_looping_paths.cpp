@@ -1105,6 +1105,17 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // (3292 B, aligned 994); that pointer formed as `&choices[choice_count++]` 952 (3273 B, aligned 1150). Retail's data
 // holds no pointer to the floor global (its 34 references in retail are all code), so its reloads are not from an
 // address table. Body unchanged.
+// M3 lane 7 r239 (H2M_FAST with 0x18bb80, 0x188f90, 0x18a5a0, 0x16b840, 0x2195f0, 0x2197f0, 0x2197b0, 0x219650, 0x18d730
+// and 0x18dc90, the eight matched ones MATCH each run; control 837). GA25's count-first lead regenerated on today's main
+// 785 (3290 B, aligned 180): its const-reference pin replaced by the two-real floor table 785 (same code); the lead with
+// every match-only form taken out (the long-taking decibel twin, the doubled count clear, the muted store moved, the
+// `||` guard, the query count reused as the choice bound, the target store order, the one-use source and slot) 865
+// (3272 B); that keeping the long-taking decibel helper (the shape of 0x2195f0's file) 839 (3272 B); that with the query
+// count reused as the choice bound 803 (3288 B); that with a scalar long choice count and a plain choice array 907 (3351
+// B). Single removals on the 785 lead: the twin 822, the doubled clear 785, the muted order 788, the guard 798, the count
+// reuse 819, either target store order 785, the one-use source and slot 787. Reading: retail copies the choice count into
+// the dead query-count cell (+0x10) at the head of the choice-to-target loop and reads the bound there; with the count in
+// a record the stores through the choice pointer keep that load in the loop. Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -898,6 +898,19 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // cosine 358 (1740 B); the facing y copy at every near-arm y read 392 (1756 B), with the candidate count as a short
 // 377 (1714 B, 0x29a190 still MATCH here), the facing x and y both copied 387; the candidate count as a long 376
 // (1698 B); the outer counter as a long 367; the negated radius written at each use 418 (1708 B). Body unchanged.
+// M3 lane GB r33 (16 compiled fast trials across 2 batches with 0x298c30 and 0x29a190 MATCH unless noted; control 305 at
+// 1732/1732 B, +0x57; body unchanged): per-quarter-turn `if (local_7 == 0) ... else ...` writing `field_c.y`/`field_c.x`
+// directly (no staged `turned_y`, no helper) merges arms onto x87 at 382 (1692 B, y-first or x-first) on `byte local_6`,
+// 402 (1674 B, al=139, mk=81, 0x29a190 MATCH) with direct `g_504938`, retail emitter order and far-arm `!local_4`/`>= 0.0f`/
+// direct element/`(double)-x` (same 402 with separate per-arm sine locals, 399 with `real const &` emitter angle and double
+// distance compare); `point2f dir` inside per-quarter-turn `if/else` 387/382 (frame 0x6c, 1706 B); whole-near `if/else`
+// 455/446 (0x29a190 684); `function_298df3` staging `nx = arg_0->x * local_1` 305 on main / 402 on global-count form;
+// far-arm fixes alone on main 317 (1746 B). Lead without any new helper: per-quarter-turn `if/else` staging `real rx, ry;`
+// before `field_c` stores with direct `g_504938`, retail emitter order and far-arm fixes reaches 248 (1738/1732 B, frame
+// 0x64, first difference +0x57 -> +0x163, al=76, mk=59, 0x29a190 MATCH; rx-first or ry-first identical; on `byte local_6`
+// 353/367, +0x147), hoisting the SSE `y * cos` product before `jne` and placing unity in XMM2 without a helper, but not
+// kept (match-only one-use locals, store/condition order and element reread; loop-head `fstp; fld`, `cos * y` operand
+// order, second normalizer store order and tangent dot order remain).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

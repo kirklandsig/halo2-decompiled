@@ -337,6 +337,15 @@ void function_e3f00(long object_index);
 // definition pointer named ahead of the limits 16; a named globals pointer 16; the definition pointer named ahead of
 // the event 16; the index read as the definition's second long 16; the globals pointer `const` 16 (all the same
 // code); re-measured: element pointer + named index + owner store first 23 (the index takes EAX, materials EAX).
+// M3 lane 5 r256 (fast screen with 0x1da550 and 0x1da9e0, MATCH each run; control 16). The store reading made precise:
+// a load's alias set follows the memory state it reads, and every load after the event's NONE store (the constructor or
+// a plain store) reads the state whose symbol list holds the event, so the scheduler keeps the index behind the store
+// (the havok pool's data load after 0xd7b80 falls in the same set). Forms: the NONE store moved into the first argument
+// with a comma (both arguments are fastcall register arguments, evaluated left to right, so the store still comes
+// first) 16; that with the index through a three-caller inline getter 16; the getter alone 16; no constructor, the
+// store written as a statement before each call (the damage callers' idiom) 16; that with the index read into a named
+// long ahead of the event 29 (the event block then in retail's order, but the index in EAX and every later rotation one
+// off); the event declared under the damage-data type's own name (no casts at the calls) 16.
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {

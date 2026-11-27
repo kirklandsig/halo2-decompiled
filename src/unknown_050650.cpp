@@ -490,9 +490,7 @@ static __forceinline void actor_looking_rotate(vector3f *vector, vector3f const 
 
 static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, real angle)
 {
-	real sine = (real)sin(angle);
-	real cosine = (real)cos(angle);
-	actor_looking_rotate_in_place(vector, axis, sine, cosine);
+	actor_looking_rotate_in_place(vector, axis, (real)sin(angle), (real)cos(angle));
 }
 
 /* function_1697c0 fills 0x5c bytes; the shared result type covers the first
@@ -502,8 +500,10 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 270 (was 239): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch
-// differ. The 239 form (r157, below) is restored to main's body: on the tree merged with main it lost 0x1c4590 and 0x24cf66.
+// score 239 (was 270): Frame 0xa8 agrees. The startup zero register (XMM1 for retail's XMM2), the pitch axis j register,
+// the magnitude/random/trig transfer homes and the two rotations' registers still differ. The 239 form (r157, below: the
+// sine and cosine passed straight to the in-place helper, the pitch axis through vector3f_assign) is back since round 166:
+// on that day's tree it keeps 0x1c4590, 0x24cf66, 0xc2d00 and 0x185be0 matched.
 // MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
 // and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
 // still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
@@ -1177,6 +1177,14 @@ struct s_collision_result_buffer_1697c0
 // 285/295 (7d30 158/245), dot kji += 291 (7d30 146), cross3f order 239, (cos-sin)+proj 310 (7d30 146), vassign out 330
 // (7d30 142), header normalize3d / single-exit magnitude3d / pitch normalize3d 265, fabs>= 332, !(norm>0) 239; on HEAD +
 // direct (sin, cos), ER 272 / SE 281. Body unchanged at 270.
+// M3 lane 14 r166 (h2m fast with 0x297660, 0x2980d0, 0x297a50 and 0x24590 MATCH, 0x297d30 23): KEPT the r157 form, 270 ->
+// 239 (plain check with 0x1c4590, 0x24cf66, 0xc2d00, 0x185be0 and 0x41640 matched). On 239: one sine/cosine pair written
+// out at the call site and reused for both rotations through the in-place helper 128 (1427 B; the zero register and the
+// draws' homes then retail's), with the best vector declared ahead of best_fraction 124 (first +0x89), the pair declared at
+// the top 128, the cosine computed first 135, one angle local for both rotations 347 (1406 B), only the yaw rotation written
+// out 239; all match-only (the wrapper's body by hand), a lead. A forced-ranking search on the 124 form found no single
+// decision below it. Also `best_fraction < fraction` 239 and `0.f < best_fraction` 239 (same code); a named ray-length
+// constant 294 (1440 B).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1185,7 +1193,8 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 	real best_fraction = 0.f;
 	vector3f best_direction = *g_4687a8;
 	bool clear;
-	vector3f pitch_axis = { -forward->j, forward->i, 0.f };
+	vector3f pitch_axis;
+	vector3f_assign(&pitch_axis, -forward->j, forward->i, 0.f);
 	if (actor_looking_normalize3d(&pitch_axis) == 0.f)
 		pitch_axis = *g_4687ac;
 	for (short attempt = 0; attempt < 10; ++attempt)

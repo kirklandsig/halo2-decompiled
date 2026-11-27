@@ -421,6 +421,11 @@ PRIVATE inline bool score_team_present(long team)
 // review: retail's calls into the partition sorters (0x13de6c, 0x13dfbb) push three arguments and pass the low end in
 // EAX, so nothing in retail shows a forwarded first argument; the unread parameter would be there only for its effect
 // on this caller. A form without a new parameter is still open.
+// M3 lane 2 r161 (h2m fast with both sorters, MATCH): caller-side forms with &fallback unchanged: the contexts' fallback
+// read through a `bool const &` 4; the team context's criteria and fallback taken from the player context 16; the team
+// context copied whole from the player context 16; the player context filled ahead of the player loop 242 (738 B); the
+// contexts' criteria read through a `const byte *const &` 4. Reading: with fallback captured its load is a plain memory
+// load placed ahead of criteria's spill reload; in retail both are reloads in source order.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {
