@@ -341,6 +341,14 @@ bool function_015b10(
 // +0x3bd) in all seven variants.
 // M3 lane 1 r176 applied that SDK-call form again: on r1016 it matched with 0x24cf66 still matched (0 lost), but on
 // r1017 it flips 0x24cf66 again (+0x15b70 -0x24cf66), so main's code stays and the form stays held.
+// M3 lane 2 r160 re-applied it on r1018: MATCH here (fast, with 0x15c90 and 0x15cd0 MATCH) and three full checks each
+// lose 0x24cf66 again (alone; with 0x227810's new body; with that and the shared cross helper in src/impacts.cpp), so
+// it stays held as a patch. Evidence that the form is retail's: retail's library table lists the SDK's graphics helper
+// library (version 1.0.5849), and this image links a member of that library only with this form. What flips in
+// 0x24cf66 is the order of two reloads ahead of its split-screen branch (the player pointer and a dead copy of the
+// player index); every allocator decision of that function is the same in both orders, and in a reduced image the
+// order changes with the other sources linked in (0x24cf66's file alone, with this file, with src/unknown_1502e0.cpp),
+// so it follows what is compiled before it, not this function's or 0x24cf66's source.
 // @retail 0x15b70
 void function_015b70(void)
 {

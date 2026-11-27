@@ -1452,6 +1452,11 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // aggregate initialiser `{ first, first, 0 }` 2 (first index 15, count 21); the walk on the step's result with
 // `iterator.index` at both uses 2 (15/21); the duration copied to a local at the call 2; 0x126df0's parameters named
 // `new_sound`/`old_sound` 2; the playing element named `sound` 2. All restored.
+// M3 lane 6 r252 (fast screen with 0x126df0, 0x12a810, 0x21be20 and 0x21b870, MATCH each run; control 2). The second
+// split pass splits NONE, zero, 0xffff, the 0x80 constant (no piece), the first index, the count and the two table
+// globals, in that order. Forms: the curve in a `byte` local 2; `bool const curve` 2; the promotion index passed without
+// its `(short)` cast 2 (same code each); the iterator built ahead of the guard 77; diagnostic: the lookup chain in an
+// inline helper returning the curve 161 (191 B). All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {

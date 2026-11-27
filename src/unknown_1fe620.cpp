@@ -502,6 +502,22 @@ static __forceinline long real_to_long(real value);
 // (the same code: the order follows the operand ranking); through the local output vector 429; that tail with the
 // +0x3c limit read at each use 453 (1840 B); the resolved-point copy as `= *local_3` 380, with the tail 385.
 // Body unchanged; still BLOCKED-BY 0x2104b0's link-time summary (retail reloads the random state after it).
+// M3 lane 8 r246 (fast screen with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH each run; control
+// 373). Lane 6 r204's composite re-measured 347 (1855 B), with the timer quotient written `count * (limit / cap)` 340 at
+// retail's 1861 B (first difference +0x1ad); on that: local_12 left declared first, as on this body, 340 (the same code,
+// so the composite needs no declaration move); the resolver left as on this body 383 (1829 B); the sign test left as
+// on this body 344 (1855 B). A 64-point grid on this body's resolver and sign test (the third draw's bounds in the call
+// or as one early real_bounds copy; the three draws as here or all through the state local with the lower bounds
+// negated in the calls; +0x38 at each use or named; +0x3c named or at each use; the end sums as here or through a
+// pointer to the stored offset; the quotient as here or count first): with the bounds read in the call nothing is below
+// 373 (375 to 454); the aggregate copy with the state-local draws 334 (1856 B), with the quotient 330 at 1861 B, with
+// +0x3c at each use as well 329 (1845 B), and on the composite 243 (1870 B). None kept: the aggregate copy is stored to
+// two stack words and read back (retail keeps +0x14 and +0x18 on the x87 stack from two scalar reads ahead of the
+// first draw), so the resolved point moves to +0x30 against retail's +0x24 and the lower count is not retail's code;
+// it is also a local copy of one field used at one call. Reading of the composite's listing: after the head the two
+// open points are the failed-lookup copy (retail loads all three words and then stores them, the code of a copy
+// through the helper's output pointer, which only the expanded 0x210850 gives) and the side vector's XMM order.
+// Body unchanged; BLOCKED-BY 0x210850 (retail expands it at this site only; the build's inline calibration).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

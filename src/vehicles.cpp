@@ -1481,6 +1481,12 @@ __forceinline long vehicle_round(real value)
 // getter 4 (same code, and with four dead helper locals it still MATCHES, so it adds nothing); that with the ticks per
 // second through a `short const &` getter 4; that on the staged first cross with a plain side cross 4; `real dt` before
 // the rate 15; the side test in a named bool 15; the axis copy through memcpy 4 on either first cross (same code).
+// M3 lane 3 r319 (h2m fast; S = cross3f_staged at the first cross, D = the projection's dot named), at 4: the side term
+// as vector3f_scale of the side vector then vector3f_add 32, with S 32; S + D with `strength = rate * strength` 2 (the S + D
+// code); the angular velocity copied from the axis and scaled in place 182 (820 B), with S 182. Operand-rank reading: the
+// side cross's loads rank forward (i, j, k) 6, 0, 5 and up 2, 0, 1 on this body, 1, 0, 6 and 2, 0, 2 on S + D (the higher
+// is loaded first, a tie keeps the helper's spelling order); both j loads rank 0 in both forms, so forward.j * up.i needs
+// up.i tied at 0; D, after the side cross, still moves the side cross's ranks. All restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2759,6 +2765,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // cross3f_staged with all 16 dot spellings (i, j, k or k, j, i terms, each term left- or velocity-first) best 9 (the
 // kept spelling, same code), i, j, k left/velocity/left 11, the others 26-365; the same 16 on the plain cross the same
 // scores (staged and plain cross give the same code here).
+// M3 lane 3 r319 (h2m fast), at 9: the forward speed spelled forward-first i, j, k 9, k, i, j with the i term
+// velocity-first 9, j, k, i 9, and the velocity-first i term then k, j 9 (all the same code); the final loop's clamp as an
+// if / else-if pair 9 (same code).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

@@ -495,6 +495,19 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // tested directly with no bool 319, the countdown as `state[1] = state[1] - 1` 319 (the same code each); the capsule
 // helper as plain `static inline` 530 (968 B: it then stays out of line and the entry changes). Still BLOCKED-BY
 // 0x1ec690 (its stub's convention) and the placement of 0xdc370. Body unchanged.
+// M3 lane 8 r246 (fast screen with 0x1ec690, 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0, 0xfa100, 0x1c4a80 and 0xb7740).
+// Earlier rounds measured the 0x1ec690 draft only against this body; this round tried caller forms on top of it. With
+// the draft on and its stub removed: this body 349 (the move pointer in retail's EBX; the input in EAX up to the mode
+// calls and EDI after them, the state in ESI, where retail holds the input in EDI from the entry and the state in no
+// saved register) with 0xb77d0 49, 0x1c4b00 133, 0x1ed340 45 and 0x2901e0 29 no longer matching. A 32-point grid on
+// it (the velocity as a pointer local with a reference bound in the flag block; the object index read again for the
+// position move; the rate named with the products as rate * i, j * rate, k * rate; the shape match as an if/else on
+// the compound result; the 0x20 flag in shift form): 349 to 384, and the same four stay unmatched at the same counts
+// in all 32, so those losses come from the draft's own body (round 235 traced them to its sphere-selection block),
+// not from this caller's tail. Retail's tail, for the round that has the callee: the flag is tested in shift form,
+// the velocity address is reloaded from its slot into EBX and tested against NULL, the rate is loaded once, the
+// object index is read from the state a second time for the position move, and the flag block sits straight after
+// the shape match with the other shape arms out of line. Body unchanged; BLOCKED-BY 0x1ec690.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
