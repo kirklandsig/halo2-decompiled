@@ -77,7 +77,8 @@ static __forceinline void flag_set_b7b40(word *flags, long bit, bool value)
 	else *flags &= ~FLAG(bit);
 }
 
-// Not matched yet (2150 of 2150 bytes). Retail inlines function_b9c60 and function_d5c90 here.
+// Not matched yet (2150 of 2150 bytes). Retail inlines function_b9c60 and function_d5c90 here. Left: retail goes
+// straight to the exit when the placement has no definition, and it does not load NONE again after function_b9c60.
 // @retail 0xb7b40
 long __stdcall function_b7b40(void *creation)
 {
@@ -99,15 +100,16 @@ long __stdcall function_b7b40(void *creation)
         if (result != NONE)
         {
             s_object_create_header *header = OBJECT_HEADER_GET(result);
-            byte *object = (byte *)header->object;
+            byte *object = (byte *)OBJECT_GET(result);
             bool animated = false;
             header->flags |= 8;
             header->type = *definition;
             *(long *)object = *(long *)placement;
             if (placement[0xb] == 0xff)
             {
+                long identifier_type = *(short *)definition; /* read before the counter moves, as retail does */
                 *(long *)((byte *)g_4de2f4 + 0x18) += 1;
-                object[0xaa] = (byte)*(short *)definition;
+                object[0xaa] = (byte)identifier_type;
                 object[0xab] = 2;
                 *(short *)(object + 0xa8) = NONE;
                 *(long *)(object + 0xa4) = *(long *)((byte *)g_4de2f4 + 0x18);
