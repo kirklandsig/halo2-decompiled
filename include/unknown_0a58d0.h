@@ -200,7 +200,7 @@ struct s_flags_a6900
 	void function_a6900(long *result_pointer, c_object_type_definition const *definition) const;
 };
 long function_a5930(long a);
-long function_a5e70(long a, long b, long c);
+long function_a5e70(long a, long b, long c, c_object_type_definition const *definition);
 long function_a58d0(long a);
 void function_a6430(c_object_type_definition const *definition, long a, long b, long c);
 struct s_relevance_observers;
