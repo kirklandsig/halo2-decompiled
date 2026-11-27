@@ -1143,6 +1143,13 @@ extern "C" void _ReadWriteBarrier(void);
 // formed from the index and the data base and scheduled ahead of the add, so it is not folded into the compare; the
 // barrier keeps it after the add, where the compare folds it, but the slot stays a candidate of the NONE block and its
 // flags arm only, so its load is placed in the NONE block.
+// M3 lane 8 r247 (fast reduced-image screen with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; parameter-read diagnostics,
+// each reverted at once, with the barrier unless stated): the state from a volatile read of the slot parameter at the
+// top 29 (the slot loads first, the pool goes to EDX and the data load folds into the add); after the lookup, before
+// the barrier 31 (207 B, ESI pushed in the entry block); after the barrier 29 (the slot load lands after the compare);
+// the pool's data named first, then the volatile slot read, then the lookup written out 29 (the named data is
+// substituted at its use, after the read, and folds), the same without the barrier 50 (210 B); the slot read once
+// through a `s_slot *const *` to the parameter at the top 6 (same code: the indirection folds).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

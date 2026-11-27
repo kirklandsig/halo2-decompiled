@@ -276,6 +276,17 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // the snap block and assigned in place 25 (same code); both magnitudes summed x first 25 (same code); the first
 // absolute offset taken from `first_angle - table` with the offset local dropped and the second offset kept 334 (2016
 // B). The first offset is still forwarded into its one fabs behind the magnitudes.
+// M3 lane 6 r253 (reduced-image screen with 0x12b450/0x12b690, both MATCH each run; all on the fabs-at-each-use 2 form,
+// re-measured 2): the reciprocal through a one-argument inline helper taking the angle, marked forceinline 2, as a plain
+// static function defined after this function 2, defined ahead of it 2 (all the same code: where the helper stands does
+// not move the constants); a whole-stick forceinline helper taking the raw pair's address, the axes and the scale as an
+// argument, scale last or first, 537/537 (1996 bytes: 1.0 still first, the scale and -1.0 then both held in registers);
+// a per-axis forceinline helper taking (raw short, boost, scale) 2 (same code). Back-end reading: every float literal
+// gets an entry definition in the reverse of its first appearance in the optimized body (1.0, scale, -1.0, 1/255, 0 ...),
+// and the two that stay in registers are loaded in first-appearance order; an argument or a helper's position is
+// propagated away before that numbering. With the scale as a file-private named constant the two entry definitions swap
+// when this file's own symbol is older than the 1.0 literal: MATCH on a one-function image, 2 with the two callers
+// listed and in the full image, where an earlier object already holds 1.0 (re-measured; lane 5 r189's reading).
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
