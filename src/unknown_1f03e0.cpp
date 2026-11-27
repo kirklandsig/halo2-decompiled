@@ -1667,6 +1667,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // point2f_set 647 breaking 0x1f0450, Arm 3 vector3f_add either arg order 471 at 3047 B, Arm 2 only 3 stores 545); Arm 3
 // only 3 stores 562 (3037 B: reproduces Arm 1 + Arm 3 exact movss [edi+0x14],xmm0 tail-merge verbatim, but Arm 2 also
 // tail-merges; with Arm 2 real_point3d_set 562, with Arm 2 limited+=current 564).
+// M3 lane 11 r174 (h2m fast with 0x1f0450, 0x24590 and 0x1f03e0, all MATCH; control 198): a function-scope `facing`
+// pointer used by the first arm's cross and scale, the direct arm's rotation and the high-normal arm 561 (3034 B), with a
+// function-scope `up` pointer as well for the first arm's cross and last add-scaled 578 (3038 B), the facing pointer
+// declared ahead of the input pointer 511 (the first cross keeps its two up.k products on the other side in all three);
+// the first arm's speed read into a one-use local 197 (one point, a one-use local: not kept); `scaled` declared ahead of
+// `left` 198 (same code).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
