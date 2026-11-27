@@ -541,6 +541,10 @@ void function_2232a0(void)
 // decisions: best 35 by giving the terminal record pointer EDX, but with a larger instruction distance (17 against 11),
 // so not a lead. The tail still needs 0x2b5d0's register convention (count in EAX): BLOCKED-BY 0x2b5d0, whose activation
 // is still blocked by the unmatched 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600. Body unchanged.
+// M3 lane 4 r268 (fast with 0x223240 and 0x2232a0, MATCH each run): `long const view_count` 47 (same code); the view
+// loop as a for loop with its counter 161; the terminal record indexed `local_2 + 1` with the count kept 183 (583 B); the
+// terminal record as `&g_47f0f8[1] + local_2` 183 (583 B); the source pointer declared without its first clear 47 (same
+// code). Still BLOCKED-BY 0x2b5d0 (stub; its disabled body needs unmatched callees). Body unchanged.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

@@ -2194,6 +2194,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // through the `unit` already looked up (the second through its own lookup) 340 (1191 B), the second only 337 (1191
 // B); the per-pass weapon read into `long weapon` 251 and the grenade reset test as nested ifs 251 (listed forms,
 // re-measured: same code); the fraction tests written `0.0f < x` 251 (same code).
+// M3 lane 16 r197 (H2M_FAST with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240, 0x1e5280, 0x1e3b60, all MATCH;
+// control 251). Allocator reading unchanged (options 82, actor 68, the random-state pointer 38; the pool global never
+// becomes a candidate, where retail keeps it in EDI across every call, the draws included). Forms: block 1's unit through
+// a fresh lookup at each use 306 (1218 B); block 2's unit at each use 254 (1231 B, first +0x26); both 315; block 2's
+// grenade query alone 251 (same code); the +0x23e store alone through a fresh lookup 254 (1231 B, aligned 164 against
+// 183, first +0x26: a lead, a re-read after a call, match-only). Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
