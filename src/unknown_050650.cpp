@@ -1146,6 +1146,19 @@ struct s_collision_result_buffer_1697c0
 // M3 lane 2 r158: the r157 form (sine and cosine passed straight in, the pitch axis through vector3f_assign), 239, lost
 // 0x1c4590 (5) and 0x24cf66 (2) in the full check of the tree merged with main (as lane 12 r193 had seen); restored to
 // main's 270 form, held as a patch.
+// M3 lane 6 r253 (reduced-image screen with 0x297660, 0x297a50, 0x2980d0 and 0x24590 MATCH, 0x297d30 23; control 270;
+// whole-image checks listing 0x1c4590, 0x24cf66, 0xc2d00, 0x185be0 and 0x41640). The r157 form re-measured on today's
+// tree: 239, still losing 0x1c4590 (5) and 0x24cf66 (2). 270 -> 239, HELD at review: the same form with the pitch axis set through
+// the shared point setter, `real_point3d_set((point3f *)&pitch_axis, ...)` (the spelling src/unknown_1f03e0.cpp and
+// src/unknown_205be0.cpp already use for vector storage): the same code for this function (1427 B, the normalizer's
+// j * scale and the pitch rotation's operand order as retail), and 0x1c4590, 0x24cf66, 0xc2d00, 0x185be0 and 0x41640
+// all stay matched, since that setter is not a new per-file inline. Held because the typed vector setter gives the same
+// code and differs only in the count of per-file inline instances, so the point setter on a vector (through a cast) was
+// chosen for the link layout, not for the code; main's body is back. On the held form: the setter alone (trig locals
+// kept) 296 (1440 B); the fallback axis through the setter as well 345 (1456 B); the candidate through the setter 290
+// (1423 B, frame 0xb0); the collision index stored ahead of the ray scale 239 (same code). Rank reading on the held
+// form: the pitch axis i and j live in registers from the normalizer into the loop (442 and 458) and are coloured
+// after ten of the loop's own temporaries (476 to 1196), so j finds only XMM6 and XMM7 free; retail has j in XMM1.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
