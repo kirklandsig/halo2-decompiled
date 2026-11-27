@@ -2851,6 +2851,11 @@ struct s_scenario_scripting_view
 /* points the current command script at the point of a point set nearest the
    current actor */
 // score 80 (was 80): actor/set/counter allocation and delayed scripting-data observation still differ.
+// GB r31: a byte match (80 -> 0) writes the squared length out by hand in each arm, with the terms in a different
+// order in each (as in retail's inlined 0x210b60); through function_210b60 the call stays out of line (226 B), and
+// through length_sq3f it stays 80. Not kept (an existing helper's body written out by hand); held as a lead. Its other
+// steps (point_index declared in the for, no local_0, best_distance/best_index ahead of the point-set read) reach 13
+// only together with it.
 // Round 242: search point-table/count/actor-position snapshots 92/86/87;
 // point-table+count, point-table+position, count+position, all three 83/91/97/90;
 // all with loop-local short counter 91. Original complete search restored.

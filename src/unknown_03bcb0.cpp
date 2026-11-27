@@ -1488,7 +1488,26 @@ void function_41040(short index, long part_index, long group, byte weight,
     }
 }
 
-// score 305 (was 352): logic matches retail block by block (no behaviour difference found); what still differs is register
+// score 305 (was 352). M3 lane GA r29 reached 81 (1200/1204 B, +0x1b; all matched peers in the file incl. 0x4dfa0,
+// 0x4de20 and 0x4e0d0 still MATCH, full check 0 lost): the shared `+ mode * 0x132` moved into a 5-argument
+// `record_material(tag, pass, stage, entry, dword mode)` (0x4dfa0 passes 0, 0x4de20 index, 0x4cbf0 out->unknown04), the
+// `material` and `instance` locals dropped, and `out->value10` read back for the 0x1cb20 and 0x4cbb0 arguments. Not kept
+// at review: the gain rests on dropping the two named locals and reading the stored fields back in their place, which is
+// kept only with a byte match; the 5-argument helper alone (with `(byte)mode` and both locals) 305, with
+// `out->unknown04` and both locals 370 (machine 3 review trials). Still differs in the 81 form: `+0x1b` `add esi` vs
+// retail's `mov [esi+g_4ba138]; lea esi` (4 B, from retail inlining 0x449e0), `out->value0c` load order (`tag` before
+// `flags`), the 2-block primitive switch order (`0x11` before `0x10`), and `test eax, eax` vs `test al, al` on 0x4cbb0.
+// M3 lane GA r29 (42 fast trials across 3 batches, all 10 peers MATCH; plain confirmed 81): `record_material` 5-arg
+// with both locals dropped 81 (pre-computed `offset = mode * 0x132` breaks 0x4de20 at 51); factoring a 4-caller
+// `material_block_ready` helper gave 80 (68 without `!= false`, 102 with `if (ready) result = true`) but shifted two
+// unrelated LTCG functions (0x1c4590/0x24cf66) so dropped; with an inner `s_44940_entry *entry = &g_4ba138[index]`
+// block (held as a patch) 20 at exact 1204/1204 B, +0x244; existing `visible_entry_geometry(index)` with
+// `(bool)((byte)(...)&1)` / `!=0` / `(bool)` 182 (with `(byte)mode` arg 304, without 5-arg helper 335). Tried on the 20
+// lead (all 20 unless noted): primitive switch default top/mid/top+sep45/goto/inline return helpers/signed char/sep
+// cases/4-5 first dup 20, no-dup 66 (1184 B), no default 104 (1216 B); `out->value0c` signed/unsigned, `0x3fe00u`,
+// tag-first, bitfield structs, `(tag<<11)&0x7fff800u`, sub-locals/renamed locals 20, `+` 22, `^` 22, two stores 310;
+// 1-3 phase locals 20.
+// Earlier (305, was 352): logic matches retail block by block (no behaviour difference found); what still differs is register
 // allocation: retail keeps tag in ebp and stage in edi and leaves pass in its stack slot, ours puts pass in ebp and tag in
 // edi, so the 0x15d70 call setup, the case 18 pass*10 and the record_material reads differ; retail also loads the source
 // fields as [esi+g_4ba138] and takes the address afterwards (lea), and reloads out->value10 for the 0x4cbb0 call.

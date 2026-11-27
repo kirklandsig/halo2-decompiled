@@ -2751,6 +2751,13 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // (not kept: operand order; + `center` vec3 27, + inline inverse 27, + 3 store orders 19, held as a lead), `+=` +
 // `vector3f_scale` 208 (gives center-first x/y/z but breaks center scale), plain add 210, `n[0..2]` `+=` 208, `b9a90`
 // inside block 29, uninit `prior_position` inside block 29.
+// M3 lane GA r29 (17 real + 2 diag fast trials with 7 matched peers MATCH; control 29 at 2190/2190 B, +0x37; body unchanged):
+// dropping `definition_bytes` with typed `s_projectile_definition` fields 207 (+ typed `s_projectile` 207, + both scales 207,
+// + late `child_position` 207, + swapped add 207, + `vector3f_scale` + swapped add 205 [fixes x, y stays child-first], + `center`
+// vec3 207, + 3 store orders + scales 202, + swapped add 200); keeping `definition_bytes`: `vector3f_scale` on probe 29, typed
+// `s_projectile` fields 29, typed `s_projectile *parent` 29, `vector3f child_position` + center scale 29, both `vector3f` + scale 29,
+// late `child_position` + scale 29, `center` assign + scale + swapped add 27 (match-only operand order; x fixed, y stays child-first),
+// `parent_index` local 505; diagnostic phase locals k=1,2 before `center` + scale 29/29. `0x1ca690` short arg remains held as a patch.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {

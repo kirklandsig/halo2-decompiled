@@ -1051,6 +1051,11 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `shr; test al, 1`, aligned 571/378), with a short frame 744. From there retail sets the two block pointers and the
 // last-step flag in another order at the loop head (search, last test, obstacles; `ignored` stored after the
 // out-count compare) and keeps the step counter in ECX with a dword home, where ours holds a zero in EDI.
+// M3 lane 8 r246 (fast screen with 0x270930 and 0x2c4030, both MATCH each run; control 675): the search node's
+// position copied into the previous point's first two members as one point2f 722 (2960 B); the same copy for the
+// inserted step's point 675; the failure exit's flag test written pointer first 675; both obstacle transform loops
+// through an element pointer 675 (the same code each); the retry flag raised by a guarded `if` in place of the `||`
+// assignment 727 (2960 B). Body unchanged.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

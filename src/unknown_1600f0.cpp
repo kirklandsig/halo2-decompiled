@@ -1839,6 +1839,10 @@ PRIVATE inline long score_string_list_1608e0()
 // 1/n still share one reciprocal); that with the row number counted from 0 through the header (`++row_number` after
 // each header fade) 684 (four true divisions, as retail); the helper with the counted row number 684; the counted row
 // number with the screen height computed ahead of the width and x 695 (2888 B). Body unchanged.
+// M3 lane 4 r269 (H2M_FAST with 0x161420, 0x1600f0, 0x15f120 and 0x163350, all MATCH; control 679): the screen height
+// computed ahead of x 680; the score table as a ternary initialiser 705 (first difference +0x0); the viewer lookup after
+// the score table 700; the row total summed team count first 678; the fade-count conversion after the two colour
+// declarations 679 (same code). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

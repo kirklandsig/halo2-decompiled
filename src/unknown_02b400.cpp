@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "shader_storage.h"
+#include "timed_effect.h"
 #include "visibility_storage.h"
 /* UNKNOWN_02B400.CPP: vector math and rectangular grid placement */
 
@@ -444,6 +445,14 @@ struct s_2fd90_projection
 
 // Score 221 in a full build with stand-in SDK headers (was 256): up is the shared cross3f of right and the forward
 // vector (retail loads each field and multiplies by a register), and the half sizes multiply size by scale.
+// Roasted-Codes (draft #1563, released 2026-11-27; body left as above, 221 at 1278 of 1278 bytes): the half sizes
+// computed before the bounds copy, the fabs sum written i then j and plane.d accumulated on the member in three
+// statements 191 at 1278 B (first difference +17; whole-image checks lose no matched function). Adding the existing
+// cross3f_staged for right and vector3f_negate_ab for backward on that base 107 at 1278 B (first difference +738), but
+// that combination loses the matched 0x1c4590 (0 -> 5) and 0x24cf66 (0 -> 2) on two of three bases, so it is not a
+// stable base. A fixed two-component plane-scaling loop (reduced image) 102 at 1279 B, 105 on the member-accumulator
+// base: it puts i before j and worsens the prefix and output stores, where retail wants j first with the reciprocal
+// as the destination. A whole-image permuter run from the 191 form (141 tries) found nothing lower.
 // @retail 0x2fd90
 void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out)
 {
@@ -724,7 +733,6 @@ void function_28580(long tag, real time, vector3f *out)
 }
 
 #include <string.h>
-extern double g_4858a0;
 extern transform4x3f *g_4687d0;
 
 void function_141590(transform4x3f const *in, transform4x3f *out);

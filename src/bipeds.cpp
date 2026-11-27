@@ -8220,6 +8220,19 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // with the per-arm copy 264. Diagnostics: aim as a plain three-float record copied whole 219 / 201 on the per-arm body
 // (the point type with its array overlay is not what keeps the copy in memory); the clamp and direction in a new inline helper taking the
 // point by value 244 (1612 B), reading the target's z through its pointer 219.
+// M3 lane GA r30 (57 fast trials across 8 batches + 2 plain checks of 73 VAs; control 219 at 1624/1624 B, +0x54; body
+// unchanged): EXACT BYTE MATCH (0, 1624/1624 B, 76 verified targets, 0 differ, all 64 file peers and callees intact)
+// held as a patch: three-way clamp (`if (target.z > eye.z) aim = target; else if (eye.z > target.z + target_height)
+// { aim = target; aim.z += target_height; } else { aim = target; aim.z = eye.z; }`; alone 126 at 1625 B, +0x357, snapping
+// every stack slot and register carry) + `s_biped *self`/`other` + existing `cross3f_staged` + private inline
+// `matrix3x3_inverse_transform_vector` (in-place copy + `dot3f`) + existing matched `function_11df30` (or private inline
+// yaw/pitch helper, also 0 MATCH); NOT kept on main because adding +1 or +2 private inline helpers to this TU shifts
+// whole-image LTCG symbol numbering and loses unrelated matched 0x1c4590 (5) and 0x24cf66 (2). Zero-new-symbol variants
+// using existing `vector3f_assign` + `dot3f` + `cross3f_staged` + `function_11df30` on the three-way clamp score 38
+// (1624/1624 B, +0x573; 69 without `self`/`other`; copying `aim = target` into the arms is match-only without a byte
+// match; with main's single `aim = target` 243 at 1616 B); separate basis vectors 192/214, `cross3f` 46, inline copy-dot
+// expressions 77, without copy 239/190, `copy` declared ahead of `frame` or renamed 38.
+// GB r30 (37 valid fast trials with 6/6 peers MATCH; control 219 at 1624/1624 B, +0x54; body unchanged): passing `&direction` only by pointer via `__forceinline` inverse-transform + angles helpers reproduces retail's exact sequential `normalize3d` load-multiply-store block (no `volatile`) on every trial (`t01` 237 / `t02` 238 at 1626 B, `if(in==out)` 237, `frame` helper 240 at 1624 B fixing `fstp [esi+4]` before `pop edi`, `frame.forward` fields 252, `cross3f`/`cross3f_staged` 241, `gt` clamp 238, `inline` `i*i+j*j` 238); adding `dot_kji` (`k += j += i`) + `cross3f_staged` matches all 5 XMM loads (`xmm3/0/4/1/6`), `world` copy, all three `k/j/i` dots, both `atan2`/`sqrt` and epilogue (`228` clean at 1624 B; + `gt` clamp + `self`/`other` `223` at 1624 B also snapping `frame.forward` `edx/ecx` copy; + `frame` helper `238`; clamp+dir helper `226`; `nearest` fn-scope `228`; `hr` in inner arms `333`; `aim.z` then `x,y` `277`; `aim` scalars 3 arms `369`; zero `hr` before `if` `387`; `HEAD` + `cross3f_staged` + `gt` clamp `247`); plain 3-float `aim` without `&aim` `219` (arms `201`), `__forceinline` by-value target producer `258`. Match-only lead (per-arm `aim = target` + pointer-only `direction` + `cross3f_staged` + `dot_kji`): `190`/`196` (`+0x382`, `1628`/`1636 B`, `t14` with `cross3f` in frame helper `187` at `1627 B`, `rawcross` `207`, `dotkji +` `200`, `frame` helper `199`, `peq_ptr` `260`, `aim` 3 arms `238`, `fwd` `vassign`/`memcpy` `266`/`196`, inner-swap `196`) -- NOT kept (one-caller helpers and per-arm `aim` copy require a byte match; only `aim` carry in `ecx/eax/edx` across the clamp remains).
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {
