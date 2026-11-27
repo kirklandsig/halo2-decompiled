@@ -283,6 +283,12 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // object_get_102100 29 (only the object read's operand order moves), the object's header as a local with the object
 // read from it 30, the duration and its test in a block of their own 31, the tag link taken from OBJECT_TAG(object)
 // ahead of the tag local 31, an object link pointer declared after the tag link for the rate 31.
+// M3 lane GA r27 (16 fast trials on base 31 / index-first SIB 29, all 6 file peers MATCH; body unchanged): param order
+// `(object_index, link_index, ...)` 29 (caller 0xfdfb0 updated), tag-block operator[]/ref helpers 29/29,
+// `s_real_bounds const &` duration helper 29, const tag/link 29, void* `tag_get` inline 29, `rate` local ahead of
+// `tag_link` 29, single-exit tail 29, offset+base byte pointer 29, `g_4e3b44` byte arith/local first 29/29, `0x101ec0`
+// selected-ref idiom 29 (all keep `[ecx+eax+8]` SIB fold and `g_4e3b44` in EAX); `link` ptr in `!blocked` 31;
+// `object->links` ptr 265; dual-wield partner inline 298 (613 B, still folds `[eax+edx+8]`).
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {
