@@ -1119,6 +1119,23 @@ static inline word font_character_pixel(long alpha, long color)
 // 4+4 31 (504 B, word load), word value on s2|(*(word*)source&0xff00) 89 (496 B, movzx ax; mov ah), word cast on hi-shift
 // 82 (keeps and 0xffff), outer word value/lo local on nibble split 102-106 (520-524 B), word/short/ptr/inline/bitfield/
 // &0xff/^0/~~/x&x/x|x/run|0/type|0 forms all fuse to 90 (496 B), code|s2 78, store-before-color 37/67, union color bf 33.
+// GA25 (22 fast trials with 0x140960/0x122540/0x122570 MATCH + 6 compile-only CL.Exe probe sweeps (~290 literal expressions,
+// 12 MSVC 7.1 flag sets /O1../Ox /G5../G7 /Os /Op /Ob1 /Og); control 41 at 508/504 B, +0x24; body unchanged):
+// Clean control flow on score-41 base: switch(type) with length=1 at top 147 (536 B), without __assume(0) per-arm 200 (556 B),
+// if (type == 3) 183 (528 B), long run = 2 in type != 2 41, drop /arch:SSE 41, if (type == 2) first 100 (508 B),
+// length = 1 init at loop top 182 (516 B), if ((long)type <= 1) first 175 (496 B), indexed output[0..1] in type != 2 156 (508 B),
+// for (long remaining = size; remaining > 0; ) 45 (508 B).
+// Literal probes on score-12 per-arm base (504/504 B): control 12, no-SSE OR 90 (496 B), unrolled 2-byte BE loop 90 (496 B),
+// memcpy 2 bytes 67 (504 B), lo re-eval 220 (536 B), post-inc ptr 90 (496 B), /O2 /Ob2 /G6 /Gr 90 (496 B),
+// ARGB4444 alpha+red split on source[1] + (word)source[2] 11 (504 B, movzx ecx/eax; shl ecx,8; or eax,ecx),
+// dword bitfield struct 107 (524 B). Compile-only sweeps confirm every MSVC 7.1 flag set and every straight-line C++ expression
+// (shifts, casts, bswap by value/ptr/ref, structs, arrays, unions, streams, loops, nibble/channel splits, const endian checks)
+// fuses OR(ZEXT8(s2), SHL(ZEXT8(s1), 8)) in Pass A into xor eax,eax; mov ah; mov al. Diagnostics ONLY (NOT keepable, forbidden
+// forms): separating lo or hi across Pass A via a Pass-B-eliminated redundant branch on a path-known value (`if (run == 0) lo =
+// source[2]` 3, `type ? 0 : source[2]` 3, `word hi; if (type == 0) hi = (word)(source[1] << 8); else hi = 0; word value =
+// (word)((word)source[2] | hi);` 0 / MATCH byte-for-byte with all peers MATCH) or taking `&hi` in CL.Exe emits retail's exact
+// 4-instruction sequence (movzx ax, [edi+2]; xor ecx, ecx; mov ch, [edi+1]; or eax, ecx), proving Pass A OR-fusion is the sole
+// remaining literal difference.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

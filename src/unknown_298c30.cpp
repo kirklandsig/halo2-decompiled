@@ -887,6 +887,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // one entry pointer 342 (1693 B); the scale stored as a double literal 305 (same code); the scale store right after
 // the angle store 313; the side, flag, scale and ordinal stores together after the angle store 313; the scale store
 // after the ordinal store 305 (same code).
+// M3 lane 1 r175 (fast screen with 0x29a190 and 0x298c30, both MATCH each run; control 305; body unchanged). Near arm, aimed at
+// retail's float cosine cell and SSE `y * cos` ahead of the sine's branch: the cosine read through a `real const &` in the
+// rows 305 and each quarter turn's cosine call bound to its own `real const &` 305 (both the same code: the references fold);
+// the staged y declared double 378 (1697 B); the angle store ahead of the cosine 305 (same code); each `y * cos` bound to a
+// `real const &` temporary, the y row then `x * sin + that`, 305 (only the staged product's home moves; it stays x87).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
