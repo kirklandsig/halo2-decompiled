@@ -1091,6 +1091,16 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 751; direct `object+0x248` + nested/dots 857 (3713 B, local-count phase; + uninit `straight` + early `enabled` 860).
 // Match-pursuit on 718: nested/dots + `else straight = true;` 550 (3731 B, +0x91, mk=54); + early `enabled` 849 (+0x1,
 // 3750 B); + direct `object+0x248` 816/818 (+0x1, 3732 B). Body unchanged at 718.
+// GB30 (31 valid fast trials with 15 peers/callers, 11/11 matched peers MATCH; control 718 at 3731/3731 B, +0x4a):
+// nested `if (dot > 0.0f) { long vehicle_index = ...; }` 887 (0x2cb0, 3745 B; + x-z-y / one-expr / dir-vel 887, +
+// basis_dot_xzy 866 at 3731 B, + nested obj/sph gates 884, + vector3d_from_points3d sph/obj 868/869, + local_a47c5e first
+// 887); no-nest x-z-y + dir-vel + nested obj/sph gates + (sph|obs)|mov 717 (also + vact dir-first 717, -1 under bar);
+// entry dot3f(prev, dir) 720, manual kji/ijk 718/718; !skip && set18 731; memcpy location 718; other-actor
+// vector3d_from_points3d 723, rev dot 718, inline dot 863, drop other_direction 718; nested ref/comp 718; 2-caller
+// static inline helpers (marker12 / type-0 inflation / team friendly) 1208/946/945 (outlined); direct word shifts 861;
+// single transform4x3f_apply_point 909; type-7 word const * 718. Match-pursuit probes with `else straight = true;`: +
+// nested veh/obj/sph 529 (3735 B, snaps both marker loops ebx/ebp and actor in ebx), + two-use type-7 word flags +
+// no-nest gates 410 (3731 B, exact sphere vel dot & squared-first gate). Body unchanged at 718.
 // M3 lane GA r28 (22 fast trials with 0x29a190/0x29cbb0/0x2c41b0 and 12 file peers, all 11 fast-matched peers MATCH;
 // control 718 at 3731/3731 B, +0x4a, frame 0x2cac, aligned 159, masked 68): on 718 base, early `bool enabled = true;`
 // 717 (mk 64); vehicle dot x-z-y 720 (mk 66); vehicle dot nested `if (dot > 0.0f)` 887 (fr 0x2cb0, al 142, mk 64);
