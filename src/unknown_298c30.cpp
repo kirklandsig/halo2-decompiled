@@ -1770,6 +1770,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // height `arg_3->z` named once for the three rotations 775 (retail's 3372 B, but the frame moves, first +0x2); the
 // result flag declared just ahead of the sweep loop 606; the actor lookup ahead of the result flag 569 (same code).
 // Body unchanged.
+// M3 lane 15 r154 (H2M_FAST with 0x29a190 and 0x298c30, MATCH each run; control 569; all restored): retail's 0x2108a0
+// takes its argument on the stack and returns `ret 4` as ours does, and nothing in retail's image holds its address, so
+// the missing summary is not an address-taken callee. Diagnostic, reverted at once: 0x2108a0's file built without its
+// SSE flag 569 (XMM5 kept). Forms: the radius copied into a `real const` after the two transform calls and used for
+// every later use 569 (same code); the reversed direction formed after the NONE return 569 (same code); both sector
+// reads after both trace calls 568; the definition distance read after the NONE return 715 (3320 B); the sweep count
+// formed ahead of the scale arms 776 (3381 B). Body unchanged; still BLOCKED-BY 0x2108a0.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
