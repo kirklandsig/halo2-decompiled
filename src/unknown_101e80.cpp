@@ -314,6 +314,12 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // pointer as the add's memory operand and copies it to ECX. Forms: the not-blocked test as `rate <= timer + 1.0f` 31;
 // the minimum test as `minimum > time` 33; the duration test as `0.0001f < duration` 31; the accumulator test as
 // `rate < 1.0f && rate > 0.0001f` 31; the rate-scale test as `0.0f < tag->field_258` 31. All restored.
+// M3 lane 14 r166 (h2m fast with the six file peers, all MATCH; control 31). Reading: the links pointer is its own
+// five-reference candidate (EAX) because the tag link's sum is propagated into its first three reads, and the 0xec
+// product shares the tag link's web; retail reads the links pointer once as the add's memory operand, so the sum is a
+// separate value copied into ECX. Forms: `tag->links + link_index` 31; the tag link taken from OBJECT_TAG(object) with
+// the tag local after `result` 31; the duration built in three statements on its local (`-`, `*=`, `+=`) 31; the rate
+// scale as `rate *= ...` 31; the other link as `links[!link_index]` 31 (all the same code). Restored.
 // M3 lane GA r34 (30 compiled fast trials across 3 batches with all 6 file peers MATCH; control 31, body unchanged):
 // dropping the `tag` local (`OBJECT_TAG(object)` at all 3 uses) 29 (flips both child lookups to retail's `[ecx+eax+8]`
 // and `[ecx+esi+8]`, leaving only the 24-line entry SIB fold; -2 under keep bar; + `object_get_102100` for `object` 29,

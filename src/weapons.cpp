@@ -2114,6 +2114,11 @@ static inline bool unit_dual_wielding(long unit_index)
 // with the unit's current slot 43; weapon_get_102e10 at lookup 1 15 (lookups 1-3 retail's, the animation-test lookup
 // flips, the tail unchanged), at lookups 1-3 15 (not kept: two points); that with the `volatile` block as the 0xc9d00
 // call 27. Retail's tail is 0x1058b0's expansion with 0x101f20 and 0xcd660 inside: BLOCKED-BY 0x101f20 and 0xcd660.
+// M3 lane 11 r178 (fast screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17; the 2 form rebuilt 2):
+// the state block as `if (function_1058b0(weapon_index, 10, immediate)) { ticks; result = true; }` 117 (503 B: the
+// two helpers stay calls), as `bool result = function_1058b0(...); if (result) ticks;` 112 (508 B), as an early return
+// on that call 117 (503 B); on main's body `bool result = false;` first 17 (same code), that with weapon_get_102e10 at
+// lookup 1 15 (the getter's listed 15). Body unchanged.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

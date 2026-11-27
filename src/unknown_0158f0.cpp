@@ -286,6 +286,11 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // `D3DResource **out` 99, moved before `0x158f0` 99, moved after `0x15cd0` 99, `inline` 99 (0x1d3f0 75), 4-entry
 // `D3DPALETTESIZE` table (non-const and `const`) 99, `static inline` wrapper 99, diag `#pragma optimize("gty", on)` +
 // `auto_inline(on)` 99. `CreatePalette2` stays out of line in every straight-line form; body unchanged.
+// M3 lane 3 r320 (h2m fast, 0x1d3f0 in brackets; control 99 (76)): the SDK's force-inline member that returns a
+// status code, with the status tested so it can fold: the success test returned directly, `out` passed, 86 at 43 B
+// (96); a compare with the OK code 99 (96); the failure test into a local palette with both arms storing `*out` 87 at
+// 42 B (77); the status named, then the success test 86 (96); an early `return false` on the failure test 91 at 38 B
+// (96). The nested call stays out of line in each.
 // @retail 0x15b10
 bool function_015b10(
 	long index,

@@ -423,6 +423,10 @@ void function_254200(void)
 // the colour helper's products written scale first 4 (same code); the size product named after the primitive start call 46; the quad
 // drawing (size through End) in a one-caller forceinline helper taking the point, scale, size and colour 4 (same code).
 // All restored.
+// M3 lane 5 r256 (h2m fast with 0x254200 MATCH and 0x2548f0 2; control 4): the dimensions read through the existing
+// 0x74-byte bitmap element type (width and height at +4/+6) in place of the raw offsets 4; those named width/height and
+// read width first 4; through a const pointer of that type 4; the point read through the parameter at each use 341
+// (1162 B); the chosen bitmap declared in the `if` condition 4 (same code). All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

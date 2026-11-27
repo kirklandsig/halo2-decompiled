@@ -2787,6 +2787,17 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // y add still loads the child first: the centre members rank 526/521/532 and the child's 525/529/533 for x/y/z); on that 2:
 // the centre typed vector3f 2, the child typed vector3f 2, the centre declared bare and assigned 2, the inverse inside the
 // scale call 2, the two child scale clears as one chained assignment 2, the child position declared at the loop body's top 2.
+// M3 lane 3 r320 (h2m fast). The 0x1ca690 short-parameter lead re-measured: 29 -> 12 (0x1ca690 MATCH; 0xf8eb0 1013 ->
+// 1017 at 4683/4682 B: retail's 0xf8eb0 call has the same `xor ecx, ecx; mov cx, word` setup, and the four come from
+// branch displacements moving by one byte), held as before; on it the three store orders 4, the centre scale through
+// vector3f_scale with the add's inputs as (child, centre) 2. Rank reading on that 2: the add's first sorted leaf is the
+// loaded operand; x (centre 0x141c0 over child 0x141a0) and z (child 0x142a0 over centre 0x14280) are retail's, but the
+// centre's y carries an early first-read ordinal (0x14120) under the child's 0x14220, so y loads the child first; on
+// the 4 form the centre's members rank as plain early locals (0x102c0/0x10300/0x10340), under every child member. Tried
+// on the 2 lead: per-component `+=` accumulation 188 (with the per-component scale 188, with z as `child + centre`
+// 188); the add (child, centre) with the per-component scale 4; a const source cast in the scale call 2; the centre
+// typed vector3f throughout 2; the child position read through 0xb9dd0's returned pointer inside the add 288 (2197 B);
+// the add (centre, child) with the scale helper 4.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
