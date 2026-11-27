@@ -2531,6 +2531,18 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // each); the spawn's location index stored after the colour call, scale and unknown just ahead of the loop, 184 (0x178eb0 32,
 // 0x179020 28); the location cursor initialised just ahead of the loop 167 (552 B); both colour locals read at the top,
 // ahead of the cluster test, 193 (568 B).
+// M3 lane 4 r271 (fast screen with 0x178eb0, 0x179020, 0x177040 and 0x176f60; control 128; body unchanged). The
+// early-colour forms re-measured: colours ahead of the spawn stores with both queries as arguments 187 (568 B), with the
+// tint named 184 (572 B). A ranking ledger on the tint-named form: the type object 90 takes ESI, the system's entry
+// piece 58 (one use in the set_location block, three in the nine-candidate join block) EDI, colour A 36 EBX; colour B
+// and the tint, 36 each, spill. Retail's code has the system in ESI only up to the 0x1751d0 call and re-reads it from
+// its argument slot for the colour call and in the loop, so its colour call is not a use of that piece. On the
+// early-colour form: the tint as `tinted() ? true : false` 184 (same code); the 0x1751d0 result named with both queries
+// named 184; the three spawn stores after the colour call with the location index read into a local ahead of it 209
+// (588 B; 0x178eb0 32, 0x179020 28). On main: both queries held as `long` and passed `!= 0` 193 (572 B); the tint held
+// as a `byte` 137. Diagnostics (an added pointer test, not source): a test of the type object ahead of the queries 192
+// (572 B), a test of the 0x1751d0 result ahead of the type lookup 198 (576 B): a block boundary on either side of the
+// type lookup does not end the system's piece at the 0x1751d0 call (the system stays in EDI through the colour call).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4164,6 +4176,16 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // with the second 0x1751d0 result unnamed 109 [lost]; the tint named with both colour locals declared ahead of the record 126
 // (the colour block's loads then follow retail's order: location index, colour A, colour B); that with the definition's
 // location index named 126; that with the second result unnamed 109 [lost].
+// M3 lane 4 r271 (fast screen with 0x176f60, 0x178c80, 0x178eb0 and 0x179020; control 93; "[lost]" = the matched caller
+// 0x176f60 drops to 25 because both indices then arrive in registers; body unchanged). Retail keeps the definition at
+// [esp+0x10] and the location cursor at [esp+0x14], adjacent, and reads the mode through the stored definition at each
+// call. The mode read at each call re-measured 108 [lost] (frame 0x54: the definition takes EBX where retail spills it
+// and gives EBX to the type object), with the colour locals declared ahead of the particle cursor 108 [lost] (same
+// code). New: the definition and the location cursor as the two members of one local record, the mode read through it
+// at each call, 112 [lost] (333 B), the members in the other order 112 [lost] (same code); multiplied named with
+// `tinted()` as the argument 102 [lost] (326 B); both queries named 105 (346 B); both queries as arguments 120 [lost]
+// (325 B); the node flag written in the 0x248c60 call's argument list 107 [lost] (331 B); the node flag declared ahead
+// of the matrix call 115 [lost] (325 B).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
