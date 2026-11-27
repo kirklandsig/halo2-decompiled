@@ -502,7 +502,8 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 270 (was 270): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch differ.
+// score 270 (was 239): Frame 0xa8 agrees. The startup zero register, axis j preload and later magnitude/random/trig scratch
+// differ. The 239 form (r157, below) is restored to main's body: on the tree merged with main it lost 0x1c4590 and 0x24cf66.
 // MiniMax G (11-20): no new form, no lower score (270): the rotation dot's term order (k, j, i) regresses this sampler to 324
 // and the other orders compile to the same code, so the dot stays as it is; the frame agrees at 0xa8 and the first difference is
 // still the zero's register (XMM1 against retail's XMM2) at +0x31, and the rest (the trigonometric transfer slots, the candidate
@@ -1134,6 +1135,17 @@ struct s_collision_result_buffer_1697c0
 // 0x24cf66 (two tied loads swapped), while 0xc2d00 and 0x185be0 stay matched: not kept, held as a patch. The setter alone
 // 296 (1440 B); the sine/cosine change alone 269 (1430 B); the lead with the yaw axis copied into a local 431 (1506 B);
 // the lead with the pitch axis's zero test written `!normalize(...)` 249 (1433 B). Body unchanged.
+// M3 lane 2 r157 (h2m fast with 0x297660, 0x297a50, 0x2980d0 (MATCH), 0x297d30 (23) and 0x24590; control 270). KEPT 270 ->
+// 239 (check.py --fast and the full check; nothing lost, 0x1c4590, 0x24cf66, 0x185be0 and 0xc2d00 all still match): lane
+// GB r15's held form, the rotation helper passing the sine and cosine calls straight in (its two one-use locals dropped)
+// and the pitch axis set through the existing vector3f_assign; the sine/cosine change alone 269 (1430 B). On 239: the
+// rotation helper reading the vector's three components into locals first 306 (1450 B; 0x297d30 243); the rotation's
+// dot product named ahead of the versine product 295 (1439 B); the fallback test on `!result` in place of `!clear` 344
+// (1423 B, but 0x297660 10); early returns in place of the result flag 341 (0x297660 13); `clear` initialised true at
+// its declaration as well 239 (same code).
+// M3 lane 2 r158: the r157 form (sine and cosine passed straight in, the pitch axis through vector3f_assign), 239, lost
+// 0x1c4590 (5) and 0x24cf66 (2) in the full check of the tree merged with main (as lane 12 r193 had seen); restored to
+// main's 270 form, held as a patch.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2408,6 +2420,11 @@ struct s_actor_looking_structure_view
 // retail's i, k, j needs j numbered ahead of k. Forms: forward built member by member (i, j, then the k clear) 199
 // (927 B); forward from a three-value initialiser list 199 (927 B); forward through the existing three-value setter
 // 199 (926 B); the score's terms written i, j, k 25; the candidate copied through that setter 87 (930 B).
+// M3 lane 13 r165 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the in-place
+// helper's parameters as (axis, vector, sine, cosine), (vector, axis, cosine, sine) or (sine, cosine, vector, axis) 23
+// each (same code: an inline helper's parameter positions do not reach these ranks); the in-place helper
+// `__forceinline` 23; the angle wrapper without its forceinline declaration 468 (670 B: it stays out of line); the
+// pathfinding pointer as a conditional initialiser 207. Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

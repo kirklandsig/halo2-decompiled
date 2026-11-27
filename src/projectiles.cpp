@@ -1276,6 +1276,14 @@ real function_30bf0(vector3f *v);
 // `real const` 216; the horizontal tests written constant first 216; two_a written `2.0f * a` 216; the optimal time's
 // product `root * (-1.0f / two_a)` 216; `a` written `0.25f * gravity * gravity` 216 (all the same code). Frame map: ours
 // packs a temp, distance_squared, a and b in four cells (0x28, eleven argument homes reused); retail's 0x30 holds two more.
+// M3 lane GA r26 (20 fast trials with 0xfa580 and all 6 matched callers; control 216 at 983/983 B, al=138, mk=68; body unchanged):
+// single-exit `else { result = function_fa580(...); }` 247 (callers lost); direct `*forced_speed_reference` without `forced` copy 216;
+// nested gravity/horizontal `if` 216; `sqrtf` for 5 float roots + double `sqrt` in `t2` 216; `gravity_scale * *(real *)g_51e9c4` 216;
+// `time = optimal_time` init 260; `if/else-if` `t` clamp 270 (969 B, all 7 match), + maxgrav 263 (974 B, mk=46, early fsqrt, all 7 match),
+// + late `path_distance` 202 (983 B, mk=50, all 7 match; NOT kept: combines parts that regress alone + statement order);
+// inline `2.0f * a` at `optimal_time` only 270 or `t2` only 274 (both fdiv=3, divss=1, callers lost via gravity_scale in XMM; + maxgrav + uncast sqrt 234 at 983 B; + `t` clamp 266, + late `path_distance` 202 at 985 B, mk=40, all 7 match, NOT kept: same + expands `two_a`);
+// inline `1.0f / time` + late `path_distance` 261; inline velocity + split `velocity.k` + late `path_distance` 258 (al=131);
+// diagnostic: `t` clamp + maxgrav + `/ (double)two_a` 253 (all 7 match), + min before opt + late path 202 (mk=40, all 7 match), + plain `if (forced_speed)` first 263 (971 B, mk=31, F=0x2c, fdiv=3, early fsqrt, callers lost).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2622,7 +2630,8 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // MiniMax R (11-10): no new form, no lower score (504): the home of the parent and owner block, the probe's material term and the order of the two damage stores still differ; every declaration order of the Booleans, the parent and the probe measured the same code as the body above.
 // MiniMax D (11-10): the parent index read from the projectile at each use instead of in a local (fast 519 -> 504, 2171 bytes);
 // the flag word is still loaded once, so the parent lookup still reloads the table pointer and the tail stays one dword copy out.
-// score 40 (was 255): Frame 0x184 and 2190/2190 B length agree (+0x37; 39 in --fast; all matched file/peer functions intact).
+// score 29 (was 40): Frame 0x184 and 2190/2190 B length agree (+0x37; all 44 checked peers/callees MATCH).
+// Earlier 40 (was 255): Frame 0x184 and 2190/2190 B length agree (+0x37; 39 in --fast; all matched file/peer functions intact).
 // Earlier 255 (was 360): Frame 0x184 agrees. The header offset and early flag read still use different homes.
 // Round 1 of #1061: full statement walk against retail found no behaviour difference (every offset, constant, condition,
 // callee and argument order agrees). Kept: `switch (mode) { case 2: case 4: ... }` for the a84e0 test (retail's movsx/sub/sub
@@ -2727,6 +2736,19 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // point at function scope 289, the inverse inside the scale call 2, the point typed as a vector 2, a const cast on the
 // add's input 2. Without the parameter change the 2 form is 19, and without the store orders too 27. Held as a patch
 // (needs the 0x1ca690 change; the shared variable holds two roles).
+// M3 lane GA r26 (24 fast trials + plain check across 53 VAs, 44/44 MATCH, 237 verified targets, 0 differ): kept
+// splitting two-role `point` into `child_position` (inside the loop `if`) and block-scoped `prior_position` around
+// `function_b75a0`/`function_bc1d0` (matching `0xe7900`'s `{ point3f ...; function_bc1d0(...); }` idiom), dropping
+// 40 -> 29 (2190/2190 B, +0x37): recovers retail's `forward` (+0x1c) / `owner` (+0x30) slot packing without variable
+// reuse. Left: `0x1ca690` short/word arg3 (17; raises `0xf8eb0` 1013 -> 1017 even for arg3 alone, held as a patch),
+// entry `damage_scale` store order (4), `vector3f_add` x/y operand order (4), `data.scale`/`flags` order (2),
+// `collision.unknown24` init order (2). Also tried: split `point` without `{ ... }` around `prior_position` 59 (with
+// uninit `prior_position` 59, swapped add 59, `vector3f_scale` 59, both 58, `child_position` at block top or before
+// `b9dd0` 59, `center` assign 59, `projectile->position` 59, `damage_scale` order 55); on kept 29: `vector3f_scale`
+// 29, `vector3f_add_scaled(..., 1.0f)` 29, both 27 (not kept: `1.0f` scale rewrite), `vector3f_scale` + swapped add 27
+// (not kept: operand order; + `center` vec3 27, + inline inverse 27, + 3 store orders 19, held as a lead), `+=` +
+// `vector3f_scale` 208 (gives center-first x/y/z but breaks center scale), plain add 210, `n[0..2]` `+=` 208, `b9a90`
+// inside block 29, uninit `prior_position` inside block 29.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -2765,7 +2787,6 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 			!(*(long *)(parent + 0x13c) != NONE && g_4e6948->state == 1))
 		{
 			point3f center = *g_468788;
-			point3f point;
 
 			for (long child_index = *(long *)(parent + 0x10); child_index != NONE; )
 			{
@@ -2775,12 +2796,14 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 				{
 					if ((short)stuck_count <= *(short *)(definition_bytes + 0xe6))
 					{
+						point3f child_position;
+
 						bit_vector_set((dword *)&child->flags, 6, true);
 						bit_vector_set((dword *)&child->flags, 12, true);
 						child->unknown158 = 0.0f;
 						child->unknown160 = 0.0f;
-						function_b9dd0(child_index, &point);
-						vector3f_add((vector3f *)&center, (vector3f *)&point, (vector3f *)&center);
+						function_b9dd0(child_index, &child_position);
+						vector3f_add((vector3f *)&center, (vector3f *)&child_position, (vector3f *)&center);
 					}
 					else
 					{
@@ -2803,9 +2826,11 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 			/* the projectile leaves its parent: retail passes the projectile
 			   index in ebx (0xfc5a6 loads it from the first argument) */
 			function_b9a90(projectile_index);
-			point = *(point3f *)((byte *)projectile + 0x64);
-			function_b75a0(projectile_index, &center, NULL, NULL, NULL, false);
-			function_bc1d0(projectile_index, &point, *(long *)((byte *)projectile + 0x14));
+			{
+				point3f prior_position = *(point3f *)((byte *)projectile + 0x64);
+				function_b75a0(projectile_index, &center, NULL, NULL, NULL, false);
+				function_bc1d0(projectile_index, &prior_position, *(long *)((byte *)projectile + 0x14));
+			}
 			attached = true;
 		}
 	}

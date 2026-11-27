@@ -526,6 +526,9 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // three together, and one added statement moves them by 4. Forms: the helper's element through a named pointer 419
 // (1791 B); the helper's test as `!= 0` 3; the full device copy as memcpy 3, the full entry copy as memcpy 3 (the same
 // code each); a record-side counters pointer for the group loop's three calls 435 (1775 B).
+// M3 lane 13 r165 (h2m fast with 0x198540 MATCH; control 3): the apply helper as a plain function 1062 (1148 B: it
+// stays out of line); as `inline`, `__forceinline` and `static __forceinline` 3
+// each (same code); the entries call's index as `j * 8 + 78` 3.
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {
@@ -1178,6 +1181,11 @@ static inline long team_score_195ed0(long team)
 // 210 (1161 B); the teams flag with internal linkage 100 (same code: the copy still does not reach it); the team test's
 // bool as a `? true : false` of the masked bit 100 (same code); the score helper's failure value set in an else arm
 // 170 (1225 B). Body unchanged.
+// M3 lane 2 r157 (h2m fast with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310, all MATCH; control 100): the score
+// helper with an early return of the score and NONE last 170 (1225 B); the team loop's test written `ranking.team_count
+// > rank` 100 (same code: the entry test still folds to `movsx; test`); in the player loop the copied team read ahead of
+// the flag test 281; re-measured the address index stored ahead of the copy 150 (1210 B); the player loop's team entry
+// written through the table at each use (no entry pointer) 246 (1243 B). Body unchanged.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

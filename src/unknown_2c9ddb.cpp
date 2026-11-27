@@ -562,6 +562,12 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // the second half and the first half's in its own arm 172 (600 B, first +0x7); that with one named count for the name
 // copy and both requests 173 (585 B, retail's length; EBX still holds the address, `this` in ESI and spilled). Reading:
 // retail calls the name copy (0x13fac0) out of line in the default arm; this build expands it on every form above.
+// M3 lane 12 r196 (fast screen with 0x13fac0, 0x212bc0, 0x238c69 and 0x2ca244, all MATCH each run; control 61; body
+// unchanged). Re-measured: two load arms with memcpy copies 174, with a named count as well 179, one load with memcpy and
+// a named count 88. New: the variant declared once per half (in the first half's arm and at the second half's top) with
+// two load arms and the default arm's destination named once for the copy and the request 173 (585 B, retail's length,
+// first +0x7); that per-half variant on the one-load body with the named destination 88 (562 B: 0x13fac0 is called out
+// of line, the arms stay merged).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
