@@ -3046,6 +3046,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // (act=EBX, dat=EBP, st=EDI, +0x51, automatically matching retail's case 1/5/21 arg_2 live-range splits) reached by
 // u18 (4 sites) + pub2_member + direct case-18 reads (noc18) 454 (2412 B, 623/623 insns), + cs_dist_sq_kji + case-2
 // type/mode/vector order 433 (2412 B; fewer u18 sites or single-ref case 18 revert to EDI 605-633).
+// M3 lane 8 r248 (fast screen with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; body unchanged): the result
+// flag as `bool local_3 = true;` 429 (same code); the flag declared ahead of the two getters 465 (first difference +0x2);
+// the state view `local_2` declared first 429 (same code); both first 465; `local_30` declared after the flag 429.
+// Reading: retail loads the result-pointer global after the state flag's `or` in cases 6 and 21, where ours hoists it
+// to the case's top, and keeps case 6's two flag ORs as two stores (the first result forwarded in DL).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
