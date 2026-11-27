@@ -1070,6 +1070,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // M3 lane 14 r160 (fast screen with 0xb58c0/0x196780, both MATCH; control 23): present's update with the team re-read from
 // the player 42 (382 B); as `present_teams = present_teams | 1 << team` 23 and `= 1 << team | present_teams` 23 (same
 // code); the saved mask `word const` 23 and both saved values `const` 23 (same code).
+// M3 lane 4 r267 (fast screen with 0xb58c0/0x196780, both MATCH; control 23): on the one-use team-bit carrier, the OR into
+// a dword copy of the saved mask made in the change block with the engine pointer named at that block's head 21 (the
+// copy is the OR's destination and the engine index loads first, but the table entry load moves up with it, the playing
+// teams stay in EAX and the saved mask's post-loop piece is still uncoloured; a forced-ranking search over 40 single
+// decisions on it gives 21 at best); the copy and the named engine pointer without the carrier 24; the field pointer
+// dropped (entry copy and store through globals) 131 (374 B, the field is read again after the loop); the saved playing
+// teams as a word 60; the added teams as `playing & ~old_playing` 23 (same code).
 // @retail 0x158140
 void function_158140(void)
 {
