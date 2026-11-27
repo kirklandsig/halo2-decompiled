@@ -2284,6 +2284,13 @@ void function_27dd10(void)
 // component_decompress as one call through the selected decoder pointer 2 (0x288570 120, 0x288bd0 71, 0x288f80 63,
 // 0x289580 78); node_destination_get with the identity case last (`if (node_kind != 0) { ... } *index = node_index;`)
 // 2; the scale blend's product with the fraction first 2 (the pair and 0x281b60 unchanged throughout). All restored.
+// M3 lane 2 r162 (fast screen with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0; control
+// 2): in function_288572 the bit tested from a bool taken ahead of the shift, the shift at the inner body's top 387
+// (0x281b60 382, five siblings lost); the pass counter chain as one ternary of increments 2 (same code); the bit-flags
+// word declared at the helper's top and assigned in the outer loop 2 (same code); the blend's node index named once ahead
+// of the interpolation test for both function_288573 calls 2 (same code); the three frame-state restores ahead of the
+// interpolation arm's function_288573 call (the output target restored after it) 71 (0x281b60 62, 0x285750 87, 0x288570
+// 373). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

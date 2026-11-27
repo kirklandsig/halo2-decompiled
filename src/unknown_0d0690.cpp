@@ -1852,6 +1852,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // code; 0xd4080 455); with the scan bounded by `block->count` and no count local 568 (same code); `bool result = false;`
 // with `result = true;` closing the found block 590 (2157 B; 0x3db00 lost, 8; 0x3dfe0 35; 0xd4080 508); that with
 // (type, query, block) 590 (0xd4080 495).
+// M3 lane 2 r162 (fast screen with 0xd4080, 0x3db00, 0x3dfe0, 0xd1e10, 0x117c80, 0x13b390; control 529, 0xd4080 378,
+// 0x3db00 MATCH throughout): the scan as one loop over `block->count` with the mask in its test, on main's result form,
+// 581 (2167 B; a re-measure of the 582 form); the entry's flags word named once for both tests 530; the mask written
+// into the loop test with the count local and the outer test kept 575 (2172 B); the normal pointer taken as the query's
+// first member's address 529 (same code); the blend's `1.0f - square` named once for the three channels 533. Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
