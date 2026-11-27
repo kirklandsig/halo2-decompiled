@@ -53,7 +53,6 @@ void function_1cf50(void);
 void function_14f60(short stage, short index);
 bool function_143c0(long tag, short index, short stage, real priority);
 byte g_485a77, g_55e6bd;
-short g_4858c8;
 long g_4e6978, g_4e697c;
 long g_485a78[2];
 extern byte g_485a76;
@@ -5622,59 +5621,30 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 
 #define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
 
-// MiniMax I (11-15): no new form, no lower score (498): the camera flag read out of the reset storage block scores
-//   447, but that read is a cast into the aggregate and is kept only with a match, so the body stands. What still
-//   differs: retail reloads g_4858c8, g_4858c4 and g_4858b8 at every use and keeps the constant 1 in ecx across the
-//   body, where this build hoists those loads out of the again-loop; the body is 1696 bytes against retail's 1700
-//   and the first difference is at +0x1f.
-// MiniMax H (11-14), NOT kept at review (a cast read into the reset storage block is kept only with a match, and it left 0350e0.cpp's extern unresolved; 0x19530 498 -> 447, 0x37a60 529 -> 519 back to main): the camera flag at 0x4858c8 is the first word of the reset storage block, so it is now read
-//   from there (a view of the aggregate, like the shader pointer next to it) and reloaded at every use as retail does;
-//   the separate global is gone and the file that writes it writes the same aggregate word. The body is 1704 bytes
-//   against retail's 1700 and the first difference is at +0x1f. What still differs: g_4858b8 is still a separate
-//   global, so retail's reload of it is missing, and retail keeps the constant 1 in ECX across the body.
-// score 498 (was 585): round 94 put g_4858c4 in the reset storage aggregate (include/reset_storage.h), so it is
-// reloaded after calls as retail does; 1696 bytes against retail's 1700; g_4858c8 and g_4858b8 below remain separate.
-// Earlier 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
-// matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
-// Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
-// does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;
-// g_485a78[mode - 24] is indexed; case 26 compares an int; case 16 compares clamped == value.
-// The score rose 25 only because ours merges the else with case 2 at the later block and drops case 2's own copy at
-// 0x195a0 (retail keeps the earlier one and jumps back: `jne 0x195a0`); a goto label, `break` plus a tail call and
-// the negated test all compile alike. The old `(short)surface` argument scores 591.
-// Remaining blocker (not in this body): retail reloads g_4858c8, g_4858c4 and g_4858b8 at each use and keeps the
-// constant 1 in ECX (`mov ecx, 1` before the loop head, then `mov [esi], ecx`, `mov edi, ecx`, `push ecx`) where ours
-// hoists those loads out of the again-loop. Diagnostic only (not kept): a file-scope `short *p = &g_4858c8;` plus
-// the same for g_4858c4 and g_4858b8 gives 116 with the old argument and 447 with the fixed one (the layout shift
-// above), so they are members of an address-taken struct in retail, as 0x350e0's note says for g_4858c4.
-// Walk (b4B, statement by statement against retail 0x19530-0x19b67, jump table 0x19b68): all 25 live cases, the two
-// null slots (modes 7, 11: no case; default __assume(0) = unchecked jmp at 0x1954c), the dimension defaults (1x1 start
-// 0x19540-0x19546, 0x0 on a missing surface 0x19b15, 640x480 for case 6 0x19660, 4x4 for case 27 0x19b55), every
-// tag offset (+4 +0xc +0x14 +0x64 +0xd0), the 0x143c0/0x144f0/0x137550 bitmap-index ECX constants (1 or 0) and
-// case 16's in-range test (0x19850-0x19862) agree with retail: no behaviour difference found. Layout-neutral
-// cleanups (fast 612 before and after): the (short) casts on 0x14f60/0x143c0 arguments (their parameters are short),
-// the dead `&stage` / `(void)&param` address-taking and case 16's written-out clamp (now PIN, file-local macro as in
-// 0x167a0's file; same bytes). Tried: recursive call function_19530(18, ...) for the mode 18 re-dispatch 612
-// (same loop as the goto). No new include, helper or double local.
+// The camera flag at 0x4858c8 is a member of the reset storage aggregate (include/reset_storage.h), like the shader
+// pointer next to it, so it is read again at every use. Every case leaves through `break`. Mode 18 shares the surface
+// block of modes 24 and 25 (retail jumps from 0x198d2 into 0x19a4d); their fallback is the same call as mode 2 and
+// retail jumps back to it (0x19a47 to 0x195a0). Modes 7 and 11 have no case (null table slots).
 // @retail 0x19530
 void function_19530(long mode, byte const *context, long stage, long *width, long *height)
 {
+    long surface;
 again:
     *width = 1;
     *height = 1;
     switch (mode)
     {
-    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, stage, 0.0f); return;
-    case 2: function_14f60(stage, 1); return;
+    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, stage, 0.0f); break;
+    case 2: function_14f60(stage, 1); break;
     case 3:
         function_14f60(stage, 1);
         texture_surface_dimensions(1, width, height);
-        return;
-    case 4: g_51f3c8[1][stage] = NULL; return;
+        break;
+    case 4: g_51f3c8[1][stage] = NULL; break;
     case 5:
         function_14f60(stage, g_4858b8);
         function_01dd60(g_4858b8, width, height);
-        return;
+        break;
     case 6:
         function_14f60(stage, 3);
         if (g_4b4b58[3].data && !g_4b4b58[3].flag95)
@@ -5683,8 +5653,8 @@ again:
             *height = g_4b4b58[3].height;
         }
         else { *width = 640; *height = 480; }
-        return;
-    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f); return;
+        break;
+    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f); break;
     case 10:
         if (g_4858c8 && g_4858c4)
         {
@@ -5704,21 +5674,21 @@ again:
                 if (bitmap) function_14390(stage, bitmap, 0.0f);
             }
         }
-        return;
+        break;
     case 12:
         if (!g_4858c8) function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f);
         else function_144f0(stage, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
-        return;
+        break;
     case 13:
         function_14f60(stage, 9);
         texture_surface_dimensions(9, width, height);
-        return;
+        break;
     case 8:
         function_14f60(stage, 10);
         texture_surface_dimensions(10, width, height);
-        return;
-    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, stage, 0.0f); return;
-    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, stage, 0.0f); return;
+        break;
+    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, stage, 0.0f); break;
+    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, stage, 0.0f); break;
     case 16:
         function_143c0(g_4e6978, g_4e697c, stage, 0.0f);
         if (g_4e6978 != NONE)
@@ -5732,42 +5702,36 @@ again:
                 *height = *(short *)(bitmap + 6);
             }
         }
-        return;
+        break;
     case 17:
         function_14f60(stage, 19);
         texture_surface_dimensions(19, width, height);
-        return;
+        break;
     case 18:
         if (!g_485607)
         {
-            long surface = function_25960();
-            if (surface != NONE)
-            {
-                function_14f60(stage, surface);
-                function_01dd60(surface, width, height);
-                return;
-            }
+            surface = function_25960();
+            if (surface != NONE) goto set_surface;
         }
         function_143c0(*(long *)(g_485a80 + 0x64), 0, stage, 0.0f);
-        return;
-    case 19: function_14f60(stage, 21); texture_surface_dimensions(21, width, height); return;
-    case 20: function_14f60(stage, 22); texture_surface_dimensions(22, width, height); return;
-    case 21: function_14f60(stage, 13); texture_surface_dimensions(13, width, height); return;
-    case 22: function_14f60(stage, 17); texture_surface_dimensions(17, width, height); return;
-    case 23: function_14f60(stage, 23); texture_surface_dimensions(23, width, height); return;
+        break;
+    case 19: function_14f60(stage, 21); texture_surface_dimensions(21, width, height); break;
+    case 20: function_14f60(stage, 22); texture_surface_dimensions(22, width, height); break;
+    case 21: function_14f60(stage, 13); texture_surface_dimensions(13, width, height); break;
+    case 22: function_14f60(stage, 17); texture_surface_dimensions(17, width, height); break;
+    case 23: function_14f60(stage, 23); texture_surface_dimensions(23, width, height); break;
     case 24:
     case 25:
+        surface = g_485a78[mode - 24];
+        if (surface != 25 && surface != 26 && surface != 27)
         {
-            long surface = g_485a78[mode - 24];
-            if (surface == 25 || surface == 26 || surface == 27)
-            {
-                function_14f60(stage, surface);
-                function_01dd60(surface, width, height);
-            }
-            else
-                function_14f60(stage, 1);
-            return;
+            function_14f60(stage, 1);
+            break;
         }
+    set_surface:
+        function_14f60(stage, surface);
+        function_01dd60(surface, width, height);
+        break;
     case 26:
         {
             byte *definition = g_4e3b44[*(long *)(context + 8) & 0xffff].bytes;
@@ -5781,7 +5745,7 @@ again:
             }
             byte *bitmap = *(byte **)(parameters + 8) + index * 12;
             function_143c0(*(long *)bitmap, *(short *)(bitmap + 4), stage, 0.0f);
-            return;
+            break;
         }
     case 27:
         if (g_485a76)
@@ -5800,7 +5764,7 @@ again:
             *width = 4;
             *height = 4;
         }
-        return;
+        break;
     default: __assume(0);
     }
 }
