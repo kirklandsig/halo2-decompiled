@@ -24,11 +24,6 @@
 
 
 
-// @stub 0xb7b40
-long __stdcall function_b7b40(void *creation)
-{
-	return 0;
-}
 
 
 
