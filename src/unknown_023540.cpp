@@ -4460,6 +4460,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // locals 80 (B: 80); two-use scaled_high local 4 (B: 4); mode-1 4-use alpha local 696 (B: 696); offset after inverse_distance
 // 11 (B: 10), after switch 44, inside if(high>low) 103, after inverse_span 103; span_scale at mode 0 4 (with scaled_high 4);
 // PS_COMBINERINPUTS on stage 1/2 4; B + mid / span / inv_65536 4 each. None flips the float-split 1.0f/span reload tie.
+// M3 lane 16 r198 (H2M_FAST, on r155's 4 form, control 4): the split pass splits the span before the 1.0f constant (its
+// candidate number is lower), so the span's long piece takes the second free number (115) and the constant's the eighth
+// (96); retail's order needs the constant split first or its pieces past the free list (three more pieces ahead of it).
+// Forms: the small test as `allow_small && high * 256.0f <= 1.0f` 1184 (4856 B); the fixed-point rounding divided by
+// 65536.0f 4 (same code); the width written at its two uses 36; the exponent search as a `for` with an empty body 878
+// (4928 B); the offset clamp's upper bound as a ternary 1072. Body unchanged (9).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
