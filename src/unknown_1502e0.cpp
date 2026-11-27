@@ -1352,6 +1352,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // pointer to const 5 (same code); the hand as a bool 42 (141 B); a second member name overlaying unit_index read for the
 // lookup 17 (merged early like the plain read); the lookup and both calls through the getter with the test through the
 // player 46; the result declared ahead of the player 27 (137 B).
+// M3 lane 2 r160 (fast screen with 0x151aa0, 43 each time, and 0x152bf0, MATCH; control 5, the plain-read form 17). Ledger
+// of the plain-read form: the unit index ranks 59 (entry block 32, lookup block 18, each call arm 6, -3 where it is
+// live unreferenced) against 42 for the unit pointer and 42 for the slot, so it is coloured first and takes ESI; with
+// the lookup's read a load of its own it would rank 32 and the slot would take ESI, as retail. Forms: a file-local
+// getter of a player's unit taking the player pointer 17 (merged early); the hand declared ahead of the player at
+// function scope with the plain lookup 51 (140 B); the plain lookup with both calls reading the unit index again
+// through the player getter 41 (142 B); the plain lookup through a named object-header pointer 17; a unit-index local
+// for the test and both calls with the lookup reading the field 17 (the last two the plain-read code).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

@@ -1104,6 +1104,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the heading's zero store, which retail makes before the lowest scan); that with the heading declared before the
 // flag 260 (757 B), after `current` 262 (757 B); the one-counter loop with the bool flag and memmove 236 (759 B), with
 // the dword flag 236 (759 B).
+// M3 lane 11 r176 (fast screen with 0x239d50 and 0x239b80; control 144): the candidate index as a long 251 (0x239d50 34);
+// the lowest scan's index as a long 645 (1095 B, the scan unrolled); the chosen candidate as a long 246; the chosen
+// candidate declared once ahead of the pass loop and reset per pass 144 (same code); the compaction's indices as
+// longs 259 (768 B, 0x239d50 80). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

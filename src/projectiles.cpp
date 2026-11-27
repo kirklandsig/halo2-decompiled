@@ -1284,6 +1284,8 @@ real function_30bf0(vector3f *v);
 // inline `2.0f * a` at `optimal_time` only 270 or `t2` only 274 (both fdiv=3, divss=1, callers lost via gravity_scale in XMM; + maxgrav + uncast sqrt 234 at 983 B; + `t` clamp 266, + late `path_distance` 202 at 985 B, mk=40, all 7 match, NOT kept: same + expands `two_a`);
 // inline `1.0f / time` + late `path_distance` 261; inline velocity + split `velocity.k` + late `path_distance` 258 (al=131);
 // diagnostic: `t` clamp + maxgrav + `/ (double)two_a` 253 (all 7 match), + min before opt + late path 202 (mk=40, all 7 match), + plain `if (forced_speed)` first 263 (971 B, mk=31, F=0x2c, fdiv=3, early fsqrt, callers lost).
+// M3 lane GB r28 (20 fast trials with 0xfa580 and all 6 matched callers; control 216 at 983/983 B, +0x2, al=232, mk=159; body unchanged):
+// uncast all `sqrt` 216 (same code: C++ `<math.h>` routes `sqrt(float)` to `sqrtf`); `delta` component loop 217; direct `velocity` with `velocity.k = inverse_time * delta.k + time * gravity * 0.5f` (either factor order) 258 (984 B), + late `path_distance` 258 (al=316, mk=153), + maxgrav + `if/else-if` `t` clamp 248 (983 B, mk=132: matches all 24 velocity-block insns); `forced` ternary (`forced ? *forced : speed; if (!forced && time_scale)`) 282 (plain 284; 1003 B, 6 callers lost); `if (forced) ... else if (time_scale)` 218 (all 7 match); `result` reusing `found` 259 (6 callers lost); diagnostic quadratic helper 308 (923 B, F=0x30, fdiv=2, 6 callers lost); uncast all `sqrt` + maxgrav + `-1.0f * root / two_a` 215 (986 B, mk=134); C `double` `sqrt((double)discriminant)` in `t2` (alone or all `sqrt`) 267 (964 B, F=0x2c, fdiv=3, divss=1, 6 callers lost), + maxgrav 206 (983 B, fdiv=3, divss=1, mk=86, all 7 match), + `t` clamp + direct velocity & late `path_distance` 204 (983 B, mk=74, all 7 match; + `minimum` before `optimal_time` 250 at 987 B; + plain `if (forced_speed)` first 195 at 983 B, F=0x2c, mk=67, 6 callers lost). NOT kept (206/204): `sqrt((double)discriminant)` alone regresses to 267 (6 callers lost), combines parts that regress alone, and emits `fild; fmulp` where retail has `fimul` (proving `sqrt(discriminant)` is `float` at the arc-sign multiply in retail).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2749,6 +2751,13 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // (not kept: operand order; + `center` vec3 27, + inline inverse 27, + 3 store orders 19, held as a lead), `+=` +
 // `vector3f_scale` 208 (gives center-first x/y/z but breaks center scale), plain add 210, `n[0..2]` `+=` 208, `b9a90`
 // inside block 29, uninit `prior_position` inside block 29.
+// M3 lane GA r29 (17 real + 2 diag fast trials with 7 matched peers MATCH; control 29 at 2190/2190 B, +0x37; body unchanged):
+// dropping `definition_bytes` with typed `s_projectile_definition` fields 207 (+ typed `s_projectile` 207, + both scales 207,
+// + late `child_position` 207, + swapped add 207, + `vector3f_scale` + swapped add 205 [fixes x, y stays child-first], + `center`
+// vec3 207, + 3 store orders + scales 202, + swapped add 200); keeping `definition_bytes`: `vector3f_scale` on probe 29, typed
+// `s_projectile` fields 29, typed `s_projectile *parent` 29, `vector3f child_position` + center scale 29, both `vector3f` + scale 29,
+// late `child_position` + scale 29, `center` assign + scale + swapped add 27 (match-only operand order; x fixed, y stays child-first),
+// `parent_index` local 505; diagnostic phase locals k=1,2 before `center` + scale 29/29. `0x1ca690` short arg remains held as a patch.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {

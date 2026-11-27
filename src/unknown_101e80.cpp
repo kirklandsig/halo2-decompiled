@@ -289,6 +289,25 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // `tag_link` 29, single-exit tail 29, offset+base byte pointer 29, `g_4e3b44` byte arith/local first 29/29, `0x101ec0`
 // selected-ref idiom 29 (all keep `[ecx+eax+8]` SIB fold and `g_4e3b44` in EAX); `link` ptr in `!blocked` 31;
 // `object->links` ptr 265; dual-wield partner inline 298 (613 B, still folds `[eax+edx+8]`).
+// M3 lane GB r29 (24 valid fast trials, all 6 file peers MATCH; body unchanged): no `flag9` local 31, `blocked` after
+// duration 31, `real bounds[2]` 31, early `link_rate` / `tag_off` / both offsets 31, `rate *=` 31, `void *links` 31,
+// `long tag_index` 31, a tag-block `void*` accessor 31, `tag->links[(long)link_index]` 31, `object->links[(long)link_index]`
+// 31, `void *object` + `.bytes` 31, nested `rof` struct 31, no-`/Ob1` + byte-offset `object_get_102100` 31; `blocked` before
+// `result` 33; `duration <= 0.0001f` 38; late `s_object_link *link` 172 (716 B); `rate = 0` + reordered duration 197 (707 B);
+// late `tag_link` 203; `(word)` tag index 203 (704 B, breaks 3 peers); scalar interp helper 205 (711 B); late `result` 211;
+// by-value `real_bounds rof` copy 232 (733 B, breaks `[ecx+eax+8]` fold only via 8-byte stack copy, still loads `[ebp+0x2d4]`
+// first and keeps `g_4e3b44` in `EAX`).
+// M3 lane GB r31 (31 valid fast trials + 1 diag, all 6 file peers MATCH; body unchanged): member methods
+// `s_tag_link::interpolate` / `s_object_tag::get_link` / `s_bounds::interpolate`, ternary `rate`, `dword flags` +
+// `TEST_FIELD_BIT`, `long barrel` after `tag`, `s_tag_link &`, `tag_link += link_index`, inline `rate` helper,
+// byte-arith both, `!link_index`, `min_t` local, inline obj/tag getters, a tag block struct, `start + rate * span`,
+// and diag `optimize("w")` all 31 (`29` on index-first SIB base with `span` or `real_bounds *rof`, `29` with tag-only
+// `long barrel`); `long barrel = link_index` at top 30 (`al=23, mk=16`, lifts `movsx` above `tag` and matches `xorps`
+// slot, -1 under keep bar; `30` with idx-first SIB / `tags` local / `span` / obj-only `barrel`); C89 top decls 136
+// (707 B); `flag9` before `duration` 206; `accum` ptr 47; plain bitfields 211; explicit `obj_off` (and `tag_off`) at
+// top covering all 6 link uses 39 (`mk=10`, first form putting `g_4e3b44` in `EBP` and emitting `imul 0xec` before
+// `push edi; imul 0x34`, but `tag_off` still coalesces to `ECX` and keeps the `[ecx+eax+8]` SIB fold; after `object`
+// 87 at 707 B with both `EBP` and `ECX` for `g_4e0300->data`; after `tag` 87; after `headers` 42; + late bools 211).
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {

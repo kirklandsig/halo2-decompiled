@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "reset_storage.h"
+#include "timed_effect.h"
 #include "unknown_11c920.h"
 #include "globals.h"
 #include <xmmintrin.h>
@@ -352,7 +353,6 @@ byte function_016a90()
 	return g_485ac2;
 }
 
-long g_485898;
 
 // @retail 0x16ac0
 bool function_016ac0()
@@ -437,7 +437,6 @@ struct s_1b230_function
 	byte *data;
 };
 
-extern double g_4858a0;
 real function_13b390(void const *function, real input, real range);
 
 // @retail 0x1b230
@@ -973,6 +972,17 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // any extra register in this body moves the caller); the size branch as `else if (component != 4)` with the colour
 // arm last 127 (708 B); the mode switch as an if/else chain 215 (712 B; 0x19be0 36, 0x19ca0 58); case 13 placed above
 // case 9, storing its zeros and falling into 9's width/height 99 (708 B), its zeros ascending 99.
+// M3 lane 1 r176 (fast with 0x19be0/0x19ca0; both MATCH unless stated): the 12/13 zeros through the existing
+// point2f_set on `(point2f *)(out + 2)` MATCH here but 0x19ca0 130 (any copy of out, an inline helper's pointer
+// parameter included, lets the caller's values array escape, so 0x19ca0 stops sharing the word load after the call
+// with its later reread: retail shares it, so retail's stores go through out itself); out advanced in place (`out +=
+// 2` in 12 and 13, 0x19ca0 keeps its match) 104 (688 B, case 11 merges into the tail), `out += 1` in 14/18 89 (684
+// B); the 12/13 zeros as `((point2f *)out)[1].x`/`.y` 2 (same code); 14/18 storing width after the zeros 7, that with
+// the 12/13 zeros ascending 5 (the 12/13 tail is then retail's [8][c] with no flip, only 14/18 differs: zeros in xmm1,
+// width last), with 14/18's zero out[1] first, then width, then out[2]/out[3] 5 (width still sinks last); case 14 width
+// first and case 18 width last 101 (732 B, the two no longer merge). Reading: the flip fires only when 14/18 and 12/13
+// end on the same two zero stores (and case 10 stores width at [8] from xmm0); once 14/18 ends on its width store
+// (the [0] store most blocks end on) nothing flips.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

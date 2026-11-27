@@ -53,7 +53,6 @@ void function_1cf50(void);
 void function_14f60(short stage, short index);
 bool function_143c0(long tag, short index, short stage, real priority);
 byte g_485a77, g_55e6bd;
-short g_4858c8;
 long g_4e6978, g_4e697c;
 long g_485a78[2];
 extern byte g_485a76;
@@ -2086,7 +2085,6 @@ void function_1d4b0(long format, bool alternate, long *result, bool *linear)
 real g_485adc, g_485ae0;
 
 extern byte *g_50934c;
-extern double g_4858a0;
 
 // @retail 0x137a0
 void __stdcall function_137a0(real *first, real *second)
@@ -4566,7 +4564,6 @@ void function_4d720(short index, long mode)
 typedef long (__stdcall *visibility_draw_callback)(s_slot *slot, byte *data);
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw);
 long __stdcall function_2e540(s_slot *slot, byte *data);
-extern long g_485898;
 
 // MiniMax E (11-16): no new form tried this round, no lower score (285): the frame is still 0x38 bytes against retail's 0x34 because
 // retail reuses the position's slots for the corner coordinates, the definition's flag byte is still copied into bl where retail tests
@@ -5624,59 +5621,30 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 
 #define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
 
-// MiniMax I (11-15): no new form, no lower score (498): the camera flag read out of the reset storage block scores
-//   447, but that read is a cast into the aggregate and is kept only with a match, so the body stands. What still
-//   differs: retail reloads g_4858c8, g_4858c4 and g_4858b8 at every use and keeps the constant 1 in ecx across the
-//   body, where this build hoists those loads out of the again-loop; the body is 1696 bytes against retail's 1700
-//   and the first difference is at +0x1f.
-// MiniMax H (11-14), NOT kept at review (a cast read into the reset storage block is kept only with a match, and it left 0350e0.cpp's extern unresolved; 0x19530 498 -> 447, 0x37a60 529 -> 519 back to main): the camera flag at 0x4858c8 is the first word of the reset storage block, so it is now read
-//   from there (a view of the aggregate, like the shader pointer next to it) and reloaded at every use as retail does;
-//   the separate global is gone and the file that writes it writes the same aggregate word. The body is 1704 bytes
-//   against retail's 1700 and the first difference is at +0x1f. What still differs: g_4858b8 is still a separate
-//   global, so retail's reload of it is missing, and retail keeps the constant 1 in ECX across the body.
-// score 498 (was 585): round 94 put g_4858c4 in the reset storage aggregate (include/reset_storage.h), so it is
-// reloaded after calls as retail does; 1696 bytes against retail's 1700; g_4858c8 and g_4858b8 below remain separate.
-// Earlier 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
-// matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
-// Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
-// does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;
-// g_485a78[mode - 24] is indexed; case 26 compares an int; case 16 compares clamped == value.
-// The score rose 25 only because ours merges the else with case 2 at the later block and drops case 2's own copy at
-// 0x195a0 (retail keeps the earlier one and jumps back: `jne 0x195a0`); a goto label, `break` plus a tail call and
-// the negated test all compile alike. The old `(short)surface` argument scores 591.
-// Remaining blocker (not in this body): retail reloads g_4858c8, g_4858c4 and g_4858b8 at each use and keeps the
-// constant 1 in ECX (`mov ecx, 1` before the loop head, then `mov [esi], ecx`, `mov edi, ecx`, `push ecx`) where ours
-// hoists those loads out of the again-loop. Diagnostic only (not kept): a file-scope `short *p = &g_4858c8;` plus
-// the same for g_4858c4 and g_4858b8 gives 116 with the old argument and 447 with the fixed one (the layout shift
-// above), so they are members of an address-taken struct in retail, as 0x350e0's note says for g_4858c4.
-// Walk (b4B, statement by statement against retail 0x19530-0x19b67, jump table 0x19b68): all 25 live cases, the two
-// null slots (modes 7, 11: no case; default __assume(0) = unchecked jmp at 0x1954c), the dimension defaults (1x1 start
-// 0x19540-0x19546, 0x0 on a missing surface 0x19b15, 640x480 for case 6 0x19660, 4x4 for case 27 0x19b55), every
-// tag offset (+4 +0xc +0x14 +0x64 +0xd0), the 0x143c0/0x144f0/0x137550 bitmap-index ECX constants (1 or 0) and
-// case 16's in-range test (0x19850-0x19862) agree with retail: no behaviour difference found. Layout-neutral
-// cleanups (fast 612 before and after): the (short) casts on 0x14f60/0x143c0 arguments (their parameters are short),
-// the dead `&stage` / `(void)&param` address-taking and case 16's written-out clamp (now PIN, file-local macro as in
-// 0x167a0's file; same bytes). Tried: recursive call function_19530(18, ...) for the mode 18 re-dispatch 612
-// (same loop as the goto). No new include, helper or double local.
+// The camera flag at 0x4858c8 is a member of the reset storage aggregate (include/reset_storage.h), like the shader
+// pointer next to it, so it is read again at every use. Every case leaves through `break`. Mode 18 shares the surface
+// block of modes 24 and 25 (retail jumps from 0x198d2 into 0x19a4d); their fallback is the same call as mode 2 and
+// retail jumps back to it (0x19a47 to 0x195a0). Modes 7 and 11 have no case (null table slots).
 // @retail 0x19530
 void function_19530(long mode, byte const *context, long stage, long *width, long *height)
 {
+    long surface;
 again:
     *width = 1;
     *height = 1;
     switch (mode)
     {
-    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, stage, 0.0f); return;
-    case 2: function_14f60(stage, 1); return;
+    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, stage, 0.0f); break;
+    case 2: function_14f60(stage, 1); break;
     case 3:
         function_14f60(stage, 1);
         texture_surface_dimensions(1, width, height);
-        return;
-    case 4: g_51f3c8[1][stage] = NULL; return;
+        break;
+    case 4: g_51f3c8[1][stage] = NULL; break;
     case 5:
         function_14f60(stage, g_4858b8);
         function_01dd60(g_4858b8, width, height);
-        return;
+        break;
     case 6:
         function_14f60(stage, 3);
         if (g_4b4b58[3].data && !g_4b4b58[3].flag95)
@@ -5685,8 +5653,8 @@ again:
             *height = g_4b4b58[3].height;
         }
         else { *width = 640; *height = 480; }
-        return;
-    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f); return;
+        break;
+    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f); break;
     case 10:
         if (g_4858c8 && g_4858c4)
         {
@@ -5706,21 +5674,21 @@ again:
                 if (bitmap) function_14390(stage, bitmap, 0.0f);
             }
         }
-        return;
+        break;
     case 12:
         if (!g_4858c8) function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f);
         else function_144f0(stage, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
-        return;
+        break;
     case 13:
         function_14f60(stage, 9);
         texture_surface_dimensions(9, width, height);
-        return;
+        break;
     case 8:
         function_14f60(stage, 10);
         texture_surface_dimensions(10, width, height);
-        return;
-    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, stage, 0.0f); return;
-    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, stage, 0.0f); return;
+        break;
+    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, stage, 0.0f); break;
+    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, stage, 0.0f); break;
     case 16:
         function_143c0(g_4e6978, g_4e697c, stage, 0.0f);
         if (g_4e6978 != NONE)
@@ -5734,42 +5702,36 @@ again:
                 *height = *(short *)(bitmap + 6);
             }
         }
-        return;
+        break;
     case 17:
         function_14f60(stage, 19);
         texture_surface_dimensions(19, width, height);
-        return;
+        break;
     case 18:
         if (!g_485607)
         {
-            long surface = function_25960();
-            if (surface != NONE)
-            {
-                function_14f60(stage, surface);
-                function_01dd60(surface, width, height);
-                return;
-            }
+            surface = function_25960();
+            if (surface != NONE) goto set_surface;
         }
         function_143c0(*(long *)(g_485a80 + 0x64), 0, stage, 0.0f);
-        return;
-    case 19: function_14f60(stage, 21); texture_surface_dimensions(21, width, height); return;
-    case 20: function_14f60(stage, 22); texture_surface_dimensions(22, width, height); return;
-    case 21: function_14f60(stage, 13); texture_surface_dimensions(13, width, height); return;
-    case 22: function_14f60(stage, 17); texture_surface_dimensions(17, width, height); return;
-    case 23: function_14f60(stage, 23); texture_surface_dimensions(23, width, height); return;
+        break;
+    case 19: function_14f60(stage, 21); texture_surface_dimensions(21, width, height); break;
+    case 20: function_14f60(stage, 22); texture_surface_dimensions(22, width, height); break;
+    case 21: function_14f60(stage, 13); texture_surface_dimensions(13, width, height); break;
+    case 22: function_14f60(stage, 17); texture_surface_dimensions(17, width, height); break;
+    case 23: function_14f60(stage, 23); texture_surface_dimensions(23, width, height); break;
     case 24:
     case 25:
+        surface = g_485a78[mode - 24];
+        if (surface != 25 && surface != 26 && surface != 27)
         {
-            long surface = g_485a78[mode - 24];
-            if (surface == 25 || surface == 26 || surface == 27)
-            {
-                function_14f60(stage, surface);
-                function_01dd60(surface, width, height);
-            }
-            else
-                function_14f60(stage, 1);
-            return;
+            function_14f60(stage, 1);
+            break;
         }
+    set_surface:
+        function_14f60(stage, surface);
+        function_01dd60(surface, width, height);
+        break;
     case 26:
         {
             byte *definition = g_4e3b44[*(long *)(context + 8) & 0xffff].bytes;
@@ -5783,7 +5745,7 @@ again:
             }
             byte *bitmap = *(byte **)(parameters + 8) + index * 12;
             function_143c0(*(long *)bitmap, *(short *)(bitmap + 4), stage, 0.0f);
-            return;
+            break;
         }
     case 27:
         if (g_485a76)
@@ -5802,7 +5764,7 @@ again:
             *width = 4;
             *height = 4;
         }
-        return;
+        break;
     default: __assume(0);
     }
 }
@@ -5961,21 +5923,22 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
     function_16b90(g_485b48, tag, first, second, third, fourth, scale);
 }
 
-// MiniMax C (11-14): no new form, no lower score (73): the shader tag still goes to edx where retail keeps it in
-// ecx, the pass entry's tag is still loaded from the folded addressing mode, and the record's tag still goes
-// straight to eax where retail copies it through ebp.
-// score 73 (was 73): retail keeps the second tag lookup in ecx where ours uses edx, retail materialises the pass
-// entry's address with its own lea before loading its tag (ours folds the +4 into the load, two bytes shorter,
-// which shifts every later jump) and retail copies the record's tag through ebp where ours loads it into eax.
-// b15E (11-17) walk against retail, fast build on r848: no logic difference (h2.py disasm): the entry clamp
-// (0x1664d-0x16658), stage mask test (0x16670), pass count shr 9 (0x16693), wanted-pass test (0x166a6-0x166ad), pass
-// entry stride 10, record stride 0x132 (0x166d3), the 0x100 test (0x166e6), g_4670bc store (0x166f8), the 0x1bbf0
-// arguments (0x16704-0x16713), the 0x3f53d0 cull call with its store (0x16737-0x16743), copy test (0x16748) and result
-// byte (0x16778) all agree; the program tag is re-read after 0x1bbf0 (0x16718) as in ours. Tried, all 73 unless noted:
-// `long shader_tag` local, the nested lookup without `definition`, a `pass_tag` local, `pass_entry +=` in two steps, a
-// `long program` local at the call, packed 10-byte entry and 0x132-byte record structs with field access (identical
-// code, so no struct is kept), `(word)` on the shader tag (102, movzx); `long program` read before the 0x100 test
-// scores 67 but loses the record's `add ebp,[ecx+4]` shape and the re-read at 0x16718, so it is not kept.
+// The values of the pass lookup are the fields of one local record, as in 0x4b2d0: retail keeps each definition in
+// the register of its index (0x1663a-0x16646), forms the pass entry's address before it reads the tag through it
+// (0x166c1-0x166c8) and copies the program through ebp on its way to 0x1c590 (0x16718-0x16720). The tables and the
+// pass words are plain locals: retail keeps those two in the frame.
+struct s_lookup_16610
+{
+    byte *definition;
+    byte *shader;
+    long pass;
+    byte *pass_entry;
+    byte *pass_definition;
+    byte *records;
+    byte *record;
+    long program;
+};
+
 // @retail 0x16610
 bool __stdcall function_16610(long tag, long stage, long wanted_pass, long variant,
     long target, bool copy)
@@ -5983,9 +5946,10 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
     bool result = false;
     if (tag != NONE)
     {
-        byte *definition = g_4e3b44[tag & 0xffff].bytes;
-        byte *shader = g_4e3b44[*(long *)(definition + 4) & 0xffff].bytes;
-        byte *tables = *(byte **)(shader + 0x5c);
+        s_lookup_16610 lookup;
+        lookup.definition = g_4e3b44[tag & 0xffff].bytes;
+        lookup.shader = g_4e3b44[*(long *)(lookup.definition + 4) & 0xffff].bytes;
+        byte *tables = *(byte **)(lookup.shader + 0x5c);
         // the first entry, its index clamped to the entry count
         long entry_index = 0;
         if (entry_index > *(long *)tables - 1)
@@ -5996,19 +5960,21 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
             if (*(dword *)(entry + 2) & (1 << stage))
             {
                 word *passes = (word *)*(byte **)(tables + 0xc) + (*(word *)entry & 0x1ff) + stage;
-                for (long pass = 0; pass < (*passes >> 9); ++pass)
+                for (lookup.pass = 0; lookup.pass < (*passes >> 9); ++lookup.pass)
                 {
-                    if (wanted_pass == NONE || wanted_pass == pass)
+                    if (wanted_pass == NONE || wanted_pass == lookup.pass)
                     {
-                        byte *pass_entry = *(byte **)(tables + 0x14) + ((*passes & 0x1ff) + pass) * 10;
-                        byte *pass_definition = g_4e3b44[*(long *)(pass_entry + 4) & 0xffff].bytes;
-                        byte *record = *(byte **)(*(byte **)(pass_definition + 0x20) + 4) + variant * 0x132;
-                        if (*(long *)(record + 0x100) != NONE)
+                        lookup.pass_entry = *(byte **)(tables + 0x14) + ((*passes & 0x1ff) + lookup.pass) * 10;
+                        lookup.pass_definition = g_4e3b44[*(long *)(lookup.pass_entry + 4) & 0xffff].bytes;
+                        lookup.records = *(byte **)(lookup.pass_definition + 0x20);
+                        lookup.record = *(byte **)(lookup.records + 4) + variant * 0x132;
+                        if (*(long *)(lookup.record + 0x100) != NONE)
                         {
                             g_4670bc = true;
                             function_16b10((s_render_reset_state *)g_485b48);
-                            function_1bbf0(tag, 0, stage, pass, variant, 0.0f);
-                            function_1c590((s_shader_cache *)g_51f0f0, *(long *)(record + 0x100), 0);
+                            function_1bbf0(tag, 0, stage, lookup.pass, variant, 0.0f);
+                            lookup.program = *(long *)(lookup.record + 0x100);
+                            function_1c590((s_shader_cache *)g_51f0f0, lookup.program, 0);
                             function_1c710(g_51f0f0);
                             function_1cf50();
                             g_4b8448 = 0;
@@ -6426,155 +6392,46 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
-// MiniMax R (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here.
-// MiniMax D (11-14): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx (retail's order is the tag in edx, the first argument in ecx and the second in eax, with the third and fourth on the stack), and the callers are in other files, so the convention cannot be changed from here.
-// MiniMax H (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX, and the arguments behind it still sit one stack slot lower; retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with the third and fourth on the stack, and the callers are in other files, so the convention cannot be changed from here.
-// score 62 (was 62): retail takes tag/first/second in EDX/ECX/EAX (first and second moved to ESI/EDI, the tag table
-// kept in EBX, fourth loaded into EBP from the stack, ret 8); ours takes tag EDX and fourth EAX, three on the stack.
-// MiniMax A (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail
-// takes it in ECX and the arguments behind it still sit one stack slot lower, so the entry block's register
-// choice is the call cycle's, not this body's; the callers are in other files, so the calling convention cannot be
-// changed from here. The original body is kept.
-// MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail
-// takes it in ecx, and the arguments behind it still sit one stack slot lower. This round: the permuter
-// ran out of time without reporting a form, so nothing was tried from it.
-// MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the declaration and the callers of this function are in other files, so the convention cannot be changed from here.
-// MiniMax E (11-16): no new form tried this round, no lower score (62): retail's convention is edx = the tag, ecx = the first
-// (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth, ret 8, and this build still takes the
-// second argument in eax with the arguments behind it one stack slot lower; the register an argument arrives in follows from the
-// callers, which are in src/flexible_surface.cpp:941 and src/unknown_19eda0.cpp:544, and the declaration is in
-// include/flexible_surface_calls.h:11, all in files this lane may not edit.
-// MiniMax A (11-06, run 52): no new form, no lower score (62) - the two address-taken parameters are
-// dropped (the same code), and retail keeps the first argument in ecx where ours reads it from the
-// stack.
 
-// MiniMax C (11-15): no new form, no lower score (62): retail's convention is edx = the tag, ecx = the first (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth, ret 8, and this build still takes the second argument in eax with the arguments behind it one stack slot lower; measured this round, the range index in a local leaves the code unchanged (62) and `first * 10` in place with that local scores 91 (239 bytes), so the register an argument arrives in still follows from how the body uses it.
-// MiniMax B (11-13): no new form, no lower score (62): this build still reads its first stack argument from [esp+0xc] where retail reads it from [esp+0x10]; the slot is fixed by the callers in the other files, so no source form here reaches it.
-// MiniMax G (11-12): no new form, no lower score (62); retail's convention is edx = the tag, ecx = the
-// first (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth (copied
-// to ebp), ret 8, with the tag table in ebx; the record index is the third argument and the selected
-// tag lands in the dead fourth slot, as here. New forms: `first * 10` in place 91 (239 B), the same
-// multiply fused into the entry read 91 (same code), the range index with its operands swapped 91 (same
-// code), a local holding a copy of the first argument (the same code). Restored.
-// MiniMax G (11-12): the call to 0x1bbf0 is the other blocker and it is in another file: our 0x1bbf0
-// (in this file) compiles to retail's code with the same `ret 0x14` slots, but retail's 0x16b90 takes
-// the scale as its third argument (its prologue reads the tag at e+8 and the state at e+4) while the
-// declaration at src/unknown_0167a0.cpp:263 has the scale last, so our 0x1bbf0 gives the second, third
-// and fourth parameters different stack slots and this caller pushes the first, third, second and
-// fourth where retail pushes the first, second, fourth and third.
-// MiniMax G (11-12): the permuter (300 s, 10 tries) reached 60 in both images by pulling the 0xffff and
-// the 10 into constant locals and reordering the two calls' arguments: two points is under the keep bar,
-// the constant locals and the reordered calls are not allowed forms, and the calls would pass something
-// else, so the body stands.
-// MiniMax C (11-11): no new form, no lower score (62); the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files.
-// MiniMax R (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
-// MiniMax I (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
-// MiniMax E (11-09): no new form, no lower score; the second argument still arrives in eax
-// where retail takes it in ecx, and the callers of this function are in other files.
-// MiniMax C (11-06): no new form, no lower score - the second argument still arrives in eax where retail
-// takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers are in other
-// files, so the calling convention cannot be changed from here.
-// MiniMax D (11-05): no new form, no lower score - retail reads the second argument in ecx and keeps the
-// tag table in ebx, ours takes the fifth argument in eax and reloads the table into esi; the record
-// multiplier written as the selected tag or as the fifth argument scores 90.
-// Earlier 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
-// ecx, and the arguments behind it sit one stack slot lower; the callers are in other files, so the
-// calling convention cannot be changed from here.
-// MiniMax C (11-08): forms tried, none lower: the second argument through a local 62, the entry
-// pointer through the table 62, the offset named after the selected tag 91, the entry built from the
-// slot 91 (base 62).
-// Earlier 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
-// arguments behind it sit one stack slot lower than retail's; the callers of this function are
-// in other files, so the calling convention cannot be changed from here.
-// Lane 18 r37 (fast): without the `(void)&` reads (one or both) 62 (same code); `first * 10` written in
-// place, or its local named just before the entry, 91 (239 B, ret 8: first now arrives in EBX and third in
-// EAX, where retail takes first in ECX, moved to ESI, and second in EAX; retail keeps the tag-table base
-// in EBX and reloads it after the 0x137bd0 call). Restored.
-// Round 170 (m3 lane 6, fast with 0x19f680/0x244470/0x2be5d0/0x116b00): the selected tag computed just before the
-// 0x1bbf0 call 91 (238 B), the group read ahead of the selected tag 78 (251 B), each with `first * 10` in place 99/91;
-// the selected tag as `selected = tag; if (tag == NONE) ...` 77; the group read as `*(dword *)&g_4e3b44[(short)tag]`,
-// the head through a copy of 0x16b90's material_parameters inline (diagnostic), the parameters pointer as a ternary
-// and the 0xc table named 62 each (same code). Re-measured: `first * 10` in place or named just before the entry 91.
-// Retail forms the group read as `add eax, ebx; mov eax, [eax]`, unlike 0x16b90 and 0x19f680 (folded).
-// MiniMax B (11-13): no new form, no lower score (62): the second argument's register is decided by the callers, which are in other files.
-// MiniMax S (11-14): no new form, no lower score (62): the second argument still arrives in EAX where retail takes it in ECX (retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with `ret 8`), and the register the argument arrives in is decided by the callers, which are in files this lane may not edit.
-// MiniMax D (11-15): no new form, no lower score (62): the second argument still arrives in eax where retail takes it
-// in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here.
-// MiniMax I (11-15): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here.
-// MiniMax R (11-16): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here; the permuter (8 tries in 302 s, annealing) reached 60 only by naming the constants 4, 10 and 0xffff in locals and by swapping the arguments of the two calls, so its variant was reverted.
-// MiniMax S (11-16): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of
-// this function are in other files, so the calling convention cannot be changed from here.
-// score 62 (was 62): the second argument arrives in eax where retail takes it in ecx; the callers are in other files.
-// MiniMax G (11-13): no new form, no lower score (62): the second argument still arrives in eax where retail
-// takes it in ecx, and the callers are in other files, so the calling convention cannot be changed from here.
-// MiniMax D (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx,
-// and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling
-// convention cannot be changed from here.
-// M3 lane 12 r136, HELD (needs the owner's OK: the reorder edits the call line inside 0x116b00, a contributor's function in
-// src/flexible_surface.cpp; the full diff is build/r136/held-4b2d0.patch; code here is main's): retail's own bytes give the order
-// (tag, first, record index, second, pass): the record index is the first stack argument (e+4, loaded late at 0x4b38e), the pass the
-// second (e+8, loaded into EBP at entry), and the tag, first and second arrive in EDX, ECX and EAX. Fast with 0x19f680 (322 on main's
-// order), 0x244470, 0x2be5d0 (both matched in every row) and 0x116b00 (319): that order on this body 62 (same code here; 0x19f680
-// 321, 0x116b00 319); with the lookup chain kept in a local pointer array filled like 0x16b90's state block (entry, range, pass,
-// records, record; `first * 10` in place) 63 at 251 B, first difference +0x32, aligned 48 -> 17: retail's prologue and convention
-// (first in ESI from ECX, second in EDI from EAX, the pass in EBP, `ret 8`) and its formed-then-read entry, range and pass
-// addresses; 0x19f680 311 and 0x116b00 280. On main's order the same array body 64 (252 B: the record index in EAX, the second on
-// the stack; 0x19f680 404 on its old body), `first * 10` in place alone 91 (239 B), the array with a slot for the tag-table entry
-// 78, the program read at the 0x1c590 call 69 (both 251 B, first difference +0x3), the chain in a force-inlined helper filling a
-// record 58 (254 B, first difference +0x32), not forced 217 (114 B: it stays a call); the variant declared last 63 (the pass then
-// arrives in EAX). Left on the array form: retail forms the group read's address first (`add eax, ebx; mov eax, [eax]`), keeps
-// the records chain in EBX and leaves a dead `add eax, edx` for the record address.
-// b12A (11-17) walk against retail, fast build on r846: fields, offsets, jcc senses, constants and callee arguments all
-// match (0x4b2d0-0x4b3c8); no behaviour difference. Retail multiplies first by 10 after the tables load (lea at
-// 0x4b34c), but without the hoisted `first_offset` it is 91 (239 B), 0x116b00 322 -> 414 and 0x19f680 370 -> 427: first
-// then arrives in EBX, further from retail's ECX, so the local stays. Why: retail's callers keep esi/edi/ebx/ebp live
-// over the call (0x116b9c-0x116ba4: edx = tag, ecx = group, eax = variant) and the callee saves all four
-// (0x4b2d3-0x4b2da) with the tag table in EBX (0x4b2f6), so the arguments can only arrive in EDX/ECX/EAX; here the
-// table sits in ESI and first takes EBX unsaved. A parameter order does not move a register: 20 orders of the five
-// (third before fourth) on this body all give `ret 8` with first in EBX (91-95); 8 on the old body keep `ret 0xc`
-// (61-63); (third, fourth, tag, first, second) with both callers updated: 63, 0x116b00 320, 0x19f680 404, so no reorder
-// is kept. Retail forms pass (0x4b37e) and record (0x4b3ae) addresses that are dead: `byte *const &` on pass (alone or
-// with record) gives 251 B and 81 (62 on the old body, same code); on entry or record alone 91. No form matches; the
-// open difference is the tag table in EBX (retail) against ESI (ours).
-// m3 lane 16 r132 (fast, for caller 0x19f680; see its note): on the (tag, first, third, second, fourth) order with both
-// calls, the chain's seven values as fields of a local record 63 (+0x32: the group read folds where retail forms
-// `add eax, ebx` then reads, the pass definition takes EDX where retail reuses EBX, and the record address lacks retail's
-// dead `add eax, edx`), which gives retail's convention and lets 0x19f680 MATCH; the record filled by a force-inlined
-// helper 64; the group read through an instance reference or `.unknown00` 63, as a `dword const &` 81. Natural bodies on
-// that order (`first * 10` in place; entry and range as word pointers formed and read; the tag entry by pointer; C-style
-// declarations at the top) 95 each, first then in EBX; `(void)&third; (void)&fourth;` on main's body 62 (same code), on
-// the in-place body 95. None kept (main's body, 62).
+// The values of the lookup are the fields of one local record: retail forms the tag instance's address before it
+// reads the group through it, keeps the template and pass definitions in registers of their own and forms the pass
+// and record addresses it never reads again (0x4b302, 0x4b342, 0x4b37e, 0x4b38a, 0x4b3ae).
 struct s_lookup_4b2d0
 {
+    s_tag_instance const *instance;
     byte const *parameters;
+    byte *definition;
     byte *tables;
     byte *entry;
     byte *pass;
     word *range;
+    byte *pass_definition;
     byte *records;
     byte *record;
+    long program;
 };
 
 // @retail 0x4b2d0
-// MiniMax C (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here, and the permuter's best (60) only renamed constants and swapped the arguments of the two calls, so it was reverted.
 void function_4b2d0(long tag, long first, long third, long second, long fourth)
 {
     long selected = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
-    s_tag_instance const &instance = g_4e3b44[(short)tag];
-    dword group = *(dword const *)&instance;
     s_lookup_4b2d0 lookup;
+    lookup.instance = &g_4e3b44[(short)tag];
+    dword group = *(dword const *)lookup.instance->unknown00;
     if (group == 0x5052544d || group == 0x70727433)
         lookup.parameters = (byte const *)function_137bd0(tag)->function_x947334();
     else lookup.parameters = *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
-    lookup.tables = *(byte **)(g_4e3b44[*(long const *)lookup.parameters & 0xffff].bytes + 0x5c);
+    lookup.definition = g_4e3b44[*(long const *)lookup.parameters & 0xffff].bytes;
+    lookup.tables = *(byte **)(lookup.definition + 0x5c);
     lookup.entry = *(byte **)(lookup.tables + 4) + first * 10;
     lookup.range = (word *)*(byte **)(lookup.tables + 0xc) + ((*(word *)lookup.entry & 0x1ff) + second);
     lookup.pass = *(byte **)(lookup.tables + 0x14) + ((*lookup.range & 0x1ff) + fourth) * 10;
-    lookup.records = *(byte **)(g_4e3b44[*(long *)(lookup.pass + 4) & 0xffff].bytes + 0x20);
+    lookup.pass_definition = g_4e3b44[*(long *)(lookup.pass + 4) & 0xffff].bytes;
+    lookup.records = *(byte **)(lookup.pass_definition + 0x20);
     lookup.record = *(byte **)(lookup.records + 4) + third * 0x132;
-    long program = *(long *)(lookup.record + 0x100);
+    lookup.program = *(long *)(lookup.record + 0x100);
     function_1bbf0(selected, first, second, fourth, third, 640.0f);
-    function_1c590((s_shader_cache *)g_51f0f0, program, 0);
+    function_1c590((s_shader_cache *)g_51f0f0, lookup.program, 0);
 }
 
 #include "geometry_cache.h"
@@ -7562,14 +7419,7 @@ void c_1fa50::function_1fb10(short_rectangle2d const *bounds, real scale) const
     function_1f070(bounds, 0, 0, 0, text, scale, 0, 0, true);
 }
 
-struct s_frame_parameters_12a50
-{
-    long mode;
-    dword identifier;
-    double time;
-    dword unknown10, unknown14;
-};
-dword g_48589c, g_4858a8, g_4858ac;
+s_frame_parameters_12a50 g_frame_parameters;
 extern dword g_467014, g_467018;
 dword g_4b8478;
 real g_4e6738, g_4e673c;
@@ -7666,16 +7516,18 @@ void function_22850(void);
 // (`*(real const *)&g_467014`, the form unknown_02c560.cpp already uses; the union copy scored 182 against 175).
 // Gamma ramp channels are stored red, green, blue (0x12c8f, 0x12c93, 0x12c9a); the chained assignment stored blue
 // first. No score change from that. Float tree of the bounds already matches: (1.0/hi*lo)*16777215 and the same for hi.
-// Callers 0x2c8a0 MATCH and 0x2ca00 (3) unchanged. Still differs as before: the timestamp copy (double global in
-// the header) and the inline SetGammaRamp (retail's lib: 0x12cae-0x12d08), plus ours hoists the constant 1 into ebx.
+// Callers 0x2c8a0 MATCH and 0x2ca00 (3) unchanged. Still differs: the inline SetGammaRamp (retail's lib:
+// 0x12cae-0x12d08), plus ours hoists the constant 1 into ebx.
+// The frame block: retail copies the 0x18 bytes at 0x485898..0x4858b0 in one piece, six dword moves that include both
+// halves of the time (0x12a50-0x12ab4). The five globals there are now one s_frame_parameters_12a50 g_frame_parameters
+// (declared in include/timed_effect.h, where the old names are #defines for its members), and the body is one struct
+// assignment. The dated notes above that describe a field-by-field copy and the time going through x87 into a
+// separate double global are about the code before this change.
+// score 251 (was 260): the frame block is one struct global copied by one assignment (see the note above).
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
-    g_485898 = parameters->mode;
-    g_48589c = parameters->identifier;
-    g_4858a0 = parameters->time;
-    g_4858a8 = parameters->unknown10;
-    g_4858ac = parameters->unknown14;
+    g_frame_parameters = *parameters;
     real inverse = 1.0f / g_485ad4.hi;
     real lower = inverse * g_485ad4.lo * 16777215.0f;
     real upper = inverse * g_485ad4.hi * 16777215.0f;
@@ -8590,7 +8442,6 @@ struct s_245c0_state
     dword frame_count;
 };
 real g_51ecf0[256];
-extern long g_485898;
 __declspec(noinline) void function_245c0(s_245c0_state *state, real *histogram, short mode);
 void __stdcall function_214f0(real passes, real distortion, real strength, real falloff,
     real scale, bool blend, bool preserve);
@@ -9386,12 +9237,12 @@ void function_52d40(long bitmap_index, byte *shader, long tag, dword flags)
     sampler_state_write(0, D3DTSS_ADDRESSV, ((shader[0x2e] & 4) | 2) >> 1);
     sampler_state_write(0, D3DTSS_MAGFILTER, shader[0x2e] & 1 ? 1 : 2);
     sampler_state_write(0, D3DTSS_MINFILTER, shader[0x2e] & 1 ? 1 : 2);
+    sampler_state_write(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
     sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
     sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
     sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
     sampler_state_write(0, D3DTSS_COLORSIGN, 0);
     sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
-    sampler_state_write(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
     function_0222d0(D3DRS_CULLMODE, 0);
     function_0222d0(D3DRS_COLORWRITEENABLE, 0x10101);
     function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
@@ -10073,6 +9924,8 @@ extern bool g_485a74;
 // Measured, none kept: if/else in both senses (85), three ternary senses on one call (85), nested ifs (95), `short
 // cull_mode = cond ? settings->cull_mode : 0` (88), `short cull = 0; if (...) cull = ...` (84, set-then-override, still
 // xor first). Source unchanged.
+// score 70 (was 85): in the second switch, case 17 comes first and falls through into the `enabled = true` store of
+// cases 3 and 16. Retail's jump-table entry for mode 3 lands at 0x44503, the tail of case 17. Still BLOCKED-BY 0x14b60.
 // @retail 0x44370
 bool __stdcall function_44370(long mode)
 {
@@ -10114,10 +9967,10 @@ bool __stdcall function_44370(long mode)
         else function_15680(0);
         switch (mode)
         {
+        case 17: g_485a74 = 1; // falls through: retail shares the store below with cases 3 and 16
         case 3: case 16: enabled = true; break;
         case 10: enabled = true; function_0495e0(); break;
         case 11: enabled = true; function_0496f0(); break;
-        case 17: g_485a74 = 1; enabled = true; break;
         }
     }
     else g_467130 = 0;

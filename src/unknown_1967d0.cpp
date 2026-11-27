@@ -1186,6 +1186,10 @@ static inline long team_score_195ed0(long team)
 // > rank` 100 (same code: the entry test still folds to `movsx; test`); in the player loop the copied team read ahead of
 // the flag test 281; re-measured the address index stored ahead of the copy 150 (1210 B); the player loop's team entry
 // written through the table at each use (no entry pointer) 246 (1243 B). Body unchanged.
+// M3 lane 11 r176 (fast screen with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310, all MATCH; control 100): the
+// rank loop's team entry bound by reference 100, the clamped score cast to `word` 100 and the player loop's flag test
+// as `!= 0` 100 (same code each); the copied team index as a `char` 299; the rank loop's team as a `short` 227
+// (1259 B). Body unchanged.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

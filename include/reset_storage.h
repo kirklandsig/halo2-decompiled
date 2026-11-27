@@ -12,7 +12,8 @@ struct s_reset_storage
     /* the shader pointer at 0x4858c4 shares this storage: callers reload it after a call that writes
        another member (0x3a550 after 0x1bd50, which writes input_masks) */
     byte *unknown_4858c4;
-    byte unknown_4858c8[0x485b48 - 0x4858c8];
+    short unknown_4858c8;
+    byte unknown_4858ca[0x485b48 - 0x4858ca];
     union
     {
         byte data[0x1fc0];
@@ -30,6 +31,7 @@ struct s_reset_storage
 extern s_reset_storage g_reset_storage;
 #define g_485b48 (g_reset_storage.field_0.value)
 #define g_4858c4 (g_reset_storage.unknown_4858c4)
+#define g_4858c8 (g_reset_storage.unknown_4858c8)
 
 typedef char assert_reset_size[(sizeof(s_reset_storage) == 0x1fc0 + 0x284) ? 1 : -1];
 

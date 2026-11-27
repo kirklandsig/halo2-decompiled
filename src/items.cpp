@@ -1201,6 +1201,22 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
+// Roasted-Codes (draft #1576, released 2026-11-27; fast reduced-image checks from the same 39 baseline, 376 of 375
+// bytes): the extra byte is the register choice. Ours keeps the item in EBP and the cached tag instances in EBX, retail
+// has them the other way round (`mov ebp, [0x4e3b44]`, the item in EBX), so the definition-index load is
+// `mov eax, [ebp+0]` against retail's `mov eax, [ebx]`. Same code as now: the item bound ahead of the tags, an inline
+// definition accessor, the clamp as if/else-if, the sound record as an aggregate initialiser, an early reference to the
+// item's location. The tag instances read through the global at both lookups 120 at 360 B (the item takes EBX, but the
+// tag load repeats and the frame shrinks); no cached arrays 118 at 364 B; `direction` copied ahead of the lookups 57 at
+// 377 B; `kind` as a byte 80; `kind` assigned in explicit type-4 and else branches 107; the material in a local ahead of
+// the effect call 82 at 383 B; the location copied member by member 71 at 387 B. Also open: retail sets up the 0x188180
+// call with `kind` in EDX and the material in EDI. The permuter's only lower variant in 445 tries over two seeds (33)
+// swaps the two arguments of the 0x1201a0 call, which changes behaviour.
+// Roasted-Codes again (draft #1586, released 2026-11-27; body unchanged, 39): an earlier trial had already put the
+// headers and tags in a local record; this one, after #1582/#1583, adds the item and the definition, four typed pointer
+// fields in lookup dependency order, 61 at 376 B (first difference +2, against +9 now). Both images still load
+// `mov eax, [ebp+0]` at +36 where retail has `mov eax, [ebx]`; the tags/item and kind/material registers do not change,
+// only the stack homes and frame operands move (frame 0x3c -> 0x48). Stopped on the failed allocation prediction.
 // @retail 0x10c880
 void function_10c880(long item_index, s_item_impact const *impact, vector3f const *velocity, point3f const *point)
 {
@@ -2116,6 +2132,18 @@ struct s_item_flags_view_10b850
 // mk=547); cross3f for flow/orient 924 (4029 B, fr=0x13c); direct item->flag5/flag6 891 (4136 B); if/else bounce correction
 // 867 (4144 B, fr=0x158); SSE ternary abs alone 851 (4096 B, fr=0x150, al=916, mk=539). Still blocked on entry dead-byte
 // stores, double gravity reload, and noinline 0x16a040.
+// GB31 (23 valid fast + 3 diag trials, control 813 at 4096/4096 B, fr=0x154, al=773, mk=513; body unchanged): gravity
+// forms on 813 base: *(real *)g_51e9c4 813, swapped order (local_c01284_3 first) 813, both 813, g_510c54->rate 899,
+// two if (!update_position) blocks 859, vector3f_add_scaled with g_4687bc 991, swapped physics_gravity_get() 865,
+// real *gp 814 (all still CSE single gravity product); 2-element pointer array loop unrolls to double reload on 813 base
+// at 895 (4146 B, does not unroll on clean stack: 779 at 4096 B with al=609, mk=318, not kept); existing rotate_direction
+// on 813 base 821 (4099 B, al=708, mk=417; + cross3f_staged 823 mk=401; + flag4 823; + word_flags_set 878 mk=330);
+// inline ITEM_GET orientation-flag re-read 879 (recovers direct `or dword ptr [ebp+4], 0x20000000`); on clean typed
+// stack with rotate_direction 881 (fr=0x13c, al=414, mk=214; + renamed slots 881; + scoped ray 881 fr=0x130; + real *gp
+// 881 al=388 mk=209; + local bools with/without goto done 888 al=397 mk=205, still no entry dead-byte stores); diagnostic
+// 2-def flag helper + scoped ray + rotate_direction + exact slot names 790 (fr=0x12c, al=346, mk=154, all local stack
+// offsets exact; + inline ITEM_GET re-read + dot3f flow 832, mk=155, lines 0x10b8ae..0x10b997 byte-exact). Still blocked
+// on entry dead-byte stores, double gravity reload, and noinline 0x16a040.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

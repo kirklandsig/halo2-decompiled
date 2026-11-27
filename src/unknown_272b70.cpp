@@ -967,6 +967,15 @@ inline void actor_274f30_update(long actor_index, bool flag)
 // (nested and early-return), mismatched padded 0x888 s_actor_274e70 pointer arithmetic (update-only and erase-only),
 // shift-mask in erase, and direct update with iterator.actor_index + erase with actor_index all tie 47 (product still
 // shared).
+// GB r29 (fast with 0x274f30 and 7 peers MATCH, 30 fresh trials + 8 diags): __forceinline both or update alone, swapped
+// (flag, actor_index) param order, `long flag` param, macro update/erase, parameterized `datum_get_fixed` (erase or
+// both), `static inline` both, commuted byte-offset mul in erase, all 9 signed-vs-unsigned `0x888` and pointer-arith
+// combinations, early `if (ai_index == NONE) return`, `word value084`, `actor_get` both, `for`-header iterator, and
+// `&actor_index` ref inside erase (keeping volatile) all tie 47 (product still shared); `&actor_index` ref inside update
+// or erase without volatile 59 (176 B, drops [esp+8]); direct returned `actor` for update + `iterator.actor_index` for
+// erase 81 (156 B); template `datum_get` 175 (67 B, breaks 0x274f30); diags: no `/Ob1` inline 47 / static no-volatile
+// 59, 4-byte handle struct by value no-volatile 59, `_ReadWriteBarrier` before erase 47 (breaks 0x274f30) / after flag
+// 47, no `/arch:SSE` / `/Ox` / `/G6` / `/G7` / `*(long const *)&actor_index` all 47.
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
@@ -2842,6 +2851,11 @@ struct s_scenario_scripting_view
 /* points the current command script at the point of a point set nearest the
    current actor */
 // score 80 (was 80): actor/set/counter allocation and delayed scripting-data observation still differ.
+// GB r31: a byte match (80 -> 0) writes the squared length out by hand in each arm, with the terms in a different
+// order in each (as in retail's inlined 0x210b60); through function_210b60 the call stays out of line (226 B), and
+// through length_sq3f it stays 80. Not kept (an existing helper's body written out by hand); held as a lead. Its other
+// steps (point_index declared in the for, no local_0, best_distance/best_index ahead of the point-set read) reach 13
+// only together with it.
 // Round 242: search point-table/count/actor-position snapshots 92/86/87;
 // point-table+count, point-table+position, count+position, all three 83/91/97/90;
 // all with loop-local short counter 91. Original complete search restored.
