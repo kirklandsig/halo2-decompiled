@@ -3433,6 +3433,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // `if (map_id == NONE) goto done;` with the walk unnested and the label at the end (single exit) 30; the definition
 // pointer declared at the top and assigned in the loop 30; re-measured the iterator at function scope ahead of the id 30
 // (all the same direct EBX load). Diagnostic: global optimisation off from the marker on 45 (94 B; 0x2c9a58 26).
+// M3 lane 1 r177 (fast screen with 0x2c9a58, matched in each; control 30): with the iterator set up first, the if/else
+// two-definition id taking its invalid arm from the iterator's stored index (no NONE literal there) 37 (87 B), from its
+// stored datum index 37 (87 B), with the two NONE stores chained 37 (87 B); the same with the walk guarded by the field
+// 34 (85 B); the id defaulted from the iterator's stored index and set from the field when valid 15 (80 B, a
+// conditionally set value, match-only). All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
