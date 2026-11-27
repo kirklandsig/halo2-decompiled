@@ -1026,13 +1026,6 @@ static inline void point_set_1546f0(point3f *point, real x, real y, real z)
 	point->x = x;
 }
 
-static inline void cross_product3d_1546f0(vector3f const *a, vector3f const *b, vector3f *result)
-{
-	result->i = a->j * b->k - a->k * b->j;
-	result->j = a->k * b->i - a->i * b->k;
-	result->k = a->i * b->j - a->j * b->i;
-}
-
 /* the rotation by the angle about the unit axis, with no translation */
 static __forceinline void rotation_from_axis_1546f0(transform4x3f *matrix, vector3f const *axis, real angle)
 {
@@ -1048,19 +1041,14 @@ static __forceinline void rotation_from_axis_1546f0(transform4x3f *matrix, vecto
     sine_axis.k = axis->k * s;
     matrix->scale = 1.0f;
     matrix->forward.i = (1.0f - squares.i) * c + squares.i;
-    real t = 1.0f - c;
-    real tij = (t * axis->j) * axis->i;
-    matrix->left.i = tij - sine_axis.k;
-    matrix->forward.j = tij + sine_axis.k;
+    matrix->left.i = (1.0f - c) * axis->j * axis->i - sine_axis.k;
+    matrix->forward.j = (1.0f - c) * axis->j * axis->i + sine_axis.k;
     matrix->left.j = (1.0f - squares.j) * c + squares.j;
-    real tk = t * axis->k;
-    real tki = tk * axis->i;
-    matrix->up.i = tki + sine_axis.j;
-    matrix->forward.k = tki - sine_axis.j;
+    matrix->up.i = (1.0f - c) * axis->k * axis->i + sine_axis.j;
+    matrix->forward.k = (1.0f - c) * axis->k * axis->i - sine_axis.j;
     matrix->up.k = (1.0f - squares.k) * c + squares.k;
-    real tkj = tk * axis->j;
-    matrix->up.j = tkj - sine_axis.i;
-    matrix->left.k = tkj + sine_axis.i;
+    matrix->up.j = (1.0f - c) * axis->k * axis->j - sine_axis.i;
+    matrix->left.k = (1.0f - c) * axis->k * axis->j + sine_axis.i;
     matrix->position.z = 0.0f;
     matrix->position.y = 0.0f;
     matrix->position.x = 0.0f;
@@ -1088,55 +1076,6 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
-// score 244 (was 484) in a full build with stand-in SDK headers: the speed flags are loaded once and tested with &
-// 1 / & 2 (retail 0x15470e), the slot flags as & 2 / & 4, the clamp is if / else-if assignments, the three random
-// draws are inlined calls in the arguments of 0x141ce0 and of the point setter (retail stores the seed three times
-// at 0x1547cc-0x154806 and reads the first two values back from memory), and the rotation helper writes its nine
-// elements straight into the transform. The frame is now retail's 0x98. Left: the transform at [esp+0x28] against
-// retail's 0x1c, the z/y conversions of the position triple, `xor eax, eax` before both 0x17ca10 curve loads.
-// Earlier at 484 (was 521): flags 5 and others read through a word bitfield view give retail's load-and-shift; the rest
-// still differed.
-// M3 lane 4 r263 (h2m fast with 0x1544e0, 0x141ce0, 0x142a60, 0x17ca10 and 0x17c900, all MATCH each run; control 244,
-// aligned 176). The rotation builder with each matrix element written as its whole product (no t/tij/tk/tki/tkj
-// temporaries), `up.k` last 240 (1660 B, aligned 116), in 0x1544e0's row order 246 (aligned 79; the transform then sits at
-// retail's 0x1c). The missing `xor eax, eax` at each curve load shifts the rows from there on by one: retail zero-extends
-// the curve into EAX, which here only comes from passing it through an inline parameter typed as an unsigned 16-bit value
-// (lead, a one-caller helper, so match-only, held as a patch: with the 0x1544e0 row order 105 at
-// 1664 B, aligned 73); a `long` parameter gives `movsx` (250), and casts at the call (`(word)`, `(short)(long)`, `+ 0`,
-// `& 0xffff`) fold to the plain load (246 each). On the 79-row form: the shared cross3f 246 (same code: the products'
-// operand order follows ranks, not the written order); the existing real_point3d_set for the position 259 (y and z
-// still computed one after the other, retail interleaves them in two registers); the 0x259d0 range helper for the six
-// draws 392 (1645 B: each draw then reads its own seed), for the three position draws 379; the clamps written with the
-// product inside the ternary 260 (1648 B, aligned 76), as `if (!(x > 0.0f))` 246, both products ahead of both clamps
-// 246; a named entry pointer for the two fade stores 248. On the 105 form: the priority read ahead of the elapsed
-// fraction 114, between duration and elapsed 114; the fade amount as one helper of (duration, remaining, curve,
-// priority) 263; the point through real_point3d_set 118; 0x1544e0's builder order swapped for `up.k` last 142. On the
-// 240 form: a named entry pointer for the two fade stores 242, with the shared cross3f as well 242; the clamps as
-// `if (!(x > 0.0f))` 240 (same code).
-// M3 lane 16 r193 (H2M_FAST with 0x1544e0, MATCH each run; control 244, aligned 176): the six draws through the existing
-// [0, 1] random helper (no cast around the scale) 352 (1632 B: the 1/65535 and 2.0 factors fold into one constant); the
-// curve fields read as unsigned 16-bit values 244 (same code: a field load does not give the `xor eax, eax`); the rotation
-// helper in 0x1544e0's exact statement form (scalar squares, t * i * j) 248 (first difference +0x2); the priority as the
-// product's first operand with no local, `slot->priority9c * curve(...)`, 272 (1644 B; on the 105 lead 270, aligned 71);
-// on the 105 lead, the position as three statements z, y, x 387. A forced-ranking search on the 105 lead (40 single
-// decisions) finds nothing below it: what is left there is instruction order, not register choice.
-// M3 lane 3 r314 (H2M_FAST with 0x1544e0, MATCH each run; control 244, aligned 176, masked 88). Frame reading: ours puts
-// sine_axis (six references) below the transform; retail keeps axis, squares and sine_axis as three 12-byte homes above
-// the transform, with sine_axis i and j computed on x87 and only two fields of each stored. Forms: the position through
-// the existing real_point3d_set 255 (the draws change order); the position into a point local, then one aggregate
-// assignment 313 (1692 B); the two fade-table stores ahead of the distance and angle sums 243; the rotation through
-// 0x17fd20's decal transform-rotation helpers (sine and cosine parameters, whole products, the 3x3 sub-helper) 247 at
-// retail's length (1659 B, aligned 165, masked 61; frame 0x8c because axis then shares sine_axis's home), the same with
-// sine and cosine named in the caller or computed in an angle-taking wrapper 247, with the shared cross3f as well 247
-// (all three the same code); that helper form plus the 16-bit curve wrapper above 190 (1663 B, masked 58; lead only).
-// AO r6 (fast with 0x1544e0, MATCH each run; control 244): the frame order does not follow names or declarations: the
-// rotation helper's sine_axis renamed three ways and squares renamed 244 each; sine_axis declared before squares, both
-// declared ahead of the sine and cosine, the caller's axis ahead of the transform, the transform declared after the
-// cross 244 each; the offset through the existing vector3f_scale 244, the position through vector3f_add_scaled 244.
-// The curve read through a dword bitfield view or as `(short)(dword & 0xffff)` 244 each (same code); the curve held in
-// an unsigned 16-bit local before each call 248 (1672 B) gives retail's `xor eax, eax; mov ax, [ebx+0x3c]` (and +0x54)
-// at both curve loads, like the 16-bit wrapper lead, without a helper (a one-use local, match-only); a long local
-// loaded from the 16-bit field 243 (1664 B; `movzx` at the start instead).
 // @retail 0x1546f0
 void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
 {
@@ -1164,9 +1103,11 @@ void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
         function_141ce0((random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[0] * amount,
             (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[1] * amount,
             (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->angles[2] * amount, &transform);
-        point_set_1546f0(&transform.position, (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.y * amount,
+        point3f pos_offset;
+        point_set_1546f0(&pos_offset, (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.y * amount,
             (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.x * amount,
             (random_real_1546f0(&random->seed) * 2.0f - 1.0f) * speed->point.z * amount);
+        real_point3d_set(&transform.position, pos_offset.x, pos_offset.y, pos_offset.z);
         function_142a60(matrix, &transform, matrix);
     }
     else
@@ -1174,21 +1115,24 @@ void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
         s_speed_slot *slot = &speed->slots[local_index];
         if (slot->timer80 > 0 || (slot->flags & 2))
         {
+            s_speed_bounds *bounds = &slot->bounds;
             real amount;
             if (slot->flags & 2)
                 amount = 1.0f;
             else
             {
-                real duration = slot->bounds.duration;
-                real elapsed = (duration - (real)slot->timer80) / duration;
+                real duration = bounds->duration;
+                real age = duration - (real)slot->timer80;
                 real priority = slot->priority9c;
-                amount = function_17ca10(1.0f - elapsed, *(short *)&slot->bounds.unknown04[0]) * priority;
+                word curve_type = *(word *)&bounds->unknown04[0];
+                real curve_val = function_17ca10(1.0f - age / duration, (short)curve_type);
+                amount = curve_val * priority;
             }
             transform4x3f transform;
             vector3f axis;
-            cross_product3d_1546f0(g_4687b0, &slot->forward, &axis);
-            rotation_from_axis_1546f0(&transform, &axis, amount * slot->bounds.unknown04[1]);
-            real distance = slot->bounds.unknown04[2] * amount;
+            cross3f(g_4687b0, &slot->forward, &axis);
+            rotation_from_axis_1546f0(&transform, &axis, amount * bounds->unknown04[1]);
+            real distance = bounds->unknown04[2] * amount;
             vector3f offset;
             offset.i = slot->forward.i * distance;
             offset.j = slot->forward.j * distance;
@@ -1208,24 +1152,29 @@ void __stdcall function_1546f0(long local_index, transform4x3f *matrix)
             else
             {
                 real duration = slot->values50.value[0];
-                real elapsed = (duration - (real)slot->timer82 * time->rate) / duration;
+                real age = duration - (real)slot->timer82 * time->rate;
                 real priority = slot->priority98;
-                amount = function_17ca10(1.0f - elapsed, *(short *)&slot->values50.value[1]) * priority;
+                word curve_type = *(word *)&slot->values50.value[1];
+                real curve_val = function_17ca10(1.0f - age / duration, (short)curve_type);
+                amount = curve_val * priority;
             }
             real elapsed = (slot->values50.value[0] - (real)slot->timer82 * time->rate) / slot->values50.value[5];
             real curve = function_17c900(*(short *)&slot->values50.value[4], elapsed);
             real scale = (slot->values50.value[6] * curve + (1.0f - slot->values50.value[6])) * amount;
-            real distance = slot->values50.value[2] * scale;
-            distance = distance > 0.0f ? distance : 0.0f;
-            real angle = slot->values50.value[3] * scale;
-            angle = angle > 0.0f ? angle : 0.0f;
+            real raw_distance = slot->values50.value[2] * scale;
+            real distance = raw_distance > 0.0f ? raw_distance : 0.0f;
+            real raw_angle = slot->values50.value[3] * scale;
+            real angle = raw_angle > 0.0f ? raw_angle : 0.0f;
             if (slot->timer7c > 0)
             {
                 real fade = (real)slot->timer7c * time->rate * 2.0f;
                 distance += slot->values6c[2] * fade;
                 angle += slot->values6c[3] * fade;
-                g_502120->entries[local_index].value80 = slot->values6c[0];
-                g_502120->entries[local_index].value84 = slot->values6c[1];
+                real value80 = slot->values6c[0];
+                real value84 = slot->values6c[1];
+                s_speed_table_entry *entry = &g_502120->entries[local_index];
+                entry->value80 = value80;
+                entry->value84 = value84;
             }
             function_1544e0(&transform, distance, angle);
             function_142a60(matrix, &transform, matrix);
