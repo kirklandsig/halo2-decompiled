@@ -1395,6 +1395,15 @@ void function_1e3b60(long actor_index);
 // actor read in the loop 473 (1648 B), every actor read in the tail 501 (1696 B), both 530 (1708 B), both with the
 // update flag at function scope cleared after its use 531. The actor index stays a stack argument in each. Still
 // BLOCKED-BY 0x262ba0 (and through it 0x2641c0's noinline declaration, in another lane's file this round).
+// M3 lane 5 r255 (fast screen with 0x262ba0, 0x263210, 0x264210, 0x264330, 0x265680; 25 here in every form; 0x262ba0
+// control 404 at 1624 B). Reading: our link expands 0x25c820 at 0x262ba0's release label (its 0x25c780 call takes the prop
+// index in EBX) and calls it at case 1; retail calls it once, case 1 loading the index and jumping into the release
+// label's call. Diagnostic, restored: the release label's 0x25c820 call kept out of line 450 there (1580 B), the actor index
+// then held in EDI at entry but re-read from its home five times (the loop index takes EBX). Forms in 0x262ba0: the
+// maximum as a plain `long` (no volatile) 432 (1620 B); the three inline-depth pragmas around 0x25d700 dropped 613
+// (1784 B: 0x25d700 expands at all three sites); the sampling call written in 0x263210's own form (actor offset,
+// 0x28fa60 or the copy) 503 (1704 B); the first prop index read through the named actor field 404 (same code). Still
+// BLOCKED-BY 0x262ba0.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
