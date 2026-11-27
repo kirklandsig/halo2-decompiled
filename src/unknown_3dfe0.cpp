@@ -339,6 +339,14 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // and the head piece stays in EAX. Forms: the object as `byte const *` 21; the hidden test as `(... & 1) != 0` 21; the
 // object through the existing object_get accessor 21 (same code each); its position named once for the three
 // position uses (`point3f *position`), after the hidden return 230, beside the object lookup 245 (814 B). All restored.
+// M3 lane 13 r167 (fast screen with 0xd1850 and 0x3d2c0, both MATCH; control 21). Allocator reading of update-first (216):
+// the update time ranks 20 (48 from its first block, which references twelve candidates there, less 2 for each block of
+// the sample chain it only lives through, plus 8 at its NONE test) against 17 for the tail value that takes EBX; it needs
+// 16 or less to leave ESI to the sample time as retail. Forms on main: the five priority thresholds written constant
+// first (`400.0f < priority`) 21; force as `cache->initialized ? !cache->valid : true` 225; the body after the valid
+// test nested under `if (cache->valid)` with no early return 21; the whole body nested under `if (elapsed)` (one exit)
+// 21; the stationary compare written constant first 21 (all but the force form the same code); re-measured the not-force arm
+// first in braces 25. All restored.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -1297,6 +1297,16 @@ s_3c9a0_matrix g_4c1b68;
 // registers where retail re-reads them from g_4c1b08; with one fewer reference on the row-1 `m10 * far_x` temp the packer
 // would give retail's layout. A forced-ranking search on the 208 form finds no single decision close (best -7). The
 // references, the pair and the split loops are steering forms, kept only with a byte match.
+// M3 lane GA r31 (34 fast trials, 0x3c9a0/0x16a90 MATCH and 0x3c3c0 74 throughout; control 291): on HEAD, two separate ifs
+// on width_scale 291, tanf/sqrtf 293, column-order g_4c1b38 292, g_4c1b68.scale in g_4c1b38 301, x-before-y in corner loop
+// 291, const-ref divide helper 291, min/max const-ref templates 292 (by value) / 296 (by ref, stays out of line under /Ob1;
+// all three clamps 302), !(width_scale > 1.0f) 306, (real) cast on tangent2 293. On r236's 210 form (1390 B, frame 0x4c):
+// c[1] before c[0] 211, real_point3d_set 210, .x/.z stored ahead of near_y sqrt 222 (1372 B), column-order g_4c1b38 219,
+// x-before-y 210, unrolled 12 axis statements 210, unary -corner_y 210, point3f *p = g_4c1b08 231, real const &tangent2 210,
+// z,x,y,scale + camera.x/y in g_4c1b38 210, !(width_scale > 1.0f) 211 (1387 B, folds second compare), 1.0f >= width_scale 210,
+// swapped corner multiply operands 210; min/max template on pair+3loops 227 (out of line). Diff reading on 210: ours keeps
+// m00/m10/m20 and -near_y/near_y/-far_y in XMM and spills m01/m11/m21, where retail keeps m00/m01/m10/m11/m21 in XMM and
+// reloads g_4c1b08[0..1,3].y from memory. Body unchanged.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1806,7 +1816,6 @@ bool function_1caa0(long, byte const *, word const *, byte const *,
 void function_4d9c0(byte const *, long, byte, short, long, long, long, long);
 void __stdcall function_4d640(short, long, bool);
 void function_4d720(short, long);
-extern long g_485a60;
 
 // Retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
@@ -2084,7 +2093,6 @@ bool function_1caa0(long, byte const *, word const *, byte const *,
 void function_4d9c0(byte const *, long, byte, short, long, long, long, long);
 void __stdcall function_4d640(short, long, bool);
 void function_4d720(short, long);
-extern long g_485a60;
 
 
 // score 370 (was 380): the two flags passed to 0x4daa0 were swapped (behaviour fix from lane GB r23, checked against
@@ -2176,6 +2184,16 @@ extern long g_485a60;
 // parameter of an inline helper around the 0x15c90 call 455 (1461 B, the stores still fold away), on the 291 form 466;
 // as the one member of a record local 370 and 291 (same code: the stores fold away). So only a memory-resident flag
 // keeps retail's two stores, and none of the forms allowed here gives one. The 291 form rebuilt: 291 at 1399 B.
+// M3 lane GA r31 (41 fast trials across 3 batches, control 370, all 13 peers MATCH; body unchanged): tested lane 7
+// r236's inline-helper hypothesis directly: passing the flag's address or a `bool &` to a `static inline` helper setting
+// `*flag = true` after 0x15c90 still folds both stores away once inlined (291 on GB r23's form; `static inline` wrapping
+// 0x15c90 stays out of line under `/Ob1`, 423/300; `__forceinline` wrapping 0x15c90 inlines 0x15c90 itself and still
+// drops the flag, 461/466), ruling out an inlined `bool*`/`bool&` helper as the cause of retail's [esp+0x58] byte stores.
+// Also tried on HEAD: typed s_primitive_* structs matching 0x4dc60 in original order 370 (`s_primitive_header *mask`
+// 370, with `size` before `buffer` 357, same as raw `size` before `buffer` 357; statement-order only, not kept),
+// direct shader 400, `(bool)((... >> 20) & 1)` 398, texture before bitmap 370, inline visible_entry_geometry shape 423,
+// inline 0x4dc60 color-stream twin 408 (on GB r23 401), mask = 0 430; on GB r23: `entry_index` for tail calls 383
+// (masked 67), `entry_index` + inline geometry + arm1 bitmap reset + texture first 384 (masked 59).
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

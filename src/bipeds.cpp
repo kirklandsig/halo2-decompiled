@@ -8220,6 +8220,19 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // with the per-arm copy 264. Diagnostics: aim as a plain three-float record copied whole 219 / 201 on the per-arm body
 // (the point type with its array overlay is not what keeps the copy in memory); the clamp and direction in a new inline helper taking the
 // point by value 244 (1612 B), reading the target's z through its pointer 219.
+// M3 lane 6 r253 (reduced-image screen with 0xe5bc0, 0xdef60, 0xde9d0, 0xe63b0, 0xdf5f0 and 0xb9dd0, all MATCH;
+// control 219). Retail's target block read again: every arm ends by loading the point into ECX/EAX/EDX (the found arm
+// from the far nearest point, storing only the target's z), the zeroing follows the two inner arms, and the three
+// stores into the copy stand after the join (z ahead of the clamp, x and y just ahead of their x87 loads). Forms:
+// `aim = target` in all three arms with the zeroing after the inner test re-measured 240 (1645 B: the two inner arms
+// then load per arm and share their stores as retail's do, but the biped arm keeps its own stores and the found arm
+// still stores the whole target); that with the zeroing at the top of the else arm 275 (1657 B), with the found arm
+// copying from the nearest point 275 (1657 B); the copy in the two outer arms with the zeroing at the top 252 (1649
+// B); the zeroing written in each inner arm ahead of its copy 342 (1643 B), after it 343 (1643 B); `target =
+// nearest_b` member by member re-measured 226 (1639 B: only the target's float z moves into the arms), with the join
+// copy member by member as well 265 (1606 B: x and y are then read straight from the target and the copy's x and y are
+// never stored). Diagnostics (casts, not kept): the join copy as three dword moves 214, both copies as dword moves 219
+// (same code as the control: spelling the copies as words does not move their loads into the arms).
 // M3 lane GA r30 (57 fast trials across 8 batches + 2 plain checks of 73 VAs; control 219 at 1624/1624 B, +0x54; body
 // unchanged): EXACT BYTE MATCH (0, 1624/1624 B, 76 verified targets, 0 differ, all 64 file peers and callees intact)
 // held as a patch: three-way clamp (`if (target.z > eye.z) aim = target; else if (eye.z > target.z + target_height)

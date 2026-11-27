@@ -972,6 +972,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // (vector2f_products.h), side vector first 107, input first 107 (same code); the blend weight's dot through it 107
 // (same code); both numerators through the existing cross_product2d (no side vectors) 243 (1128 B), the reversing one
 // only 217. The entry sum still adds the k square before i + j, so 1.0 takes XMM2.
+// M3 lane 7 r238 (fast with 0xef4f0 MATCH; retail adds the i and j squares ahead of the speed's root, which frees
+// XMM3 for 1.0, so the schedule follows the 1.0 register): `left` with its y member set first 111; `blend_left` y
+// first 107; the blend weight's dot with the x term first 107; the turn rate passed straight to the approach (no `dt`
+// local) 107; the input rows with the velocity operand first in each product 107 (each the same code or the same
+// colouring).
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -7623,6 +7628,14 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // ranks 8 (one web from entry to the side-flip test, EDI, since `forward` holds ESI across it) where retail ends
 // the index's register web at 0xf44a0 and re-reads the parameter home after it, so the index takes ESI and the
 // offset EDI; the search found no cut of that web (the parameter is not a split candidate here).
+// M3 lane 7 r238 (fast; a frame trace of the packer): `desired` is live from entry because its address comes back
+// from 0x142eb0 into 0x141f60, so it shares with nothing; with the product in its own matrix and the conversion as a
+// second statement (round 195's form, re-measured 1125 at 5051 B, frame 0xdc) the matrices pack as retail's three
+// groups (desired + inertia, current + rotation copy + facing, flipped + product; flipped at retail's 0xb4) and only
+// one 4-byte cell is over: ours leaves the lowest cell unused where retail puts the rounding result. Tried: that
+// product in its own `{}` block 1125; the flip arm's fields through VEHICLE_GET at each use (no pointer local) 1153
+// on main, 1187 with the product form; the quaternion's vector normalised in place (no axis copy) with the product
+// form 1130 (5059 B).
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
