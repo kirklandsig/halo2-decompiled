@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "reset_storage.h"
+#include "timed_effect.h"
 #include "unknown_11c920.h"
 #include "globals.h"
 #include <xmmintrin.h>
@@ -352,7 +353,6 @@ byte function_016a90()
 	return g_485ac2;
 }
 
-long g_485898;
 
 // @retail 0x16ac0
 bool function_016ac0()
@@ -437,7 +437,6 @@ struct s_1b230_function
 	byte *data;
 };
 
-extern double g_4858a0;
 real function_13b390(void const *function, real input, real range);
 
 // @retail 0x1b230

@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "cluster_mask_storage.h"
+#include "timed_effect.h"
 #include "function_context_storage.h"
 #include "filter_buffer_storage.h"
 #include "shader_storage.h"
@@ -358,7 +359,6 @@ struct s_surface_size
 struct s_table_entry g_4b89b0[24];
 long g_5093e8;
 real g_5093ec, g_5093f0;
-extern double g_4858a0;
 extern bool g_5093f4;
 extern real g_4b8940[9], g_4b8964[9], g_4b8988[9];
 void function_022750(real const *a, long size, real const *b, real *out, real t);
