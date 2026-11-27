@@ -432,6 +432,11 @@ PRIVATE inline bool score_team_present(long team)
 // fallback's argument slot by itself (the same temporaries with main's sorters: 20, the frame grows). Held as a patch
 // with the forwarded form. 0x132d60, 0x173130 and 0x215900 keep their match with such a temporary under either sorter
 // form, so they do not tell the two apart.
+// M3 lane 2 r161 (h2m fast with both sorters, MATCH): caller-side forms with &fallback unchanged: the contexts' fallback
+// read through a `bool const &` 4; the team context's criteria and fallback taken from the player context 16; the team
+// context copied whole from the player context 16; the player context filled ahead of the player loop 242 (738 B); the
+// contexts' criteria read through a `const byte *const &` 4. Reading: with fallback captured its load is a plain memory
+// load placed ahead of criteria's spill reload; in retail both are reloads in source order.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {
