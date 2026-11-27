@@ -853,6 +853,18 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // local) with the tail unchanged 27; one physical object local at the guard's top for the time test and its store 27;
 // the arm's page shift read from the physical object global directly 27; the block local declared bare at the loop
 // top and assigned after the count's store 27 (all five the same code).
+// M3 lane 5 r254 (reduced-image screen with 0x12e210, which stays matched; control 27). Back-end trace of this body:
+// the task count is coloured first (56) and takes ESI; the loop's block (44) then finds EDX and ESI both free and takes
+// ESI for its call-argument preference, the count being dead after its store; without that preference it would take
+// EDX, the first free register, as retail's does. The scheduler runs on allocated code: retail's arm order (object,
+// pool and page-shift loads, then `mov esi, edx`, then the data load into EDX) is what it gives when the block sits in
+// EDX and the argument is set up by a copy that the data load cannot cross. Forms: the busy loop as `if (busy) do { }
+// while (busy);` 27; the count stored through a `long *` to the aggregate's field 27; the linked flag through a `bool
+// const *` taken from the block local 27, or from the field with the argument re-read 27 (all the same code); the
+// test's block through the cache-block getter with the argument from the kept cache block 114; the count named and
+// stored after the block read re-measured 73. Diagnostic (the callee is a contributor's; measured and put back): the
+// release callee given an unread third parameter that receives the block, last, first or second, 27 each (the same
+// code: an unread register argument leaves no trace at the call).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
