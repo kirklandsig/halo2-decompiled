@@ -1506,6 +1506,17 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // on this body the alignment dot's operands swapped 130, through dot3f 130 (same code: the products stay i, k, j); the
 // marker vectors read through the marker at each use (no up/forward pointer locals) 180 (856 B); the transform declared
 // ahead of up 130; the marker declared at the top of the function 130.
+// M3 lane GA r33 (46 fast trials + 3 phase probes, 0x10c850/0x10cec0/0x10d4e0/0x10d5f0 MATCH; control 130 at 859/848 B,
+// fr=0xc0, body unchanged): address-free quaternion/axis with w = root*0.5f before j,i,k scaling (and quaternion_transform_vector
+// shape) reaches exact fr=0xb4, 848/848 B, 194/194 insns, first diff +0x7a (all 32 prologue/default insns, all jump offsets, and
+// all 63 else/epilogue insns byte-exact; 155 raw, al=108-112, mk=34 with direct marker.matrix or old-only pointer; 80 vs retail 82
+// if-branch insns shift the 63 matching tail rows by 2). Root cause: retail's j,i,k alignment dot with facing->k loaded (not
+// folded) places old.{j,i,k} in xmm3/4/2 so cross lands in xmm0/1/2 and automatically forces retail's 3 movaps (+2 insns).
+// Tested on fr=0xb4: af_base / inline qtv ptr / 1.0f-first / dot3f / item_dot direct / fwd-before-old / direct marker / rot ptr /
+// old-only / m ptr / inline align_up helper 159 (848 B); qtv by-value 270 (930 B, fr=0xc8); parenthesised (j+i)+k 171-172
+// (on main 177); separate align local (direct / item_dot / refs / const one & two / outer side+transform / old-only / 1-3 phase
+// probes) 173 (831 B, j,i,k dot folds facing->k into mulss; + j,i,k scale 170 at 848 B); rot ptr + align 176 (831 B, k,i,j);
+// non-const transform4x3f *m + align 171/175 (fr=0xb8).
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
