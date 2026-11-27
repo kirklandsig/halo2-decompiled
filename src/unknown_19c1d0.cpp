@@ -420,6 +420,15 @@ void function_19c6d0(s_record_pool *data, long key0)
 // GB r28 (58 fast trials with 8 peers MATCH unless noted; control 108 at 393/393 B, +0x11, al=43, mk=27; kept 65 plain-confirmed):
 // `long temporary;` alone 149 (375 B), + early-return / while / direct `iterator->data` bitmap helpers 149/151/151, + scoped `keys` 147 (148 without temp), + table-first 149, + `continue` 149, + split `flagged_count` inc 137 (393 B, frame 0x198, ret 4, 0x19c190 MATCH; without temp 125), + Loop 2 `data->size` 136 (383 B, ret, breaks 0x19c190; with split inc 111 at 417 B, +0x33, ret 4, 0x19c190 MATCH), + `datum_get_absolute_inlined` 186, + `for` iter 230, + `data_iterator_next_calling` 153, + keys after flagged 135;
 // counted stack `s_flagged_keys` + `long temporary;`: post-inc `flagged.elements[flagged.count++]` 153 (methods / flagged-first / table-first 153, without temp 154, pre-inc 152, Loop 2 `data->size` 142 breaking 0x19c190); kept split `long index = flagged.count; flagged.count = index + 1; flagged.elements[index] = entry->key;` **65** (400/393 B, +0x91, al=50, mk=9, all peers MATCH; `push_index()` / `push_ptr()` / `push_ref()` / `push_cref()` 65; 3-use `long key` 97 at 393 B); value-taking `s_flagged_keys::push(long)` (one-caller method, not kept) **51** (400/393 B, +0x11d: first 285 B through `sort_4byte` + epilogue + search tail byte-exact, al=39, mk=5; `data_find_index` / double-guard / inline-Loop-3 / `s_data_datum_iterator` / early-ret / `bitmap` local 50-51; `iterator->index` in loop 145; `while &&` 138; `for (index>=0 && ...)` 131; `>>` shift test 79); diagnostic non-hoisted `high_water_index` read on `s_flagged_keys::push` **0** (MATCH, all 9 match; not kept: `volatile` forbidden).
+// M3 lane GA r30 (18 fast trials across 2 batches with 8 matched peers MATCH + 32 standalone CL.Exe/LTCG probes; control
+// 65 at 400/393 B, +0x91; body unchanged): clean push-order variants without one-caller method: `flagged.count++` 65,
+// `long *slot` 66, `flagged.elements[flagged.count] = entry->key; flagged.count++` / `++flagged.count` / `+= 1` 153
+// (370 B), `index` store-then-inc 97 (393 B), 3-use `key` + store-then-inc 154, 2-use `key` inside `if` 97, both stacks
+// as `s_flagged_keys` 198 (454 B); on GB28's `s_flagged_keys::push(long)` (51): `iterator` at top / `pool_iter_new` /
+// `found` local 51, `bitmap` local 50, `while &&` / flat iter / `iterator->index` update 82 (outlined, 368 B), `index+1`
+// latch 170 (350 B, breaks 0x19c190), bool out-param 58 (405 B). Standalone CL.Exe/LTCG probes confirmed all 14 flag
+// sets (`/O2`, `/O1`, `/Ox`, `/Os`, `/Oa`, `/Ow`, `/G5`-`/G7`, `/Op`, `/Oy-`, `/arch:SSE`, `/Ob1`), cross-TU LTCG
+// (`/O2`, `/O1`) and 18 non-volatile iterator/loop forms hoist `data->high_water_index` once `iterator` is scalar-promoted.
 struct s_flagged_keys
 {
 	long count;

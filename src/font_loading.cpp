@@ -1136,6 +1136,18 @@ static inline word font_character_pixel(long alpha, long color)
 // (word)((word)source[2] | hi);` 0 / MATCH byte-for-byte with all peers MATCH) or taking `&hi` in CL.Exe emits retail's exact
 // 4-instruction sequence (movzx ax, [edi+2]; xor ecx, ecx; mov ch, [edi+1]; or eax, ecx), proving Pass A OR-fusion is the sole
 // remaining literal difference.
+// M3 lane GA r30 (26 fast trials across 2 batches with 0x140960/0x122540/0x122570 MATCH + 31 standalone CL.Exe/LTCG literal
+// probes; control 41 at 508/504 B, +0x24; body unchanged): clean control-flow trials on 41 base (targeting the cross-jump from
+// type != 2's !output into type == 2's count += run that adds +4 B and hoists count load): type != 2 count += 2 before if (output)
+// 174 (512 B; both count updates before if 260 at 572 B), type == 2 output && run > 0 or nested if (output) { if (run > 0) } 217
+// (544 B), separate *output = ...; output++ 41, else length = 1 default before literal test 206 (556 B), else if literal flat
+// (run==0&&type==0 43, type==0&&run==0 103), dword length / dword pixel / dword color / long type without cast 41, combined count +=
+// run + 1 in type == 2 110, shared upper run = 2 / run = 2 assigned with shared count += run; length = 1 180 (468 B, tail-merges
+// fills) / 169 (532 B), switch (type) with default: and no __assume(0) (long 211 at 540 B in either case order, dword 154 at 504 B),
+// source += length before remaining -= length 43. Literal trials on 41 / score-12 bases: word hi = source[1]*256; word lo | hi
+// 45 / 30 (508 B), word add *256 45, 3-part ARGB nibble split 40 (508 B, -1), _byteswap_ushort 95 (504 B) / 90 (496 B),
+// signed-char low mask on score-12 base 90 (496 B); standalone CL.Exe/LTCG probes confirmed cross-TU LTCG read_be16 also fuses
+// in Pass A into xor eax,eax; mov ah; mov al.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

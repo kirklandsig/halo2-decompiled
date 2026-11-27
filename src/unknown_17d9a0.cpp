@@ -825,15 +825,6 @@ PRIVATE __forceinline real decal_time_17ef10()
     return g_510c54 && g_510c54->active
         ? (real)g_510c54->game_time * g_510c54->rate : 0.0f;
 }
-PRIVATE __forceinline dword decal_random_17ef10()
-{
-    g_4e7408->seed = g_4e7408->seed * 0x19660d + 0x3c6ef35f;
-    return g_4e7408->seed >> 16;
-}
-PRIVATE __forceinline real decal_fraction_17ef10()
-{
-    return (real)decal_random_17ef10() * 1.5259021893143654e-05f;
-}
 PRIVATE __forceinline void decal_normalize_17ef10(vector3f *v)
 {
     real length = (real)sqrt(v->k * v->k + v->j * v->j + v->i * v->i);
@@ -854,7 +845,30 @@ PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
     decal_rotate_vector_17fd20(m, v, out);
 }
 
-// score 859 (was 966; earlier 967, 988 at r914, 987): retail keeps a bool result set true at entry in a dead argument home
+// score 837 (was 859; earlier 966, 967, 988 at r914, 987): the random angle, sequence choice and radius fraction drawn
+// through the header's existing function_259d0, random_index and function_x82e52f (the file-local copies of the seed
+// step removed) 849, and the flag tested as a plain mask (`definition->flags & 8`) 837 (machine 3 review trials on GA
+// r29's 13-function fast list; full check 0 lost). M3 lane GA r29 reached 770 (3571/3591 B, +0x8, retail's `sub esp,
+// 0x60` frame in place of 0x90, full check 0 lost), not kept at review: it writes out by hand, as scalar locals, the
+// scale and rotate in decal_vector_17ef10, the transform of the placement position and the basis scale (existing
+// helpers' bodies written out are reverted), drops the multi-use `matrix` and `bitmap` locals for repeated
+// `preparation->` reads, fills an empty slot inside the loop as a second copy of the fill after it, and changes operand
+// and store orders (kept only with a byte match). With a named angle local as well 835 (a gain of 2, not kept). What
+// still differs in the 770 form: prologue `xor edi, edi` / `&placement->position` slot `[esp+0x20]` vs `[esp+0x14]`,
+// loop 1 `count` in `esi` (retail spills `count` to `[esp+0x8c]` and keeps `g_4ea94c` in `esi`),
+// `tangent`/`perpendicular` slot swap (`[esp+0x18..0x20]`/`[esp+0x24..0x2c]` vs retail
+// `[esp+0x24..0x2c]`/`[esp+0x14..0x1c]`), `inverse` spill in normalize, `unknown1` loaded 32-bit vs `mov cx, word ptr`,
+// and `0x12ce00`'s `movaps xmm1, xmm4` vs `xorps xmm1, xmm1`.
+// M3 lane GA r29 (56 fast trials across 6 batches on 13-VA exact fast list with 11/11 matched peers MATCH; plain confirmed
+// 770): full bundle with `bool placed` + 3 inline helpers (`decal_apply_point`/`vector_inverse`/`recent_fill`) 667 (3565 B,
+// +0x21; without tail fixes 808); flag-free without extra helpers: `chosen = -1; break` with `real scale` 770 (the round's kept form, not kept at review; with
+// 2-loop `recent` pointer 756/820, with `j == 24` 885/887, without `real scale` 824 at exact 3591 B); `bool placed` without
+// extra helpers 684 (3571 B, 865/865 insns; with `real scale` 759/823, with `placement_position` ptr 769/817/852/862 at
+// +0x21, `short unknown1` 744/754/810 at exact 3591 B); single-fill loop 895; keeping `bitmap` local 879; keeping `matrix`
+// local 864; keeping orig `decal_vector_17ef10` 996 (`sub esp, 0x8c`); `cross3f` 865; `normalize_inline` 862; renaming
+// `tangent`/`perpendicular` to `axis_u`/`axis_v` 852/817 (same slots); `count` before `scale == 0` 876 (`sub esp, 0x64`);
+// caching `recent` across all 3 sites 935 (`sub esp, 0x68`).
+// Earlier (859, was 966; earlier 967, 988 at r914, 987): retail keeps a bool result set true at entry in a dead argument home
 // (0x17ef59) and returns it at the success exit (0x17fcc6) while both failures return 0, so the texture failure clears
 // `result` and the projection is built only when it holds. Earlier: a mask test read as a field bit (TEST_FIELD_BIT) gives
 // retail's load-and-shift; the rest still differs. (966 was the full build with stand-in SDK headers, 967 the reduced
@@ -964,7 +978,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
     vector3f normal = placement->plane.n;
     vector3f tangent, perpendicular;
     real cosine, sine;
-    if (TEST_FIELD_BIT((definition->flags >> 3) & 1) &&
+    if ((definition->flags & 8) &&
         -0.0001f > normal.j * direction->j + normal.k * direction->k + normal.i * direction->i)
     {
         cosine = -1.0f;
@@ -1023,11 +1037,8 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
     }
     else
     {
-        /* Retail keeps both multiplications in x87 precision before storing
-           the angle. Rounding the random fraction first changes the basis. */
         if (!state->reuse)
-            state->angle = (real)((double)decal_random_17ef10()
-                * (double)1.5259021893143654e-05f * (double)6.2831854820251465f);
+            state->angle = function_259d0(&g_4e7408->seed, NULL, 0, 0.0f, 6.2831854820251465f);
         cosine = (real)cos(state->angle);
         sine = (real)sin(state->angle);
         real x = (real)fabs(normal.i), y = (real)fabs(normal.j), z = (real)fabs(normal.k);
@@ -1075,10 +1086,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
         else
         {
             if (!state->reuse)
-            {
-                long maximum = (short)((short)bitmap->sequence_count - 1);
-                state->sequence_choice = (short)((decal_random_17ef10() * maximum) >> 16);
-            }
+                state->sequence_choice = random_index(&g_4e7408->seed, (short)((short)bitmap->sequence_count - 1));
             long selected = state->sequence_choice;
             if (selected < 0) selected = 0;
             else if (selected > bitmap->sequence_count - 1) selected = bitmap->sequence_count - 1;
@@ -1091,7 +1099,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
     if (radius == 0.0f)
         radius = 1.0f;
     if (!state->reuse)
-        state->radius_fraction = decal_fraction_17ef10();
+        state->radius_fraction = function_x82e52f(&g_4e7408->seed, NULL, 0);
     preparation->projection.radius = ((definition->maximum_radius - definition->minimum_radius)
         * state->radius_fraction + definition->minimum_radius) * radius;
     if (bitmap->type == 3 && function_17cb00((s_decal_sprite_definition const *)definition,

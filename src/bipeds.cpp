@@ -8220,6 +8220,18 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // with the per-arm copy 264. Diagnostics: aim as a plain three-float record copied whole 219 / 201 on the per-arm body
 // (the point type with its array overlay is not what keeps the copy in memory); the clamp and direction in a new inline helper taking the
 // point by value 244 (1612 B), reading the target's z through its pointer 219.
+// M3 lane GA r30 (57 fast trials across 8 batches + 2 plain checks of 73 VAs; control 219 at 1624/1624 B, +0x54; body
+// unchanged): EXACT BYTE MATCH (0, 1624/1624 B, 76 verified targets, 0 differ, all 64 file peers and callees intact)
+// held as a patch: three-way clamp (`if (target.z > eye.z) aim = target; else if (eye.z > target.z + target_height)
+// { aim = target; aim.z += target_height; } else { aim = target; aim.z = eye.z; }`; alone 126 at 1625 B, +0x357, snapping
+// every stack slot and register carry) + `s_biped *self`/`other` + existing `cross3f_staged` + private inline
+// `matrix3x3_inverse_transform_vector` (in-place copy + `dot3f`) + existing matched `function_11df30` (or private inline
+// yaw/pitch helper, also 0 MATCH); NOT kept on main because adding +1 or +2 private inline helpers to this TU shifts
+// whole-image LTCG symbol numbering and loses unrelated matched 0x1c4590 (5) and 0x24cf66 (2). Zero-new-symbol variants
+// using existing `vector3f_assign` + `dot3f` + `cross3f_staged` + `function_11df30` on the three-way clamp score 38
+// (1624/1624 B, +0x573; 69 without `self`/`other`; copying `aim = target` into the arms is match-only without a byte
+// match; with main's single `aim = target` 243 at 1616 B); separate basis vectors 192/214, `cross3f` 46, inline copy-dot
+// expressions 77, without copy 239/190, `copy` declared ahead of `frame` or renamed 38.
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {
