@@ -1,4 +1,4 @@
-"""Linear-error updates observe A's linear W after the rounded input store."""
+"""Linear row updates observe A's linear W after the rounded input store."""
 
 import struct
 
@@ -13,10 +13,11 @@ from test_solver_dispatch import (
 
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('kind', [6, 13])
 @pytest.mark.parametrize('initial_w', [
     0x40a00000, 0xc0400000, 0x7f800000, 0x7fc12345,
 ])
-def test_linear_a_observes_rounded_input(solver_images, precision, initial_w):
+def test_linear_a_observes_rounded_input(solver_images, precision, kind, initial_w):
     frame = STACK + 32768 - 0xd0
     body_a, body_b = frame, HEAP + 0x80
     retail, compiled, symbols = solver_images
@@ -28,11 +29,13 @@ def test_linear_a_observes_rounded_input(solver_images, precision, initial_w):
     ]
     for label, machine, entry, gate in targets:
         for rounding in range(4):
-            data = solver_case(13, 0)
-            size, row_kind = OP_LAYOUT[13]
+            data = solver_case(kind, 0)
+            size, row_kind = OP_LAYOUT[kind]
             put(data, STEP, '7fi', 0, 1, 0, 1, 1, 0, 0, 1)
             put(data, OPS + 12, '2I', body_a, body_b)
-            put(data, OPS + 24, 'I', 13 | (size << 8) | (row_kind << 16))
+            put(data, OPS + 24, 'I', kind | (size << 8) | (row_kind << 16))
+            if kind == 6:
+                put(data, OPS + 28, 'f', 100)
             put(data, OPS + 24 + size, 'I', 0x400)
             put(data, TERMS, '12f',
                 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0)
@@ -71,7 +74,7 @@ def test_linear_a_observes_rounded_input(solver_images, precision, initial_w):
             finally:
                 for handle in handles:
                     machine.hook_del(handle)
-            context = (label, precision, rounding, initial_w, trace)
+            context = (label, kind, precision, rounding, initial_w, trace)
             assert machine.reg_read(UC_X86_REG_FPCW) == control_word, context
             assert len(trace) == 1, context
             assert snapshot[1] == 1, context
