@@ -1868,6 +1868,16 @@ bool function_108530(long device_index, long name)
 // the gain is layout, a moved declaration under the bar), the same between the cruise and duration stores 109 (same
 // code); `distance` computed beside `delta` 134 (callers 26/28); `delta` inside the duration block 140 (26/28); the
 // late `delta` with the cruise velocity stored per arm 120 (528 B). Body unchanged.
+// M3 lane GA r35 (19 fast trials with 0x108600/0x108670, both MATCH unless noted; control 116 at 523 B, al 54, mk 19;
+// body unchanged): inline `motion_max`/`motion_min` helpers (`__forceinline` or `inline`) 116/116 (same code); reading
+// `motion->velocity` in acceleration or numerator+acceleration 116/116 (same code); `final_velocity` in an inner local
+// 116; early returns for duration/distance guards 116 (same code); right-parenthesized denominator sum 129 (527 B, mk 14,
+// callers MATCH); shared `motion_ramp_distance` helper (bool out-param) 117 (on separate-arm cruise store 130, returning
+// real 126, callers MATCH); separate-arm cruise store + `0.5f *` halves + `2.0f *` rate 127 (528 B, al 40, mk 12, callers
+// MATCH, matching the entire cruise+accel block verbatim); same with `remaining - ramp_down_time` and late `delta` 127
+// (al 47, callers MATCH). Separate local for `target` 131 (callers 31/13), `duration` 128 (18/24), `ramp_down_time` 139
+// (26/28), `ramp_up_time` 136 (26/28); `motion->start = motion->position` readback 142 (26/28); moving `position` and
+// `cruise_velocity = 0.0f` ahead of halves 142 (26/28); retail-order inner block with shared cruise store 170 (19/34).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

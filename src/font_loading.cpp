@@ -1148,6 +1148,15 @@ static inline word font_character_pixel(long alpha, long color)
 // 45 / 30 (508 B), word add *256 45, 3-part ARGB nibble split 40 (508 B, -1), _byteswap_ushort 95 (504 B) / 90 (496 B),
 // signed-char low mask on score-12 base 90 (496 B); standalone CL.Exe/LTCG probes confirmed cross-TU LTCG read_be16 also fuses
 // in Pass A into xor eax,eax; mov ah; mov al.
+// GB34 (32 fast trials across 2 batches, 0x140960/0x122540/0x122570 MATCH except code&7; control 41 at 508/504 B, +0x24; body unchanged):
+// clean control flow on 41 base: length=1 at top of (long)type>1 176 (516 B), inner if(type==3) 183 / +len1-top 212, count++;count++ 41,
+// type!=2 count+=2 in both output arms 155, switch((long)type) with default as case 3 (no case 3 / no __assume) 221 (len1-top) / 211 (per-arm),
+// for-loop step 41, pre-init run=0 176 (472 B), early length=3 93, gt1 remaining--/source++/continue 141 (504 B), early literal count++ 101,
+// type!=2 code&7 217 (breaks 0x140960), word color 51, byte type 184, flipped run!=0||type!=0 41; literal probes on score-12 base (504 B):
+// MAKEWORD (word/dword), little-endian 2-byte loop, int/byte nibble splits, and (word)s2|((word)s1<<8) in dword all fuse to 90 (496 B);
+// interleaving count++/length=3 between word hi and lo still fuses (74, 504 B); (word)s2|((dword)s1*256) and (word)s2+((word)s1<<8) in dword 12
+// (504 B, 32-bit movzx); word forms ((word)s2|(word)(s1*256), (word)s2+(word)((word)s1<<8), word lo+(word)(s1<<8)) 30 (508 B, 16-bit movzx+shl);
+// byte lo/hi union 99 (512 B); word-param font_argb4444 135 (544 B). Still blocked on type!=2 cross-jump and Pass-A OR-fusion.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
