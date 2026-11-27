@@ -1035,6 +1035,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // fallback 165; the first group word read straight from the block address 117; the material tag as
 // `((long const *)element)[1]` 117; the second group word as a direct word-array index 117 (same code each). Body
 // unchanged.
+// M3 lane 1 r175 (fast screen with 0x2243c0, 0x224d90 and 0x173ba0, MATCH unless given; control 117; body unchanged). The
+// reference chain rebuilt 8 (first +0x9e, the same eight lines). This build also leaves EDI unused after the material lookup,
+// so retail's material definition in EDI is a scratch pick, not a live range. On the chain: the first cache zero after the
+// pass tag 59, after the pass definition's chain 23, ahead of the pass tag 38, after the stage index 136, at the top 171
+// (552 B), so after the material definition (the chain's place) stays best; the pass definition bound to a
+// `void const *const &` from the tag accessor 36; the material definition so bound 92 (552 B); both 86 (545 B, 0x224d90 36).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

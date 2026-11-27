@@ -1390,6 +1390,11 @@ void function_1e3b60(long actor_index);
 // flag tested first 429; the tail reading a fresh actor lookup after the walk 421 (1632 B). The actor index stays a stack
 // argument in each. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0's noinline declaration, in another lane's file
 // this round).
+// M3 lane 4 r267 (fast screen with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form). In 0x262ba0, more
+// actor-index references by fetching the actor again: the loop's three tracked-prop reads 476 there (1652 B), every
+// actor read in the loop 473 (1648 B), every actor read in the tail 501 (1696 B), both 530 (1708 B), both with the
+// update flag at function scope cleared after its use 531. The actor index stays a stack argument in each. Still
+// BLOCKED-BY 0x262ba0 (and through it 0x2641c0's noinline declaration, in another lane's file this round).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

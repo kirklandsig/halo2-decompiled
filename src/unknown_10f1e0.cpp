@@ -714,6 +714,10 @@ void bit_vector_fill(dword *vector, long count, byte value);
 // typed object definition header 2; the memset size as `sizeof(dword) * words` 2; the markers and visited words declared
 // in reverse 2. Diagnostics (semantics changed, reverted): the entry's target NONE test dropped 151 (no back-edge block);
 // the loop's target-name NONE test dropped 76 (the pair stays table first).
+// M3 lane 14 r162 (fast with 0x113ba0, 0x113c60, which stay matched), at 2, all the same code: both markers and the
+// visited words declared at the function's top 2; the node-count test joined to the entry condition as a fourth term 2;
+// the target name declared bare beside the visited words and assigned in the loop 2; `graph` declared at the function's
+// top 2; `bool found = false;` declared once ahead of the loop 2.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
