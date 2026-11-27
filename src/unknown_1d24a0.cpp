@@ -807,6 +807,17 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // into local_75 then copied 808 (same code); local_31 written by three field rows with no local_75 912 (4216 B);
 // response_fraction declared above local_25 808 (same code); the body-slot clamp as `local_16 = field_1;` plus an
 // if / else-if pair 913 (4259 B); the marker declared at the top of the loop body 808 (same code). Body unchanged.
+// M3 lane 5 r253 (fast screen with 0x1d2070, 0x1cf9f0, 0x1d1260, 0x1d2280, 0x54590 and 0xc2d00; full checks). LEAD, held
+// as a patch: a `remove_at(index)` member on the contact list type (`size--; data[index] = data[size];`, the shared
+// growable array's remove_at form) used by this swap-remove and by matched 0x1d2070's, with the loop head reading the
+// component's list field (no list local), 757 (4269 B; retail's entry, loop head and removal); with the angular
+// coefficients read from the record at each use and the second limit block and the angular block each given its own
+// fraction output (as the first and third blocks have) 738 (4239 B, frame 0x1d4 = retail's, first difference +0x14).
+// Not kept: every full check with the member used (by either caller alone or both, `data[index] = data[--size]` too,
+// under another member name, with a second member) loses matched 0x24cf66 (two tied loads before its split-screen
+// branch swap), whose file does not include the header; the member unused loses nothing. `operator[]` with remove_at
+// through it (the shared array's two members) loses 0x54590 instead. On the member: the list local kept at the loop
+// top 809; the coefficients alone 774; the fractions alone 753.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
