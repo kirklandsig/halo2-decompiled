@@ -2494,6 +2494,32 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// score 1 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
+// exit order. Left: the last exit (unit_index == NONE) returns the constant (or eax, -1); retail moves ebx
+// (mov eax, ebx), so it did not fold the value there - the 11-15 round's `>` spelling of that test keeps the fold
+// away. Tried: a result variable returning at each level 47;
+// (mov eax, ebx), so it did not fold the value there. Tried: a result variable returning at each level 47;
+// early-return chain 99; nested ifs with one final return and the parameter reassigned 62 (one shared epilogue,
+// all four registers pushed first); early return for NONE at the top 92; a result variable with one final
+// return 113. Round 1 of #1049, all still 2 (or eax, -1 kept): result variable / copy of the parameter
+// (`original`) returned at the last exit; `valid = unit_index != NONE` as the test; (dword) casts on the compare;
+// while instead of if. Failing differently: `~unit_index != 0` 96; early return of unit_index for the NONE case
+// at the top 99 (layout moves the exit first). The optimizer substitutes -1 on the NONE edge whatever the
+// spelling of the returned copy.
+// Permuter (25 min on #1049, about 900 variants): nothing below its own baseline (1 in its render).
+// Round 82 (lane 11, fast): `NONE != unit_index` 2; `!(unit_index == NONE)` 2; the seat-level and parent-level returns
+// merged into the final one 39 (246 B); the parent-level return merged into the final one 12 (252 B: the shared exit
+// returns `mov eax, ebx` as retail, but VC then pushes EDI before the first test); the seat-level return merged into
+// the parent-level one 32. So retail's NONE exit is a separate epilogue without the edge constant.
+// m3 lane 16 r104 (fast, callers 0x1a4900/0x1a4c00 checked): the parent index through a ternary on the NONE test with the
+// seat read through a second lookup 12 (252 B: every exit returns `mov eax, ebx` as retail, but EDI is pushed before the
+// first test); `unit_index != NONE && UNIT_GET(unit_index)->parent_index != NONE` 99 (the argument moves to the stack and
+// both callers lose their match); the unit as `unit_index != NONE ? UNIT_GET(unit_index) : NULL` 97 (same loss); one early
+// return for `unit_index == NONE || parent == NONE` 99 (same loss); parent and seat tested together with && 33.
+// Compile-only probes: VC puts the constant into every NONE exit that is its own block, for a parameter, a call result or a
+// load alike; the 11 matched functions whose NONE edge returns the register all reach a return shared with another path.
+// Hypothesis (inferred from that scan, not measured): retail's NONE exit was a shared return split again before the pushes
+// were placed.
 // MiniMax A (11-20): no new form, no lower score (1): the entry branch is still `jle` where retail has `je`; the
 // equality spelling gives retail's branch but VC folds the NONE exit's register copy to `or eax, 0xffffffff` (2, 258
 // bytes); a local copy of the parameter returned at that exit folds the same way (2) whichever way the test is spelled,
@@ -2567,32 +2593,6 @@ void function_cfec0(long unit_index)
 // instructions at the entry, and a copy of the index in a local for the NONE exit only, which is propagated back and
 // folds the exit as before (2); the permuter (annealing, 428 s, 38 tries) found no variant below 1.
 // MiniMax E (11-20): no new form, no lower score (1): the one difference left is still the branch at the NONE test, where this build's greater-than spelling gives jle and retail has je; the equality spelling gives retail's branch but VC folds the NONE exit's register copy to the constant (2), and a copy that all four exits return keeps the copy but loses retail's `mov ebx, eax` prologue (47).
-// score 1 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
-// exit order. Left: the last exit (unit_index == NONE) returns the constant (or eax, -1); retail moves ebx
-// (mov eax, ebx), so it did not fold the value there - the 11-15 round's `>` spelling of that test keeps the fold
-// away. Tried: a result variable returning at each level 47;
-// (mov eax, ebx), so it did not fold the value there. Tried: a result variable returning at each level 47;
-// early-return chain 99; nested ifs with one final return and the parameter reassigned 62 (one shared epilogue,
-// all four registers pushed first); early return for NONE at the top 92; a result variable with one final
-// return 113. Round 1 of #1049, all still 2 (or eax, -1 kept): result variable / copy of the parameter
-// (`original`) returned at the last exit; `valid = unit_index != NONE` as the test; (dword) casts on the compare;
-// while instead of if. Failing differently: `~unit_index != 0` 96; early return of unit_index for the NONE case
-// at the top 99 (layout moves the exit first). The optimizer substitutes -1 on the NONE edge whatever the
-// spelling of the returned copy.
-// Permuter (25 min on #1049, about 900 variants): nothing below its own baseline (1 in its render).
-// Round 82 (lane 11, fast): `NONE != unit_index` 2; `!(unit_index == NONE)` 2; the seat-level and parent-level returns
-// merged into the final one 39 (246 B); the parent-level return merged into the final one 12 (252 B: the shared exit
-// returns `mov eax, ebx` as retail, but VC then pushes EDI before the first test); the seat-level return merged into
-// the parent-level one 32. So retail's NONE exit is a separate epilogue without the edge constant.
-// m3 lane 16 r104 (fast, callers 0x1a4900/0x1a4c00 checked): the parent index through a ternary on the NONE test with the
-// seat read through a second lookup 12 (252 B: every exit returns `mov eax, ebx` as retail, but EDI is pushed before the
-// first test); `unit_index != NONE && UNIT_GET(unit_index)->parent_index != NONE` 99 (the argument moves to the stack and
-// both callers lose their match); the unit as `unit_index != NONE ? UNIT_GET(unit_index) : NULL` 97 (same loss); one early
-// return for `unit_index == NONE || parent == NONE` 99 (same loss); parent and seat tested together with && 33.
-// Compile-only probes: VC puts the constant into every NONE exit that is its own block, for a parameter, a call result or a
-// load alike; the 11 matched functions whose NONE edge returns the register all reach a return shared with another path.
-// Hypothesis (inferred from that scan, not measured): retail's NONE exit was a shared return split again before the pushes
-// were placed.
 // MiniMax R (11-11): no new form tried this round, no lower score (2): the body is 258 bytes against retail's 257 and the last exit is the only difference left; every exit form measured before moves retail's lazy pushes into the prologue.
 // Round 430: child result assigned before break 28; typed child flags 2;
 // typed parent table 2; existing unit/parent/sibling getter 2/2/2;
@@ -2652,6 +2652,12 @@ void function_cfec0(long unit_index)
 // (253 B, two branches). The `!=` test with the NONE exit returning the parameter read through a pointer to it 104
 // (264 B), the test itself read through that pointer 104, the pointer declared first 104 (all three the same code: the
 // parameter then arrives on the stack, and the callers go to 180 and 293).
+// M3 lane 12 r198 (h2m fast with callers 0x1a4900 and 0x1a4c00, MATCH unless noted; control 1): the test as
+// `!(unit_index >= NONE && unit_index <= NONE)` 92 (253 B); `unit_index >= 0` 6 (256 B, test/jl); a separate
+// `object_index` result returned at the three inner exits with the parameter returned at the NONE exit 53 (241 B);
+// diagnostics: the body below the NONE test in an inline helper called as `if (unit_index != NONE) return
+// helper(unit_index); return unit_index;` 340 (stays out of line, 14 B; both callers lose), the same helper
+// `__forceinline` 51 (252 B; callers 3 and 1). No lower score.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
