@@ -1167,6 +1167,17 @@ void function_245400(s_source_245400 const *source, long index,
 // transform reuses the rotation's field loads at the same levels, so the two transforms' scaled components would need
 // symbol numbers near 0x100 and far apart, which no tried form gives. On main's body the facing dot through dot3f, either
 // operand order, 235 each. Body unchanged.
+// M3 lane GA r33 (43 valid fast trials with 0x245aa0/0x245400/0x244de0/0x245270/0x245850 all MATCH unless noted; control 163
+// at 783/783 B, fr 0x24; body unchanged): on main's body, vertex-table local 163, + second-before-first material read 165,
+// early return on equal materials 163, inline copy+scale+rotate edge 163, 0x245850-style 3-step accumulated edge rows 213,
+// split facing `if`/`else` returns 221 (768 B); on the 0x24-frame second-pointer/shifted-side order (edge before decode),
+// 3-step/helper/early-return/vertices/cast-cross/direct-cross/i-k-j/2-step point 168-169, split facing 211 and TEST_FIELD_BIT
+// sides 214 (both 0x245aa0 DIFF). On the true 0x2c-frame lead (edge after shifted sides): 3-step accumulated rows on edge and
+// point with `k*k+j*j+i*i` 168 (789 B) / with `dot3f(&local_12, &local_6)` 116 at exact 783/783 B (with `function_245400_transform`
+// 113, `dot3f` swapped 113, flat edge + helper 110, 2-step y point 114, one-caller helper 113: all 783/783 B with xmm0/xmm1
+// exchanged); 2-step accumulated rows on edge + helper point 63 (789 B), + 2-step accumulated point 55 (789 B, 210/210 insns:
+// 57/57 opening + 27/27 point-scale/x-row + 33/33 tail exact; cross and j/y/k/z operand-rank ties remain); split facing on
+// 0x2c lead 229 (fr 0x28, 0x245aa0 DIFF). Restored to main.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
