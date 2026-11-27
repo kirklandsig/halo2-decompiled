@@ -1053,6 +1053,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // loaded as a word and widened later, and the time stays on the x87 stack with `fst`); the tick count read into a `long`
 // ahead of the draw 204 (894 B); both read ahead 172 (885 B); the tick count converted to a real ahead of the draw with
 // the rate as `short` 201, as `long` 173; the rate alone as `long` ahead of the draw 197.
+// M3 lane GB r33 (10 fast trials with 0x118140, 0x117c80, 0x2551f0, 0x1ff360, 0x26d570, 0x1462e0 all MATCH unless noted;
+// control 130 at 889/880 B; body and helper unchanged): both table draws through existing `random_unit_vector` (0x1462e0)
+// 125 (888 B, under keep bar; al=102, mk=69); on `random_unit_vector`: `g_55ecd0` clamp as ternary `PIN` 125, `double wave`
+// 125 (al=103), `random_next` fraction 125 (alone without `random_unit_vector` 154 at 880 B), `real strength` + `vector3f_scale`
+// 125, combined `* 0.01f * 0.3f` gain 142 (883 B), `short ticks = g_510c54->field_2_3;` ahead of draw 119 (887 B, al=92,
+// mk=62; `mov esi, [g_4e7408]` between pushes, frame still 0x1c; not kept: one-use local and moved statement); in shared
+// `include/axis_rotation.h` on `random_unit_vector`: `axis->*` first in rows 125 (all matched peers intact), k/j/i dot +
+// cross_k,j,i order 158 (880 B; breaks matched 0x2551f0 15, 0x1ff360 60, 0x26d570 23).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

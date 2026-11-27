@@ -1102,7 +1102,20 @@ void __stdcall function_25eea0(
 // commuted Loop 2/3 adds 111; on `dir3 + 1e4a50 + zone` (235): switch-type 250, ternary max / outer result / `move_res` /
 // preinc `j` / no-`type` / fn-scope `j` / `while` `j` / counter reorder / `point` after guard / Loop 2 kji all 235, no-`point`
 // 343, `if/else` bonuses 241, `pos_dist` 246, chained zero 250, ptr/ref Loop 3 322/251, all after guard 316, diag dropping
-// `inline_depth(0)` + `distance3d` + `1e4a50` 383. Earlier notes follow.
+// `inline_depth(0)` + `distance3d` + `1e4a50` 383.
+// GB r33 (51 valid + 5 diag fast trials on the 111 base, 7 peers MATCH; body unchanged): `0x1b0710` param reorder
+// `(actor_index, object_index, ...)` 109 (-2, under bar); `no-type`, `move_result`, `j` outer, `scoped i`, `no early
+// return`, `factor < 0.f`, `factor` ternary, `distance` no-cast/kji/inline-no-delta, `origin` first, `if` no-`continue`,
+// `score` commuted/`if` bonuses/`line_bonus` local, and `weight`/`bonus`/`cover_bonus` scale commutes all 111;
+// `weight * 12.f`, `max_dist` inside `if`, `factor` ternary, `distance >= inner`, `double dx/dy/dz`, `ratio` + `no-type`,
+// `else if` weight, `weight *=`, and `PIN` clamp all 245-246 (1322 B, flipping both Loop 2 and Loop 3 `addss` parity
+// together; `double dx/dy/dz` and `weight *=` hit al 47); `target_dist` 319, `weapon_range` 334, `inner clamp * 12.f` 354,
+// `use_type` 246, `bonus` `if/else` or ternary 200, `weight < 4.f` 315, `double distance` 254, `origin - pos` 118,
+// `cover_bonus` `if/else` 154, `weight` before early return 130. Diagnostics: dropping `#pragma inline_depth(0)` and
+// calling existing `vector3d_from_points3d(&origin, &geometry->position, &delta)` + `magnitude3d(&delta)` (+ `0x1e4a50`)
+// matches all 42/42 Loop 2 instructions verbatim (`fstp st(3); fstp st(0); fstp st(0); fst [esp+0x38]; fld [esp+0x40];
+// fcompi st(1)` + 2-insn `addss`), but still inlines `0x1e5240` (`364`, 1336 B, al 102, mk 41) even with all 7 retail
+// callers of `0x1e5240` linked and with `if (!context->unknown5b)` nesting. Earlier notes follow.
 // Earlier 253 (was 253): the cover loop's line index stays in memory where retail keeps it in EBX (sharing the zero
 // register); the allocator ranks the moving counter (-38) above the index (-44) for EBX. Also the weight block's
 // quotient and weight colours (retail quotient XMM1, weight XMM2), retail keeping the leader distance on the x87 stack
