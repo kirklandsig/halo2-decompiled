@@ -1914,6 +1914,22 @@ long function_1e4a10(long index);
 // in-radius flag read once into a bool for its three tests 222 (896 B); the six-name set re-measured 4, with the actor
 // index declared inside the type test and tested in a nested if (no assignment in the condition) 4; on it the shield
 // damage renamed, and the body and shield damage both renamed, 4/4 (names do not reorder the split pieces). All restored.
+// M3 lane 5 r254 (reduced-image screen, control 8). Back-end trace: each float value that lives across a call is
+// split and the pieces come back after the call in ascending piece number; the pieces are made in ascending candidate
+// number and take the free numbers from the top down (37, 35, 34, 31, 30, 29, 28 here), then new ones. This body
+// numbers the inverse 17, the maximum 18, the shield 19, the scaled shield 20, the body damage 21 and then the
+// constants (zero 24, 1.0f 25, 0.0001f 26); retail's two orders need inverse, maximum, zero and then the scaled shield
+// and 1.0f, so the scaled shield would have to be numbered after the zero constant, which no local is. Forms:
+// everything after the scaling in a forced-inline helper taking `multiplier * shield_damage` as an argument
+// (diagnostic) 28 (the parameter is numbered among the locals; the value moves to the inverse's stack home); the
+// product unstored at the accumulator store and the stun test (the listed 28) is a temporary numbered after the
+// constants, but its piece is made last and gets a new number, so the zero still comes back first; the store written
+// `(multiplier * shield_damage) * inverse` 28, the product as `shield_damage * multiplier` at both places 28 / 28, a
+// three-factor product either way round 184 / 184. Diagnostics: the unstored product with 1 to 12 dead probe locals 28
+// each, 25 at 6 and 7 (function_d5bc0's order then retail's, the zero still first after the other two calls); this
+// body with 6 probes ahead of the body damage (the listed 4): the body damage moves behind the constants (zero 22,
+// 1.0f 23, 0.0001f 24, body 25) and the scaled shield keeps 20; the probes declared after the shield damage instead,
+// 5 / 6 / 7 / 8 / 13 / 14 of them, 8 / 4 / 4 / 7 / 8 / 8 (the numbering follows the count of symbols, not their place).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
