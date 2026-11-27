@@ -1292,6 +1292,13 @@ real function_30bf0(vector3f *v);
 // written i first 216; the gravity product declared ahead of the horizontal root 216 (same code); the gravity product
 // declared first of all, ahead of the delta 250 (975 B, all six callers lost). Retail takes the horizontal root (x87)
 // in the entry block and parks it in a dead argument home; ours sinks it below the gravity tests.
+// M3 lane GB r36 (13 fast trials with 0xfa580 and all 6 matched callers 0xfa6a0, 0xecdc0, 0x1f8100, 0x1f8160, 0x26f150,
+// 0x2900b0; control 216 at 983/983 B, +0x2, fr=0x28, al=228, mk=68; body unchanged): linear-first early return 208
+// (983 B, 259/259 insns, all 7 MATCH; NOT kept: arm swap inverting jbe/ja/jbe to jae/jb/jae, mk 68 -> 69); linear-first
+// single-result on scale_value 245 (fr=0x2c, 6 callers lost; plain forced 245, + maxgrav 256, + if (forced) first 286);
+// if (0.0f > gravity) gravity = 0.0f 215 (986 B, al=216, mk=47, all 7 MATCH); no horizontal_squared / length_sq3f 261/261
+// (fr=0x2c, callers lost); 0.25f * (gravity * gravity) + 4.0f * a * distance_squared 216; num local in t2 216; -c + sqrt
+// 216; -distance_squared / (t * t) - t * t * a 216 (985 B); -(1.0f / two_a) * root 220.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,

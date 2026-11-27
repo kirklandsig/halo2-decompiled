@@ -4061,6 +4061,12 @@ enum
 // lookup (ECX / EAX exchanged) and the event block (word in BX; retail AX, victim index in EDX). A forced-ranking search
 // on that lead lists eight register moves (2665 candidate decisions, none of the 24 tried lowers 283), so more than
 // three decisions still separate it from retail.
+// M3 lane GB r36 (14 fast trials with 0xd9b60 5, 0xdb210 and 0xd8cb0 MATCH; control 309 at 1885/1880 B, +0x21, fr=0xf4,
+// al=233, mk=21; body unchanged): object_definition before info 321 (1889 B), inside if (info) 406 (1880 B, fr=0xf0);
+// info after memset(&accumulator) 463; object_count > i + 1 311; i + 1 != object_count 310; if (object_count > 0) guard
+// 311; (word)data->unknown7e != 0xffff 310 (mk=20); nested event/info ifs 309/309; DAMAGE_OBJECT in kill block 370
+// (1914 B); definition_tag pointer local 309; object_count before objects[] 309; on r140's 283 lead: object_definition
+// first 294 (1882 B, mk=15), (word)unknown7e + guard 284 (1883 B, al=166, mk=10, 533/533 insns).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
