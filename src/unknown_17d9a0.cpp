@@ -252,11 +252,10 @@ short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon);
 
 PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *mesh, s_decal_mesh_edge const *edge,
-	bool reverse, s_decal_quad_17d9a0 const *quad, real radius, short mode, long *adjacent, short *count)
+	bool reverse, point3f const *start, s_decal_quad_17d9a0 const *quad, real radius, short mode, long *adjacent, short *count)
 {
 	if (*count < 1024)
 	{
-		point3f const *start = &mesh->vertices[edge->vertices[!reverse]].position;
 		point3f const *end = &mesh->vertices[edge->vertices[reverse]].position;
 		vector3f direction;
 		vector3d_from_points3d(start, end, &direction);
@@ -276,7 +275,7 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 	}
 }
 
-// score 400 (was 423) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
+// score 387 (was 400) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
 // 2 + positive) at each projection, with the side as a by-value bool (0x143-0x161 for the first vertex, 0x180-0x199
 // for the current one); the projection is an inline helper called for both. Left: frame 0x58 against retail's 0x5c,
 // face_index in edi (retail esi), mesh in esi (retail ebx).
@@ -294,6 +293,20 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 // slot; the output loop keeps the plane normal and the 1/256 constant in registers across 0x120790 where retail reloads
 // them after each call (a callee register-set question). A forced-ranking search found no single decision below 400
 // (the adjacent block's start pointer in ESI 428, the vertex in ESI 405).
+// M3 lane 7 r235 (plain checks; the reduced image builds this function at 403-409 and 1783 B, so it is not used):
+// kept, 400 -> 387 at retail's 1799 B: the adjacent-face helper takes the edge's start vertex from its caller (the
+// clipping loop passes its `vertex`, the gather loop the same element address): retail reads the start through the
+// clipping loop's vertex register after the clip call, with no new vertex-table load, and the gather loop forms it
+// ahead of the count test. That gives retail's homes (face_index ESI, mesh EBX, the quad normal's address EDI) and
+// frame. Lead (an evaluation-order swap, kept only with a match): the 0x17d900 call first in the comparison
+// (`function_17d900(...) < radius * 0.05f`, retail's order: the call, then the radius load) 381. Left: the loop's
+// iteration count stays in EDX from the latch into the loop top (retail re-reads it from its slot, and its slot sorts
+// third where ours sorts sixth), the head's edge/faces loads in another order, and the output loop keeping the plane
+// normal and 1/256 in XMM3-6 across 0x120790 (retail reloads them after each call). Tried on the 381 lead: the
+// increment last in the body 382; the previous-point copy ahead of the increment 381; the copy written per field 425
+// (1778 B); the gather loop's start named like the clipping loop's `vertex` 381 (same code). Also kept: the clip
+// edge's normalisation through the existing normalize2d_fast in place of its body written out (same code, 381 on the
+// lead).
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,
@@ -337,22 +350,14 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 			plane2f clip;
 			clip.n.i = previous.y - current.y;
 			clip.n.j = current.x - previous.x;
-			real length = (real)sqrt(clip.n.i * clip.n.i + clip.n.j * clip.n.j);
-			if (!(fabs(length) < 0.0001f))
-			{
-				real inverse = 1.0f / length;
-				clip.n.i *= inverse;
-				clip.n.j *= inverse;
-			}
-			else
-				length = 0.0f;
+			real length = normalize2d_fast(&clip.n);
 			if (length != 0.0f)
 			{
 				clip.d = clip.n.j * current.y + clip.n.i * current.x;
 				bool clipped;
 				point_count = function_23a6f0(polygon_points, point_count, points, &clip, 12, &point_mask, &clipped, 0.0f);
 				if (gather && clipped)
-					decal_add_adjacent_17dd80(mesh, edge, reverse, quad, radius, mode, adjacent, &count);
+					decal_add_adjacent_17dd80(mesh, edge, reverse, vertex, quad, radius, mode, adjacent, &count);
 			}
 			else
 			{
@@ -397,7 +402,8 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 		{
 			s_decal_mesh_edge const *edge = &mesh->edges[edge_index];
 			bool reverse = edge->faces[1] == face_index;
-			decal_add_adjacent_17dd80(mesh, edge, reverse, quad, radius, mode, adjacent, &count);
+			decal_add_adjacent_17dd80(mesh, edge, reverse, &mesh->vertices[edge->vertices[!reverse]].position, quad, radius,
+				mode, adjacent, &count);
 			edge_index = edge->next_edges[reverse];
 		} while (edge_index != face->first_edge);
 		if (g_444a38[mode].adjacent_angle * 0.017453292f >= angle && other_count < 1024)
@@ -1153,6 +1159,15 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
 // to pick the collision record, as retail does with no found flag, 414; the old body's returns with the three
 // constant-initialised locals declared above the seed block 443; `deterministic` declared first 417; the placement
 // pointer declared first 387.
+// M3 lane 7 r235 (plain checks: the reduced image builds this function at 415 even with the whole file listed or the
+// full ballast link): kept, the search radius as plain float math (`radius * definition->maximum_radius * 0.25f`,
+// retail's x87 sequence and float constant, the double casts gone) 363. A frame trace explains the 8 extra bytes: the
+// `deterministic` local takes a 4-byte slot and the case-3 mesh pointer is spilled, where retail keeps the sixth
+// argument (a bool) in EBX and later the mesh there. Tried: the axes loop bounded by NUMBEROF(axes) 363 (retail's
+// unsigned `jb`); the neighbour placement renamed to sort after the collision record 363 (its slot does not move);
+// the sixth parameter as bool on this body 385 (frame 0x1174; the argument is read from memory and `excluded` keeps
+// EDI), with the constant-initialised locals above the seed block 412, with the float radius 385; the radius with a
+// double `0.25` and no casts 398 (1773 B).
 // @retail 0x17e670
 void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
@@ -1224,7 +1239,7 @@ void function_17e670(point3f const *point, s_effect_source *source, long tag_ind
     }
     if (!deterministic && definition->maximum_radius * 2.0f > 0.2f && (world_hit || excluded != -1))
     {
-        real search_radius = (real)((double)radius * (double)definition->maximum_radius * 0.25);
+        real search_radius = radius * definition->maximum_radius * 0.25f;
         s_decal_bound_17e490 *nearby[1024];
         long count = function_17e490(excluded, cluster, &center, search_radius, 1024, nearby);
         for (long i = 0; i < count; ++i)

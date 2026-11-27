@@ -320,6 +320,14 @@ void function_e3f00(long object_index);
 // before limits 8); damage_def ptr before event 8; POD event before limits / NONE before limits / comma arg1 or arg2 /
 // inline or forceinline arg1 reset helper 8 each; damage_span first from fields 59; const globals cast 8; init_global
 // helper 99; linear-damage scale helper 153.
+// M3 lane 3 r316 (fast with 0x1da550 and 0x1da9e0, MATCH each time; control 16). Retail's own 0x1da9e0 stores the
+// event's NONE before it loads the damage index, as this body does; retail here loads the index first as a scratch
+// temporary (EDX), so its source reads the index ahead of the store without naming it. The two match-only forms
+// together (element pointer for the velocity copy, owner store ahead of the flags) 8, the call setup alone left; on
+// that, the index named ahead of the event 23, a forced-inline wrapper storing NONE and calling 0xd6660 with the index
+// as its argument 23 (the inline parameter acts as a named value). On main's body: the force span named once for the
+// test and the division 118 (764 B, retail subtracts twice); the speed test as `impulse >= 1.5f || body_speed >= 1.5f`
+// 20.
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {

@@ -2466,6 +2466,12 @@ real function_17c900(short function_type, real input);
 // vector read through the global at each use, the clock as an if/else, the drift dot through dot3f, the drift axis
 // through cross3f(up, &to_target, &axis), the +0x30 point read through the projectile at each use, the drift's point
 // update as three `+=` statements.
+// M3 lane 3 r316 (fast with 0xf8eb0; control 348, 0xf8eb0 1013). Retail's three exits store through EBX: each arm
+// writing the output through real_point3d_set with the plain path's copy in a final else 377 (1477 B), with that copy
+// through real_point3d_set 382 (1484 B), with the salt local declared in the wander arm 382 (1480 B); the local point set
+// as now and copied to the output in each arm and a final else 390 (1489 B). Diagnostic: the three exits with no salt
+// local (the shift at both uses) 328 (1466 B, the entry then retail's: index from the stack, no EBX save; next the
+// inlined normaliser, where retail holds y and z in XMM2/XMM1), 0xf8eb0 1027 (4699 B).
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
