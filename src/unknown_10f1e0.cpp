@@ -280,6 +280,11 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // into this body (one function fewer, 65) loses nothing. So the flips follow the count of functions compiled ahead of
 // those files, not this body: counts 0 and -1 keep them, +1 to +8 lose 0x24cf66. Every matching form needs at least
 // one net helper, so this match waits on 0x24cf66's load-order tie (or a natural removal of helpers ahead of it).
+// GB32 (held at review): a byte match with 0 lost in the full check came from replacing angle_radians_112e20 and
+// function_112e21 with two new file-local helpers (the inverse-point transform and a normaliser with the reciprocal
+// root written into it), chosen among trials by the TU's net function count, and the normaliser writes out
+// reciprocal_normalize.h's helper instead of calling it. A spelling picked for the count is layout steering (same
+// ruling as 0x296e60 on 11-27), so main's body stays; the form is kept as a held lead.
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
