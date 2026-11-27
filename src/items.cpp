@@ -1049,6 +1049,17 @@ struct s_item_collision_bsp
 // conditional geometry selection 338/338/351/329. Reading the returned
 // plane in the same forms 363/363/367/262.
 // NOT kept: each raises the score and merges retail's two query sites.
+// M3 lane GA round 36 (38 fast trials with 0x10c850/0x10cec0/0x10d4e0/0x10d5f0 all MATCH; control 190, 1366 B, al=86,
+// mk=47; body unchanged): on the shared-spin_scale lead (1364/1361 B, 326/325 insns, score 235, al=58, mk=29, recovering
+// all stack homes and the x87 tail-merge), function_x82e52f at the speed draw stays out of line (263-272, 1329 B,
+// 317/325 insns; with function_2477b1 + plane_distance_to_point + vector3f_add_scaled mk=31; vector3f_rotate_into_axes
+// 373, 1236 B). On the full-size 326-insn lead: function_2477b1 on matrix->rotation with accumulated d hits 238 (al=57,
+// mk=23, recovering plane.j/k/i load order); plane_distance_to_point or unparenthesized distance 234 (al=56, mk=26);
+// 2-statement left+up / up+left then += forward 236 (al=56, mk=27); single-expr left+up+forward 237 (mk=24); direct
+// surface_plane in NONE arm 243 (mk=24); in-place surface_plane *= offset / vector3f_scale + add 250 (327 insns); inlined
+// 0.05f - distance / delta vector 244; commuted offset * n, pos += n * offset, early offset decl, i/j/k or j/k/i locals,
+// coeff-first, and z/y/x marker locals 235-236. Left: offset still takes the mulss LHS (+2 movaps) while plane transform
+// lacks retail's movaps xmm5, xmm2 (-1 insn).
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
