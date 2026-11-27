@@ -377,6 +377,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // chained initialiser (`long *volatile arguments = result = ...`) 71 (277 B: the allocation computed straight into EAX, as
 // in the direct-allocation form); `long *result = &arguments[0];` 12; `++argument_index` 12; the element as `arguments +
 // argument_index` alone 12 (all three the same code); the count test as `parameter_count > argument_index` 14.
+// M3 lane 11 r174 (h2m fast with 0x2099f0, which stays matched; control 12): the result held as a `dword` copy of the
+// pointer (`(dword)arguments`, cleared to 0, cast back at the return) volatile-free 95 (266 B), with `result = NULL`
+// first in the arm 83 (277 B), with the volatile home 12 (same code); the frame reference declared `*const *const`
+// volatile-free 95, `*const *` with the volatile home 12. A forced-ranking search on the null-first body (43 single
+// decisions) gives nothing below 82: its folded frame load is not a colouring or scheduling choice.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

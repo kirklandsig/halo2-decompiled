@@ -703,6 +703,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // the history pointer named at the top and used for the entry copy as well 303; the squared-speed floor as a ternary
 // 286 (same code); the turn-dot floor as `local_21 > 0.0f ? local_21 : 0.0f` 283 (retail's 1863 B; only XMM numbers
 // move, the clamp keeps its compare-and-copy shape). Site 1 still BLOCKED-BY 0x2b400. Body unchanged.
+// M3 lane 3 r317 (H2M_FAST with lane 2 r148's 18-callee set; control 286 at 1865 B; a smaller set builds 0x29b2e0 at
+// 1309 B and this body at 343, so its results were dropped). Forms: the speed vector by an initialiser list 286 and the
+// lower floor as a ternary 286 (the same code each); the sign as a real (`-1.0f : 1.0f`) 325 (1871 B); the ceiling
+// test as `if (local_18 <= local_17)` 298 at retail's 1863 B; the result flag cleared after the cap 284 (a reorder by
+// score, not kept); the turn-dot ternary (listed, 283 at 1863 B) with the `<=` test 307, the `<=` test with the late
+// flag 299, all three 308. Site 1 is still 0x2b400's body, which main keeps out of line: BLOCKED-BY 0x2b400.
+// Body unchanged.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

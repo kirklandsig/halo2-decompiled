@@ -496,6 +496,13 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // tail loads every product operand in this source's spelling order; only the numbering that picks the loaded operand
 // differs. The corrected up computed k, j, i and stored j, k, i 119 (1388 B), with up.i stored directly 120; on the
 // explicit cursor 128 and 118 (1413 B, aligned 40 and 32).
+// M3 lane 14 r162 (fast with 0x16fe90 and 0x170d70, MATCH; control 64, aligned 65). Retail inlines the existing
+// orthonormal-pair check 0xa74c0 here: `if (!function_a74c0(forward, up))` is inlined by our link too, but 0xa0200
+// stays a call (its separate noinline declaration on main) and the dot keeps our k, j, i order: 182 (1352 B); with the
+// explicit read-only time cursor stepped last 140 (1374 B; the cursor alone re-measured 125 at 1413 B). The
+// orthogonality term through dot3f(forward, up) or dot3f(up, forward) 64 (same code); the forward and up pointers
+// declared at the function's top 112 (1396 B, aligned 48: the dot's i term gets retail's operand order, but the j
+// term still comes before it).
 // @retail 0x170630
 void function_170630(long player_index)
 {

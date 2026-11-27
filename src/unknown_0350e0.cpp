@@ -3119,6 +3119,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // (direction first/last, delta early/top, motion locals at top) 435 each; with retail opacity arm order + axis_scale before angle 435 (al=56, mk=22),
 // + PIN on vertex data 435 (al=52, mk=19), + function_020d80(context, true) 445 (al=53, mk=19). The single extra movss in projection (`direction.i * delta.i`
 // loading direction.i instead of multiplying delta.i in place) shifts all 422 trailing lines by one instruction.
+// M3 lane 8 r244 (fast screen), at 281: the delta through vector3d_from_points3d(&g_4b9da0, &position, &delta) with the
+// kept forward dot 284, with the dot written delta-first k, i, j 281, axis-first k, i, j 281, delta-first i, j, k 280
+// (one point, not kept); the distance attenuation as a ternary initialiser, unequal bounds first 424, equal bounds first
+// 496 (2285 B). Retail keeps attenuation in its stack cell from the 1.0 default on; none of these moves it there.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3953,6 +3957,14 @@ real magnitude3d(vector3f const *v);
 // 292/292/292/292. Dot bounded before both uses 287; lower and upper inverse-cosine bounds
 // alone 211/266; axis built before clamped arccosine 191. NOT kept: the new input boundary
 // changes the frame or extent and the raw magnitude still lacks its retail home.
+// M3 lane 8 r244 (fast screen), at 170. Frame reading: 4-byte objects are packed by falling reference count, each
+// trying the newest slot first; the raw current length (3 references) has no conflict with `a` and joins its slot
+// (+4), and the dot's cached double copy (8 bytes) widens the cosine's slot at +0xc, where retail re-reads the float
+// dot for the arccosine and keeps five 4-byte slots (the raw length with the dot, angle and cosine at +0xc, the sine at
+// +0x10). Forms: the dot as dot3f(&first, &second) 170; `a` and `b` in one declaration 170; separate inverse_a and
+// inverse_b locals 170 (all three the same code); the fallback arm first under the negated test 171 (1035 B); the
+// rotation size clamp through this file's color_delta(delta, -step, step) 170 (same code), with `0.0f - step` 170; the
+// fallback's clamp through color_delta 176 (1037 B), both 176.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4500,6 +4512,13 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // 357/393 each. NOT kept: the earlier ordinal changes the prologue and raises the score.
 // Separate signed-word ordinal on the inclusive direct-skip form 340. NOT kept: the
 // narrowed ordinal still differs from retail.
+// M3 lane 8 r244 (fast screen), at 317. Allocator reading: loop 1's entries base (priority 65: the loop head and the
+// swap block, which reads it twice) is coloured ahead of `first` (55) and takes EDX, so `first` is left EBP; retail
+// has them the other way round, and pinning only the base to EBP gives 419 (a forced-ranking search over 30 single
+// decisions found nothing under 315), so more than one ranking differs. Forms: `found` dropped for `first == 0` 436
+// (1288 B; retail keeps the found byte in CL); loop 1 through an entry pointer for its flags and the swap 317 (same
+// code), with `first == 0` 436; the swap target spelled `state->entries` 317 (same code); loop 1's flags read at each
+// use with no `flags` local 370 (1338 B).
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

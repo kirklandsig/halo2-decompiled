@@ -4790,6 +4790,14 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // 345 (1244 B: that return folds to `mov al, 1`); the kept arms `return true;` with `if (result) return true;` after the
 // disconnect 56 (result byte +9, better +0xb); the range test as two arms (`state <= 2`, `state > 8`) 368 (1276 B); the
 // reason-1 test as two arms (`!state`, `state == 10`) 357, on the 44 form 355. Body unchanged.
+// M3 lane 6 r251 (H2M_FAST with 0x5e3f0, MATCH each run; main 295; lane 1 r144's 44 lead rebuilt from lane 1 r165's
+// copy, 44). Reading: retail's kept arms load 1 into AL once for both the result store and the return value and jump
+// into the state-8 block's epilogue past its store and reload; ours stores an immediate and returns through its own
+// `mov al, 1` block. On the 44 lead: the kept arms `if (same) return true; if (better) return true;` 44, `if (same ||
+// better) return true;` 44, `if (same) return result; if (better) return result;` 44 (same code each); the kept arms
+// jumping to the received block's end (falling to the final return as the state-8 arm does) 99, with the test after
+// the disconnect dropped 105 (1248 B). On main: the state-8 arm with its sender test inverted 295 (same code). Body
+// unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
