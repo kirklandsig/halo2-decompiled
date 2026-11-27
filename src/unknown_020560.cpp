@@ -1601,6 +1601,17 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // (j, k) through vector2d_from_points2d on the (y, z) pairs 540 (2125 B, frame 0x18), that with length_sq3f(&offset) 646
 // (2039 B); on the entries-per-use scan 2 (re-measured 549): the planar (x, y) 458 (2122 B, frame 0x20, `nearest` loses
 // its scan-1 register), x written with the (y, z) pair 856 (2367 B, frame 0x30). Body unchanged.
+// M3 lane GB r35 (24 valid fast trials with 0x22750, 0x22c30, 0x24550, all MATCH; control 418, 2094/2122 B, +0x2, fr 0x1c,
+// al 256, mk 255; body unchanged): non-const samples 418; first before samples 439; copy_light_sample plain inline 826
+// (1869 B); direction lerp via vector3d_from_points3d 418; scan-2 `(k*k + j*j) + i*i` on offset on samples 646 (2039 B),
+// on entries + first ahead 635 (2051 B, fr 0x20, mk 99); entries + first ahead + brace-init delta 554 (2112 B, fr 0x20,
+// mk 115); count via s_light_sample_source pointer 418; reversed distance compares on samples 418, on entries + first ahead
+// 554; nested `if (opposite != NONE)` on samples 440, on entries + first ahead 554, on entries + late first 554 (mk 114);
+// scan-1 while on entries + first ahead 554; scan-1 entry pointer 418; const entries pointer in s_light_sample_source 418;
+// samples for delta/first/second with source->entries in scan 2 549 (2122 B, fr 0x20, mk 121: entries in scan 2 still
+// drops nearest off EDI); offset via vector3f_assign or real_point3d_set on entries + first ahead 781 each (2307 B, fr
+// 0x30); copy_light_sample long order 418, const sample ref 418; `fraction > 0` / `< 1` nesting 416 (2111 B, al 418, -2
+// under bar); fallback via vector3f_assign 419; local bsp pointer for count 418.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

@@ -3438,6 +3438,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // stored datum index 37 (87 B), with the two NONE stores chained 37 (87 B); the same with the walk guarded by the field
 // 34 (85 B); the id defaulted from the iterator's stored index and set from the field when valid 15 (80 B, a
 // conditionally set value, match-only). All restored.
+// M3 lane 1 r178 (fast screen with 0x2c9a58, matched in each; control 30; allocator view: the id is one candidate, 16, B1
+// +12 and the loop compare +6, coloured first with only EDI/EBX free across its calls, so no split piece reaches EAX):
+// the iterator's stores ordered datum index, index, pool 29 and datum index, pool, index 29 (two stores move, the id
+// still straight into EBX); the id declared, then assigned on the next line 30; a pool local read from the list at the
+// top ahead of the id 30; the guard as `if (~map_id)` 32 (83 B, `not`/`test`). All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
