@@ -1148,6 +1148,11 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // declared at the top 66-70, after view_forward 18, read through g_4687b0 18; the parameter alias `values` 18 (119 with
 // the grouping pair); the angle offset named 164; the two vectors declared ahead of axis 10 (same); position zeroed z, y,
 // x or x, y, z 18; stage 2 as unary minus 18; sine_axis in every order 6-7 or 185, placed after scale 31 or forward.i 38.
+// M3 lane 7 r236 (H2M_FAST; control 84): the sine products as a `vector3f` filled by the existing `vector3f_scale`
+// 130 (824 B); lane 15 r149's 18 form re-measured 18, with `vector3f_scale` 59, plus the trig pair 132 (819 B), plus a
+// named `inverse` 171 (851 B); the whole rotation through an inline copy of 0x1546f0's axis-angle helper (it computes
+// sin/cos itself; diagnostic only) 190 with the double angle (861 B), 196 with a real angle (859 B): as an inlinee the
+// rotation's symbols number after the caller's, which costs far more than the 18 form's ties.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1264,6 +1269,20 @@ s_3c9a0_matrix g_4c1b68;
 // position stored z, x, y, then the scale 238. Frame reading: retail's seven float cells are reused in turn (height, then
 // the tangent, then corner_x; the distance cell, then the aspect, then corner_y; offset, then the half angle, then the view
 // tangent), so its tangent is stored as a float right after its multiply, ahead of the aspect test's branches.
+// M3 lane 7 r236 (H2M_FAST; 0x3c9a0 MATCH, 0x3c3c0 74 throughout; control 291). Retail's float homes for the tangent
+// and the view tangent come from binding each by const reference (a memory temporary): `real const &tangent` alone 291
+// (same code), `real const &view_tangent` 285, both 285 (retail's fstp/fstp/movss/divss sequence, only frame offsets and
+// xmm numbers differ there). With the held reused corner pair 228 (1376 B), with the pair and the two-multiply near angle
+// 221 (1387 B; view reference only 221, tangent only 247). Adding GB r14's three per-axis corner loops (all .x, then .y,
+// then .z) to the pair and both references: 210 (1390 B, frame 0x4c = retail's, first difference +0x17); with the
+// two-multiply angle 215, the post-call stores as z,x,y,scale 210, scale,z,x,y 209, z,scale,x,y 208. Frame reading on the
+// 210 form (stack packer order: size, then references, newest slot first): four float slots like retail, but height joins
+// slot 2 and offset slot 3 where retail has height/tangent/corner_x in slot 0 and offset/half angle/view tangent in slot
+// 2. The cause is the corner block's spill temps: ours spills four (both rows' z products and both `m * far_x`
+// products), retail two (row 0's z product and `m00 * far_x`), because ours keeps the near corner's y values in
+// registers where retail re-reads them from g_4c1b08; with one fewer reference on the row-1 `m10 * far_x` temp the packer
+// would give retail's layout. A forced-ranking search on the 208 form finds no single decision close (best -7). The
+// references, the pair and the split loops are steering forms, kept only with a byte match.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -2089,6 +2108,16 @@ extern long g_485a60;
 // entry pointer is never merged with the caller's). Reading: retail keeps an unread byte (0 at the entry test, 1 after
 // 0x15c90) in packed's incoming slot, so value gets its own byte cell [esp+0x13]; without such a local, value takes
 // packed's home, the whole frame sits one cell lower and the compound walk's bitmap offset loses that home.
+// M3 lane 7 r236 (H2M_FAST; control 370): retail's unread byte in packed's incoming slot (0 stored just before the
+// geometry lookup, 1 right after the 0x15c90 palette call) as a plain `bool` set after the call 370 (same code: it folds
+// away); as a memory-resident flag (volatile, diagnostic only, reverted) 429 on this body and 360 at retail's 1418 B on
+// GB r23's 291 form, where every frame cell becomes retail's (value [esp+0x13], compound [esp+0x24], definition
+// [esp+0x30], geometry [esp+0x18]) and only the tag/table registers (EBX/ECX for retail's EDX/EBX), part_index kept in
+// EDX (retail spills it to [esp+0x34]) and index spilled to [esp+0x38] (retail ESI plus an extended copy at [esp+0x3c])
+// remain. So the byte is most likely an address-taken bool passed to an inline helper. Also: the entry read through
+// `g_4ba138[index]` at every use 463 (1471 B); `short bitmap` 357 and `char texture` 356 (positional only: `char`
+// emits `cmp al, 0xff` where retail has `movsx edx` + `cmp edx, -1`), both 370, `signed char` + `short` 370; on the
+// 291 form each 291.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

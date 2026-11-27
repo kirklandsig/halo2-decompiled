@@ -87,6 +87,12 @@ PRIVATE __forceinline long function_1d96d4()
 // after the object flag 951, just before the contact loop 1066. On the 951 forms the reduced image still differs
 // from the first instruction: frame 0xc60 against 0xc5c, the zero in EBP (retail EBX) and the component pointer's
 // home at the frame's bottom (retail 0xc above it). Body unchanged.
+// M3 lane 5 r253 (fast screen, control 985 at 3660 B; plain 1088). Read from the register allocator: the zero takes EBP,
+// its own first-pass preference, because EBX carries 4600 of last-register penalties from four locals; retail's zero is
+// in EBX. Forms: the final damage loop through a named entry pointer 1004 (3657 B); the final link loop through a named
+// link pointer 985 (same code); the link record filled through a named pointer 999; all three 992; the object flag
+// computed after the speed magnitude 983 (a statement order, two points); the flag tested at its use with no local
+// 1054 (3676 B). Still BLOCKED-BY 0x20670. Body unchanged.
 // @retail 0x1d96d0
 void function_1d96d0(long arg_0)
 {

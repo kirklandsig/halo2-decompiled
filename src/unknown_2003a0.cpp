@@ -3212,63 +3212,26 @@ void function_202be0(long arg_0, long arg_1)
 struct s_1fb7e0_data;
 bool __stdcall function_20ba60(short arg_0, long arg_1, long arg_2, long arg_3, short arg_4, s_1fb7e0_data const *arg_5);
 
-// score 67 (was 107): registers differ: retail keeps the record and its index in EBP/EDI and the
-// inherited and new choices in EBX/ESI, reads the 0x1c choice zero-extended into EAX (xor eax,eax;
-// mov ax), and keeps the next script index in BX on that path where ours stores it. Retail sets the
-// choice passed down back to NONE on every path that finds none, which the `local_11` branch
-// reproduces. Tried: the branch as a force-inlined helper (136), a choice variable with no gotos
-// (116-153), the index as a word local (122).
-// M3 lane 13 r160 (fast; control 107): the loop as a self tail call `function_202a00(next sibling, choice)` under
-// `if (group != NONE)` 187 (422 B: the prologue and back edge are retail's, but 0x291740 then stays a call); the group
-// through squad_group_get 107, the index masked at each use 107, the definition table through its typed entries 107
-// (all the same code). Kept: the loop over the parameter itself in place of pointers to both parameters 107 (same
-// code). A forced-ranking search: the group pointer in EBP (its priority 304 under the masked index's 232) leaves
-// only register names in six places; the choice in EBX and the inherited choice in ESI follow from that.
-// M3 lane 6 r247 (fast; control 107): the definition's bit read as bit 8 of the word at +0x23, as matched 0x202be0
-// reads it, 107 (same code); the arm in 0x202be0's shape (a pending word, the choice word started at NONE and set in
-// the arms, one follow-up test) with the passed-down choice set in the follow-up and NONE in its else 116 (479 B),
-// without that else 150 (482 B); one choice word read from the record, cleared in the arms that find none and copied
-// to the passed-down choice ahead of the follow-up 164 (500 B), the same as a short 148 (487 B). A forced-ranking
-// search: the record's priority (304) has to fall under the index's (232) so the index takes EDI and the record EBP
-// (95); the inherited choice in ESI (retail EBX), the zero-extended 0x1c load into EAX and the definition-table load
-// order still differ after that.
-// GB r25 (fast + plain, 42 valid trials): kept 0x202be0's arm shape (word pending, word local_7 = NONE, no goto,
-// else local_2 = NONE) passing (short)local_2 to function_202e30 (whose first argument arrives in ESI) -> 67 (476/476 B,
-// al=55, mk=17): snaps local_2 to ESI, arg_1 to EBX, local_5 to BX, squad base to EBX, and matches lines 65-147 up to
-// only the EDI<->EBP swap. Also tried: calling 0x202e30 in arm 1 235-250 (369-374 B, does not inline under 0x202e30's
-// /Ob1); guarded self tail call 197 (417 B); passing local_2 on main's goto arm 122; passing local_2 to 0x291740 too
-// 107 (480 B); short local_2 157; uninit local_2 with else 130; shared ai_index local 166 (452 B); word23/dword24
-// flag, flag16-first, typed views, squad loop step, De Morgan if, no local_3, local_2 outside while all tie 67. Lead
-// (not kept): arm-1 separate group lookup / a __forceinline 0x202e30 flips EDI<->EBP so all 4 callee-saved registers and
-// lines 65-148 match retail verbatim (al=41, 476/476 B) but duplicates the 0x38 multiply in arm 1 (118).
-// M3 lane 15 r151 (H2M_FAST with 0x202be0, 0x202e30, 0x20ba60, 0x290cd0 and 0x2093d0, MATCH throughout): the arm with
-// one word choice read from the record (`xor eax, eax; mov ax` as retail), cleared in the arms that find none, the
-// follow-up setting the passed-down choice and NONE in its else 120 (476 B: the follow-up test is threaded away);
-// without that else 140 (484 B); the passed-down choice set ahead of the follow-up 164 (500 B); 0x202be0's exact
-// shape (pending word, choice started at NONE) re-measured 116 (479 B: the follow-up test stays as retail, but the
-// record's next-script index is stored to its slot on the field path where retail keeps it in BX); this body with
-// the 0x1c choice typed `word` 120. Ranking (0x202be0 shape): the record 304 over the index 214 (retail needs the
-// index first), and the passed-down choice (72, first pass) colours ahead of the inherited one (64, second pass),
-// which is why they take EBX/ESI the other way round.
+/* arm 1 is 0x202e30 inlined (src/unknown_202e30.cpp stays /Ob1 so arm 2 and 0x203120 call it) */
 // @retail 0x202a00
 void __stdcall function_202a00(long arg_0, long arg_1)
 {
     while (arg_0 != NONE)
     {
         long local_2 = NONE;
-        long local_3 = arg_0 & 0xffff;
-        byte *local_4 = g_51e9dc->data + local_3 * 0x38;
+        byte *local_4 = (byte *)squad_group_get(arg_0);
         if (arg_1 != NONE && (!local_4[0x16] ||
             *(short *)(local_4 + 0x14) == NONE ||
             !((*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(local_4 + 0x14) * 0x7c)[0x24] & 1)))
         {
-            *(short *)(local_4 + 0x14) = (short)arg_1;
-            local_4[0x16] = false;
-            *(long *)(local_4 + 0x18) = g_510c54->game_time;
-            *(short *)(local_4 + 0x1c) = NONE;
-            *(short *)(local_4 + 0x1e) = NONE;
+            byte *group = (byte *)squad_group_get(arg_0);
+            *(short *)(group + 0x14) = (short)arg_1;
+            group[0x16] = false;
+            *(long *)(group + 0x18) = g_510c54->game_time;
+            *(short *)(group + 0x1c) = NONE;
+            *(short *)(group + 0x1e) = NONE;
             if ((short)arg_1 != NONE)
-                function_291740((short)arg_1, local_3 | 0x40000000);
+                function_291740((short)arg_1, (arg_0 & 0xffff) | 0x40000000);
             local_2 = arg_1;
         }
         else if (local_4[0x16] && *(short *)(local_4 + 0x14) != NONE)
@@ -3301,7 +3264,7 @@ void __stdcall function_202a00(long arg_0, long arg_1)
                 local_2 = (short)local_7;
                 function_202e30((short)local_2, arg_0, true);
                 if (local_5 != NONE)
-                    function_20ba60(local_5, NONE, NONE, local_3 | 0x40000000, NONE, NULL);
+                    function_20ba60(local_5, NONE, NONE, (arg_0 & 0xffff) | 0x40000000, NONE, NULL);
             }
             else
             {

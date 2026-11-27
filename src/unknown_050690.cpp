@@ -742,6 +742,17 @@ void __stdcall function_508d0(void *payload_data)
 // the level count's slot created ahead of the x pointer's, i.e. another reference count), the level seed's sum and the
 // two squares (`mulss b, a` for retail's `mulss b, b`) at the level-loop entry and in the weights, the cursor and index
 // loads in the other order, and the final loop's left-vector product pair.
+// M3 lane 15 r153 (H2M_FAST with 0x508d0 and 0x13bb90; control 626). On main: the weight as `real weight =
+// (real)pow(...)` (float products and sums, as the lead has them) 624 (2368 B); that with no align(8) on the noise array
+// 698 (2477 B: the prologue then realigns as retail's, the flag still a stack load); align(8) dropped alone 713 (no
+// frame pointer); memset fills 631; a plain level counter 652; align dropped with memset 707; those three 722; the
+// realigning weight form with memset 667. On lane 1 r174's 47 lead (held as a patch, re-measured 47 at 2384 B, aligned
+// 122 / 16 / 14): `square = phase; square *= phase;` 50; the square written out in the three factors 49 (2385 B: the
+// left-vector product pair moves to the other pair); the start weight as `(1.0f - fraction) * remaining` or
+// `remaining * (1.0f - fraction)` 383 / 383; the lead with main's double weight loses its frame pointer (619), with
+// align(8) back keeps the frame but not the realignment (601), with the volatile counter 396 (frame 0x146c), with
+// main's random draws in the first seeding 283. A forced-ranking search over 106 single decisions on the lead found
+// none below 47. Body unchanged.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,
