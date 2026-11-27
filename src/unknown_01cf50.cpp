@@ -8027,7 +8027,7 @@ struct s_501e0
     dword field_14;
 };
 void function_501e0(s_501e0 const *a, bool perspective, s_501e0 *out);
-long function_30830(point3f const *point, s_camera const *camera, vector3f const *direction,
+bool function_30830(vector3f const *direction, point3f const *point, s_camera const *camera,
     point2f const *scale, bool perspective, bool negate, point2f *out);
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out);
@@ -8046,7 +8046,7 @@ void function_47ea0(short stage, byte flags);
 // (0.0001f at 0x45dbdc, 1.0f at 0x45dbc0) agree; no behaviour bug. Found: 0x30830 is called with
 // the camera and scale globals (retail loads 0x4b9e14 and pushes 0x4b9ecc; the callee would
 // substitute them for NULL, so only the bytes differed); retail tests its result as a byte (`test
-// al, al`), ours `test eax, eax`: a (byte) cast gives retail's test but the same score (325), dropped. The
+// al, al`); with 0x30830 returning bool (#1603) ours tests it the same way. The
 // 8-byte `double angle` local gave the frame a slot retail lacks (0x20bc) and moved the tag out of
 // ecx; cos/sin of atan2 written twice (one fpatan) gives tag in ecx, eight stack arguments and
 // retail's 0x20b8 frame, so the volatile pointer and `selected` local are gone (points/count are
@@ -8110,7 +8110,7 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                     direction.k = direction.k * reciprocal;
                 }
                 point2f screen;
-                if (function_30830(&midpoints[i].field_0, &g_4b9e14, &direction, &g_4b9ecc, true, true, &screen))
+                if (function_30830(&direction, &midpoints[i].field_0, &g_4b9e14, &g_4b9ecc, true, true, &screen))
                 {
                     rotations[i].x = (real)cos(atan2(screen.y, screen.x));
                     rotations[i].y = (real)sin(atan2(screen.y, screen.x));

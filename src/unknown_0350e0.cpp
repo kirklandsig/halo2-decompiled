@@ -3980,6 +3980,15 @@ real magnitude3d(vector3f const *v);
 // inverse_b locals 170 (all three the same code); the fallback arm first under the negated test 171 (1035 B); the
 // rotation size clamp through this file's color_delta(delta, -step, step) 170 (same code), with `0.0f - step` 170; the
 // fallback's clamp through color_delta 176 (1037 B), both 176.
+// M3 lane 14 r165 (fast screen with 0x24590 and 0x30bf0, both matched; control 170, masked aligned rows 116; the reduced
+// image now builds this body as the full check does). Frame packer reading: the raw current length is a 3-reference
+// temp placed before any later 4-byte slot exists, so it joins `a`; the sine, dot and angle share +8, and the cosine
+// shares +0xc with an 8-byte temp, the dot's double copy (3 references) kept for the arccosine. Forms: the sine and
+// cosine computed ahead of the axis 180 (1033 B); the projection as `(1.0f - cosine) * dot` 170, the rotated rows with
+// the cosine term first 170, the size as `clamp + a` 170 (each the same code); the j and k cross terms named ahead of
+// the rows and the rows written into `first` in place (retail stores the first row into first.i's home) 181 (1030 B,
+// masked 85, the same code as the in-place rotation helper of include/axis_rotation.h): the cosine still takes a
+// register and the dot's double copy stays. Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4534,6 +4543,16 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // (1288 B; retail keeps the found byte in CL); loop 1 through an entry pointer for its flags and the swap 317 (same
 // code), with `first == 0` 436; the swap target spelled `state->entries` 317 (same code); loop 1's flags read at each
 // use with no `flags` local 370 (1338 B).
+// M3 lane 14 r165 (fast screen with 0x4b160, MATCH throughout; control 317, masked aligned rows 93). R149's held recipe
+// re-applied to this body still gives 4 at 1324 B: left are two order ties, the reloads after pass 4's swap (`first`
+// then the state, retail the state first) and the growth loop's head (`mov ecx, esi` ahead of `lea eax, [edi + 0x18]`,
+// retail the other way round); its loop-3 test is always true where it stands, so the recipe stays held. On the
+// recipe's decay and growth forms without that test: alone 373 (1340 B, masked 26), loop 3 tested as `i <= last` 372,
+// the swap target as `state->entries + last` with `--last` apart 373, `--i` ahead of `--last` 372. On the recipe, for
+// the growth loop's tie: its two pointers declared the other way round 4, the start as `&state->entries[0]` 4 (same
+// code each); `limit` itself counted down (no `remaining`) 68: the pointer's `lea` then comes first as retail's, but
+// the count stays in ESI with no `mov ecx, esi` copy; `remaining` declared first with `entry++` and `--remaining > 0`
+// 45 (1326 B). Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -6787,46 +6806,21 @@ long function_4c450(long object_index, real distance, real const *definition, re
 
 struct s_camera;
 real function_50650(real cosine);
-long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
+bool function_30830(vector3f const *d, point3f const *a, s_camera const *camera,
     point2f const *scale, bool perspective, bool negate, point2f *out);
 
 #ifndef PIN
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 #endif
 
-// score 20 (was 43): retail's 647/647 B length and entire body (0x4ff72..0x501c5, including the pow -> xorps xmm2,xmm2 -> fstp [ebp]
-// -> movss xmm0,[ebp] -> comiss xmm0,xmm2 reload and strength guard) now match byte for byte after separating the projection phase into
-// `if (facing && *strength > 0.0f)`. All 20 remaining differences (prologue push order/state register ebx vs esi, 0x30830 call setup
-// order + test eax vs test al, and both epilogue pop orders) are caused solely by 0x30830's parameter order (`d` before `a`, BLOCKED-BY
-// contributor caller 0x4f7e0 in src/unknown_01cf50.cpp) and return type (`bool` gives 19 here and 189 on 0x30830, 0x4f7e0 unchanged at 325,
-// not kept for 1 pt across four files).
-// Earlier 43 (was 270): the three clamps use PIN, which reevaluates the
-// clamped expression as retail does (for the angle, function_50650 inlined
-// twice and then called), and the curve's base value is read where it is
-// used. What still differs: retail pushes ebx and edi after the first test and
-// keeps the state pointer in esi (ours ebx); it stores the pow result straight
-// to *strength and rereads it, comparing with a zeroed register; and it tests
-// function_30830's result as a byte. A pow on *strength or in double, and a
-// bool return for function_30830 (195 -> 189 for that function, 81 -> 80
-// here, across four files) were tried.
-// M3 lane GA r18 (21 compiled fast trials with 0x50650/0x13bb90 MATCH, 0x30830, 0x4f7e0; 43 -> 20 at 647/647 B):
-// Kept: separate `if (facing && *strength > 0.0f)` block for the 0x30830 projection (43 -> 20, 647/647 B; nested `if (facing) { if (*strength > 0.0f) ... }`
-// and dropping `real value` on it give the same 20). Tried on 43: bool return on 0x30830 42 (with split facing 19; 0x30830 189, 0x4f7e0 325);
-// no value local / pow(*strength) / if (*strength) before pow / combined if (*strength && 30830) / early return / double-cast pow / raw before PIN /
-// else-if (value > 0) all 43; assign *strength after if 191 (637 B); else { *strength = value; } 119 (659 B); else { *strength = 0.0f; } 118 (666 B);
-// exponent ternary 108 (664 B); 0.0f < value/strength 99 (632 B); nested if (curve) 55.
-// M3 lane 3 r313: HELD (needs the owner's OK; held as a patch): MATCH in the fast and plain checks with 0x30830 declared
-// (d, a, camera, scale, perspective, negate, out) and returning bool (its definition, the four declarations and both calls,
-// one of them a line in contributor 0x4f7e0), and the atan2 result written at the cos and sin calls with no double local
-// (that local keeps every register save at entry: 8-byte stack parity). 0x30830 195 -> 187, 0x4f7e0 325 unchanged. Parts:
-// the reorder with the bool return 18; with the long return 1 (`test eax` for `test al`); the atan2 form alone on main 21.
-// Retail sets up `a` (EDX) before forming `d` in place in the state's ESI: under the link's last-to-first argument setup
-// `d` is declared first.
-// M3 lane GB r21 (12 compiled fast trials on the 20 base with 0x50650/0x13bb90 MATCH, 0x30830 195): typed definition/state/curve structs 20;
-// early return on count <= 0 20; nested projected check 20; inline state projection helper 293 (537 B); inline (dir, pos) wrapper 20;
-// inline curve tail helper 166 (542 B); curve read at each use 187 (682 B); curve 2-pass loop 231 (703 B); real atan2 local 21;
-// hoisted projected 20; pos/dir local pointers 20; bool ok from 0x30830 20. Confirms all 20 lines depend solely on 0x30830's
-// d-before-a parameter order and bool return (still blocked by contributor-claimed caller 0x4f7e0).
+// MATCH (was 20): function_30830 is declared (d, a, camera, scale, perspective, negate, out) and returns bool, as its
+// retail code and its two callers set it up (`d` formed after `a`, `test al, al` on the result); the angle is computed at
+// the cos and sin calls as 0x4f7e0 writes the same call (no double local, which kept every register save at entry).
+// The form is M3 lane 3's (r313), held there only for the call line in 0x4f7e0, which is now in the claim that makes
+// this change; M3 lane GA r18 and GB r21 had traced every remaining difference to that parameter order and return.
+// Earlier: marioag0412 (#728) took it from 270 to 43 with the PIN clamps, which re-evaluate the clamped expression as
+// retail does (function_50650 inlined twice and then called); the separate `if (facing && *strength > 0.0f)` projection
+// block then took it from 43 to 20.
 // @retail 0x4ff50
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
     real cosine, real *strength, real *horizontal, real *vertical, real *out)
@@ -6851,12 +6845,11 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
         if (facing && *strength > 0.0f)
         {
             point2f projected;
-            if (function_30830((point3f const *)(state + 8), &g_4b9e14, (vector3f const *)(state + 0x14),
+            if (function_30830((vector3f const *)(state + 0x14), (point3f const *)(state + 8), &g_4b9e14,
                 &g_4b9ecc, true, true, &projected) && (projected.x != 0.0f || projected.y != 0.0f))
             {
-                double direction = atan2(projected.y, projected.x);
-                *horizontal = (real)cos(direction);
-                *vertical = (real)sin(direction);
+                *horizontal = (real)cos(atan2(projected.y, projected.x));
+                *vertical = (real)sin(atan2(projected.y, projected.x));
             }
         }
         if (curve)

@@ -1184,6 +1184,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // (the out value's address goes to the first virtual call; its home is the incoming slot of `d`, and the entry's `mov
 // [esp + 0x1c], eax` is `value = d` written over `d` itself); retail has such a store between the lookups before code
 // generation and none in its bytes.
+// M3 lane 14 r165 (fast screen with 0xbb780, MATCH throughout; control 8): the creation result as `long const` 8 (same
+// code); as `dword` 8 (same code), that without the word cast 42 (shared again: the type does not split the two
+// index expressions); the out value passed as `&d` with no `value` local 70 (the entry's self-store goes, first +0x1);
+// `result = true` as the valid block's first statement 76 (182 B); the header test on `entity->object_index` 8 (same
+// code), that with the object read on the plain index 42 (the field read is forwarded before the lookups are merged).
+// Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

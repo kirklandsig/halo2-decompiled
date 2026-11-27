@@ -1311,6 +1311,12 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // forced-inline accessors (no code of their own): the camera record as an accessor of (table, key) 105, the count store
 // through a setter 105, the key read through an accessor for the product 105 and for both uses 105 (all the same code);
 // the plane lookup spelled index first 105, through a portal byte pointer 105 (same code). Body unchanged.
+// M3 lane 11 r177 (H2M_FAST with 0x1730a0 and 0x163db0, both MATCH each run; control 105): the key bound by `long const &`
+// for both uses 105; the camera address as `&cameras[entry->key * 0x1bc]` 105 (same code each); the camera address
+// local re-measured 22; on it the address in two steps (`camera = cameras; camera += entry->key * 0x1bc;`) 22, and with
+// the second step through a `byte const *&` 22. Allocator reading on the 22 lead: the key is a ranked candidate
+// (priority 84) coloured while ECX is still free, and the camera table is a one-reference scratch temporary given its
+// register only afterwards (EDX); retail's table in ECX ahead of the key needs the table ranked above 84.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

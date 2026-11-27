@@ -1457,6 +1457,12 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // globals, in that order. Forms: the curve in a `byte` local 2; `bool const curve` 2; the promotion index passed without
 // its `(short)` cast 2 (same code each); the iterator built ahead of the guard 77; diagnostic: the lookup chain in an
 // inline helper returning the curve 161 (191 B). All restored.
+// M3 lane 12 r198 (h2m fast with 0x21be20, 0x21b870, 0x126df0 and 0x12a810, MATCH each run; control 2): an unread
+// trailing `long` parameter passed 0 at both calls 2 (0x21a250 597 unchanged), the same parameter leading 2; the promotion byte as a typed `char`
+// field at +2 of the playback definition (0x21c400 MATCH) 2, the same field passed straight to the class lookup 43;
+// the curve as `!TEST_FIELD_BIT((flags >> 10) & 1)` 2 and `!TEST_FIELD_BIT(flags & 0x400)` 2. The split list read
+// again: free numbers 4, 19, 15, 14, 21, 12, 22, pieces for NONE, zero, 0xffff, then the first index (14) and the
+// count (21); one free number or one split constant ahead of them more or fewer gives retail's order. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {
@@ -3188,6 +3194,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // against 342, retail's entry with EBX = 1), with memcpy as well 615; the listener-gain clear as four zero stores 705
 // (2518 B), as a plain zeroing loop 705, the four stores with `alternate` in the guard 643 (2518 B; retail's clear is four
 // stores relative to the sound, with no lea). Body unchanged.
+// M3 lane 14 r165 (fast screen with 0x21aeb0, 0x127d00, 0x21b940, 0x21be20, 0x126df0, 0x21bd00, 0x21cf80, 0x21d060, 0x192d70,
+// 0x12abe0 and 0x21b070: control 597 at 2518 B, masked aligned rows 163). `alternate` inside the definition guard
+// re-measured 615 (2500 B, masked 148): its entry is retail's to +0x30 (the flags byte after the gate, EBX = 1); the
+// rest moves. Forms: `distance` declared ahead of `maximum` 597, `position` ahead of `gain` 597 (both the same code);
+// the minimum floor as an `if` 703 (2500 B); the track loop's index as `short` 623 (2503 B); `alternate` as the
+// `dword` `flags & 1` with `track_alternate = alternate != 0` 662 (2508 B, frame 0x44). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
