@@ -1231,7 +1231,6 @@ long function_35510(long format)
 extern byte g_485a77;
 real g_48597c[36];
 extern byte g_4858bc;
-extern short g_4858c8;
 extern real g_485a0c[8], g_485a34, g_485a40;
 extern long g_485a2c;
 long g_4858cc;
