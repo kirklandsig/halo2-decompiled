@@ -310,6 +310,16 @@ void function_e3f00(long object_index);
 // the limits and the span 5, after the event 41, as a `long const &` 41, through a `long const &` copy at the call 5;
 // the count test nested with the materials read at each use 5, the named materials pointer 28. Diagnostic (removed):
 // the NONE store moved into the call's first argument (index evaluated in the call) 41, the store still ahead.
+// M3 lane GA r26 (29 compiled fast trials with 0x1da550 and 0x1da9e0; control 16 at 774/774 B, +0xd1; body unchanged):
+// on the match-only 8-diff base (const rigid_body ptr + owner_object before flags |= 0x101): drop damage_span local 30;
+// limits after d6660 20; limits after model (with/without damage_span) 181/181; upper before lower 8; event before
+// damage_span 8; c_type_47f957 material member 8 (0x1da9e0 MATCH); 2-caller inline/forceinline event_init(event, idx)
+// 23/23 (+0x1ba: lands mov word [esp+0xac], 0xffff right before call 0xd6660 and mov [ecx+4] ahead of xmm4/xmm2, but
+// allocates idx in EAX instead of EDX and breaks 0x1da9e0=32; + limits after init 40; reversed params 23; rvalue
+// long const & via index_get() or unary `+` 23/23); lvalue long const & 8; 3-caller inline index_get() 8 (+ event
+// before limits 8); damage_def ptr before event 8; POD event before limits / NONE before limits / comma arg1 or arg2 /
+// inline or forceinline arg1 reset helper 8 each; damage_span first from fields 59; const globals cast 8; init_global
+// helper 99; linear-damage scale helper 153.
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {
