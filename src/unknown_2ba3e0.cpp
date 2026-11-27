@@ -241,6 +241,13 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
 // into `const &` + `vector3f_scale` + `vector3f_add` 45 (al 15), + inline mul 44 (al 5, mk 5: `long const &` still folds
 // `cvtsi2ss`), + `thiscall` / `linear` pre-`wind` / `wind.n[0..2]` / `prop0`-first 44 each (al 5, mk 5), + `k,j,i` rows
 // 44 (al 7, mk 5), + `wind` at top / `delta` pre-`wind` / scale-first helper / plain struct `wind` 45 each. Body unchanged at 46.
+// M3 lane 7 r238 (fast, on round 171's clock with vector3f_scale + vector3f_add, 7 at 665 B: only the i row differs).
+// The allocator numbers the wind components when they are first read, after the amount: with hand-written rows
+// the amount ranks 197 and wind i/j/k 199/203/207, so wind.i stays the product's first operand; retail needs it
+// below the amount. Dead locals before the amount or before wind shift both alike. Tried: the lookup's output passed
+// as the first member's address 7 (ranks unchanged); hand-written rows on `wind.n[0..2]` 7; the amount as
+// `phase - 0.5f` then `*= scale` 7; a real member at +0x34 (the particle's three uses) 7, on main's body 46 (same
+// code); the amount as a const reference to the product with a separate scaled local 7.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {
@@ -1157,6 +1164,15 @@ real g_55e618;
 // choice. Forms: the normal's three components named ahead of the dot 102; the dot declared ahead of the normal pointer
 // and assigned in place 102; the dot const 102; the perpendicular as an aggregate initialiser 102 (the same code each);
 // each perpendicular row as a copy of the dot then `*=` the normal component 190 (1545 B). Body unchanged.
+// M3 lane 14 r164 (H2M_FAST with 0x2ba3e0 and 0x2b8da0, both MATCH each run; control 102, difflib-aligned 84). Ranks
+// (pass 2 of the back end's sort): the velocity copy's components weigh 0x1f20..0x1fa0 and `dot` 0x1fc0, while the
+// normal's components, fields of the collision record whose address goes to 0x1697c0, weigh 0x2740..0x27a0, so each
+// perpendicular row sorts the normal first where retail copies the dot; 0x1697c0 also reads its point and vector
+// parameters through their addresses, which captures this function's start and sweep locals. Forms: `keep` computed
+// after the perpendicular rows 217 (1550 B); the contact position through the existing real_point3d_set 245 (1570 B);
+// the velocity copy ahead of the normal pointer 102 (same code); the rows through a `real const &` bound to the dot 102
+// (same code); 6/12/18/24/30 dead initialised longs right before the dot 102 each; the dot accumulated in three
+// statements (`dot = v.i * n.i; dot += n.k * v.k; dot += n.j * v.j;`) 103. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

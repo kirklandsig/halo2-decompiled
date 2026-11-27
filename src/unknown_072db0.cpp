@@ -2488,6 +2488,14 @@ bool function_1900a5(long index);
 // completion `if (variant) ... else player->state = 1;` keeping `failed ||` 674 (2894 B, mk=259); completion nested `state == 2 || 5`
 // 633; request loop `added < 4 && i < 16` 640 (2862 B); completion `long property_index` 633 (al=378); read_task local 655
 // (2846 B, al=355, mk=258); write_task local 656 (2846 B, al=358, mk=257). Positional score stays gated by the /arch:SSE and /Ob1 blockers.
+// M3 lane 7 r237 (h2m fast with 0x749b0, 0x75790, 0x192e60 and 0x1900a5, all MATCH; control 633): the opening test
+// through the existing online_get_logon_status (0x6c7c0, called) 734 (2878 B); the header's online_logon_connected()
+// re-measured on this base 759 (2878 B: retail's `dec eax`, the users loop's 9-byte pad, retail's `jmp` over a 7-byte
+// lea, dropped), with a user record pointer for the flag, identity, slot and properties 752 (the cursor becomes the
+// identity at +1 in EBP, not retail's record base in memory); the logon result in a named bool 633, the request count
+// tests as `!= 0` 633, the slot index read into a local ahead of the properties copy 633 (all three the same code).
+// Blockers unchanged: retail inlines the session-user getters 0x647a0/0x647d0 (one valid test for both) and the elapsed
+// time 0x75890, all in /Ob1 files, and the slot test's cmovne needs the SSE flag.
 // M3 lane GB r29 (14 fast trials across 2 batches with all 10 peers MATCH; control 633 at 2862/2862 B, 768/772 insns,
 // al=424, mk=303; body unchanged): two-`if` `due` byte flag in request loop 612 (2878 B, 774/772 insns, al=436, mk=302;
 // NOT kept: flag set inside test and longer than retail); single `failed = true;` in completion `else` 658 (2846 B,

@@ -415,6 +415,14 @@ void function_254200(void)
 // `2.f * arg_2` 4; the point copy split from its declaration 4; the bitmap choice made ahead of the readiness tests 52;
 // the dimension reads width first (stores unchanged) 4; the texture and dimension block through a `long slot = 0` index
 // as 0x14390's body has it 4.
+// M3 lane 1 r177 (fast screen with 0x254200 MATCH and 0x2548f0 2 each run; control 4). Split reading: in the slow-path block
+// after the second reservation the three reloads go out in ascending piece number, the point's x (piece 66), y + size
+// (piece 70) and the depth constant (piece 72); the float split numbers its pieces in parent order (y + size is parent
+// 62, the constant 64) from a free list of three holes, so the constant's piece follows. Forms: the depth as a
+// file-scope `static real const` 4 (folded, same code); the size product written at each of its eight uses 221 (1118 B);
+// the colour helper's products written scale first 4 (same code); the size product named after the primitive start call 46; the quad
+// drawing (size through End) in a one-caller forceinline helper taking the point, scale, size and colour 4 (same code).
+// All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

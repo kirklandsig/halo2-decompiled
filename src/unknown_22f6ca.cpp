@@ -392,6 +392,12 @@ void function_22fba9(c_class_1473c9 *screen)
 // typed as its helper's own return type 23; the block-24 and block-18 locals typed as their helpers' return types 23;
 // one widget local declared at the pane block's top and reused by all five loops 23; the block-18 inner counter declared
 // at the pane block's top 23 (all five the same code).
+// M3 lane 15 r155 (h2m fast with the file's 10 matched functions; control 23): a forced-ranking search (priority, pick,
+// cut and flag decisions, 120 of them) finds no match; the best is a forced split of the zero constant ahead of one use,
+// 21. Tried: both definitions as pointer plus index 23 (same code); the screen's animation type read once into a named
+// local for all five starts 134 (410 B); `long i = 0;` above the pane lookup with pointer-plus-index definitions 25; the
+// block-18 element as `pane->blocks_18 + i` 23 (same code); every later loop's reset as `i = 0;` ahead of `for (;`,
+// all four together, 23 (same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
