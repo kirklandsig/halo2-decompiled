@@ -1076,6 +1076,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // +0x6); case 4's arms the other way round 455 (1652 B); case 3's decrement as a short 404 (same code); the counter
 // reset ahead of the two flag stores in the sampling arm 405; the maximum update after the tracked-prop block 409.
 // Every form keeps `ret 4`. Body unchanged.
+// M3 lane 2 r158 (fast screens with 0x1e34e0, 0x2641c0, 0x264210 and 0x263210; control 404). Allocator reading: the actor
+// index's whole range is never coloured (only short pieces around its uses get registers, and `update` takes EBX), so
+// the first pass reloads it from its home and the link keeps it on the stack; retail holds it in EBX throughout. Forms:
+// the prior state as short 404; the two flags declared after the 0x263670 call 404; the node pointer taken from the byte
+// view 404; the maximum test written `(short)maximum < field` 405. Diagnostic, reverted: case 1's rounding as a plain cast
+// without the asm helper 436, still a stack argument.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
