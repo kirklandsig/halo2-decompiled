@@ -5959,21 +5959,22 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
     function_16b90(g_485b48, tag, first, second, third, fourth, scale);
 }
 
-// MiniMax C (11-14): no new form, no lower score (73): the shader tag still goes to edx where retail keeps it in
-// ecx, the pass entry's tag is still loaded from the folded addressing mode, and the record's tag still goes
-// straight to eax where retail copies it through ebp.
-// score 73 (was 73): retail keeps the second tag lookup in ecx where ours uses edx, retail materialises the pass
-// entry's address with its own lea before loading its tag (ours folds the +4 into the load, two bytes shorter,
-// which shifts every later jump) and retail copies the record's tag through ebp where ours loads it into eax.
-// b15E (11-17) walk against retail, fast build on r848: no logic difference (h2.py disasm): the entry clamp
-// (0x1664d-0x16658), stage mask test (0x16670), pass count shr 9 (0x16693), wanted-pass test (0x166a6-0x166ad), pass
-// entry stride 10, record stride 0x132 (0x166d3), the 0x100 test (0x166e6), g_4670bc store (0x166f8), the 0x1bbf0
-// arguments (0x16704-0x16713), the 0x3f53d0 cull call with its store (0x16737-0x16743), copy test (0x16748) and result
-// byte (0x16778) all agree; the program tag is re-read after 0x1bbf0 (0x16718) as in ours. Tried, all 73 unless noted:
-// `long shader_tag` local, the nested lookup without `definition`, a `pass_tag` local, `pass_entry +=` in two steps, a
-// `long program` local at the call, packed 10-byte entry and 0x132-byte record structs with field access (identical
-// code, so no struct is kept), `(word)` on the shader tag (102, movzx); `long program` read before the 0x100 test
-// scores 67 but loses the record's `add ebp,[ecx+4]` shape and the re-read at 0x16718, so it is not kept.
+// The values of the pass lookup are the fields of one local record, as in 0x4b2d0: retail keeps each definition in
+// the register of its index (0x1663a-0x16646), forms the pass entry's address before it reads the tag through it
+// (0x166c1-0x166c8) and copies the program through ebp on its way to 0x1c590 (0x16718-0x16720). The tables and the
+// pass words are plain locals: retail keeps those two in the frame.
+struct s_lookup_16610
+{
+    byte *definition;
+    byte *shader;
+    long pass;
+    byte *pass_entry;
+    byte *pass_definition;
+    byte *records;
+    byte *record;
+    long program;
+};
+
 // @retail 0x16610
 bool __stdcall function_16610(long tag, long stage, long wanted_pass, long variant,
     long target, bool copy)
@@ -5981,9 +5982,10 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
     bool result = false;
     if (tag != NONE)
     {
-        byte *definition = g_4e3b44[tag & 0xffff].bytes;
-        byte *shader = g_4e3b44[*(long *)(definition + 4) & 0xffff].bytes;
-        byte *tables = *(byte **)(shader + 0x5c);
+        s_lookup_16610 lookup;
+        lookup.definition = g_4e3b44[tag & 0xffff].bytes;
+        lookup.shader = g_4e3b44[*(long *)(lookup.definition + 4) & 0xffff].bytes;
+        byte *tables = *(byte **)(lookup.shader + 0x5c);
         // the first entry, its index clamped to the entry count
         long entry_index = 0;
         if (entry_index > *(long *)tables - 1)
@@ -5994,19 +5996,21 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
             if (*(dword *)(entry + 2) & (1 << stage))
             {
                 word *passes = (word *)*(byte **)(tables + 0xc) + (*(word *)entry & 0x1ff) + stage;
-                for (long pass = 0; pass < (*passes >> 9); ++pass)
+                for (lookup.pass = 0; lookup.pass < (*passes >> 9); ++lookup.pass)
                 {
-                    if (wanted_pass == NONE || wanted_pass == pass)
+                    if (wanted_pass == NONE || wanted_pass == lookup.pass)
                     {
-                        byte *pass_entry = *(byte **)(tables + 0x14) + ((*passes & 0x1ff) + pass) * 10;
-                        byte *pass_definition = g_4e3b44[*(long *)(pass_entry + 4) & 0xffff].bytes;
-                        byte *record = *(byte **)(*(byte **)(pass_definition + 0x20) + 4) + variant * 0x132;
-                        if (*(long *)(record + 0x100) != NONE)
+                        lookup.pass_entry = *(byte **)(tables + 0x14) + ((*passes & 0x1ff) + lookup.pass) * 10;
+                        lookup.pass_definition = g_4e3b44[*(long *)(lookup.pass_entry + 4) & 0xffff].bytes;
+                        lookup.records = *(byte **)(lookup.pass_definition + 0x20);
+                        lookup.record = *(byte **)(lookup.records + 4) + variant * 0x132;
+                        if (*(long *)(lookup.record + 0x100) != NONE)
                         {
                             g_4670bc = true;
                             function_16b10((s_render_reset_state *)g_485b48);
-                            function_1bbf0(tag, 0, stage, pass, variant, 0.0f);
-                            function_1c590((s_shader_cache *)g_51f0f0, *(long *)(record + 0x100), 0);
+                            function_1bbf0(tag, 0, stage, lookup.pass, variant, 0.0f);
+                            lookup.program = *(long *)(lookup.record + 0x100);
+                            function_1c590((s_shader_cache *)g_51f0f0, lookup.program, 0);
                             function_1c710(g_51f0f0);
                             function_1cf50();
                             g_4b8448 = 0;
@@ -9269,12 +9273,12 @@ void function_52d40(long bitmap_index, byte *shader, long tag, dword flags)
     sampler_state_write(0, D3DTSS_ADDRESSV, ((shader[0x2e] & 4) | 2) >> 1);
     sampler_state_write(0, D3DTSS_MAGFILTER, shader[0x2e] & 1 ? 1 : 2);
     sampler_state_write(0, D3DTSS_MINFILTER, shader[0x2e] & 1 ? 1 : 2);
+    sampler_state_write(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
     sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
     sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
     sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
     sampler_state_write(0, D3DTSS_COLORSIGN, 0);
     sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
-    sampler_state_write(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
     function_0222d0(D3DRS_CULLMODE, 0);
     function_0222d0(D3DRS_COLORWRITEENABLE, 0x10101);
     function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
