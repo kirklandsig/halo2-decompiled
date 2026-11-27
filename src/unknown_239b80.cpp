@@ -1092,6 +1092,18 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // ESI); the classifier result named and tested through a const reference 144 (same code); the departure flag
 // declared after the lowest scan, just ahead of the pass loop, 240; the hull count set through a reference local 144
 // (same code); the three exits as `break` with the compaction under `if (pass == count)` 230.
+// M3 lane 8 r244 (fast screen with 0x239d50, which MATCHES in every form below unless noted), at 144. Frame reading:
+// objects are packed smallest first, then by falling reference count, trying the argument homes before new slots;
+// retail's byte departure flag is packed first and takes the indices home because count's home stays live (count
+// is re-read from it), so the hull count (12 references) gets a slot of its own; ours packs the dword hull count into
+// the indices home and gives the flag a sixth slot (frame 0x18). Forms: the flag as bool 264 (762 B; 0x239d50 80),
+// with memcpy for the compaction 256 (767 B); the pass loop as the hull count itself (`while ((short)hull_count <
+// count)`, `indices[(short)hull_count] = current; hull_count++;`, no pass counter) with the bool flag and memcpy 204 at
+// retail's 784 B and frame 0x14, every instruction through the classifier call as retail (lead: left are count kept
+// in EBX, where retail re-reads it from its home for `current` and gives EBX to the hull count at the loop head, and
+// the heading's zero store, which retail makes before the lowest scan); that with the heading declared before the
+// flag 260 (757 B), after `current` 262 (757 B); the one-counter loop with the bool flag and memmove 236 (759 B), with
+// the dword flag 236 (759 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1748,6 +1760,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // top of the crossing arm, or dy alone at function scope 42 each, `real fraction;` at function scope 42 (same code
 // each: neither declarations nor spelling move these ranks); the deltas through the file's point-difference helper
 // 45 and through vector2d_from_points2d 45. Body unchanged.
+// M3 lane 15 r154 (H2M_FAST with 0x239e50, 0x239d50 and 0x239b80; control 129; on the 42 lead, 888 B): the allocator's
+// float ledger on the lead: the fraction 148 (its divide block 36, five clamp blocks 8 each, the two output products 72),
+// the denominator 92, the zero 54, dy and dx 50 each (their block 64, the output 12, -26 over the six clamp blocks
+// where they are live and unread); retail's colours need dy above all three, about 100 more, which no spelling of the
+// crossing gives. Forms on the lead: the y output written first 47; the denominator written `dx * n.i + dy * n.j` 42,
+// `dy * n.j + dx * n.i` 42; the outputs as `fraction * dx + x` 42 and `x + dx * fraction` 42 (same code each). Body
+// unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

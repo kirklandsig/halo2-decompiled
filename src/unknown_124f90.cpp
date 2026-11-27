@@ -1941,6 +1941,11 @@ long function_2197f0(real gain);
 // into a register, and the arm-3/arm-4 join. On the ternary: without the fade-in copy 162 (648 B: the division merges
 // into the reciprocal), with a fade-out local used by both tests and the product 148, with both 171 (644 B). On main:
 // that fade-out local 92, with the inverse from the field 98 (683 B).
+// M3 lane 8 r245 (h2m fast with 0x1251e0, MATCH; control 87): a forced-ranking search over 24 single colouring and
+// priority decisions finds nothing below 87, so the first arm's registers and the join need several choices at once.
+// Forms: the release arm as `gain +=` 87 (same code); the attack arm as the interpolation plus the gain 115; the
+// reciprocal taken from the field with the clamp value divided by the fade-in copy 87 (same code); the attack arm's
+// ducking pointer const 87 (same code); the hold test negated with the hold arm first 121 (680 B). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -5136,6 +5141,14 @@ struct s_128ca0
 // second-pass candidate whose entry-block count is 19 against L's 20, so it scores 114 and falls behind the three
 // 120-point pitch values. Named parts in the entry block, each on Lc and L: the pitch range index 204/17, the upper
 // pitch bound 204, the permutation index 204/17 (same code each: the names fold away). Body unchanged.
+// M3 lane 8 r245 (H2M_FAST with 0x1293f0, MATCH; L = the LEAD 17 above rebuilt, re-measured 17; Lc = L with `char
+// count = NONE`, re-measured 204). Allocator reading: on Lc the definitions pointer reloaded after the 0x12a1b0 call
+// (3 entry-block refs) is a second-pass candidate that sees 19 referenced candidates there (L 20), scores 114 and takes
+// ECX behind the five 120-point entry values; Lc also keeps a NONE constant candidate live in the first controller
+// block. Forms: one definitions pointer local for the playback parameters, pitch ranges and bounds, on Lc 209, on L 24;
+// on Lc the bounds read through the pitch-range index again 243 (1074 B), the first block's listener gain as if/else
+// 204 (same code), its effect index read once into a long 204 (same code), the gain defaulted to 0 then overwritten
+// under the test 208 (1052 B). Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -5493,6 +5506,16 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // the else arm reading the location, 525 at 2294 B [519]: retail's `or esi, -1` head and immediate compares in the player
 // arm appear, but the location's two NONE stores are emitted at the loop top, the 0x155760 result is still spilled and EBX
 // goes to the player-state cursor that retail keeps in memory.
+// M3 lane 8 r245 (H2M_FAST with 0x220790 and 0x125b40, MATCH; control 484). Allocator reading: ours keeps the loop-top
+// NONE as one candidate over the whole player arm (EBX, also serving its 16-bit compares), and the 0x155760 result (one
+// def, one test) never gets a positive weight, so it is spilled; retail's -1 serves only the loop-top test and the
+// else arm, and the result takes EBX. Retail keeps the scale test because it copies the forward and up rows through
+// pointer temporaries. A forced-ranking search over single decisions finds nothing below 453. Forms: the 0x1fc short
+// read once into a named local 510 (2331 B); the left row written in 0x1420f0's own statement form (k, j, i with its
+// two `-=` steps through a vector3f) 453 (2336 B; LEAD, not kept: it reshapes the written-out helper body and moves
+// away from retail's length); the position cleared with real_point3d_set first 524 (2342 B); the early return as one
+// guarded block 484; the scale stored after the forward copy 484; the state pointer non-const 484; the object
+// pointers as `byte const *` 484 (same code each). Body unchanged.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

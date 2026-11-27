@@ -1129,6 +1129,14 @@ extern "C" void _ReadWriteBarrier(void);
 // then the state, then the actor from the pool's data 44 (208 B); no barrier, the flags test written `!= 0` 44; no
 // barrier, the flags byte bound to a `byte const &` after the actor and state 44; the actor as the pool's data plus a
 // `(word)` index, no barrier 10 (205 B: `movzx` index load, register compare of 0x26c), with the barrier 48.
+// M3 lane 2 r159 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the masked index named first (`long
+// absolute_index = actor_index & 0xffff;`) and the lookup written out on it, no barrier 44 (208 B), with the barrier 6
+// (same code); the NONE block's reads and stores through an `s_actor_view &` bound at its head, no barrier 44; the 0x86
+// and 0x50c tests nested in an else block, no barrier 44; the actor set to the pool's data and then advanced by the
+// masked index (two definitions), no barrier 44. Scheduler view (diagnostic): without the barrier the 0x26c load is
+// formed from the index and the data base and scheduled ahead of the add, so it is not folded into the compare; the
+// barrier keeps it after the add, where the compare folds it, but the slot stays a candidate of the NONE block and its
+// flags arm only, so its load is placed in the NONE block.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -2448,6 +2456,15 @@ void function_1f86a0(long actor_index);
 // cycles) gave nothing below 123. Forms: the decline test's mask as a plain truth test 134; both mask tests as truth
 // tests 134; the entry's element index named once for the lookup and the accept 242; the unit through the existing
 // OBJECT_DATUM_GET macro 123 and through object_header_get 123 (same code each). Body unchanged.
+// M3 lane 6 r251 (H2M_FAST with 0x1b8c80, 0x1ba990 and 0x1b9e70, all MATCH each run; control 123). Allocator reading:
+// the mask byte ranks 88 (its loop-top block references eight values) against the entry's 45; the mask forced down to
+// 40 (a forced compile, not source) gives the 0x14 frame and the mask at +0x13 but 244, the shared flags byte then
+// holding BL across the root calls; a forced-ranking search (30 single decisions) found nothing below 123. Forms: both
+// post-loop 0x20 tests as `(flags >> 5) & 1` 123 (same code); the decline as two tests (`u86 && !bit40`, then
+// `(u86 || specified) && !same`) with two decline calls 256 (881 B: the calls stay apart, so retail has one call
+// site); `same` as `specified == 0x20 ? roots equal : false` 223; the decline's bit 6 as `!((flags >> 6) & 1)` 123
+// (same code); the decline ternary's arms swapped with the test negated 232 (863 B); re-measured the tail's byte flags
+// local 140. Body unchanged.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

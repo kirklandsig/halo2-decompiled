@@ -2982,8 +2982,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // 0xc2d00 in the full build, so the allocation stays written out. The byte count is count << 2, so the rounding never applies.
 // Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
-
-// score 354 (was 354):
+// Earlier 354 (was 354), the second block of this note, merged into it in m3 lane 15 r153:
 // MiniMax A (11-20): no new form, no lower score (354): the frame is 0x208 against retail's 0x200
 // MiniMax E (11-16): no new form, no lower score (330): this build still inlines both copies of 0x235a0 where retail inlines the first and calls the second, so the body after that point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax B (11-13): no new form, no lower score (364): the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
@@ -3191,6 +3190,11 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // second: copy, determinant, inverse, sample source, rotations). Forms: the sample flag initialised from the test
 // directly 384; the bucket pair read through a short pointer 354 (same code); the zero-size exit as a nested test
 // around the allocation 354 (same code); the direct flag with each of those 384/384.
+// M3 lane 15 r153 (H2M_FAST with 0x4b5d0, 0x235a0, 0x73360, 0x22850, 0x23600, 0x23540 and 0x23ca0; control 354 at
+// 1595 B, aligned 259 / 209 / 71): the structure global's sample-source pointer read once ahead of the bucket loop 375
+// (1596 B); the level clamp compared limit first 356; the cache slot index read once into a named local and written
+// back at the end 427 (1605 B); the stride computed ahead of the coefficient base 403 (1608 B); a short bucket counter
+// 362 (1587 B). Body unchanged; both 0x235a0 copies still expand here.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3649,6 +3653,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // round 139's extra-pair lead: the pair alone 54, the two trig values passed by const reference 54, the scale by const
 // reference 54, the second statement written `1.0f + (...) * scale` 54, a matching extra pair in the second
 // statement 89; the trig values by const reference on main 54.
+// M3 lane 15 r153 (H2M_FAST with 0x144f0/0x1cc30/0x2a2f0, all MATCH; control 54, aligned 149 / 27 / 22): only the
+// schedule differs; a forced-ranking search over the scheduler's height and ready-cycle decisions next to the first
+// difference (12 links) moved nothing. Forms: the corner helper as an expression macro on this body 54 (same code); a
+// corner helper taking the angle and computing its own cosf/sinf 270 (2054 B); the four bounds after both corner sets
+// 253; both coordinate buffers as one two-row array 54 (same code); the second set's calls in reverse order 166 (the
+// first set's schedule moves with it, so the two sets share one scheduling region). Body unchanged.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

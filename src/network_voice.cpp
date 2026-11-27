@@ -1507,6 +1507,15 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // total (cursor, total, flag: the last of the six orders) 99 (350 B); the element pointer from the index each pass
 // 109 (fixed offsets as retail but biased +0x17c, channels on the stack; 0x54990 1), as `channels->channels + i`
 // 109 (1), declared ahead of the loop and assigned at its top 109 (1). Body unchanged.
+// M3 lane 15 r154 (fast with 0x54990/0x56160/0x56380/0x55c40; control 94): allocator ranks with the flag declared
+// first: the flag 24 (definition 14, four product reads 20 each, -70 live and unread), the four has-player results 40,
+// channels 22; retail's colours need the flag above 40, which the ledger gives only with retail's seven values per
+// product block (the value loaded apart and the product plus 2 kept apart before the total) instead of our five.
+// Forms: the count named and the multiplier set by an if (`= 13` or `+= 2`) 122 (361 B, 0x54990 13: the value is then
+// loaded apart and the flag takes AL, but the multiplier stays a branch); the count named with the multiplier as
+// `11` then `+= 2 * (flag != 0)` (0x55c40's spelling) 94, the multiplier alone that way 94 (same code); a size helper
+// with a named result 94, flag first 111 (0x54990 1); the helper with count and entry-size locals 94, flag first 111;
+// the has-player test inside the helper, size preset 0, 193 (411 B, 0x54990 5), flag first 189. Body unchanged.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -2001,6 +2010,13 @@ static inline dword voice_get_player_mask_inlined(void);
 // are read again where retail reuses CL); the mask test and the three queries as nested ifs 64 (same code); the outer
 // test as `local & active & bit` 122 (405 B); the outer bit written out at both tests 64 (same code). Still BLOCKED-BY
 // 0x53bb0. Body unchanged.
+// M3 lane 12 r196 (fast screen with 0x54890, 0x53a20, 0x53bb0, 0x53b90 and 0x53b40, all MATCH unless noted; control 64): the
+// inner index unsigned 64, the outer test as two nested ifs 64, the four masks signed 64 (the same code each); the muted
+// test through the existing out-of-line 0x53850, first 136 or last 134 (387 B: it stays a call). Diagnostics on the
+// flags, restored at once: this body alone in a new auto-inline (/Ob2) file 64 (the same code, 0x53bb0 still called);
+// with 0x53bb0 moved into that file as well it expands in every caller (here 105 at 446 B, 0x54890 83, 0x53a20 84), so
+// the expansion follows the helper's own compile and not the caller's: retail's single expansion here is not a split of
+// the callers' flags. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
