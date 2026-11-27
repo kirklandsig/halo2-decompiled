@@ -2164,8 +2164,8 @@ PRIVATE inline long device_motion_sign(real value)
 }
 
 // @retail 0x107cc0
-bool function_107cc0(long device_index, s_device_motion *motion, c_animation_channel *channel,
-	s_animation_state *state, real position, real *out_position)
+bool function_107cc0(long device_index, s_device_motion *motion, s_animation_state *state,
+	c_animation_channel *channel, real position, real *out_position)
 {
 	s_device *device = DEVICE_GET(device_index);
 	bool result = false;
@@ -2214,8 +2214,8 @@ bool function_107cc0(long device_index, s_device_motion *motion, c_animation_cha
 	return result;
 }
 
-bool function_107cc0(long device_index, s_device_motion *motion, c_animation_channel *channel,
-	s_animation_state *state, real position, real *out_position);
+bool function_107cc0(long device_index, s_device_motion *motion, s_animation_state *state,
+	c_animation_channel *channel, real position, real *out_position);
 bool function_11eed0(real *position, real *velocity, real target, real time_step, real speed,
 	real acceleration, bool wrap, real lower, real upper);
 void __stdcall function_bd020(long object_index);
@@ -2724,12 +2724,16 @@ bool function_0b6760(s_index_pair const *pair);
 // pointer where retail stores the definition first, and the two channel-1 0xb6760 calls still load the device index into
 // eax where retail loads it into ecx (the callee's link-time convention is fixed in another file, so the body stays
 // BLOCKED-BY 0xb6760).
+// S2 harvest (11-27): MATCH, the form of the M3 review of lane 14 r134 above: 0x107cc0 takes the animation state ahead
+// of its channel (definition, declaration and both calls; 0x107cc0 still matches), the position-group test named
+// `moving`, the result declared after the definition, acceleration and speed as running sums and the unit byte tested
+// `<= 0`, with `inline` on 0xb6760's definition (see 0x166d75). Without the `inline` this body is 2.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
 	s_device *device = DEVICE_GET(device_index);
-	bool result = false;
 	byte const *saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
+	bool result = false;
 	s_animation_state *state = NULL;
 	if (device_has_animation_state(device_index))
 		state = device_get_animation_state(device);
@@ -2741,7 +2745,7 @@ bool __stdcall function_106790(long device_index)
 			real previous = device->power;
 			real position;
 			bool finished = function_107cc0(device_index, &device->motion_14c,
-				&device->channels[0], state, previous, &position);
+				state, &device->channels[0], previous, &position);
 			device->power = position;
 			device->power_velocity = (position - previous) / device_tick_length();
 			if (finished)
@@ -2763,11 +2767,10 @@ bool __stdcall function_106790(long device_index)
 		{
 			if (state && device_channel_valid(&device->channels[0]))
 				device->channels[0].set_frame_ratio(device->power);
-			real position_acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
-			real remaining_acceleration = *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
-			real acceleration = position_acceleration + remaining_acceleration;
-			real speed = *(real const *)(saved_definition + 0xc8) * device->position +
-				*(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
+			real acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
+			acceleration += *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
+			real speed = *(real const *)(saved_definition + 0xc8) * device->position;
+			speed += *(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
 			bool increasing = device->power_velocity > 0.0f;
 			device->flags = acceleration > 0.0f && speed > 0.0f ?
 				device->flags | 0x100 : device->flags & ~0x100;
@@ -2808,7 +2811,7 @@ bool __stdcall function_106790(long device_index)
 		if (!(device->flags & 0x40))
 		{
 			bool finished = function_107cc0(device_index, &device->motion_16c,
-				&device->channels[1], state, 0.0f, NULL);
+				state, &device->channels[1], 0.0f, NULL);
 			if (finished)
 				device->flags |= 0x40;
 			else
@@ -2820,7 +2823,8 @@ bool __stdcall function_106790(long device_index)
 	else if (!(device->flags & 8) && device->position_group_index != NONE)
 	{
 		s_device_group *group = DEVICE_GROUP_GET(device->position_group_index);
-		if (group->value != device->position || device->position_velocity != 0.0f)
+		bool moving = group->value != device->position || device->position_velocity != 0.0f;
+		if (moving)
 		{
 			if (state && function_0b6760((s_index_pair const *)&device->channels[1]))
 				device->channels[1].set_frame_ratio(device->position);
@@ -2844,7 +2848,7 @@ bool __stdcall function_106790(long device_index)
 			function_bd020(device_index);
 			machine_keyframe_rigid_bodies(device_index, true);
 		}
-		if (device_index == NONE || *((byte *)DEVICE_GET(device_index) + 0xb3) == 0)
+		if (device_index == NONE || *((byte *)DEVICE_GET(device_index) + 0xb3) <= 0)
 			device->flags &= ~0x80;
 		return true;
 	}
