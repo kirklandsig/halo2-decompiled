@@ -196,6 +196,8 @@ __inline void quaternion_rotate_point(
 	out->z = v->z * m + cz * w2 + d * q->k;
 }
 
+// score 35 (was 35): with main's rotate helper the dot, cross and row products come out in other orders than
+// retail's from +0x5d; the held form below leaves two operand-rank ties at 8.
 // Gemini GB r19 (held as a patch, coordinator review): quaternion_rotate_point summed in i, j, k order with named
 // square and dot locals and w2 computed after d, plus the existing point3f_scale for the scaled position: 8 (was 35),
 // and 0x11dd80 4 (was 48). The locals and the w2 placement are statement and operand order, kept only with a byte
@@ -211,6 +213,13 @@ __inline void quaternion_rotate_point(
 // through the existing cross3f the same ranks; `out->scale = a->scale * b->scale` 8; the position sum as `+=` 8; the
 // copies through memcpy 8, with `out == a` tests the same ranks, from `*out` 35 (the copy reads EDX). Diagnostics: without
 // the copies only v.x moves (to 5); without the tail or the 0x11d820 call nothing moves.
+// M3 lane 11 r175 (h2m fast with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820, which must be listed: without the callers
+// the held form reads 16; held form rebuilt 8, 0x11dd80 4): the dot's terms in other orders and each product's
+// operands both ways, named dot, 8 each (10 spellings, same code); diagnostic unused locals at this function's top, 0-7:
+// 8, 4, 21, 14, 16, 6, 8, 12 (0x11dd80 4 throughout). With one more symbol the dot's terms take retail's order and
+// q.j * v.x (cz) and q.i * v.z (cy) are left with the v field first (each cross spelled both ways there 4). Redundant
+// parentheses on the square or the m chain 29-76 (they change that chain), on the dot's first term 6 (8 with the extra
+// local). Natural extra symbols: the scale named once for its three uses 9, declared at the top and assigned there 9.
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,

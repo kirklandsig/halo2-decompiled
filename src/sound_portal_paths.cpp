@@ -828,6 +828,13 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // On that form: the side bit as `(encoded >> 15) & 1` 22, `(word)encoded >> 15` 247, `(encoded & 0x8000) != 0` 21,
 // `(encoded & 0x8000) >> 15` 22; the cluster pointer ahead of the bit-vector clear 21. Still BLOCKED-BY 0x14b240's write
 // summary.
+// M3 lane 15 r154 (H2M_FAST with 0x18d730, 0x14b240, 0x222150, 0x221da0 and 0x249d60, the last four MATCH; control 295):
+// lane 5 r242's held 21 form re-applied, 21 (0x18d730 250); with lane 7's early short read of the start cluster's index
+// 4: the cluster then ranks 146 over the widened index's 132, because the read references the cluster in the block of
+// the distance compare (where it is otherwise live and unread), and that same read is what lands above the compare. On
+// the 21 form: the index bound by `short const &` or `short &` ahead of the test 23 each, read through a `short const *`
+// 23 (folded each time, ranks unchanged); a short copy declared inside a nested distance test 21, a long copy there 302;
+// on the 4 form the copy `short const` 4 (same code), `long` 64. Body unchanged.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

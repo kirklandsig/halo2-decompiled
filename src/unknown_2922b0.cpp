@@ -1072,6 +1072,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // as `unobstructed` / `clear`, hit flags `blocked`, minimum `nearest`) 362 each, byte-identical; the input copy declared
 // after the hit flags 363, the minimum after the hit flags 362, the hit flags declared first 362, the clamped distances
 // declared before the ray lengths 362.
+// GB27 (26 fast trials with 0x1e5450/0x30bf0/0x1697c0 MATCH; control 362 at 2897/2886 B, body unchanged): on 362 base,
+// `rotate_vector_170d70` 465 (2862 B), `local_17 +=`/`local_18 -=` 362, scoped inline rays 439, plain static ray helper
+// 362, void 2-out ray helper 361 (2896 B), weight-returning ray helper 607 (2886 B), plain `for` ray loop 683 (2828 B),
+// direct tail up without `local_19` 435, non-const `local_2` 362, tail `cross3f` 433 (+ `dot3f` 676), function-scope
+// `local_13` alone 543 (+ `local_6` first, two returns, `local_18` first 327). On the 184 lead (rebuilt 184 at 2896 B):
+// `+=`/`-=` 184, void 2-out 183 (2895 B), weight-returning helper 444, plain static rotation 184, `rotate_vector_170d70`
+// 314, direct tail up 260 (667/667 insns), per-ray `w` local 184 (mk 93 -> 90), ternary pin 409, tail `cross3f` 257
+// (without `local_19` 265, all-4 `cross3f` 264, + `dot3f` 420).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -271,6 +271,15 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // plain check verified all 44 file peers including caller 0x1132f0 and all 5 callees MATCH, 298 targets verified,
 // 0 differ). Held because any net function addition (+1..+4) to this TU flips whole-image LTCG watch functions
 // (0x24cf66:2 and either 0x1c4590:5 at +1/+2 fns or 0x185be0:2 at +3/+4 fns); 0-new-function forms score 91 (624 B).
+// M3 lane 4 r268 (plain checks): that form (a file-local copy of function_142700's body, the existing
+// normalize_particle_direction_2b, function_11df30 on a vector2f view, function_112e21 dropped; +4 functions) still
+// matches 627/627 on current main, and the full check still loses 0x185be0 (2) and 0x24cf66 (2), both a swapped pair of
+// independent loads. Diagnostics (restored): one empty inline helper called here, body otherwise main's, loses
+// 0x1c4590 (5) and 0x24cf66 (2); the same helper in a file linked after the watch functions loses nothing; the match
+// form plus 1/2/3/4 empty helpers loses 0x185be0+0x24cf66 / 0x24cf66 / 0x24cf66 / 0x24cf66; function_112e21 folded
+// into this body (one function fewer, 65) loses nothing. So the flips follow the count of functions compiled ahead of
+// those files, not this body: counts 0 and -1 keep them, +1 to +8 lose 0x24cf66. Every matching form needs at least
+// one net helper, so this match waits on 0x24cf66's load-order tie (or a natural removal of helpers ahead of it).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -1544,6 +1553,7 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// score 164 (was 164):
 // MiniMax C (11-16): no new form, no lower score (164): the entry lookup and the two slot reads still fold the index into the address where retail holds index times twelve in edx and the pool's data in ebp, the three flag bytes still sit at +0x0e/+0x0f where retail has them at +0x11/+0x12/+0x13, and the prologue still pushes three registers against retail's four.
 // MiniMax I (11-16): no new form, no lower score (164): the entry lookup and the two slot reads still fold the
 // index into the address where retail holds index times twelve in EDX and the pool's data in EBP (four pushes
@@ -1562,7 +1572,6 @@ long function_cbd50(long unit_index, short weapon_index);
 // four, and the three flag bytes still sit at +0x0e/+0x0f and the overlay word at +0x10 where retail has the
 // flags at +0x11/+0x12/+0x13 and the overlay in the dead argument slot at +0x14, so the body stands.
 // MiniMax R (11-16): no new form, no lower score (164): the entry lookup still folds the index into the address where retail holds the index times twelve in EDX and the pool's data in EBP, and the prologue still pushes three registers against retail's four.
-// score 164 (was 164):
 // MiniMax I (11-14): no new form, no lower score (164): the entry lookup and the two slot reads keep the index
 // folded into the address where retail holds index times twelve in EDX and the pool's data in EBP (four pushes
 // against our three), and the three flag bytes sit at +0x0e/+0x0f and the overlay word at +0x10 where retail has
@@ -1880,6 +1889,12 @@ long function_cbd50(long unit_index, short weapon_index);
 // New: a `byte` return type drops the final setne but loses the epilogue shape, 194 (1262 B). Retail's reloads (the
 // unit at 0x110b10 after the flag stores, the pool data at 0x110b51 before the second query) look like memory kills
 // by stores to memory-resident flags.
+// M3 lane 4 r268 (fast): the three flags volatile (diagnostic, removed) 363, depleted alone volatile 394: the queries
+// still reuse the entry's unit, so stores to memory-resident flags are not what makes retail re-derive the unit and
+// re-read the pool's data. A depletion helper shared with 0x1103a0 (first held weapon sets, a loaded second clears, an
+// empty hand keeps the value): writing through `bool *` 396 (1208 B; 0x1103a0 580, with its depleted as bool 597),
+// taking and returning the current value 426 (0x1103a0 573); the second clear as `depleted &= ...` 363 (1317 B); the
+// second query as a named `loaded` bool cleared into depleted 374. Body unchanged.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -2001,6 +2016,7 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // MiniMax C (11-16): no new form, no lower score (445): the frame is still eight bytes against retail's 0xc and the pool's global and data are still loaded into eax and edx where retail keeps them in ecx and esi; tried the interruptible and the depleted flags as longs (495 and 457) and the result as a long (550), and none of them reaches retail's frame.
 // MiniMax I (11-16): no new form, no lower score (445): our frame is still 8 bytes against retail's 0xc and the
 // pool's global and data are still loaded into EAX and EDX where retail keeps them in ECX and ESI, so every stack
@@ -2018,7 +2034,6 @@ bool __stdcall function_110ab0(long unit_index)
 // slots still sit at retail's offsets one dword off, retail still keeps its frame pointer and the early
 // pointer where ours does not, and our frame is still eight bytes against retail's 0xc, so the body stands.
 // MiniMax R (11-16): no new form, no lower score (445): the body is retail's 1793 bytes; retail keeps the object table and the mode index in EBP and ESI where ours uses EAX and EDX, and our two flag bytes sit at +0x1c where retail has them at +0x12 and +0x13.
-// score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // m3 lane 5 r185 (fast with 0x10ff40/0x111650, controls 12/557): the definition without `__stdcall` 445 (same code: LTCG
 // keeps the stack convention from the body); the 0xc7070 result held in a named bool 445 (same code); depleted typed char
 // 445 (same code); the 0x600008d group as `interruptible || requested == 0xc000043 || requested == 0xd000042` 445 (other
@@ -2302,6 +2317,9 @@ bool __stdcall function_110ab0(long unit_index)
 // Changing interruptible to `if (... & 0x10) interruptible = true;` drops back to fr=8 and regresses 0x10ff40 to 217 (567; unit_ref/volatile
 // diag forms keep callers unchanged at 563/524/550/550, fr=8). Still blocked by requested taking EDI instead of staying in [esp+0x24]
 // (pushing result from DL into [esp+0x20]) and the overlay switch staying at the end instead of joining mid-switch at 0x11053a.
+// M3 lane 4 r268 (fast): interruptible as `if (... & 0x10) interruptible = true;` 453; 0x110ab0's && depletion 484,
+// with that if-form 514; bool depleted with the if-form 477; interruptible declared before depleted 469; the shared
+// depletion helpers measured with 0x110ab0 (its note) 580/597/573. Body unchanged.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
