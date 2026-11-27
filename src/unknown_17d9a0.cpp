@@ -131,7 +131,7 @@ PRIVATE inline real *decal_corner_point_17d9a0(transform4x3f const *matrix, real
 }
 
 /* drops the axis the plane faces: the two remaining coordinates, in the table's order */
-PRIVATE inline void decal_project_point_17d9a0(real const *point, short axis, bool side, point2f *out)
+inline void decal_project_point_17d9a0(real const *point, short axis, bool side, point2f *out)
 {
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
@@ -318,6 +318,18 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 // memory operands at the loop head (`cmp word ptr` on its slot); no single decision moves the add's layout. The XMM
 // constants held across 0x120790 (retail reloads them after each call) look like a caller compiled without the
 // callee's register summary.
+// M3 lane 16 r199 (h2m fast, control 387; the lead also plain-checked). The reloads are a register-summary question
+// and the callee is 0x120790: retail's caller treats every XMM register as lost across it, as callers do for an
+// inline-declared callee that is kept out of line (0x120790 sits in the math helpers; 0x17d900, which sits ahead of
+// this file's first function, looks like another). HELD lead, as a patch (it adds `inline` to an existing
+// definition, the owner's decision): `inline` on 0x120790's definition 301, with the 0x17d900 call written first in
+// the comparison 295 at 1783 B in the plain check (0x120790, its other caller 0x1689b0 and this file's matched
+// functions all still MATCH): the output loop then reloads the plane normal and 1/256 after each call as retail and
+// the radius product follows the 0x17d900 call. `inline` on 0x17d900's definition alone 417 (1815 B: with the radius
+// product written first it is spilled across the call, retail computes it after), with a noinline declaration 417,
+// both definitions inline 391, 0x17d900 inline with the call first 381, the call first alone 381. Left on the 295
+// form: the iteration count's slot and its register across the latch, the loop head's edge and faces loads, the
+// adjacent-face add's layout and retail's reload of mesh and face_index at the latch.
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,
@@ -819,22 +831,12 @@ bool function_17cb00(s_decal_sprite_definition const *definition,
     short sequence_index, short frame_index, real scale,
     box2f *texture_bounds, box2f *position_bounds);
 void function_142390(plane3f const *plane, transform4x3f *out);
+vector3f *function_11d000(vector3f const *v, vector3f *out);
 
 PRIVATE __forceinline real decal_time_17ef10()
 {
     return g_510c54 && g_510c54->active
         ? (real)g_510c54->game_time * g_510c54->rate : 0.0f;
-}
-PRIVATE __forceinline void decal_normalize_17ef10(vector3f *v)
-{
-    real length = (real)sqrt(v->k * v->k + v->j * v->j + v->i * v->i);
-    if (!(fabs(length) < 0.0001f))
-    {
-        real inverse = 1.0f / length;
-        v->i = inverse * v->i;
-        v->j = inverse * v->j;
-        v->k = inverse * v->k;
-    }
 }
 PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
     vector3f const *v, vector3f *out)
@@ -901,6 +903,16 @@ PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
 // The file's local vector-transform helper scaling x, y, z in registers (0x142640's shape) in place of the scaled
 // copy: 975 (3476 B) with the frame down from 0x90 to 0x68 (retail 0x60); with the position read from the placement
 // directly 965. Lead: that helper shape takes 0x28 off the frame.
+// M3 lane 16 r199 (h2m fast; control 837): kept at the same count (same code): the perpendicular block through the
+// existing 0x11d000 (its file is not /Ob1, so the call is expanded here as in retail) and the two normalizations
+// through the header's normalize3d in place of this file's own copy. Tried: the second loop's index as a dword
+// (retail's `jb`) 837 (same code); direct `preparation->projection.matrix` members, no matrix pointer 855; the bitmap
+// group read back through the preparation's field at each use (the field typed to the view) 839; the orientation
+// bounds read from the stored matrix.up 841; all four 918, the two member forms together 913; 0x11d000 given the
+// placement's plane normal 881 (3565 B); the position through the existing transform4x3f_apply_point and the basis
+// block through 0x1427f0 and 0x142640 as calls 1728 (2721 B: not expanded, their file is /Ob1), and as a diagnostic
+// with that file built without /Ob1 991 (3448 B; 987 without the 0x11d000 call), so expanding the real transform
+// helpers alone does not give retail's blocks either.
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,
@@ -1041,31 +1053,13 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
             state->angle = function_259d0(&g_4e7408->seed, NULL, 0, 0.0f, 6.2831854820251465f);
         cosine = (real)cos(state->angle);
         sine = (real)sin(state->angle);
-        real x = (real)fabs(normal.i), y = (real)fabs(normal.j), z = (real)fabs(normal.k);
-        if (y >= x && z >= x)
-        {
-            tangent.i = 0.0f;
-            tangent.j = normal.k;
-            tangent.k = 0.0f - normal.j;
-        }
-        else if (z >= y)
-        {
-            tangent.i = 0.0f - normal.k;
-            tangent.j = 0.0f;
-            tangent.k = normal.i;
-        }
-        else
-        {
-            tangent.i = normal.j;
-            tangent.j = 0.0f - normal.i;
-            tangent.k = 0.0f;
-        }
+        function_11d000(&normal, &tangent);
         perpendicular.i = normal.j * tangent.k - normal.k * tangent.j;
         perpendicular.j = normal.k * tangent.i - normal.i * tangent.k;
         perpendicular.k = normal.i * tangent.j - normal.j * tangent.i;
     }
-    decal_normalize_17ef10(&tangent);
-    decal_normalize_17ef10(&perpendicular);
+    normalize3d(&tangent);
+    normalize3d(&perpendicular);
     transform4x3f *matrix = &preparation->projection.matrix;
     matrix->position = placement->position;
     matrix->forward.i = perpendicular.i * cosine - tangent.i * sine;
@@ -1187,6 +1181,20 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
 // the sixth parameter as bool on this body 385 (frame 0x1174; the argument is read from memory and `excluded` keeps
 // EDI), with the constant-initialised locals above the seed block 412, with the float radius 385; the radius with a
 // double `0.25` and no casts 398 (1773 B).
+// Gemini lane GA r31 (not kept): 338 at 1787 B (frame 0x1170; retail's registers for the vector, the source, the
+// point and the sixth argument up to line 61) by dropping the `deterministic` local for the parameter test, declaring
+// world_hit, excluded and cluster above the seed block, the seed as bits[2] ^ bits[1] ^ bits[0], the mesh as `meshes +
+// mesh_index * 0xc8` with + 0x70 at the two calls, the tail guard in retail's test order (alone 355), `bound` on the
+// left of the neighbour test, an unsigned axes counter and the existing vector3d_from_points3d and vector3f_scale for
+// the direction and the rays. Most of that gain is declaration, statement and operand order, kept only with a byte
+// match, so it is held as a lead; the rest alone (the parameter test, the two helpers and the unsigned counter in this
+// body's order) is 393 in the full check. vector3f_add_scaled was left out: it adds a helper instance in this file and
+// moves the whole-image canaries 0x1c4590 and 0x24cf66. Also from that round: retail's sixth parameter is a bool (with
+// the callers changed, retail's mov ebx); retail tests `!source || source->unknown00 == 4` again after 0x1697c0 (4
+// instructions, 1787 B) and keeps `collision` and `axes` at the same stack offset with `adjacent` at 0xc8. Tried: the
+// bool parameter with a found flag, a scoped collision record, an outer adjacent record and plain axes, about 390; the
+// short-circuit `(source && source->unknown00 != 4) || function_1697c0(...)` and its spellings 349 (retail's size and
+// re-test, but -1 and the radius take EBP, the vector moves to EBX and the sixth argument to CL).
 // @retail 0x17e670
 void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)

@@ -1153,6 +1153,20 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // named `inverse` 171 (851 B); the whole rotation through an inline copy of 0x1546f0's axis-angle helper (it computes
 // sin/cos itself; diagnostic only) 190 with the double angle (861 B), 196 with a real angle (859 B): as an inlinee the
 // rotation's symbols number after the caller's, which costs far more than the 18 form's ties.
+// M3 lane 16 r199 (H2M_FAST; control 84). The 18 form rebuilt: 18. Its ties read from the last reassociation pass:
+// `axis->i` ranks as a read straight through the axis pointer (level = that symbol's number mod 8, here 1) while
+// `axis->j` and `axis->k` rank at level 4, so both `(1.0f - cosine) * axis->i * ...` chains sort the i read last;
+// the three state scales rank at levels 4, 2 and 0 against the matrix members, so only stage 3 puts the matrix first.
+// Retail needs the axis symbol at exactly four numbers more (one to three or seven more leave 18, five or six 40 at
+// 847 B) and the stage 3 level at 1 or more. Diagnostic scans: unused longs ahead of axis 18, 18, 18, 14, 40, 40, 18,
+// 18 for one to eight; with a grouping pair in stage 1's first product 10 at none, 6 at four, 36 at five or six.
+// Declaring xy/xz/zy or the two vectors ahead of axis without a value 18 (a symbol is numbered where it is first
+// given a value). On the 6 form: left.k stored ahead of up.j 7; position zeroed as three statements 6; both 7; the i
+// sine product after forward.i 35, after scale 25, last of the three 185, as `sine * axis->i` 6. The rotation through
+// a two-level inline helper in 0x17fd20's shape, products j*i/k*i or i*j/i*k: 196 each (859 B). 0x1544e0's own
+// statements (named `t = 1.0f - cosine`, `tij = (t * axis->i) * axis->j`, a shared `tk = t * axis->k`), over three
+// places for axis, scalar or vector squares, two tail orders and two places for t: 91-92 at 845 B, without the
+// shared tk 163-165 (851 B); a named t is computed early and takes another register.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1283,6 +1297,16 @@ s_3c9a0_matrix g_4c1b68;
 // registers where retail re-reads them from g_4c1b08; with one fewer reference on the row-1 `m10 * far_x` temp the packer
 // would give retail's layout. A forced-ranking search on the 208 form finds no single decision close (best -7). The
 // references, the pair and the split loops are steering forms, kept only with a byte match.
+// M3 lane GA r31 (34 fast trials, 0x3c9a0/0x16a90 MATCH and 0x3c3c0 74 throughout; control 291): on HEAD, two separate ifs
+// on width_scale 291, tanf/sqrtf 293, column-order g_4c1b38 292, g_4c1b68.scale in g_4c1b38 301, x-before-y in corner loop
+// 291, const-ref divide helper 291, min/max const-ref templates 292 (by value) / 296 (by ref, stays out of line under /Ob1;
+// all three clamps 302), !(width_scale > 1.0f) 306, (real) cast on tangent2 293. On r236's 210 form (1390 B, frame 0x4c):
+// c[1] before c[0] 211, real_point3d_set 210, .x/.z stored ahead of near_y sqrt 222 (1372 B), column-order g_4c1b38 219,
+// x-before-y 210, unrolled 12 axis statements 210, unary -corner_y 210, point3f *p = g_4c1b08 231, real const &tangent2 210,
+// z,x,y,scale + camera.x/y in g_4c1b38 210, !(width_scale > 1.0f) 211 (1387 B, folds second compare), 1.0f >= width_scale 210,
+// swapped corner multiply operands 210; min/max template on pair+3loops 227 (out of line). Diff reading on 210: ours keeps
+// m00/m10/m20 and -near_y/near_y/-far_y in XMM and spills m01/m11/m21, where retail keeps m00/m01/m10/m11/m21 in XMM and
+// reloads g_4c1b08[0..1,3].y from memory. Body unchanged.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1559,6 +1583,22 @@ void function_41040(short index, long part_index, long group, byte weight,
 // zero-or-or, inline pack helper, byte-offset ptrs, `if/else if`) 20-202; `visible_entry_geometry(index)` 182; `union`
 // 4cbb0 215 (1180 B, `sub esp, 0xc`); `out->unknown04` inline 344; `bool instance` kept 182-207; `tag`/`pass` overrides
 // (`material_tag`, `original_tag`, `&tag` diag, shared 18/19, `(void)&`, `key` long, case reorder) 305-390.
+// M3 lane 16 r199 (H2M_FAST with 0x449e0, 0x44940, 0x402b0 and 0x44ac0; control 305). The geometry through the
+// existing 0x449e0 itself (`function_449e0(index, instance, false)`): 402 at 1096 B while that lookup is declared
+// noinline in its own file; with that declaration plain, 308 at retail's 1204 B (the lookup is expanded here as in
+// retail, 0x402b0 keeps its call and still matches) but matched 0x44ac0 expands it too (282) and so does 0x3fdf0,
+// whatever file or inline level they are built in and with 0x44ac0's guards nested like 0x402b0's: the expansion is
+// decided per call site. On that form the 20 lead above holds without its local copy of the lookup's body (the index
+// read from `out->unknown04` ahead of record_material, no `material` local, `(byte)` on 0x4cbb0's result, the
+// instance bit written at both calls): 20 at 1204 B, first difference +0x244, the same two spots. The key's operand
+// order: in the last reassociation pass the tag load ranks as a pointer read at level 2 and the `flags >> 9` leaf at
+// level 0, so the tag part sorts first; retail needs the flags leaf at 2 or more. That level follows what is computed
+// just ahead of the group test (a tag test there 2, a product of stage 4, a read through `out` 6, another entry field
+// 0); unused locals, a second entry pointer and an inline helper for the group block do not move it. The primitive
+// switch: with three distinct arms the default arm is always laid out last, so an equal default keeps its place and
+// the +0x11 arm comes first; six separate arms as in matched 0x1caa0 20, the mode word read first 66, a long
+// selection 55. In 0x1caa0 itself retail's order holds only in its exact form (grouped labels 31, the switch nested
+// 52, a branch ahead of it 53, the mode word read after it 50, a second use of the index 74).
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
@@ -1776,7 +1816,6 @@ bool function_1caa0(long, byte const *, word const *, byte const *,
 void function_4d9c0(byte const *, long, byte, short, long, long, long, long);
 void __stdcall function_4d640(short, long, bool);
 void function_4d720(short, long);
-extern long g_485a60;
 
 // Retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
@@ -2054,7 +2093,6 @@ bool function_1caa0(long, byte const *, word const *, byte const *,
 void function_4d9c0(byte const *, long, byte, short, long, long, long, long);
 void __stdcall function_4d640(short, long, bool);
 void function_4d720(short, long);
-extern long g_485a60;
 
 
 // score 370 (was 380): the two flags passed to 0x4daa0 were swapped (behaviour fix from lane GB r23, checked against
@@ -2137,6 +2175,25 @@ extern long g_485a60;
 // `g_4ba138[index]` at every use 463 (1471 B); `short bitmap` 357 and `char texture` 356 (positional only: `char`
 // emits `cmp al, 0xff` where retail has `movsx edx` + `cmp edx, -1`), both 370, `signed char` + `short` 370; on the
 // 291 form each 291.
+// M3 lane 16 r199 (H2M_FAST; control 370). The geometry through the existing 0x449e0 called with a false load flag
+// needs that lookup's noinline dropped to be expanded (matched 0x44ac0 then expands it too: a diagnostic only): 428 at
+// 1399 B, the instance bit computed ahead of the tag test because the lookup takes its parameter's address. With the
+// lookup's parameters as (index, load, instance) and no address taken, 0x449e0 still matches and this is 407 at
+// retail's 1418 B (the bit tested where retail tests it), but 0x2cbf0's call then evaluates its arguments in another
+// order (3 -> 74), so the declared order stays. The unread byte in packed's home: as a bool set through a pointer
+// parameter of an inline helper around the 0x15c90 call 455 (1461 B, the stores still fold away), on the 291 form 466;
+// as the one member of a record local 370 and 291 (same code: the stores fold away). So only a memory-resident flag
+// keeps retail's two stores, and none of the forms allowed here gives one. The 291 form rebuilt: 291 at 1399 B.
+// M3 lane GA r31 (41 fast trials across 3 batches, control 370, all 13 peers MATCH; body unchanged): tested lane 7
+// r236's inline-helper hypothesis directly: passing the flag's address or a `bool &` to a `static inline` helper setting
+// `*flag = true` after 0x15c90 still folds both stores away once inlined (291 on GB r23's form; `static inline` wrapping
+// 0x15c90 stays out of line under `/Ob1`, 423/300; `__forceinline` wrapping 0x15c90 inlines 0x15c90 itself and still
+// drops the flag, 461/466), ruling out an inlined `bool*`/`bool&` helper as the cause of retail's [esp+0x58] byte stores.
+// Also tried on HEAD: typed s_primitive_* structs matching 0x4dc60 in original order 370 (`s_primitive_header *mask`
+// 370, with `size` before `buffer` 357, same as raw `size` before `buffer` 357; statement-order only, not kept),
+// direct shader 400, `(bool)((... >> 20) & 1)` 398, texture before bitmap 370, inline visible_entry_geometry shape 423,
+// inline 0x4dc60 color-stream twin 408 (on GB r23 401), mask = 0 430; on GB r23: `entry_index` for tail calls 383
+// (masked 67), `entry_index` + inline geometry + arm1 bitmap reset + texture first 384 (masked 59).
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

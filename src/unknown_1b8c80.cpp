@@ -589,6 +589,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // `if (tag->seat_count > 0)` around the scan 9 (count ESI, index EBP, `cmp esi, ebp` and the first extended index's own
 // `xor eax, eax` all retail's; left only the index's xor and the NULL store one block early, in the flags block); with
 // the NULL and the index in the guard block 6 (the zero web back in EAX), the guard as `tag->seat_count > i` 6.
+// M3 lane 15 r155 (h2m fast over this file's markers, control 8; all match-only, a guard that repeats the loop's bound):
+// a grid of the seat's NULL (before `result = true`, block top, inside the guard) x the index (declared before the guard,
+// in the for) x the guard (`> 0`, `!= 0`, `> i`) x the bound: exclusive with the index declared first 9 / 6 / 5 (the 5
+// stores NULL twice, a dead store), every inclusive or in-for index form 132-135 (557 B); a bare seat declaration, the
+// index, then `seat = NULL;` ahead of the guard 6; the guard's two arms each setting NULL 5. In every one the zero is
+// still its own EAX candidate (compare and NULL store from EAX, the first extended index sharing it).
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -1137,6 +1143,13 @@ extern "C" void _ReadWriteBarrier(void);
 // formed from the index and the data base and scheduled ahead of the add, so it is not folded into the compare; the
 // barrier keeps it after the add, where the compare folds it, but the slot stays a candidate of the NONE block and its
 // flags arm only, so its load is placed in the NONE block.
+// M3 lane 8 r247 (fast reduced-image screen with 0x1ba3f0/0x1ba5c0, both MATCH; control 6; parameter-read diagnostics,
+// each reverted at once, with the barrier unless stated): the state from a volatile read of the slot parameter at the
+// top 29 (the slot loads first, the pool goes to EDX and the data load folds into the add); after the lookup, before
+// the barrier 31 (207 B, ESI pushed in the entry block); after the barrier 29 (the slot load lands after the compare);
+// the pool's data named first, then the volatile slot read, then the lookup written out 29 (the named data is
+// substituted at its use, after the read, and folds), the same without the barrier 50 (210 B); the slot read once
+// through a `s_slot *const *` to the parameter at the top 6 (same code: the indirection folds).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

@@ -1099,6 +1099,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // (3301 B); the choices alone 1016 (3412 B); existing and targets 928 (frame 0x4e4); existing and choices 1024; all
 // three 995 (frame 0x4e8, 3400 B); the existing record with both counts long and the query count read directly 937
 // (3285 B). The floor's fourteen reloads still need its declaration changed in a file another lane holds this round.
+// M3 lane 11 r177 (H2M_FAST with 0x18bb80 and nine callees, the eight matched ones MATCH; control 837, difflib-aligned
+// 1015): the query count dropped and `count` read at each use 911 (aligned 1019); a long choice count alone 938 (3269 B,
+// aligned 1011); both 951 (as listed); one `choice` pointer to `choices[choice_count]` for the first loop's stores 912
+// (3292 B, aligned 994); that pointer formed as `&choices[choice_count++]` 952 (3273 B, aligned 1150). Retail's data
+// holds no pointer to the floor global (its 34 references in retail are all code), so its reloads are not from an
+// address table. Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

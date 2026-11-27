@@ -56,9 +56,10 @@ struct s_4e6950
 };
 extern s_4e6950 g_4e6950;
 
-// score 0 (was 342): MATCH. The scale coefficients are read through their own address in the
-// three scaled cases (23, 35, 24), as retail re-reads them from memory after every store
-// through out; the aggregate copies and the common switch exit stay as they were.
+// score 0 (was 342): MATCH. The scale coefficients are members of the reset storage aggregate
+// (include/reset_storage.h, since andrewnakas's #1591), so the three scaled cases (23, 35, 24)
+// read them again after every store through out, as retail does; the aggregate copies and the
+// common switch exit stay as they were.
 // score 342 (was 342): Retail length recovered; scaled cases still hoist coefficients rather than reload after stores.
 // Round 291: Native component loops for case subsets 23/35/23+35/24/23+24/35+24/all:
 // 351/351/381/351/381/381/381; all with four global-scale loops 381 (fast control 351).

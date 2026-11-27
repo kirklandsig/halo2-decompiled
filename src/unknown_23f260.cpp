@@ -416,6 +416,11 @@ PRIVATE inline bool score_team_present(long team)
 // match, 0x18dc90 295 -> 280, 0x260670 422 -> 421), but 0x19c7e0 rises 108 -> 149 (375 B: its stack parameter moves
 // into a register once &flagged_count is no longer captured; a separate scratch there, as retail passes, is also 149).
 // Held as a patch until 0x19c7e0's file is free.
+// M3 lane 4 r270: the same change re-measured on a later main is a MATCH with 0x19c7e0 unchanged at 65 (fast and
+// plain checks over the sorters and their callers agree; 0x18dc90 295 -> 280, 0x260670 422 -> 421), but it is HELD at
+// review: retail's calls into the partition sorters (0x13de6c, 0x13dfbb) push three arguments and pass the low end in
+// EAX, so nothing in retail shows a forwarded first argument; the unread parameter would be there only for its effect
+// on this caller. A form without a new parameter is still open.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {

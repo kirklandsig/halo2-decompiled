@@ -379,6 +379,11 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // Diagnostic (range check, not retail): case 5 written as the default with no `__assume(0)` 459 (1828 B), and its
 // tail is retail's (`or dword ptr [ecx+4],0x400` whole, the size guard into the found path's epilogue): any form
 // with no unreachable block lays the found path out ahead of the exit, as retail does.
+// M3 lane 15 r155 (h2m fast with 0x1d0150/0x1d7ef0/0x1eb110/0x1eb160/0x181bd0/0x1d6ad0): retail's jump table has six
+// entries and no range check, so retail's default is unreachable as well; only the guard's epilogue copy differs.
+// Tried: the unreachable default right after case 0 22 (same code); the object index read at the 0xdb4c0 call 27;
+// the found path ending in `break` with an explicit return after the loop 22 (same code); the iterator's index at
+// each use 449 (1808 B); the iterator's type at each use 192.
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {

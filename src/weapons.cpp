@@ -2109,6 +2109,11 @@ static inline bool unit_dual_wielding(long unit_index)
 // trigger reset through the file's existing weapon_clear_trigger (its definition moved ahead of this function) 129,
 // with its own `short` counter 131; the `volatile` block as the 0xc9d00 call 27 (listed, re-measured), with the
 // helper 137 (533 B); the animation pointer formed from the first `weapon` pointer as 0x1058b0 does 188 (578 B).
+// M3 lane 13 r167 (fast screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17), on main's body: the two
+// animation_set tests merged into one `||` condition 17 (same code); the `volatile` compare through the existing 0xcbd50
+// with the unit's current slot 43; weapon_get_102e10 at lookup 1 15 (lookups 1-3 retail's, the animation-test lookup
+// flips, the tail unchanged), at lookups 1-3 15 (not kept: two points); that with the `volatile` block as the 0xc9d00
+// call 27. Retail's tail is 0x1058b0's expansion with 0x101f20 and 0xcd660 inside: BLOCKED-BY 0x101f20 and 0xcd660.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
