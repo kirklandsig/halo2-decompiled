@@ -2504,6 +2504,24 @@ bool function_1900a5(long index);
 // both polls range-first 635 (2862 B, al=410, mk=291); `delay` single ternary / nested read gate / nested write gate /
 // request `long state` local / `read_records` pointer all 633; `now` before counters 643; `delay` default 2000 668;
 // users loop `players` pointer 742 (2878 B).
+// M3 lane GB r33 (78 fast trials across 7 batches with all 53 file/caller/callee peers MATCH; control 633 at 2862/2862 B,
+// 768/772 insns, al=424, mk=303; body unchanged). Major match-pursuit lead (not kept: uses /arch:SSE file flag, inline on
+// 0x647d0, if/return query_time_now + query_time_elapsed, switch polls, request due flag, if (records_used > 0), and
+// fill store order): reached 113 at retail's 2862/2862 B and 772/772 insns (first difference +0x1a -> +0x28d, al=85,
+// mk=38, all 53 peers MATCH including 0x647a0, 0x647d0, 0x18fd94, 0x199c47, 0x199c94 and 0x755d0): /arch:SSE on this file
+// alone 759 (0 peer regressions); inline on 0x647a0 breaks /O1 callers 0x199c47 (29) and 0x199c94 (46), whereas inline on
+// 0x647d0 alone keeps all 53 peers MATCH; combining /arch:SSE + inline 0x647d0 + switch logon/read/write polls + if/return
+// query_time_now + query_time_elapsed + request due flag + direct g_509454[group] completion + if (!failed) + stepped
+// existing_record under if (records_used > 0) with while (existing < records_used) + MSVC alphabetical stack-slot names
+// (group_added, record_count/stat_count/buffer_count, stats_received) + dword type/count on s_cache_property_record +
+// variant->field_8 == record->type + properties_used += 6 after j < 6 gives 113 (al=85, mk=38; 685+ of 772 insns verbatim:
+// lines 40-216, 231-268, 285-301, 360-508, 512-526, 531-811 exact). Also tried on the lead: for-loop dup scan 115 (mk=50);
+// properties_used += 6 before stepped properties++ loop 411 (2846 B, mk=44, matches add eax,0x10; inc ecx); plain indexed
+// for dup scan 527-550 (mk=48); properties_used += 6 ahead of record 594 (hoists values load into edx before cmp [ecx],5
+// and matches lines 217-218); memcpy/no record local/XUID field 411-594; view_id local / inline getter 407; clean subset
+// without due flag (two-use last_read/last_write, main fill store order) 579 (still needs /arch:SSE and inline 0x647d0).
+// Remaining 38 masked diffs on 113: identity carried in (ecx,edx,esi) instead of (eax,ecx,edx) with lea esi,[ebx-0x14],
+// cmp [mem],reg on variant->field_8 at both sites, and lines 217-230 IV load order.
 // M3 lane GA r32 (30 real + 1 flag diag fast trials across 2 batches with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x80940,
 // 0x80aa0, 0x80bf0, 0x80d70, and 0x647d0/0x18fd94 on getter trials, all MATCH; control 633 at 2862/2862 B, al=400, mk=574;
 // body unchanged): `inline` on existing `0x647d0` (`network_session_interface_get_user_properties`) in `src/unknown_054fe0.cpp`
@@ -2517,6 +2535,17 @@ bool function_1900a5(long index);
 // properties cursor; + `record_space`/`property_space` 704 at 2910 B, al=343, mk=533; + `last_write` 706, al=337; + `if (variant)`
 // per-arm `failed = true` 711, al=337, mk=492; + `dup continue` 742, al=345, mk=486; with `j < 6` 696; carried `next_properties`
 // 736 / + space 704). Positional score remains gated by `/arch:SSE` (`0x1900a5` `cmovne`) and `/Ob1` helper inlining blockers.
+// M3 lane GA r35 (84 fast trials across 7 batches with 11 peers MATCH; control 633 at 2862/2862 B, +0x1a; body unchanged):
+// Built a match-only lead (held as a patch; uses /arch:SSE, inline on 0x647d0, query_time_elapsed, and request due/duplicate flags)
+// reaching 2862/2862 B, frame 0xc0, 398 (+0x28d, mk=39) with nested direct completion (`g_509454[group].players[i].state == 2 || 5`
+// without `player` local or `continue`: drops masked diffs 380 -> 61 and matches lines 1-181 and 496-776 verbatim), direct
+// `values->players[i]` in the request loop (`no_player`), `variant->field_8 == record->type` (`mov [esp+0x20], edx`), and
+// separate team `XUID key` (`al=44, mk=29` at 2862/2862 B, recovering `lea esi, [ebx-0x14]` and `eax/ecx/edx` identity copy plus
+// `function_749b0` clamp verbatim). Remaining diffs on that lead: `jle` vs `mov eax, 0x50c474` order, `key` reload after scan vs
+// `values->unknown10` re-read, `properties_used` in `edi` vs `edx`, `cmp mem, reg` on `record->type`, and stack slot offsets.
+// Also tried on the lead: `before6_step`/`before6_idx`/`after6_idx`/`props_first`/`pbefore_id`/`no_rec_local`/`j_lt_rcount`,
+// `while`/`if (records_used > 0)`/`do-while`/`for` duplicate scans, `long`/`dword` `record->type`, `memcpy` vs `XUID` copy,
+// `byte key[12]`, `record_matches_id` inline helper, and `!=` early `continue` (398-652).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

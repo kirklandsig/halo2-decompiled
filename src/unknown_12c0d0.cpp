@@ -1288,6 +1288,22 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // getter order + switch 214 (663 B); getter order + store order + switch 185 (655 B); all four 179 (655 B: the getter
 // block and the zero tests closer, the result still in EBP and the bitmap in ESI; a store reorder and a repeated
 // priority arm, held as a patch as a lead, not kept); getter order + priority arm + switch re-measured 220 (669 B).
+// M3 lane 14 r166 (h2m fast with 0x12c960, 0x12ccf0, 0x12c990, 0x12c450, 0x12c820, 0x12cb10 and 0x12ccb0, all MATCH;
+// control 193). Reading: the bitmap is coloured last, after a cost recount, with only ESI free; retail clears EBX after
+// the build call and tests every byte flag, the loaded and candidate pointers and the switch against it. Forms: the block
+// loop counting an index up (`view->block_indices[index]`, `while (++index < 3)`) 193; `loaded != NULL` 193;
+// `result == NULL` in the fallback test 193; the resident test and the candidate in one condition 193; braces on the
+// failed tail 193 (all the same code). Restored.
+// M3 lane GA r34 (16 fast trials with all 10 file/callee peers MATCH unless noted; control 193, 645/658 B; body
+// unchanged): on `HEAD`, `s_physical_object *physical = g_4e6464` 194 (`644 B`), `s_record_pool *entries = g_4e6454`
+// 193, both 193, `s_physical_block *block` 193, nested `else { if (!unscaled) ... }` 193, nested `if (result) return`
+// 193, `(flags >> 3/4) & 1` priority 193, `long mode = g_4e6474` 194 (snaps `g_4e6470=ECX, g_4e6474=EAX`, `al=94` vs
+// `104`). On clean E1 + `if (restricted) priority = 2` + `failed = true` switch + `for`-loop calling `0x12c990`:
+// nested `if (result)` + nested `else { if (!unscaled) }` 220, `0x12c990` `s_physical_block *block` 220 (`0x12c990`
+// MATCH), `0x12c990` `s_physical_object *phys` 220 (breaks `0x12c990`); clean `do-while` E1+P+S with `block`+`phys`
+// 211. On GA25's `91` lead: `phys`+`entries`+`block` 220, `long mode = g_4e6474` 225 (snaps `pri=ECX` + `2xAND`,
+// `al=89`), `time` before `entry` 182 (`bmp=EBP`, `652 B`), hoisted `current_time = g_4e6464->time` (diagnostic) 112
+// (`658/658 B`, `mk=22`, `bmp=EBP, res=ESI, 2xAND`; takes `EDX` from `g_4e6464` so `zEBX` still does not trigger).
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

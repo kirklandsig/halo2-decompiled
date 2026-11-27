@@ -1721,6 +1721,25 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `planar_scale` into `desired` 567 (`3047 B`, al=109, mk=53, matching 167 consecutive high/low-normal lines), backup
 // `delta = limited` in Arm 2/3/both 247/508/453 (base both 579), `magnitude3d` input/both on `t09` 571/358, Arm 2
 // 2-use `rate` local 566-576, `vector2f_normalize.h` on `198` `vector3f_assign` base 554/462, typed speed-bands 465.
+// M3 lane 14 r166 (h2m fast with 0x1f0450, 0x24590, 0x1f03e0, 0x30bf0 and 0xa75d0, all MATCH; control 198). Reading: retail's
+// first arm ends `mov byte [esp+0xa], 0; jmp` into the general arm's last store `movss [edi+0x14], xmm0`; ours keeps
+// that store in the first arm because the general arm computes its output k, j, i and stores i, j, k from XMM1-XMM3
+// (retail computes and stores each row in turn, the last through XMM0). Forms: the direct arm's speed read at each use
+// 393; gravity declared first of the four flags 210 (first +0x5); the first arm's output through a `vector3f *` local
+// 588 (3027 B); the direct arm's k as `current->k + (0.0f - gravity * rate)` 569 (3027 B); the damping flag as a bool
+// cast 592 (3025 B). Restored.
+// M3 lane GA r34 (14 fast trials with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0/0x1f2a80/0x1f1e50/0x1f1ee0 all MATCH;
+// control 198, 3047/3047 B; body unchanged): on `198` base, Arm 3 damping through `planar_scale` 547 (`3047 B`),
+// function-scope `speed = state->speed` across all 3 arms 598 (`3047 B`), `rate * state->gravity` 198 (same code),
+// Arm 3 `vector3f_add_scaled(&limited, &state->normal, -0.234f, &limited)` 196 (`3050 B`, -2 under bar), `planar_scale`
+// at all 3 sites (`rotated`, Arm 2 `limited`, Arm 3 damping) 549 (`3026 B`), Arm 3 `vector3f_scale` + `planar_scale`
+// damping 547 (`3047 B`). On GB32's 348 lead (`al=44, mk=31` addr-masked, `kC=1, ts=0`): Arm 3 damping `planar_scale`
+// 355 (`3048 B`, `kC=1`), `rate * state->gravity` 348 (same code), function-scope `speed` across all 3 arms 530 (`3047 B`,
+// `kC=1`), Arm 3 gravity `drop` + `planar_scale` damping 542 (`3056 B`, `kC=1`), `vz` local + `planar_scale` damping 542
+// (`3056 B`, `kC=1`), `vector3f_add` + `planar_scale` damping 533 (`3049 B`, `kC=1`), direct `state->speed` in Arm 2
+// delta while keeping `planar_scale` on Arm 2 `limited` and Arm 3 damping 361 (`3047 B`, `kC=0, ts=1`: matches all 51
+// Arm 3 lines 311-361 and Arm 1 `jmp 0x1f0f58` tail-share verbatim, confirming only dropping Arm 2's `state->speed`
+// binding uncommutes Arm 3 `out.k`).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

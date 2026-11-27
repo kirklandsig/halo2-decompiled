@@ -2617,6 +2617,11 @@ void function_2818e0(void)
 // arms this function never runs: blend 3's rotation reading the blend weight at each use (no fraction local) 2 (0x285750
 // 17), blend 4's rotation through the same `g_5044c0` pointer local as its translation and scale arms 2 (0x288570 280,
 // 0x289580 176, 0x28aaa0 207). All restored.
+// M3 lane 1 r178 (fast screen with 0x27dff0 and the six matched walk users; control 2): in function_288572 the interpolation
+// arm's three frame-state sets written fraction first 11 (0x27dff0 11, 0x285750 9, 0x288570 9); the three frame-state
+// restores ahead of the apply call (the output restore after it) 62 (0x27dff0 71, 0x285750 87, 0x288570 373); the group
+// end as `MIN(arg_5 + 8, arg_7)` 2; the destination index initialised NONE at its declaration 2; node_destination_get
+// single-exit (`bool result = false;`, the mapped test as an else arm) 2 (the 2s the same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

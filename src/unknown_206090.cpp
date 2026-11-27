@@ -1080,6 +1080,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // three products cast to double, copy kept, 1393; the definition pointer read after the datum pointer 1346 (same code);
 // the result array and query buffer declared at the top of the function 1346 (same code, frame still 0x44 over).
 // Body unchanged.
+// M3 lane 8 r248 (fast screen with 0x2056e0, MATCH each run; control 1346; body unchanged). The magnitude helper reading its
+// input directly re-measured 1624 (5990 B): its first magnitude then stores the vector at [esp+0x80]/0x7c/0x78 and the
+// result at [esp+0x14] as retail (the x87 leaves are those stores), but the body is 248 B short elsewhere. Forms: the
+// direct read with every square cast to double 1566 (6022 B); the input copy declared `const` 1346 (same code); the copy
+// as a separate assignment 1346 (same code); the helper as `(real)sqrt(dot3f(arg_0, arg_0))` 1624 (5990 B); the copy
+// kept with the squares summed into a `double` (k, j, i) 1370.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

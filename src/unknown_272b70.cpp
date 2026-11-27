@@ -976,6 +976,15 @@ inline void actor_274f30_update(long actor_index, bool flag)
 // erase 81 (156 B); template `datum_get` 175 (67 B, breaks 0x274f30); diags: no `/Ob1` inline 47 / static no-volatile
 // 59, 4-byte handle struct by value no-volatile 59, `_ReadWriteBarrier` before erase 47 (breaks 0x274f30) / after flag
 // 47, no `/arch:SSE` / `/Ox` / `/G6` / `/G7` / `*(long const *)&actor_index` all 47.
+// GB r34 (fast with 0x274f30 and 7 peers MATCH, 20 fresh valid + 2 diag trials): early-return update 53 (breaks
+// 0x274f30 117); s_actor_274e70 references 47; union handle without volatile 59; non-forceinline erase_abs / handle
+// struct 176 (64 B, update stops inlining, breaks 0x274f30/0x2a55a0); forceinline unmasked-abs split both ways 47;
+// wrapper class with init/next methods 61 (out-of-line under /Ob1); work struct without volatile (both w.actor_index or
+// split iter/w.actor_index) 47; const-size datum_get_sz 47; actor_get in update + actor_datum_get in erase 47; dword:16
+// bitfield union in erase/update/both/274e70-only 47; offset mul in update 47; flag local 47. Diagnostics (forbidden
+// redundant Pass-B-eliminated guard `flag ? (actor_index & 0xffff) : 0` or `if (flag)` inside erase): MATCH 00274e70
+// byte-for-byte (0 diffs, 192/192 B), proving Pass-A imul CSE is the sole remaining difference (also splits 0x274f30 to
+// 568 B / 120). Body unchanged.
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
@@ -1680,6 +1689,15 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // bitfields 47 (0x274470 lost); function_274a51 3-arg and 4-arg scalar param reorders and ordinary inline all 32 (29
 // with byte busy:8); request local inside function_274a51 190; inlined request + 0x274470 slot order 68 (fixes +0x9f
 // append, 2 B shorter without the leave-call mov ecx,eax; 0xe68c0 is contributor-owned). Restored.
+// GB34 (fast with 0x274a10, 0x274da0, 0x274470, 4 callers and 11 callees all MATCH; control 32, 26 fresh trials):
+// direct inline request (matching 0x11b0c0/0x274da0, no function_274a51) + 0x274470 slot order 68 (846/846 B, al=36,
+// mk=12; fixes +0x9f append and all 160 opening insns verbatim; main slot order 72 al=30 mk=20; seat/veh/flags/ext
+// 68; veh/seat/flags/ext 67; local seat/veh vars 68; unit before seat 78; request.type after seat fields 68); on inline
+// request + 0x274470 slot order: negated ternary `!load ? 0x1d : 0x1e` 68 (on main 32), `(load != 0) ? 0x1e : 0x1d` 68,
+// `long leave_type` local 68, `0x1d + (load ? 1 : 0)` 68, `0x1d + (long)load` 75 (on main 76), `if`/`if-else` leave_type
+// 80/82, unit local before leave 68, staged obj/si/u before request.type 41 (al=36, mk=13), 4-arg helper + 0x274470
+// slot order (u/v/s/r, r/u/v/s, r/s/v/u, u/s/v/r) 41 each (al=36, mk=13), staged seat/actor helper 50, scoped request
+// / slot / both 193/200/193 (al=33, mk=10, frame changes). Body unchanged.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
