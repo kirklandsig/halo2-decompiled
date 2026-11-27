@@ -7246,8 +7246,7 @@ extern dword g_4e6494;
 // loop counter is in edi (copied to esi before function_151e0) where retail keeps it in esi, the section
 // is in esi where retail uses ebx, and ours tests the table handle once (jl) where retail tests NONE
 // then the sign (0x4c727-0x4c72e). Tried: handle != NONE && handle >= 0 for the table (204), the outer
-// counter declared before the for (184), `long type` local for the part type (188), `<= 0` for the three
-// word tests (193, retail's jbe, same score). Earlier rounds (MiniMax, 11-03 to 11-06), before the frame
+// counter declared before the for (184). Earlier rounds (MiniMax, 11-03 to 11-06), before the frame
 // matched: the handle as (handle & 0x80000000) == 0 gives retail's test/js but scored 224-240, dropping the
 // table local 200, dropping the availability flag 240, the count in a local 237, the outer loop as a while
 // loop 199, the handle tested twice against NONE 240; the material pointer is loaded before the part type is
@@ -7257,8 +7256,13 @@ extern dword g_4e6494;
 // pointer still sit in ebx, edi and esi where retail has them in edi, esi and ebx, and retail's doubled table
 // handle test (a setne'd bool test and then a fresh compare against NONE and the sign) is an always-true test
 // that the rules do not let a body keep; a 300 second permutation run on this body found nothing below the
-// base, and the part type held in a local of its own (188), the transform compared against the word's own
-// sentinel (191) and the three counts tested as not positive (195) all measure worse, so the body stands.
+// base, and the transform compared against the word's own sentinel (191) measures worse.
+// score 162 (was 184): the three section words are tested as counts (`<= 0`, retail's unsigned `jbe` at
+// 0x4c779-0x4c795) and the part type is read once into a long for its three tests (retail's `movzx ecx, word
+// ptr [esi]` and 32-bit compares at 0x4c833-0x4c84e); each alone measured 184-195, together 162. The calls still
+// read the part type from memory. Also measured: the handle's second test written out again (through the
+// context's dword, a local, nested ifs) is folded in every spelling (192, 211 with the two above), and the
+// lookup chain as fields of a local record (63 subsets) 162-199.
 // @retail 0x4c690
 void function_4c690(long tag, transform4x3f const *nodes)
 {
@@ -7286,7 +7290,7 @@ void function_4c690(long tag, transform4x3f const *nodes)
                 long section_index = (byte)permutations.indices[index];
                 if (section_index == 255) continue;
                 byte *section = *(byte **)(definition + 0x28) + section_index * 0x5c;
-                if (!*(word *)(section + 4) || !*(word *)(section + 6) || !*(word *)(section + 8)) continue;
+                if (*(word *)(section + 4) <= 0 || *(word *)(section + 6) <= 0 || *(word *)(section + 8) <= 0) continue;
                 byte *geometry = 0;
                 if (!g_4e6494 || function_12de70((s_geometry_block_info *)(section + 0x38), 0))
                     geometry = *(byte **)(section + 0x34);
@@ -7303,7 +7307,8 @@ void function_4c690(long tag, transform4x3f const *nodes)
                     short material_index = *(short *)(part + 4);
                     if (material_index == NONE) continue;
                     byte *material = *(byte **)(definition + 0x64) + material_index * 0x20;
-                    if (*(word *)part == 0 || *(word *)part == 5 || *(word *)part == 1) continue;
+                    long type = *(word *)part;
+                    if (type == 0 || type == 5 || type == 1) continue;
                     if (*(long *)(material + 0xc) == NONE) continue;
                     byte *shader = g_4e3b44[*(long *)(material + 0xc) & 0xffff].bytes;
                     byte *shader_definition = g_4e3b44[*(long *)(shader + 4) & 0xffff].bytes;
