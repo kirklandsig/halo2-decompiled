@@ -1038,6 +1038,26 @@ extern point2f *g_468778;
 // tested on the pointer 431 (1574 B); the NULL and the lookup kept and the first block tested on the pointer 425 (1574 B);
 // the unit index read at the top of the outer test 417 (1576 B); the distance limit given its maximum in an else arm
 // instead of its initialiser 382 (1563 B). Body unchanged.
+// M3 lane 3 r321 (H2M_FAST with 0x265d30 MATCH; control 280 at 1557 B, register-masked aligned 35 rows of 411). Retail
+// reads the unit index from the actor at each 0x110ab0 call (`mov ebp, [ebp+0x18]` in the field_12 arm, `mov eax,
+// [ebp+0x18]` in the facing arm); with that and the first facing dot as `dot3f(&local_7->unknown2c, &local_0->unknown290)`
+// in the condition (414, 1549 B, re-measured) the dot is retail's to the instruction, because the helper's pointer
+// temporaries are numbered after every named symbol and the view's after the actor's, so each product sorts view-first.
+// Allocator ledger on that form: the view-and-facing candidate ranks 176 (four references in the dot block, weight 6)
+// and the slot 157 (222 of references less 65 for 31 blocks it only crosses), so the facing pointer takes ESI, the slot
+// EBP and the actor EDI with a spill (frame 0x44). A forced-ranking search (40 links) found the one decision that
+// separates the two: the facing candidate in EDI gives retail's frame and registers (the search's best 293 on its own
+// positional scale, 14 rows of other differences left: scratch registers at the two unit-index reads, the weight dot's
+// operand sides, the second prediction's store order). Retail's weight dot is facing-first (`movss xmm4, [edi+8];
+// mulss xmm4, [ebx+8]`), which under the same ranking needs the facing operand numbered after the velocity pointer,
+// as a helper's pointer temporary is. Forms: `dot3f(local_8, &local_0->unknown290)` in the condition 412 (1549 B, the
+// same rotation); the actor's facing through a named pointer for the first dot, declared ahead of the view calls 277
+// and at the dot 276 (a gain of 3-4, not kept: the k and j products turn view-first, the i product follows the two
+// pointers' numbers), without the unit-index local 395 / 395, declared at the top of the block 395; diagnostics: the
+// dot's i term through the facing pointer with k and j through the view, the actor through the named pointer 402
+// (1573 B), without the pointer 392, with the unit-index local 385 (the i read folds back onto the view each time and
+// the facing pointer is formed after it, so the view keeps EBX). Open: what puts the slot ahead of the facing pointer
+// in the colouring order (20 points), with every reference of the two already matching retail's. Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

@@ -1135,6 +1135,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `else` 527 (920/921, mk 40); `401` base 404 (mk 49); `memcpy` loc, `||` / positive nested sphere height, nested marker
 // `if`, `local_a47c5e` before `center`, and `object_radius` after `distance_squared` all tie 528 (mk 36); 1-expr vehicle
 // dot 528 (mk 37).
+// GB35 (25 valid fast trials across 2 batches with 0x25d810, 3 callers and 10 matched file peers; control 718 at 3731 B,
+// +0x4a; body unchanged): moving `previous_direction` to slots 1/7/8/9/10 breaks matched 0x29a190 and regresses 0x2c41b0
+// (675 -> 731..740), scoring 718 on main (722 + retail bundle, 861 + basis_dot_xzy, 723 + distance_sq3f) and 529/530 on
+// the match-only `else straight = true;` base (489 + basis_dot_xzy / dword flags, 483 direct type-7 at 3745 B); on main's
+// param order (12/12 matched peers MATCH): `bool straight = false;` + inner & outer `else straight = true;` 865 (+0x3c),
+// inner `else straight = true;` 726, field-by-field `location` copy 680 (3734 B, frame 0x2cb0, al 614), `(k^2+j^2)+i^2`
+// object distance 718, `s_ai_object *` `unit`/`self_unit` 718, sphere `pz`/`cz` locals 742 (3722 B)/720 (538 on MP base).
 // M3 lane GA r34 (24 fast trials across 2 batches with 0x25d810, callers 0x29a190/0x29cbb0/0x2c41b0 and 11 file peers,
 // all 12 matched peers MATCH, control 718 at 3731/3731 B, +0x4a; body unchanged): on 718 base, clean retail bundle with
 // `(j+k)+i` sphere moving dot 726 (`mk=46`; + early `enabled` 725 `mk=42`); the unit index in a named local 720; type-7 no

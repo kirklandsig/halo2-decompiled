@@ -1946,6 +1946,23 @@ long function_2197f0(real gain);
 // Forms: the release arm as `gain +=` 87 (same code); the attack arm as the interpolation plus the gain 115; the
 // reciprocal taken from the field with the clamp value divided by the fade-in copy 87 (same code); the attack arm's
 // ducking pointer const 87 (same code); the hold test negated with the hold arm first 121 (680 B). Body unchanged.
+// M3 lane 1 r179 (h2m fast with 0x1251e0, 0x221810 and 0x1295e0, all MATCH; control 87): the 54 form above rebuilt as the
+// release interpolation held in a local and added once behind a released flag, with the current arm's clamp written
+// `t = ambience_fade / fade_in; if (!(1.0f > t)) t = 1.0f;` (54 at 678 B; the gain plus interpolation held instead 94, the
+// flag alone 89, the held interpolation with the current clamp unchanged 122 at 634 B). On the 54 form: a fade-out local
+// for the window tests and the product 59; that local without the fade-in copy 67; arm 1's clamp as the ternary of the
+// r172 lead 170 (646 B: the current arm's tail then cross-jumps into arm 1's), with the fade-out local 175; arm 1 as
+// `gain +=` 54 (same code). On the 54 form with that ternary, arm 1's sum written interpolation first 76 (679 B; every
+// block in retail's order and length, left: the frame (0x10, a stack copy of the gain for the by-value operand where retail
+// loads the gain's home into a register) and one XMM permutation: elapsed XMM2/XMM3, inverse XMM1/XMM2, one XMM3/XMM4);
+// with the fade-out local 80; without the ternary 149 (682 B); arm 1's sum as `gain.value += ...`, or through the
+// constructor either way round, 170 each (the cross-jump returns); the time sum product first 76 (same code) or in retail's
+// product order 77; the current clamp back to main's form 132 (635 B: arm 2 and the current arm then share a tail); the
+// fade-out term, the ramp or the ambience difference named ahead of the sum 76/76/76 (the term in retail's order 77).
+// Reading on the 76 form: the allocator makes arm 1's product, time and t one value in XMM0 (the sum's destination is the
+// product) and ranks the inverse 40, elapsed 32 and the 1.0 20 after it; retail's sum lands in the late-loaded ambience
+// difference (XMM1, after the fade-out time's last use), which pushes the inverse, elapsed and 1.0 one register up.
+// Not kept: the released flag and the swapped clamp are match-only forms. Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
