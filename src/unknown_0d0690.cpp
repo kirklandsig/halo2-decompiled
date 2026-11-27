@@ -1835,6 +1835,16 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // constant returns 566 (first +0xc); nested with `if (parameters == NULL) return false;` after the scan 561 (+0x9, its
 // own epilogue); the last two with the guard `0 < count` 572 / 572 (2174 B); the last two with (type, query, block)
 // and 0xd4080's call 561 / 566 (0xd4080 455). Body unchanged.
+// M3 lane GA r25 (34 fast trials with 0xd4080/0x3db00/0x3dfe0/0xd1e10/0x117c80/0x13b390; control 529, 0xd4080 378,
+// 0x3db00 MATCH, 0x3dfe0 21; body unchanged): on main's 529 base, cross3f_staged in lighting_rotate 530, projection
+// before cross3f_staged 561 (0xd4080 488), two-return lighting_function 529, pinned_real in lighting_pin_color 599
+// (0x3db00 lost) and on direction0.k/luminance 538, vector3f_negate_ab+normalize3d for direction0 581 (0x3db00 lost),
+// existing vector3f_scale for the three color scales 524 (2191 B, -5 under keep bar). On lane 2 r146's retail-order
+// lead (re-measured 182 / 0xd4080 295 at 2189/1870 B, 0x3db00 MATCH): adding (type, query, block) + two-return
+// lighting_function + projection ahead of cross3f_staged pushes the pair to 171 at 2189 B (+0x19, mk 60; lines 4-53
+// minus 1 insn, 72-159, 320-569 verbatim) with 0xd4080 239 at 1870 B and 0x3db00 MATCH (held as a match-only lead;
+// with inline k/j/i rotation + lightmap-first blend 282 at +0x2b, al 87, mk 58, 0xd4080 289; ordered first normalize
+// + d0 scale order 481, mk 59).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

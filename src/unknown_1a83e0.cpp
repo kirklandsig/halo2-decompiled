@@ -112,6 +112,16 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
 // update orders kij 71 (mk 13), ikj 64 (al 41, mk 13; + `length_squared` `+=` jki 60, al 35, mk 13; `t`-first 64/71/205;
 // separate scalars 204/176/236; `sq` ijk 240/225; NOT kept: retail length_squared evaluates k, j, i and seg.k/seg.j stay
 // xmm4/xmm3); on HEAD: `length_squared` `+=` kji or jki 78. Body unchanged.
+// M3 lane 14 r162 (fast). Lead: with 0x11e000's byte-matching single-exit body (the existing helpers, `real result;`,
+// held elsewhere because 0x1a8fa0 then inlines it at its first site, 428), `(real)sqrt(function_11e000(point, start,
+// segment))` at both sites is inlined as retail does: 1578 B, the second block exactly retail's and the first block's
+// dot (k, j, i) and else branch (k first) too, aligned 32 against this body's 90, but 205 by position. Left, all in the
+// first block: the segment's k and j in xmm4/xmm3 (retail xmm3/xmm4; the three reloads tie at 104 and colour i, j, k),
+// the update computing k last in the scale's register where retail computes it first in the segment k register, so
+// the sum ends in xmm3 and its store merges after the join (retail stores per branch). On that form the segment's
+// stores in the five other orders 181 (i, k, j: retail's segment registers, its store order and update still differ),
+// 214 (j, i, k), 239 (j, k, i), 187 (k, i, j), 225 (k, j, i). A forced-ranking search needs three or more decisions
+// (the update's k value and both segment reloads forced: 67 to 243). Body unchanged.
 // @retail 0x1a83e0
 bool __stdcall function_1a83e0(long arg_0, short *arg_1, real *arg_2, point2f *arg_3, bool *arg_4)
 {

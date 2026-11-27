@@ -2222,6 +2222,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // difference is one rotation step. On it: the compare's operands swapped 7; the reference bound to the read header's
 // checksum with the field on the left 7; a plain `long` copy in place of the reference 7; the close test through the
 // record pointer (`file->handle`) 7 (same code each). Body unchanged.
+// M3 lane 16 r196 (fast with 0x213760, 0x213800, 0x2138f0 and 0x2149c0, all MATCH; control 33). Reading from the
+// frame packer (dense slots lowest, density = references x 1000 / size): main's else-arm zero store gives the count 3
+// references (750, below the size query's 500), the swapped +0x24/+0x28 pair; the close tested as `(!resized || count
+// != 0x800) && open` drops that store but gives `resized` a third reference (3000, tied with the remove-later byte), so
+// the byte homes reorder, the index lands at +3 and the frame shrinks to 0x1140. Retail reads `resized` once and stores
+// no count on the not-resized path, so both counts have 2 references and the not-resized arm reaches the close's handle
+// test without testing `resized` again. Forms (the no-store close test with the count declared at the write block, the
+// size block, the size-mismatch arm, the loop body and the function top) 157 each (same code); the size query
+// initialised to zero at its declaration 41 (930 B: the two counts tie at 3 references and take retail's homes, but the
+// store is an instruction retail lacks), that with the no-store close test 165. Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
