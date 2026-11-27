@@ -289,6 +289,14 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // `tag_link` 29, single-exit tail 29, offset+base byte pointer 29, `g_4e3b44` byte arith/local first 29/29, `0x101ec0`
 // selected-ref idiom 29 (all keep `[ecx+eax+8]` SIB fold and `g_4e3b44` in EAX); `link` ptr in `!blocked` 31;
 // `object->links` ptr 265; dual-wield partner inline 298 (613 B, still folds `[eax+edx+8]`).
+// M3 lane GB r29 (24 valid fast trials, all 6 file peers MATCH; body unchanged): no `flag9` local 31, `blocked` after
+// duration 31, `real bounds[2]` 31, early `link_rate` / `tag_off` / both offsets 31, `rate *=` 31, `void *links` 31,
+// `long tag_index` 31, a tag-block `void*` accessor 31, `tag->links[(long)link_index]` 31, `object->links[(long)link_index]`
+// 31, `void *object` + `.bytes` 31, nested `rof` struct 31, no-`/Ob1` + byte-offset `object_get_102100` 31; `blocked` before
+// `result` 33; `duration <= 0.0001f` 38; late `s_object_link *link` 172 (716 B); `rate = 0` + reordered duration 197 (707 B);
+// late `tag_link` 203; `(word)` tag index 203 (704 B, breaks 3 peers); scalar interp helper 205 (711 B); late `result` 211;
+// by-value `real_bounds rof` copy 232 (733 B, breaks `[ecx+eax+8]` fold only via 8-byte stack copy, still loads `[ebp+0x2d4]`
+// first and keeps `g_4e3b44` in `EAX`).
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {
