@@ -1097,6 +1097,15 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // fill on its own counter 34; the fill as a `while` storing `parties[i++]` 34 (same code each); total written out at
 // each use 74; the copy written in both arms of the maximum test 51 (next_party becomes a register candidate). Body
 // unchanged.
+// M3 lane 6 r251 (H2M_FAST with 0x91e30 MATCH; control 34). Allocator reading: the player count is coloured second
+// and sees EAX at score 1 (EDX 0) because next_party (pass-1 priority 42, cost 12) is still pending with the fill's EAX
+// preference (the fill stores next_party itself); a forced-ranking search: next_party's first-pass cost set to 0 gives
+// 3 (the player count takes EAX; the total's `lea` and the clamp's `and` operands left), player-count priority moves
+// leave 34. Diagnostics, reverted: `(short)` on the fill value drops that point; next_party's address in a volatile
+// pointer keeps it a first-pass candidate. Forms: the fill through a pointer to the first extra slot counted by the
+// extra count 67 (191 B); a `slots` pointer for the copy, the fill and the call 34 (same code); the fill bound `total >
+// i` 35; `total` and `open_slots` const 34; the maximum test as `!(next_party > party_indices[i] + 1)` 34 (same code).
+// Body unchanged.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

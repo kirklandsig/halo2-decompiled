@@ -1065,6 +1065,15 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Tried: the first activation length as `(real)sqrt(length_sq3f(&delta))` 668 (2880 B, masked 242), the second
 // length that way 668, both 668 (same code each); the impulse added through the existing vector3f_add 678 (2876 B);
 // the alignment as dot3f(a, d) 567 (same code). Body unchanged.
+// M3 lane 2 r157 (h2m fast with 0x1eb6f0, 0x1ed4a0 and 0x30bf0; control 567). Allocator reading: d is a candidate over
+// the update block (priority 16, the only free register left, EBX) while q's starts at the output copy (priority 38,
+// EDX), so nothing ranks q into EBX from entry. Forms, each with one file-local `__forceinline` step helper for the three
+// identical clamps (fast flag and distance in, the 12/8 factor picked first and unconditionally as retail does, then
+// t and the capped step): the helper alone 719 (2854 B, frame 0x20; q then loads into EBX at entry as retail, but EDI
+// takes d, and 0x1eb6f0 drops to 22, its two register arguments moved); with a pointer local copied from q at the top
+// and re-pointed at the zero vector for the first tick 717 (2860 B, 0x1eb6f0 22); with `vector3f qr = *(counter == 0 ?
+// g_4687a4 : q);` 711 (2851 B, frame 0x24 again, 0x1eb6f0 2: the out pointer and the scratch sample swap ECX/EDX); with
+// the output copy written member by member 721 (0x1eb6f0 22); both of the last two 746 (0x1eb6f0 22). Body unchanged.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

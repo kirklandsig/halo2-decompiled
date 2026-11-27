@@ -567,6 +567,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // locals and the tests split 376 (same code here; 0x7e210 882). Here: the gather-exit live test written flag first 406;
 // the host-id test as `!live || !flag` 376 (same code); the transition flag declared ahead of local_12 376 (same code);
 // the owner's +0x3c read ahead of the first elapsed time 419. Body unchanged; still BLOCKED-BY 0x5b080's call-site depth.
+// M3 lane 12 r196 (fast screen with 0x5b080, 0x706f0, 0x71e00, 0x72140 and 0x71ff0, all MATCH each run; control 376): the
+// shared clock helper written with one exit (a result local in an if/else, as the matched session file's own clock helper
+// is) 376 (the same code: the start fields still load after the clock); the two flags declared at the else arm's top 379,
+// at the function's top 438 (first +0x18); the team array and the ratings record declared ahead of the other locals 376;
+// the property value declared beside them with its clear in place 376 (the same code each). Body unchanged; still
+// BLOCKED-BY 0x5b080's expansion at this site (the build's inline calibration).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

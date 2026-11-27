@@ -1829,6 +1829,22 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // use 568 (same code); `if (count <= 0) return false;` ahead of the scan 568 (2189 B, but a separate early epilogue);
 // the body in the found arm with `return true;` and one `return false;` at the end 566 (2189 B, frame 0x28, entry to
 // +0xc; block and query still arrive swapped), with the count read at each use 566 (same code).
+// M3 lane 6 r251 (h2m fast with 0xd4080 378, 0x3db00 MATCH and 0x3dfe0 21 unless named; control 529): the found block
+// nested in the count test (retail's exit layout: false hoisted ahead of the count test, a fresh false for no entry)
+// with `bool result = false;` first and `result = true;` closing it 573 (0x3db00 lost, 8; 0xd4080 508); nested with
+// constant returns 566 (first +0xc); nested with `if (parameters == NULL) return false;` after the scan 561 (+0x9, its
+// own epilogue); the last two with the guard `0 < count` 572 / 572 (2174 B); the last two with (type, query, block)
+// and 0xd4080's call 561 / 566 (0xd4080 455). Body unchanged.
+// M3 lane GA r25 (34 fast trials with 0xd4080/0x3db00/0x3dfe0/0xd1e10/0x117c80/0x13b390; control 529, 0xd4080 378,
+// 0x3db00 MATCH, 0x3dfe0 21; body unchanged): on main's 529 base, cross3f_staged in lighting_rotate 530, projection
+// before cross3f_staged 561 (0xd4080 488), two-return lighting_function 529, pinned_real in lighting_pin_color 599
+// (0x3db00 lost) and on direction0.k/luminance 538, vector3f_negate_ab+normalize3d for direction0 581 (0x3db00 lost),
+// existing vector3f_scale for the three color scales 524 (2191 B, -5 under keep bar). On lane 2 r146's retail-order
+// lead (re-measured 182 / 0xd4080 295 at 2189/1870 B, 0x3db00 MATCH): adding (type, query, block) + two-return
+// lighting_function + projection ahead of cross3f_staged pushes the pair to 171 at 2189 B (+0x19, mk 60; lines 4-53
+// minus 1 insn, 72-159, 320-569 verbatim) with 0xd4080 239 at 1870 B and 0x3db00 MATCH (held as a match-only lead;
+// with inline k/j/i rotation + lightmap-first blend 282 at +0x2b, al 87, mk 58, 0xd4080 289; ordered first normalize
+// + d0 scale order 481, mk 59).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2256,6 +2272,14 @@ real function_30bf0(vector3f *vector);
 // normal copied component by component in four orders 181 each (same code), normalize_inline 263 (1876 B), the main
 // file's ordered-square helper with `(k*k + i*i) + j*j` 354 (x87 squares then retail's, but its j and k scaling loads
 // the inverse first), that helper scaling through vector3f_scale 357. All diagnostics restored; body unchanged.
+// M3 lane 6 r251 (H2M_FAST with 0xd37f0 529, 0x3db00 MATCH and 0x3dfe0 21 each run; control 378). Reading: retail loads
+// each next clamp compare before the previous component's store; one pointer passed as both the clamp's input and output
+// gives that interleave, so the helper's separate in/out pointers block it. Forms: the three final clamps through one
+// colour pointer used as both 453 (1870 B: the interleave as retail, but the zero and one constants swap to xmm6/xmm4),
+// through `color3f &` references 455 (1870 B); a new in-place clamp helper (one colour pointer and the bounds) 370 (a new
+// one-caller helper, not kept: lead); the nine fields clamped in place with lighting_pin and the bound locals 366 (the
+// helper's body written out, match-only: lead); the file's existing surface_pin_color 512 (1807 B: it stores only out of
+// range). Body unchanged.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

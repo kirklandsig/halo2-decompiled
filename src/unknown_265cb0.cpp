@@ -1201,6 +1201,11 @@ real function_30bf0(vector3f *vector);
 // on PIN+split (76): inline posture_scale helper 76 (+ seat ptr 70, al 12, mk 19), plane.d z+y+x 76; direct &secondary/&primary
 // with MAX ternary, real* pointers, reversed if, or real limits[2] array all cleanly pair amount+distance_squared (+0x1c/+0x18)
 // with result=+8 and range=xmm0 but keep seat-loop xmm1/xmm2 reloads (190/190/190/195 at 1331-1334 B).
+// M3 lane 6 r250 (fast screen with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84): the first delta
+// through the existing vector3d_from_points3d 142 (1308 B, retail's length, but the squared length's rows and the seat
+// crosses reorder); `forward` as a non-const pointer 84 (same code); the seat count as a long 193 (1318 B); `result`
+// renamed so it sorts after the other cells 84 and the seat maxima a and b given longer names 84 (same code: names do
+// not move these homes). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -3276,6 +3281,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // replaced by the `state` local 425 (retail calls it twice); the players loop's unit index read ahead of the player test
 // 162. The two player searches stay this body's code because their own definitions (0x1c8150, 0x1c8180) sit in an /Ob1
 // file whose seven other retail callers keep them as calls. Body unchanged.
+// M3 lane 14 r163 (H2M_FAST with 0x26be00/0x26be30/0x25d690/0x25d740, all MATCH; control 158). Reading: retail's player
+// lookup is 0x1c8180 expanded (pointer zeroed at the loop head beside the table load, the index a short widened for a
+// long compare, `movsx eax, si; cmp eax, -1`); this file's written-out search compares the short and zeroes the pointer
+// after it, and the getter stays a call (its file is /Ob1): BLOCKED-BY 0x1c8180's file flags. Forms: the player pointer
+// started NULL at the loop top 365; that plus the found slot in a long local 372; the relative difference ahead of the
+// velocity copy 253; the distance test right after the direction normalize 172; the reference query after the two
+// vectors 283 (2898 B). Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

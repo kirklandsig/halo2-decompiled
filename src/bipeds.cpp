@@ -8176,6 +8176,18 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // (219 each); field-by-field `aim` copy in 2 arms or outer join / brace init / `real_point3d_set` before or after clamp (273/277,
 // `1594 B`, `target.x/y` copy-propagated); `aim` in 3 arms (240, `1645 B`); scoped `target` + `target_z` (224, `1624 B`);
 // flat `if/else if/else` (332); by-value target-point helper (531/547); inline `j *= inv; k *= inv` normalize (237 on 219, 206 on `t05`).
+// M3 lane 11 r174 (h2m fast with 0xe5bc0, 0xdef60, 0xde9d0, 0xe63b0, 0xdf5f0 and 0xb9dd0, all MATCH; control 219):
+// retail carries the aim copy in ECX/EAX/EDX from each producer arm to the join (the copy's loads moved into the arms,
+// the stores after the clamp); ours loads and stores at the join. Forms: the target's height and radius zeroed at the
+// top of the else arm 260 (1633 B); `aim = target` in each outer arm re-measured 201 (1637 B: every slot is then
+// retail's, the copy still stored in each arm; moving the copy into the arms is match-only), that with the direction
+// written as three rows (no address of aim) 201; the direction as three rows on the kept body 219 (same code); the
+// copy member by member in all three producer arms 273 (1594 B, merged and propagated); the producer block as a new
+// inline helper returning the point by value 513 (1497 B, 0xe5bc0 lost); `target = nearest_b` member by member 226
+// (1639 B: the target's z load is then moved into the arms, as a float), through real_point3d_set 226, member by member
+// with the per-arm copy 264. Diagnostics: aim as a plain three-float record copied whole 219 / 201 on the per-arm body
+// (the point type with its array overlay is not what keeps the copy in memory); the clamp and direction in a new inline helper taking the
+// point by value 244 (1612 B), reading the target's z through its pointer 219.
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {

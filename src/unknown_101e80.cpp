@@ -275,6 +275,14 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // `real_bounds *` local / `object_link_get` / duration-from-tag inline all 29 (same code: `tag_link` still folds into
 // `[ecx+eax+8]`); `link` after `tag_link` 31; `rate = 0` no-else 197 (707 B); bools after duration 179 (708 B);
 // `slots[2]` array 232; diag `s_tag_link *const &` 29 (still folds), `volatile` ptr 247. Body unchanged.
+// M3 lane 14 r162 (fast). Reading: retail's entry block differs by register choice, and the schedule follows from it:
+// retail keeps the tag table in EBP from the top (the tag then takes EBP too), the tag index in ECX and the 0xec product
+// in EAX apart from the tag link (ECX), so the links pointer is read once as the add's memory operand; ours gives the
+// product the tag link's register, reads the links pointer into EAX and forms the sum last, after its three reads
+// (forced scheduler heights and ready times change nothing: 40 runs at 31). Tried: the object through
+// object_get_102100 29 (only the object read's operand order moves), the object's header as a local with the object
+// read from it 30, the duration and its test in a block of their own 31, the tag link taken from OBJECT_TAG(object)
+// ahead of the tag local 31, an object link pointer declared after the tag link for the rate 31.
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {

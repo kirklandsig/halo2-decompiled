@@ -2522,6 +2522,15 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // reads colour B early into EDI and keeps the system in ESI only up to the 0x1751d0 call; ranking reading on the
 // both-early form: colour B 36 (two references in the nine-candidate block) below the system's 52, so the system takes
 // EDI and colour B spills. A lead for a match only (one-use named result and a moved read).
+// M3 lane 1 r175 (fast screen with 0x178eb0, 0x179020, 0x177040 and 0x176f60; control 128; body unchanged). The early-colour
+// lead (colours read after the spawn stores, both queries in the colour call, location_point_in_zone_inline with
+// location_zones.h included) re-measured 184 (568 B). Ranking reading on it: in the join block (eight referenced candidates)
+// colour B scores 32 (read + use) and the system's entry piece 46 (three uses there plus the set_location block), so colour B
+// needs one more counted reference (16 points) or the system one fewer; a forced-ranking search over the system's pieces
+// found nothing under 184. On the lead: colour B passed through a `dword const &` 184, colour A so passed 184 (same code
+// each); the spawn's location index stored after the colour call, scale and unknown just ahead of the loop, 184 (0x178eb0 32,
+// 0x179020 28); the location cursor initialised just ahead of the loop 167 (552 B); both colour locals read at the top,
+// ahead of the cluster test, 193 (568 B).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -4143,6 +4152,18 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // declaration and the 0x176f60 call 91 (340 B, 0x176f60 matched: retail's convention, system in EAX, but the address read
 // loads the effect index first and folds the pool base, so EBX is pushed late); that with the system looked up first, or
 // with only the address taken ahead of the system lookup, 116 each (342 B). Body unchanged.
+// M3 lane 1 r175 (fast screen with 0x176f60 and 0x178c80; control 93; [lost] = 0x176f60 no longer matches; body unchanged).
+// Lane 2 r155's spawn-record lead rebuilt 53 (334 B); its per-call mode form 103 [lost]. Ranking reading: per call, the
+// effect index (112) is coloured before the effect pointer (107) and takes EAX, so LTCG passes it in a register; the cached
+// mode is the colour block's extra candidate that lifts the effect to 113. Naming the tint lifts it the same way (the stack
+// convention comes back), but the byte tint can then only stay in EBX across the second query, so EBX carries a penalty for
+// the type object (it takes ESI), the system (EDI) and the definition (EBX). With the type object forced into EBX the frame
+// is retail's 0x54 and 76 is left (72 with the colours declared first): the second query's vtable load order, the mode
+// read's scratch pair (retail's `movzx` reuses the reloaded definition's EAX) and the loop's pool base (EBX against EDI).
+// Forms on the per-call spawn-record form: the tint named 126 (352 B); tint and multiplied named 127 (357 B); the tint named
+// with the second 0x1751d0 result unnamed 109 [lost]; the tint named with both colour locals declared ahead of the record 126
+// (the colour block's loads then follow retail's order: location index, colour A, colour B); that with the definition's
+// location index named 126; that with the second result unnamed 109 [lost].
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

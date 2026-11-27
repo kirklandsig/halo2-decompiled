@@ -884,6 +884,13 @@ s_1a8a10 g_4453c0[] =
 // assigned, `[2] += j * y`, negations read back) 28 (the folded j reload and the left product on the original i appear,
 // but the copy's j loads after the left sum, x takes XMM3 and the left sum adds into the negated product); that with the
 // copy's j assigned first 30; both sums accumulated in the array in two steps each 92.
+// M3 lane 4 r267 (fast screen with 0x1a8c30, MATCH; control 17): the final switch's cases 2 and 3 as an aggregate copy of
+// the point into the value array 104 (548 B), with y carried in a scalar and stored after the copy 104; the point and the
+// value array as one six-real array (the values passed from its third element) 27, with y stored there after the copy 88
+// (the store sinks past the sums, j read once), with the copy in each arm between the x and y stores 41 (the copy loads
+// merge into the join ahead of the y store, j read once). So a point store, even into an escaping buffer, never splits
+// the two j reads; they split only where the negation is the first j read (re-measured: i in a scalar with j read in
+// place 31, the left sum's i * y then computed before the negation and the plain j load after the left sum).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

@@ -67,7 +67,6 @@ extern "C" void _ReadWriteBarrier(void);
 // @retail 0x291740
 void function_291740(short arg_0, long arg_1)
 {
-	long const *local_2 = &arg_1;
 	s_291746 *local_0 = (s_291746 *)g_4e0350;
 	s_291740 *local_1 = &local_0->field_244[arg_0];
 	switch (local_1->field_4c)
@@ -75,7 +74,7 @@ void function_291740(short arg_0, long arg_1)
 	case NONE:
 		break;
 	default:
-		g_50242c = *local_2;
+		g_50242c = arg_1;
 		_ReadWriteBarrier();
 		function_2093d0(local_0->field_1bc[local_1->field_4c].field_24, false);
 		break;
