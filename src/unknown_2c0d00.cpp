@@ -1103,6 +1103,17 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // (mk 47); + early `enabled` 401 (3731/3731 B, +0x91, al 166, mk 45); + nested vehicle dot 543 (mk 40); + direct
 // `+0x248` reread 528 (3731/3731 B, +0x91, 921/921 insns, al 131, mk 36: only 7 small local sites remain); `>` gates on
 // bundle 408 (mk 49); `else straight = true;` alone on 718 / on bundle 544 / 550 (mk 62 / 44). Body unchanged at 718.
+// M3 lane GA r30 (23 fast trials across 2 batches with 0x25d810 and all 11 matched peers MATCH, 0x29cbb0 378 and
+// 0x2c41b0 675 unchanged; control 718 at 3731/3731 B, +0x4a, fr 0x2cac, al 159, mk 68; body unchanged): on 718 base,
+// `vehicle_index` moved inside `if (dot > 0.0f)` 887 (fr 0x2cb0, mk 61; + retail bundle 884, mk 47), `memcpy` location
+// copy 718, `||` sphere height 718, positive nested sphere height+distance 718 (mk 60), clean all-4 retail fixes with
+// `basis_dot_xzy` 861 (3713 B, mk 63). On GA28's 528 match-pursuit base (3731/3731 B, 921/921 insns, al 131, mk 36):
+// `(direction->j * difference.j + difference.k * direction->k) + direction->i * difference.i` sphere moving dot 529
+// (drops masked diffs 36 -> 34: 887/921 insns match masked); `basis_dot_xzy(&delta, direction)` / `(direction, &delta)`
+// 487 (3731 B, 921/921, mk 59; + all-4/5 fixes 488); direct type-7 flags 521 (3713 B, mk 46); `combined_flags` inside
+// `else` 527 (920/921, mk 40); `401` base 404 (mk 49); `memcpy` loc, `||` / positive nested sphere height, nested marker
+// `if`, `local_a47c5e` before `center`, and `object_radius` after `distance_squared` all tie 528 (mk 36); 1-expr vehicle
+// dot 528 (mk 37).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
