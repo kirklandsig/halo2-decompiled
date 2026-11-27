@@ -3,6 +3,7 @@
 #include <string.h>
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "unknown_11cc90.h"
 #include "bit_vector.h"
 #include "unknown_19ec40.h"
 #include "unknown_1efac0.h"
@@ -489,155 +490,6 @@ long function_243b10(long key_b, bool team_only, long *second)
 
 PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg_1, point3f *arg_2);
 
-// score 2 (was 173): 711 bytes as retail; only the other position's z copy is stored one instruction
-// later (after `fld st(1)`, filling the load latency); retail stores it first.
-// Earlier (173): frame 0x40 against retail's 0x44. Retail keeps the slot table in EBP through
-// the inner loop (re-reading g_51ec80 when EBP is borrowed, and in the marker select's else arm) and
-// keeps the inner index on the stack; ours re-reads the table at its use and keeps the index in EAX.
-// Retail's x87 distance squares dx first and pops it there; ours squares dy first.
-// Round 77 (plain): no table local 200; the select's else arm through the global 200; the result index
-// named first 173; the marker position through function_2417a1 (moved above, retail's y-first copy
-// shape) 172; the index declared in the for 173; the count named result_count 173.
-// Round 8 (plain, on the function_2417a1 copy): the distance through magnitude2d 172; the other
-// position read at each use 223 (666 B); the table local at the loop top 169 / 180 (the slot moves to
-// the stack, caller 0x240160 lost); the marker select as if/else 188; the index declared first 172.
-// Round 87 (plain): the entry as `marker_entries + results[j]` 173, the sum as dy * dy + dx * dx 173,
-// a flags local for the three clauses 173, rejected markers `continue` 173 (all four identical code);
-// the squared distance accumulated (`d = dx * dx; d += dy * dy;` as 0x1b0cd0's file does) then sqrt
-// 173: that gives retail's exact x87 sequence, so keep it in any later fix. Left: retail spills the
-// inner index (the frame's extra dword) and keeps the table in EBP through the inner loop; ours keeps
-// the index in EAX and folds the entry flags load to `[ecx + ebp + 0x16]`, borrowing EBP.
-// Round 89 (plain, each with the accumulated distance): 0x243b10's `if (count > 0) do ... while`
-// loop 186; an options local as 0x243b10 has 171 (clause code identical, only the key's registers
-// move); the select through the global with the table local after it 169 at 717 B (the slot moves
-// to the stack, caller 0x240160 lost); the index renamed 171 (identical); ctf_options() in the key
-// and the marker test 173; the position through marker_position() 173; the table at each use 200.
-// Retail loads the team mode into EBP while EAX still holds the options pointer (ours coalesces both
-// in EBP), so EAX looks busy in retail's clause 1 too; the index spill is the cause to find.
-// Round 71 (plain, each on the accumulated distance, which alone stays 173): the select's else arm
-// through the global 200; both select arms through the global 200; the inner index and count
-// declared at function scope 173; the table local assigned at the outer loop top 169 (the slot
-// parameter moves to the stack and caller 0x240160 is lost). Retail also keeps count in memory
-// from its definition (stored straight from EAX) and stores j = 0 at once.
-// Round 111 (fast; a fast image of this function alone builds 0x19ec40 differently, so include
-// 0x1e5bb0/0x1e2a90/0x29b00): accumulated distance through a distance2d helper 173; ten placements
-// of the j/key/count/point declarations 173 (193-195 with the point read before the query); named
-// result index 173; table local inside the `marker_index != NONE` block 169 at 717 B, but matched
-// caller 0x240160 drops to 46. Original restored.
-// Round 176 (fast, each on the accumulated distance, which alone stays 173): an options local per inner
-// iteration 173 (identical); a short marker index 180; the array selected by k, then indexed, 204
-// (caller 0x240160 lost); the y-first copy helper function_2417a1 172 (the copy is then retail's; the
-// count stays in ECX and the index in EAX where retail keeps the count in EAX and spills the index);
-// sqrtf 173. The table local at the loop top or in the marker block (169, 717 B) hoists the table to
-// EDI and moves the slot to EBP from the stack, so it is not retail's allocation either.
-// Round 45 (lane 11, plain; a fast image builds 0x19ec40 differently here, 203 for this body): the distance's
-// squares named (`dx_squared`, `dy_squared`) 173; the delta as a vector2f through dot_product2d 173; a named
-// squared distance 173 (all identical code); the x maximum written bound-first like y and z 152 (701 bytes, a
-// positional gain only: the x compare then loads the bound into a register where retail compares the distance
-// with the memory bound, so not kept), with the squares reversed 152, with the accumulated distance 152.
-// Round 126 (m3 lane 6, fast with 0x1e5bb0/0x1e2a90/0x29b00/0x19ec40 in the image; alone it builds 203 at 690 B),
-// all on the accumulated distance (aligned difference 58 -> 53, still 173): the inner index declared in its for 173,
-// at the marker block's top 173; with the y-first copy helper function_2417a1 for the marker position 172, plus the
-// index in the for 172 or at the block top 172; the table local at the loop top with the select's else arm through
-// the global 169 (717 B, caller 0x240160 46). Retail's count stays in EAX and is stored straight to its slot; the
-// spilled inner index and the EBP table remain.
-// Round 45 (lane 11, plain; a fast image builds 0x19ec40 differently here, 203 for this body): the distance's
-// squares named (`dx_squared`, `dy_squared`) 173; the delta as a vector2f through dot_product2d 173; a named
-// squared distance 173 (all identical code); the x maximum written bound-first like y and z 152 (701 bytes, a
-// positional gain only: the x compare then loads the bound into a register where retail compares the distance
-// with the memory bound, so not kept), with the squares reversed 152, with the accumulated distance 152.
-// Round 186 (fast, with 0x1e5bb0/0x1e2a90/0x29b00 in the image): a loop-invariant marker-entries pointer
-// read before the inner loop 170 (702 bytes; frame 0x44 as retail and the first difference moves to +0x20,
-// but the pointer takes the spilled slot retail gives the inner index, and the index stays in EAX), with the
-// accumulated distance 170, with an options local for the clauses 170, with both 170; the table read through
-// the global at each use with the accumulated distance 200 (688 bytes). Retail keeps the table in EBP across
-// the inner loop and reuses it after the 0x19ec40 call (LTCG knows the call leaves g_51ec80 alone); ours
-// reloads the table for the x updates and borrows EBP for the entries base, so the index keeps a register.
-// Round 115 (fast with 0x19ec40 and its three callees; LCS-aligned distance in brackets, base 173 [58]): the
-// accumulated distance 173 [53]; the select's else arm through the global 200 [64], with the accumulated
-// distance 200 [59]; `if (marker_index == NONE) continue;` 173 [58], with the accumulated distance 173 [53];
-// count and the inner index declared before the query 173 [53]; no table local, the global at each use, with
-// the accumulated distance 200 [59] (688 bytes).
-// Round 20 (lane 17, fast with 0x19ec40's callees in the image): the existing y-first copy helper
-// function_2417a1 for the marker position with the accumulated distance 172 (copy and x87 code
-// retail's; the count still moves to ECX after the call where retail keeps it in EAX and spills j); on it:
-// the result index named 172, the count declared apart and compared as `count > j` 172, the results
-// array at function scope 172, an options local at function scope for the key and the marker test (as
-// 0x243b10) 169; on 169: the named result index 169, the options local per marker block 172, the inner
-// loop as `while` with `j++` 169, the results array at function scope 169, the marker select as if/else 188.
-// Round 22 (lane 17, fast with 0x19ec40 and its callees 0x1e5bb0/0x1e2a90/0x29b00 in the image, which agrees with
-// the full count; without them the image builds 203): the accumulated distance 173; the table local assigned at
-// the top of each k iteration 169 (717 bytes; the slot parameter moves to the stack, the table is hoisted to
-// EDI and caller 0x240160 drops to 46), with the accumulated distance 169; `long j` declared in the for 173;
-// count declared before the results array and assigned from the query 173.
-// Round 55 (lane 11, fast with 0x19ec40's callees, each on the accumulated distance): the table assigned per
-// select arm, read through the table 184, through the global 184, the read before the assignment 184 (717 B each,
-// the table hoisted to EDI, the slot on the stack, caller 0x240160 46); the select's else arm through an inline
-// getter with its own table local 200 (688 B); the marker test through an inline bool helper on the entry 173,
-// forced inline 173, on the flags with an options local 173, with an if/return body 173 (same code); the marker
-// position through an entry pointer local 172, with const entry and other 172, entry local with the fields copied
-// y first 190, x first 190. Diagnostic, reverted at once: the else arm through a const cast of the global's
-// address 199 (692 B; frame 0x44 and retail's else-arm reload appear, caller 0x240160 7).
-// Round 118 (fast with 0x19ec40 and its three callees; the one-file harness builds 203 here, so it is no guide): the
-// select with `k != 0` and the arms swapped plus the accumulated distance 175; no `slots` local outside the loop, the
-// select through the global and `slots` at the marker block's top 169 (717 B, caller 0x240160 46), with the accumulated
-// distance 169 (aligned 83 against 54); `slots` read after the 0x19ec40 call 169, with the accumulated distance 169.
-// Lead: `test; mov ebp, [g]; jne` is the same first instruction of both select arms merged upward, so retail's else arm
-// loads the table twice; every form that reads the global outside `slots` hoists it out of the loop.
-// Round 140 (m3 lane 5, fast with 0x19ec40 and its three callees): one `point3f *bounds` picked by `k == 0 ?
-// &bounds[0][slot] : &bounds[1][slot]` as matched 0x244680 does, with the accumulated distance, 388 (499 B: retail
-// really repeats the k test at each use); the accumulated distance computed inside each k arm 197 (743 B, VC does
-// not merge the two copies upward); the table through the global at each use 200 (688 B; both select arms then load
-// it into their own scratch register and nothing stays in EBP); `short key` 173 (same code); a function-scope pointer
-// to g_4e0350 for the position and the inner loop 178.
-// Round 61 (m3 lane 10, fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160): retail reloads the table from
-// g_51ec80 itself after borrowing EBP (`mov ebp, [0x51ec80]` in the clause code) where ours reloads the `slots`
-// local's spill; the global at every use re-measured 200 (688 bytes, as rounds 89/115; both select arms then load
-// it into EAX/ECX and EBP stays free); on it the accumulated distance 200 (as round 115), `if (marker_index == NONE)
-// continue;` 200, `k != 0` with the arms swapped 200, the array selected by k and then indexed 191 (691 bytes, caller
-// 0x240160 46). On the current body: the key as `mode_180 == 9 ? 3 : 1` 173 (same code); dy computed before dx 174;
-// the bound-update arms as `if (k != 0)` with the arms swapped 173.
-// Round 65 (m3 lane 10, fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160): the select as `!k ? ...` 173; on the
-// accumulated distance: the clause through ctf_options() 173, a const marker point 173, the other position as a const
-// reference 219 (666 B), the inner loop as `while` with `j++` at the body end 173.
-// Round 79 (m3 lane 9; fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160, plain confirmed): kept: no table
-// local (g_51ec80 at each use), the bounds init stores before the query and round 87's accumulated distance 146
-// (711 bytes, retail's length; the else arm's global reload is now retail's; k is spilled and the count held in EBX
-// where retail spills j and count and keeps k in EBX and the table in EBP). With the slots local, the init stores
-// before the query 185 (711 bytes). On 146: the init stores between the query and the point copy (retail's order)
-// 142 (caller 0x240160 46: not kept); the marker select as if/else 184; k declared in its for 146; results at
-// function scope 146; plain sqrt(dx * dx + dy * dy) 150; the key before the init stores 186 (caller lost).
-// NOT kept (review): the 146 combines a re-read of g_51ec80 at each use where retail holds the table in EBP,
-// the init stores placed before the query where retail stores them after it, and a two-statement distance
-// sum: a combination picked by score; body restored at 173.
-// Round 208 (m3 lane 3, fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160, plain confirmed): kept g_51ec80 read
-// at each use (the init stores stay after the point copy, retail's order), the existing function_2417a1 for both
-// positions and the squared distance accumulated in its own named local: 2 at 711 bytes (retail's EBP table with
-// its reloads, frame 0x44, spilled count and index, x87 squares). Grid of those four (table/marker copy/other copy/
-// accumulated): 171-200 with any one missing except 29/23 without the other copy and 8 with the summed distance.
-// The other element pointer then had one use and was dropped (2). On 2: dy before dx 16; named squares 8; a
-// vector2f through magnitude2d 8; sqrtf 2; a double cast on the sqrt argument 11; distance_squared declared first 2;
-// other_point at the loop top 2; `other` const 2; a 600 s permuter run, 66 tries, none below 2 (its reduced image
-// scores the base 178, so it cannot guide this function).
-// Round 67 (m3 lane 1, plain with 0x240160/0x19ec40; fast differs here: fast 203 for the plain 173): the accumulated
-// distance `d = dx * dx; d += dy * dy;` 173; the `slots` local declared at the top of the k loop 169 (717 bytes, but
-// the slot argument moves to the stack and caller 0x240160 drops to 46: not kept); `sqrt(dy * dy + dx * dx)` 173
-// (same code); `if (marker_index == NONE) continue;` 173; the init stores through the existing real_point3d_set 200.
-// Round 43 (lane 17, fast with 0x19ec40 and its callees, which agrees with the plain 2): the result index named once
-// for the marker test and the copy 193 (690 bytes); the squared distance in a double 13 (frame 0x48); the marker point
-// declared first in its block 2; dx and dy declared before the copy 2; `continue` on a failed marker test 2 (all
-// three identical). The compile-only harness schedules this block differently (fld before the z load), so it is no
-// guide here. Original body restored.
-// Round 108: both squares named before accumulation 8; only the x square named 2; only the y square named,
-// or assigned in the accumulation expression, 8; a two-use other-z local 23; the inner copy through memcpy 2;
-// the inner getter/structure copy 2; the existing three-component setter 176 (716 bytes); reversed second-sum
-// operands 2; getter/structure copies for both points 2; both z differences named after the distance 108 (694 bytes).
-// The named y square moves the z store to retail's position but changes the x87 operations. All forms restored.
-// M3 lane 16 r198 (H2M_FAST with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160): a forced-ranking search over the
-// scheduler region of the copy and the distance (about 60 single height changes of one, at the region's nodes 10-26)
-// gives no form with the z store first, so it is not a near tie. Forms: the marker point at function scope 2, the other
-// point at function scope 2, `j` declared with `k` 2, the root named as a double before the float conversion 4, the
-// inner loop under `if (count > 0)` 164. Body unchanged.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -675,10 +527,11 @@ void function_243c00(long slot)
 				{
 					point3f other_point;
 					function_2417a1(g_4e0350->marker_entries, results[j], &other_point);
-					real dx = point.x - other_point.x;
-					real dy = point.y - other_point.y;
-					real distance_squared = dx * dx;
-					distance_squared += dy * dy;
+					vector2f delta;
+					delta.i = point.x - other_point.x;
+					delta.j = point.y - other_point.y;
+					real distance_squared = delta.i * delta.i;
+					distance_squared += delta.j * delta.j;
 					real distance = (real)sqrt(distance_squared);
 
 					if (k == 0)
