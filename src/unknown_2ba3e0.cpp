@@ -241,6 +241,13 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
 // into `const &` + `vector3f_scale` + `vector3f_add` 45 (al 15), + inline mul 44 (al 5, mk 5: `long const &` still folds
 // `cvtsi2ss`), + `thiscall` / `linear` pre-`wind` / `wind.n[0..2]` / `prop0`-first 44 each (al 5, mk 5), + `k,j,i` rows
 // 44 (al 7, mk 5), + `wind` at top / `delta` pre-`wind` / scale-first helper / plain struct `wind` 45 each. Body unchanged at 46.
+// M3 lane 7 r238 (fast, on round 171's clock with vector3f_scale + vector3f_add, 7 at 665 B: only the i row differs).
+// The allocator numbers the wind components when they are first read, after the amount: with hand-written rows
+// the amount ranks 197 and wind i/j/k 199/203/207, so wind.i stays the product's first operand; retail needs it
+// below the amount. Dead locals before the amount or before wind shift both alike. Tried: the lookup's output passed
+// as the first member's address 7 (ranks unchanged); hand-written rows on `wind.n[0..2]` 7; the amount as
+// `phase - 0.5f` then `*= scale` 7; a real member at +0x34 (the particle's three uses) 7, on main's body 46 (same
+// code); the amount as a const reference to the product with a separate scaled local 7.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {

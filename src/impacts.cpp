@@ -2404,6 +2404,11 @@ s_impact_component_iterator g_5021bc;
 // (recovers outer-loop pool in EDX, but grows frame 0x4c -> 0x50 and keeps component in ESI; not kept), `component_a`
 // inside inner `if` 114 (frame 0x50, 675 B, component still ESI; not kept), `rigid_body_index_a` local 177 (frame 0x50,
 // 680 B).
+// M3 lane 7 r238 (fast with 0x226a60 and 0x226f80 MATCH; the ledger as round 162's: component_b 180 = lookup block
+// 160 (cost 8 x w4 x n5) + 56 less 36 across the first find; the component 210): the active test's argument read
+// from the global's component field 162 (forwarded, same code); the count test through a file-local copy of 0x1d5460's
+// impact-count helper 162 (retail's movsx form, as the ternary); the component declared ahead of the loop 162; the
+// constraint index declared in the `for` 162; the impact index declared at the first find 162.
 // @retail 0x226ce0
 void function_226ce0(void)
 {
