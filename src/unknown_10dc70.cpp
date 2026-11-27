@@ -239,6 +239,18 @@ inline real function_10e8e0(real t);
 // declared after the array 12 and the counter declared ahead of the loop 12 (same code each); the index as a signed
 // char 440 (1632 B); the fill loop as while 382 (1536 B, not unrolled) and as do-while 685 (diagnostics); the last-key
 // pointer as if/else 265; the first key through `keys->` 12 and the time products scale-first 12 (same code each).
+// M3 lane 11 r176 (fast screen with 0x10e480, plain check confirmed): `if (used > 0)` around the output loop 2 (the ESI
+// save then follows the clear and the zero-channel exit jumps straight to the epilogue, as retail; only the channel
+// loop's entry loads of the first key's time and value stay swapped); with it, the first and last keys converted
+// through a file-local inline helper (the version test and both conversions, results through pointers) MATCH in
+// the fast and plain checks, but the full check then loses matched 0x1c4590 (5) and 0x24cf66 (2), the pair a new
+// inline helper flips: HELD, held as a patch. The helper alone 10; the helper at every key site 170 (161 with the guard);
+// the two keys' conversions under two separate version tests (no helper) 2. Also on the guard: the first-key value
+// converted first 7, both times first 12, both values first 12, value-time-value-time 8; the first key's time in a
+// local with the value product first 7; the first time in two steps 9, both times in two steps 293. Without the
+// guard: the clear as `= {}` 12 (same code); a guard on the channel loop 425; the fill loop as an inline helper
+// 719 (382 forced inline, not unrolled). A forced-ranking search on the guard form finds only loop-entry scheduler
+// ties.
 // @retail 0x10de40
 void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, real time, real blend, bool skip_special)
 {

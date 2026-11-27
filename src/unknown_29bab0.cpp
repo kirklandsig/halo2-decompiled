@@ -1042,6 +1042,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // vector2f perp with dot_product2d at both perpendicular dots 660 (3499 B, +0x60, fr=0x88); normalize_inline on 462 base 763 (3503 B, +0x60);
 // on the 457 base (MIN(1.0f, ratio) both + axis-first frame_velocity dot3f): dot_product2d at 0.99 test 660 (3499 B, +0x60), double-parens 0.99 + cross3f_staged + dot3f(&local_7, &local_9) 467,
 // symmetric if/else s yx 729, direct == local_22 bool flip 661, early field_50 457 (3504 B, al=165, mk=56: under 8-point keep bar).
+// M3 lane 7 r237 (h2m fast with GB15's companion list; control 462): the side point's sum with the two operands swapped
+// 462, local_14 declared with the opening locals 462 (both the same code); the side value as `local_24 = local_23;
+// if (!local_22) local_24 = -local_24;` 649 (3502 B); the side point's y member assigned ahead of its x on the ternary
+// 706 (3499 B, first difference +0x4e: every 4-byte home four bytes lower, as the earlier select form); the direction copied
+// as a brace initializer from the three input members in i, j, k order 764 (3487 B); local_19's test written as
+// `field_14 > 0.0f ? field_14 : ...` 706 (3500 B); local_18 as the float product `field_1c * 0.5f` 703 (3499 B).
 // GB28 (28 fast trials on calibrated companion list, all 8 matched peers including 0x1f38c0 and 0x29b990 MATCH; control 462 at 3504/3499 B, +0x100, fr=0x88, pos=+0x8c; body unchanged):
 // scalar `local_24` + `cy` in arms / `cx` after join 720 (3535 B, fr=0x90: keeps `y` unmerged in both arms but spills `local_24`/`cy`); direct `local_26` in if/else with `local_24` xy 595 (fr=0x88, pos=+0x8c), yx no-s 707; ternary in both coords 589;
 // drop `local_31/32/33` 696; scalar `vx/vy/vz` frame_velocity 673; `vector3f_add_scaled` frame_velocity diff 672 (+0xf9, pos=+0x64); `vector3f_add(&local_7, &local_6, &local_6)` 664 (3499 B, +0x60); `0.99` dot swapped / ji 464/462;
