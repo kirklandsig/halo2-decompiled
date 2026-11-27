@@ -1495,6 +1495,13 @@ static __forceinline float second_pending_normal_impulse_31c940(normal_mass_31c9
 {
  return mass.value * diagonal + other * coupling;
 }
+// Save the scalar fields without passing their encodings through x87.
+static __forceinline void save_solver_scales_31c940(float const &error,
+ float const &velocity, float &saved_error, float &saved_velocity)
+{
+ memcpy(&saved_error, &error, sizeof(saved_error));
+ memcpy(&saved_velocity, &velocity, sizeof(saved_velocity));
+}
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -1519,14 +1526,8 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
 	for (state.solving.iteration = 0; state.solving.iteration < iteration_count;)
 	{
 		solver_step_31c940 *initial_parameters = step;
-		// Capture both input words before publishing either saved value.
-		// Raw copies also preserve floating point encodings.
-		struct scale_inputs_31c940 { float error, velocity; };
-		scale_inputs_31c940 captured_scales;
-		memcpy(&captured_scales.velocity, &initial_parameters->velocity_scale, sizeof(captured_scales.velocity));
-		memcpy(&captured_scales.error, &initial_parameters->error_scale, sizeof(captured_scales.error));
-		memcpy(&state.solving.saved_error, &captured_scales.error, sizeof(captured_scales.error));
-		memcpy(&state.solving.saved_velocity, &captured_scales.velocity, sizeof(captured_scales.velocity));
+		// Save the step scales as raw words for the residual updates.
+		save_solver_scales_31c940(initial_parameters->error_scale,initial_parameters->velocity_scale,state.solving.saved_error,state.solving.saved_velocity);
 		unsigned char *op = operations;
 		__m128 *terms;
 		solver_velocity_31c940 *a;

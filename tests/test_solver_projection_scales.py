@@ -54,3 +54,49 @@ def test_operation_scales_observe_retail_projection_epoch(solver_images,precisio
             if label=='retail':snapshots[rounding]=snapshot
             else:assert snapshots[rounding]==snapshot,(kind,coefficient,precision,rounding)
         print(label,'projection scale matrix4RM',kind,coefficient,hex(precision),flush=True)
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_initial_scales_survive_saved_error_alias(solver_images, precision):
+    from unicorn import UC_HOOK_MEM_WRITE
+
+    frame = STACK + 32768 - 0xd0
+    step = frame + 0x28
+    retail, compiled, symbols = solver_images
+    for rounding in range(4):
+        for velocity_bits in (0x3e000000, 0x80000000, 0x7fc12345, 0x7f812345):
+            snapshots, traces = [], []
+            for label, machine, entry, gate in (
+                    ('retail', retail, 0x31c940, 0x480c60),
+                    ('compiled', compiled, address(symbols, 'solve_operations_31c940'),
+                     address(symbols, 'g_480c60'))):
+                data = solver_case(2, 0)
+                put(data, OPS + 24, 'I', 0x400)
+                put(data, HEAP, 'B', 3)
+                machine.mem_write(frame, b'\0' * 192)
+                # Iteration initialization zeros the error input at +2c.
+                # Saving that error replaces the velocity input at +30.
+                machine.mem_write(step, struct.pack(
+                    '<8I', 0x3f800000, 0x3f800000, velocity_bits,
+                    0x3f800000, 0x3f800000, 0, 0, 1))
+                machine.mem_write(gate, b'\x01')
+                trace = []
+
+                def saved_scale(uc, access, va, size, value, user):
+                    if va == frame + 0x28 and size == 4:
+                        trace.append((value, words(uc, frame + 0x30, 1)[0]))
+
+                hook = machine.hook_add(UC_HOOK_MEM_WRITE, saved_scale)
+                try:
+                    snapshot = execute(
+                        machine, entry, data, [step, OPS, HEAP, IMPULSES],
+                        precision=precision | (rounding << 10))
+                finally:
+                    machine.hook_del(hook)
+                context = (label, precision, rounding, hex(velocity_bits))
+                assert snapshot[1] == 1, context
+                assert trace and trace[0] == (velocity_bits, 0), (context, trace)
+                snapshots.append(snapshot)
+                traces.append(tuple(trace))
+            assert snapshots[0] == snapshots[1], context
+            assert traces[0] == traces[1], context
