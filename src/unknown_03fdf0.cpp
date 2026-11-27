@@ -1,4 +1,5 @@
 #include "render_source_storage.h"
+#include "timed_effect.h"
 // @flags /O2 /arch:SSE /Gr
 #include "material_records_storage.h"
 /* UNKNOWN_03FDF0.CPP: cached light geometry and material pass dispatch */
@@ -130,7 +131,7 @@ extern long g_467130, g_4858b4;
 extern void *g_467134;
 extern s_record_sources *g_467138;
 extern byte g_485a75, g_485a76, g_4858bc;
-extern long g_485898, g_4858b8;
+extern long g_4858b8;
 extern real g_485adc, g_485ae0;
 extern vector3f g_485950;
 extern bool g_4ba022;

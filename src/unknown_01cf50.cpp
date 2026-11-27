@@ -2086,7 +2086,6 @@ void function_1d4b0(long format, bool alternate, long *result, bool *linear)
 real g_485adc, g_485ae0;
 
 extern byte *g_50934c;
-extern double g_4858a0;
 
 // @retail 0x137a0
 void __stdcall function_137a0(real *first, real *second)
@@ -4566,7 +4565,6 @@ void function_4d720(short index, long mode)
 typedef long (__stdcall *visibility_draw_callback)(s_slot *slot, byte *data);
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw);
 long __stdcall function_2e540(s_slot *slot, byte *data);
-extern long g_485898;
 
 // MiniMax E (11-16): no new form tried this round, no lower score (285): the frame is still 0x38 bytes against retail's 0x34 because
 // retail reuses the position's slots for the corner coordinates, the definition's flag byte is still copied into bl where retail tests
@@ -7453,14 +7451,7 @@ void c_1fa50::function_1fb10(short_rectangle2d const *bounds, real scale) const
     function_1f070(bounds, 0, 0, 0, text, scale, 0, 0, true);
 }
 
-struct s_frame_parameters_12a50
-{
-    long mode;
-    dword identifier;
-    double time;
-    dword unknown10, unknown14;
-};
-dword g_48589c, g_4858a8, g_4858ac;
+s_frame_parameters_12a50 g_frame_parameters;
 extern dword g_467014, g_467018;
 dword g_4b8478;
 real g_4e6738, g_4e673c;
@@ -7557,16 +7548,18 @@ void function_22850(void);
 // (`*(real const *)&g_467014`, the form unknown_02c560.cpp already uses; the union copy scored 182 against 175).
 // Gamma ramp channels are stored red, green, blue (0x12c8f, 0x12c93, 0x12c9a); the chained assignment stored blue
 // first. No score change from that. Float tree of the bounds already matches: (1.0/hi*lo)*16777215 and the same for hi.
-// Callers 0x2c8a0 MATCH and 0x2ca00 (3) unchanged. Still differs as before: the timestamp copy (double global in
-// the header) and the inline SetGammaRamp (retail's lib: 0x12cae-0x12d08), plus ours hoists the constant 1 into ebx.
+// Callers 0x2c8a0 MATCH and 0x2ca00 (3) unchanged. Still differs: the inline SetGammaRamp (retail's lib:
+// 0x12cae-0x12d08), plus ours hoists the constant 1 into ebx.
+// The frame block: retail copies the 0x18 bytes at 0x485898..0x4858b0 in one piece, six dword moves that include both
+// halves of the time (0x12a50-0x12ab4). The five globals there are now one s_frame_parameters_12a50 g_frame_parameters
+// (declared in include/timed_effect.h, where the old names are #defines for its members), and the body is one struct
+// assignment. The dated notes above that describe a field-by-field copy and the time going through x87 into a
+// separate double global are about the code before this change.
+// score 251 (was 260): the frame block is one struct global copied by one assignment (see the note above).
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
-    g_485898 = parameters->mode;
-    g_48589c = parameters->identifier;
-    g_4858a0 = parameters->time;
-    g_4858a8 = parameters->unknown10;
-    g_4858ac = parameters->unknown14;
+    g_frame_parameters = *parameters;
     real inverse = 1.0f / g_485ad4.hi;
     real lower = inverse * g_485ad4.lo * 16777215.0f;
     real upper = inverse * g_485ad4.hi * 16777215.0f;
@@ -8481,7 +8474,6 @@ struct s_245c0_state
     dword frame_count;
 };
 real g_51ecf0[256];
-extern long g_485898;
 __declspec(noinline) void function_245c0(s_245c0_state *state, real *histogram, short mode);
 void __stdcall function_214f0(real passes, real distortion, real strength, real falloff,
     real scale, bool blend, bool preserve);
