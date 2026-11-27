@@ -2479,6 +2479,23 @@ bool function_1900a5(long index);
 // `dec eax`, but the users loop then loses its entry jump and pad); that with a request `due` flag 759; the request
 // test as a `due` flag set for state 1 and else-if for an elapsed state 4, 633 (same code); `bool due = state == 1`
 // then the elapsed test 634; the fill gate as `80 - records_used > 0 && 480 - properties_used > 0` 641.
+// M3 lane GA r27 (15 fast trials on the 633 base with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x80940,
+// 0x80aa0, 0x80bf0, 0x80d70 all MATCH; control 633 at 2862/2862 B, 768/772 insns, al=376, mk=262; body unchanged):
+// XUID record->identity with struct assign 633 (same code); with inner type-5 `if (existing < records_used) continue;`
+// 681 (2910 B, al=399, mk=271; + XUID team_owner 681; + named record_space/property_space 664 at 2894 B; + `properties_used += 6`
+// before `j < record->count` 730 at 2926 B, mk=234; + `j < 6` 737, mk=239; + space + write_task local 644 at 2878 B, al=374);
+// word id field in s_cache_property 633 (same code); users loop `&values->owner` struct copy + `values->unknown10` 633 (same code);
+// completion `if (variant) ... else player->state = 1;` keeping `failed ||` 674 (2894 B, mk=259); completion nested `state == 2 || 5`
+// 633; request loop `added < 4 && i < 16` 640 (2862 B); completion `long property_index` 633 (al=378); read_task local 655
+// (2846 B, al=355, mk=258); write_task local 656 (2846 B, al=358, mk=257). Positional score stays gated by the /arch:SSE and /Ob1 blockers.
+// M3 lane GB r29 (14 fast trials across 2 batches with all 10 peers MATCH; control 633 at 2862/2862 B, 768/772 insns,
+// al=424, mk=303; body unchanged): two-`if` `due` byte flag in request loop 612 (2878 B, 774/772 insns, al=436, mk=302;
+// NOT kept: flag set inside test and longer than retail); single `failed = true;` in completion `else` 658 (2846 B,
+// al=399, mk=296); `received != 6` first + `property->type == 0` 659 (2846 B, al=393, mk=293); completion without
+// `continue` + `failed = true` 658 (2878 B, al=397); structured range-first write poll 640 (2862 B, al=416, mk=298),
+// both polls range-first 635 (2862 B, al=410, mk=291); `delay` single ternary / nested read gate / nested write gate /
+// request `long state` local / `read_records` pointer all 633; `now` before counters 643; `delay` default 2000 668;
+// users loop `players` pointer 742 (2878 B).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

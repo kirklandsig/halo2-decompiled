@@ -1145,6 +1145,17 @@ void __stdcall function_25eea0(
 // even when all other helpers are called (`366`), while `distance3d` confirms retail's `add eax, 0x14` + `fst` (though
 // retail sums i/j/k rather than k/j/i); match-only probe (`pos_dist` + zone ternary + `leader_unit` + `double d` +
 // post-if + GB25 cover layout) reaches `186` (`1308/1306 B`, al 42, mk 28). Body unchanged.
+// GB28 (44 fast trials with 6 callees MATCH; control 253 at 1321/1306 B, +0x35, al 200, mk 71; body unchanged):
+// Loop 3 direct `positions[i]` + two-use `point3f *line_pt = &context->lines[j].point;` before `if (type == 0 || type == 1)`
+// reaches `161` (`1306/1306 B`, `343/343` insns, al 173, mk 31; `162` before `type`/`distance`; `j` wins `EBX` via extra
+// loop-depth-2 `j` ref, all 3 counters zeroed by `EBX`, 45-line tail exact; NOT kept: new field pointer mixing pointer and
+// direct reads of `lines[j]`, hoists `lea esi,[ebp+0x280]` above the type test, and parts alone give `251`/`252`). With
+// `line_pt` inside `if` `237` (`1306 B`, al 190, mk 47, `j` stays spilled; with `position` kept `253`/`252`, no `point`
+// `342`/`345`); typed `s_line *line = &context->lines[j]` `254` (all 4 forms); Loop 3 direct `if` no-continue / `result >=`
+// / ternary max / no-`type` / `distance`-inside `251`; reusing `type` local `236` (`1306 B`, drops retail's post-call reload);
+// Loop 1 `weight*factor` / `score = ...` / inline clamp `253`; inner weight clamp `319`; per-branch weight `313`; `zone`
+// ternary + nested leader `251`; Loop 2 if/else `score +=` `266` (mk 50), `* bonus` `253`, `delta.k`-first `252` (mk 61),
+// nested band `253`; cover if/else `score +=` `260`; `line_pt` + `zone`/`pos_dist`/all-3-direct `247`-`255`.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

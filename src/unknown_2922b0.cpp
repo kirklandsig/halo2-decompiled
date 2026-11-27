@@ -1072,6 +1072,25 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // as `unobstructed` / `clear`, hit flags `blocked`, minimum `nearest`) 362 each, byte-identical; the input copy declared
 // after the hit flags 363, the minimum after the hit flags 362, the hit flags declared first 362, the clamped distances
 // declared before the ray lengths 362.
+// M3 lane GA r28 (28 fast trials with 0x1e5450/0x30bf0/0x1697c0 all MATCH; control 362 at 2897/2886 B, +0x1d, al 265,
+// mk 181): on 362 base, `arg_6` cross before pointer assigns 542; `local_11` before `local_10` 608; tail `cross3f` 433,
+// `arg_6` + tail `cross3f` 439; tail `local_17` direct `i,j,k` / `k,j,i` / `k,j,i` without `local_19` 466/466/466
+// (2861 B); per-ray branch-local `local_20` roots 362 (mk 178); chained `local_14` ray lengths 673; `local_18` before
+// `local_17` with plain `inline` 0x2922b4 or `(1 - cos)`-first rotation 358/358 (-4, under bar), with direct `k,j,i`
+// tail 464. On outer-origin/two-return/`k_real_max` lead (with `local_6` after `arg_3` clear, control 632 at 2901 B,
+// al 150, mk 94): branch-local roots 633 (mk 91); staged `out_k/i/j` without `local_19` 630 (al 146); `cross3f` /
+// `k,j,i` scale / direct `i,j,k` / `k,j,i` tails 614/617/625/629; chained ray lengths 501; `arg_6` cross first 614.
+// On GA7's true 184 lead (`local_6` first in active block, control 184 at 2896 B, al 148, mk 93): branch-local roots
+// 184 (mk 90); staged `out_k/i/j` without `local_19` 183 (2895 B, al 144); tail `cross3f` no `local_19` 265 (667/667
+// insns); `k,j,i` scale / direct tails 444/549; plain `inline` 0x2922b4 184 (same code). Body unchanged at 362.
+// GB27 (26 fast trials with 0x1e5450/0x30bf0/0x1697c0 MATCH; control 362 at 2897/2886 B, body unchanged): on 362 base,
+// `rotate_vector_170d70` 465 (2862 B), `local_17 +=`/`local_18 -=` 362, scoped inline rays 439, plain static ray helper
+// 362, void 2-out ray helper 361 (2896 B), weight-returning ray helper 607 (2886 B), plain `for` ray loop 683 (2828 B),
+// direct tail up without `local_19` 435, non-const `local_2` 362, tail `cross3f` 433 (+ `dot3f` 676), function-scope
+// `local_13` alone 543 (+ `local_6` first, two returns, `local_18` first 327). On the 184 lead (rebuilt 184 at 2896 B):
+// `+=`/`-=` 184, void 2-out 183 (2895 B), weight-returning helper 444, plain static rotation 184, `rotate_vector_170d70`
+// 314, direct tail up 260 (667/667 insns), per-ray `w` local 184 (mk 93 -> 90), ternary pin 409, tail `cross3f` 257
+// (without `local_19` 265, all-4 `cross3f` 264, + `dot3f` 420).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
