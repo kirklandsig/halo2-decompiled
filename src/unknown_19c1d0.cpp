@@ -439,6 +439,12 @@ void function_19c6d0(s_record_pool *data, long key0)
 // 108 (still hoisted); `long index = flagged.count++;` 65; the iterator set up by an aggregate initialiser 65; the
 // element store through `*(flagged.elements + index)` 65; the flagged arm storing `flagged.elements[index] =
 // keys[count++] = entry->key` with the keys store in an else 106 (403 B); the flag test as `!= 0` 65.
+// GB r37 (12 untried fast trials with all 8 peers MATCH unless noted; control 65 at 400/393 B, body unchanged): on 65
+// base, flagged declared before keys 65, slot ptr + flagged.count++ 66, unsigned long flagged.count 65, second
+// get_entry_c call in flagged arm 201 (448 B), Loop 2 datum local 65, datum declared before iterator 65, ref-param
+// iterator with direct return inside for 65; on s_flagged_keys::push(long) (51): 1u<< / div-mod-32 non-forced helpers
+// outlined 82 (368 B), early-NONE return helper 47 (398 B, folds add edi,[ebx+0x44] while still hoisting edi),
+// data_iterator_next_calling 170 (350 B, breaks 0x19c190), for-loop datum walk 242 (476 B, breaks 0x19c190).
 struct s_flagged_keys
 {
 	long count;

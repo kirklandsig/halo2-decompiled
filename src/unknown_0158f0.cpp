@@ -291,6 +291,11 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // (96); a compare with the OK code 99 (96); the failure test into a local palette with both arms storing `*out` 87 at
 // 42 B (77); the status named, then the success test 86 (96); an early `return false` on the failure test 91 at 38 B
 // (96). The nested call stays out of line in each.
+// GB r37 (12 untried fast trials with 0x1d3f0 and file peers; control 99 at 30/95 B, 0x1d3f0 77, body unchanged):
+// __fastcall without noinline 99 (0x1d3f0 75), void **out / D3DPalette *&out / struct-wrapped g_43e8d8 / 2D
+// g_43e8d8[1][6] / inline size getter / long const index / pre-initialized result+created with 2-arm assign all 99
+// (77); D3DDevice::CreatePalette with FAILED/SUCCEEDED + 2-arm tail 87 at 42 B (77, spurious HRESULT padding, not
+// kept); if (out) guard 96 (33 B); index >= 0 ternary guard 95 (34 B). CreatePalette2 stays out of line in every form.
 // @retail 0x15b10
 bool function_015b10(
 	long index,

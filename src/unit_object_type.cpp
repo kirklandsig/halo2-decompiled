@@ -9721,7 +9721,7 @@ struct s_unit_melee_collision
 	point3f point;
 	byte start_location[8];
 	byte end_location[8];
-	short material_type;
+	c_type_47f957 material_type;
 	byte unknown26[2];
 	vector3f normal;
 	real distance;
@@ -9750,7 +9750,10 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 397: GB24's 314 form is not kept (declaration and statement order are kept only on a byte match): declaring
+// score 388 (was 397): GB r37 typed s_unit_melee_collision::material_type as existing c_type_47f957 (matching
+// retail's constructor store before ray.j/k, 395 alone) and used existing TEST_FIELD_BIT(UNIT_SEATS(...).flags.bit11)
+// at both seat tests (matching retail's shr 0xb / test 1 at both sites, 390 alone): 397 -> 388 (-9, 2219/2229 B,
+// fr=0x17c, all 124 matched file peers/caller/flippers MATCH). Earlier at 397: GB24's 314 form is not kept (declaration and statement order are kept only on a byte match): declaring
 // damage_index before weapon_index and definition after read-only function_cbd50 (exact
 // 2229/2229 B, fixes collision point/normal copies and removes or esi,-1 in tail), using the existing seat bitfield
 // flags.bit11, initializing collision.material_type before ray, and symmetric (j*up + i*across + aim*range) ray rows
@@ -10065,6 +10068,13 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // owner's two long NONEs as one chained assignment 397; the parent seat test through the typed
 // `parent_definition->unit.seats.address` 397, the hit block's seat test the same way 397; the hit material as a member
 // store (`material_index.m_index = ...`) 397; the hit seat read as `*(definition + 0x1fc)` 397 (all the same code).
+// GB r37 (12 untried fast trials + plain check across all 134 file peers/callers/flippers; control 397 -> kept 388,
+// 2219/2229 B): s_unit_melee_collision::material_type as c_type_47f957 395; + TEST_FIELD_BIT(flags.bit11) at both
+// seat tests 388 (kept, plain confirmed, 124/124 matched peers and 0xc2d00/0x185be0/0x1c4590/0x24cf66 MATCH); typed
+// s_weapon_melee_def 397 (with c47+bit11 388, with 6-bit seat_group bitfield 388); e5470-style no-CSE unit getter
+// all 3 early lookups 508 (+ c47+bit11 345 at 2236 B), weapon+parent+bit11 346 at 2229 B (reloads g_4e0300 from
+// memory via one-caller helper, not kept); negated !function_a76b0 + c47+bit11 393 (2205 B); named material ptr /
+// vector3f_assign ray + c47+bit11 388; direct UNIT_DEFINITION_GET(unit) + c47+bit11 533.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
@@ -10107,7 +10117,6 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				ray.i = (real)i * across.i + (real)j * up.i + unit->unknown168.i * *(real *)(local_67e06b + 0x1b8);
 				ray.j = (real)j * up.j + (real)i * across.j + unit->unknown168.j * *(real *)(local_67e06b + 0x1b8);
 				ray.k = (real)j * up.k + (real)i * across.k + unit->unknown168.k * *(real *)(local_67e06b + 0x1b8);
-				collision.material_type = NONE;
 				if (!function_1697c0(0x2480000f, &center, &ray, unit_index, NONE, (s_collision_result_1697c0 *)&collision))
 				{
 					continue;
@@ -10120,7 +10129,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				case 3:
 					if (hit_index == NONE)
 					{
-						material_index = c_type_47f957(collision.material_type);
+						material_index = collision.material_type;
 						if (collision.bsp_surface_flags[0] & 8)
 						{
 							surface_type = collision.bsp_surface_flags[1];
@@ -10144,7 +10153,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 					{
 						hit_index = object_index;
 						hit_type = (char)object->type;
-						material_index = c_type_47f957(collision.material_type);
+						material_index = collision.material_type;
 						hit_t = collision.t;
 					}
 					break;
@@ -10198,7 +10207,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		if (hit_index != NONE && unit->parent_seat_index != NONE)
 		{
 			s_unit_definition *parent_definition = (s_unit_definition *)UNIT_DEFINITION_GET(UNIT_GET(hit_index));
-			if ((*(dword *)&UNIT_SEATS((byte *)parent_definition)[unit->parent_seat_index].flags >> 11) & 1)
+			if (TEST_FIELD_BIT(UNIT_SEATS((byte *)parent_definition)[unit->parent_seat_index].flags.bit11))
 			{
 				damage_index = definition->unit.boarding_melee.boarding_melee_damage.tag_index;
 				self_damage_index = definition->unit.boarding_melee.boarding_melee_response.tag_index;
@@ -10228,8 +10237,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		*(char *)&hit.unknown18 = hit_seat;
 		hit.unknown14 = 0.0f > scale ? 0.0f : (scale > 1.0f ? 1.0f : scale);
 		if ((unit->parent_index == NONE || unit->parent_seat_index == NONE ||
-			((*(dword *)&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index].flags >>
-				11) & 1)) && !flags)
+			TEST_FIELD_BIT(UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index].flags.bit11)) && !flags)
 		{
 			if (function_a76b0(unit_index, 0))
 			{
