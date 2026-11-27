@@ -470,6 +470,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // default declared after the colour/vector record 91; the count sum declared ahead of the centre vector 91 (same code
 // each but the first). The transform rows are the shape of 0x142570, which retail expands here four times; its file is
 // another lane's this round. Body unchanged.
+// M3 lane 13 r165 (h2m fast; control 91, aligned 106 unpaired). The transform helper in 0x142570's own text (its
+// parameter-address read for the scale test, `scale * x` products, one expression per row): in place 296 (2655 B,
+// aligned 264), without the parameter-address read 314 (2647 B, aligned 198), with a separate output parameter (point
+// passed twice) 210 (2668 B, aligned 205); the rows stay ours in every form. The count loop's index as a `word` 529 (first
+// difference +0x3c: the prologue becomes retail's, the rows and slots move), a `short` index against a `(word)` count 529
+// (same code). Body unchanged.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

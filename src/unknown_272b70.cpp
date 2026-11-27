@@ -1663,6 +1663,14 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // the append's distance products reorder); the count stepped in the busy store's index 32; the unit looked up before the
 // seat pointer 42; the slot's seat and vehicle stored ahead of the flags, either order, 41/41; `success` initialised false
 // 32. NOT kept: no gain.
+// GB27 (fast with 0x274a10, 0x274da0, 0x274470, 4 callers and 11 callees, all MATCH; control 32, 40 trials): matched
+// peer 0x274470's slot order (seat, extents, vehicle, flags) or shared init helper (preserving 0x274470 MATCH) 41
+// (38 with byte busy:8; matches all 15 interleaved instructions after rep stosd, only hoisting seat->seat_index into
+// dx above rep stosd); veh/ext/seat/flags and ext/seat/veh/flags 41/41; flags/seat/ext/veh and flags/ext/seat/veh
+// 32/32; flags/veh/ext/seat 34; flags split around seat/vehicle (5 forms) 51-63; shared submit helper 55; word slot
+// bitfields 47 (0x274470 lost); function_274a51 3-arg and 4-arg scalar param reorders and ordinary inline all 32 (29
+// with byte busy:8); request local inside function_274a51 190; inlined request + 0x274470 slot order 68 (fixes +0x9f
+// append, 2 B shorter without the leave-call mov ecx,eax; 0xe68c0 is contributor-owned). Restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

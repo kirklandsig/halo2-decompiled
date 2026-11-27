@@ -307,6 +307,17 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 // (1778 B); the gather loop's start named like the clipping loop's `vertex` 381 (same code). Also kept: the clip
 // edge's normalisation through the existing normalize2d_fast in place of its body written out (same code, 381 on the
 // lead).
+// M3 lane 11 r175 (the reduced image builds this function exactly, 387 at 1799 B, once 0x22bbca is listed with it: that
+// file holds the point2f_set the projection inlines; without it the projection stays a call): retail lays the
+// clipping loop's adjacent-face add (the store after the search loop) out after the output loop's preheader, where
+// ours keeps it after the search loop (about 9 rows of positional shift); the gather loop's copy sits in place in both.
+// Same code, layout unmoved: the search loop as a `for` 387; the helper with early returns for the count and the
+// sphere test 387; the face started as NONE with the add after the sphere test 387. The projection ahead of the buffer
+// selection 439 (1808 B), with the 0x17d900 call first 439. Re-measured: the call first in the comparison 381. Reading:
+// a forced-ranking search that puts the iteration counter's latch piece first in an early pass gives 296 with retail's
+// memory operands at the loop head (`cmp word ptr` on its slot); no single decision moves the add's layout. The XMM
+// constants held across 0x120790 (retail reloads them after each call) look like a caller compiled without the
+// callee's register summary.
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,

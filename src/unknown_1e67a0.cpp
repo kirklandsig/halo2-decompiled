@@ -1429,6 +1429,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // as `&((s_physics_initial_state *)output)->up` 109 (1382 B: the axis loads rank higher still, the four products
 // unchanged; a second spelling of the state pointer, under the bar); the rotation in place on the state's forward with
 // a `previous` copy for the turn block (no final store) 222 (1389 B); initial_cross's rows in k, i, j order 115.
+// M3 lane 13 r165 (h2m fast with 0x1e5af0 MATCH; control 111 at 1393 B). The shared rotation helper taking its axis
+// and vector parameters into locals first (as unknown_18c250.cpp's rotation does), axis first 140 at retail's 1382 B
+// (aligned worse) with 0x1ff360, 0x2551f0 and 0x26d570 lost, vector first 183 (1369 B) with the same three lost; the
+// turn test as `turning && c` 113; the two cross vectors declared ahead of the alignment dot 111 and the alignment test
+// as `0.5f < alignment` 111 (same code each). Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
