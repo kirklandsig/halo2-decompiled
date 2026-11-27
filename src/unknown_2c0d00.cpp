@@ -1135,6 +1135,19 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `else` 527 (920/921, mk 40); `401` base 404 (mk 49); `memcpy` loc, `||` / positive nested sphere height, nested marker
 // `if`, `local_a47c5e` before `center`, and `object_radius` after `distance_squared` all tie 528 (mk 36); 1-expr vehicle
 // dot 528 (mk 37).
+// M3 lane GA r34 (24 fast trials across 2 batches with 0x25d810, callers 0x29a190/0x29cbb0/0x2c41b0 and 11 file peers,
+// all 12 matched peers MATCH, control 718 at 3731/3731 B, +0x4a; body unchanged): on 718 base, clean retail bundle with
+// `(j+k)+i` sphere moving dot 726 (`mk=46`; + early `enabled` 725 `mk=42`); the unit index in a named local 720; type-7 no
+// `definition` local 862 (3713 B); type-7 split `if`/`else if` 799 (fr 0x2cb0); 2-use `actor_team` local in type 1 or
+// vehicle block 720 each; `vehicle_actor` ternary 718 (`mk=66`); `toward` bool scoping `vehicle_actor` 720; `unit_object`
+// local for location copy 718 (`mk=66`); vehicle `offset` + `basis_dot_xzy(direction, &offset)` 858 (3716 B; + retail
+// dots 852); dropping `object_flags` local 863 (3713 B); dropping `other_direction` local 718 (`mk=66`); inline sphere
+// 1-expr `squared` + inline `combined_radius` 860 (3713 B); inline object `distance_squared` + `object_radius` 863 (3713 B).
+// Match-pursuit on GA30's 529 (`3731/3731 B`, `al=142, mk=34`): diff dump isolates a single mod-3 `(EAX,ECX,EDX)` scratch
+// rotation from `0x2c0eb8` (location copy) across 10 sites, plus entry dot, vehicle dot, object/sphere XMM order and
+// `0x2c0e9a`; the unit index in a named local 529; `basis_dot_xzy` + inline obj `distance_squared` + retail sphere vel dot 490 (`3731 B`;
+// + nested vehicle `if` 490; + `moving | (sphere_flags | obstacle_flags)` 490; + 1-expr sphere `squared` + inline radius 488
+// `3731 B, mk=56`); keeping `distance_squared` 539 (`mk=47`); x-z-y + retail sphere vel dot 542 (`mk=45`).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
