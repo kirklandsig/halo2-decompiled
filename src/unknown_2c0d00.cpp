@@ -1113,6 +1113,17 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // (mk 47); + early `enabled` 401 (3731/3731 B, +0x91, al 166, mk 45); + nested vehicle dot 543 (mk 40); + direct
 // `+0x248` reread 528 (3731/3731 B, +0x91, 921/921 insns, al 131, mk 36: only 7 small local sites remain); `>` gates on
 // bundle 408 (mk 49); `else straight = true;` alone on 718 / on bundle 544 / 550 (mk 62 / 44). Body unchanged at 718.
+// M3 lane 6 r253 (plain check with 0x29a190 and 0x2c0d00 MATCH, 0x29cbb0 378 and 0x2c41b0 675 unchanged in every run;
+// control 718, of which 165 of 921 rows differ once the listing is aligned, in 72 places; the rest is the two-row shift
+// of the missing no-actor store). Forms: the no-actor store spelled after the actor block, `if (!actor) straight =
+// true;`, 544 (aligned 158; the same code as the listed `else` form, a redundant store, match-only); the unit's
+// location through a new file-local inline getter with an out parameter 718, through a new inline accessor returning
+// the field's address 718 (both the same code: the copy still has the object in EAX and the halves in EDX/EAX, retail
+// EDX and EAX/ECX); re-measured on today's tree, the `else` store with the type-7 device flags in one two-use local
+// 405 (aligned 172), that with the object radius ahead of the offset 411 (aligned 172). Back-end reading: the location
+// copy's three values and the object query's argument loads are scratch temporaries handed out by a cursor that cycles
+// EAX, ECX, EDX; ours stands one or two steps off retail's at the location block although every earlier instruction
+// agrees, so the difference is in which earlier temporaries moved the cursor, not in these statements.
 // M3 lane GA r30 (23 fast trials across 2 batches with 0x25d810 and all 11 matched peers MATCH, 0x29cbb0 378 and
 // 0x2c41b0 675 unchanged; control 718 at 3731/3731 B, +0x4a, fr 0x2cac, al 159, mk 68; body unchanged): on 718 base,
 // `vehicle_index` moved inside `if (dot > 0.0f)` 887 (fr 0x2cb0, mk 61; + retail bundle 884, mk 47), `memcpy` location

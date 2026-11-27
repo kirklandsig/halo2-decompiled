@@ -1362,6 +1362,14 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // const pointer to the move output's velocity 14; the re-fetched object pointer declared bare before the 0x119bc0 call
 // 14 (all four the same code); the force passed as `force ? 1 : 0` 95 (1038 B). Still BLOCKED-BY 0x1c4b00 (its bool
 // formal; one of its declarations is in another lane's file this round).
+// M3 lane 5 r255 (fast screen with 0x119bc0, 0x1c4b00, 0x119020, 0x119c10 and 0xb7740, all MATCH each run; control 14;
+// the 14 rows all follow the 0x119bc0 call): the re-fetched object and the +0x88 copy as the existing 0xb7740 with its
+// update skipped (`function_b7740(arg_0, &local_11.field_c, NULL, true)`, the same writes) 307 (1004 B: retail expands
+// that block, ours calls it); the length test passed straight to the flag setter (no named bool) 14; the re-fetched
+// object written into the copy's target expression (no pointer local) 14; the force declared bare ahead of the flag
+// setter and assigned at the call 14; the masked object index named once and used by both lookups 14 (the four the
+// same code). Still BLOCKED-BY 0x1c4b00 (its bool formal; a declaration sits in src/items.cpp, another lane's file this
+// round) and 0x1ec690 (a stub) for the copy's hoisted j/k loads.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
