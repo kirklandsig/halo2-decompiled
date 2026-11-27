@@ -1450,6 +1450,17 @@ bool function_143c0(long, short, short, real);
 // `<= 0.0f` 348; the loop's arms swapped on `if (lines)` 342; the existing reset helper 0x1bbd0 at both sites 358
 // (1394 B, a call; diagnostic with `inline` on its definition, not kept: 348, the same counts as the written pair); the
 // plain begin call in either arm 382 (1383 B, out of line); the geometry test as an early `return true` 355 (1408 B).
+// M3 lane 3 r320 (h2m fast). Lane 7 r237's 14 lead rebuilt (14); with the records read back after the geometry test,
+// where retail reads it, 348. Allocator reading on that 348 form: the constant 2 ranks -7 (+6 in the entry block of
+// six candidates, -9 in the block after the geometry test, whose nine candidates include the state base and the
+// records value only for the records read) against the second alpha's -6; a forced-ranking search matches only with
+// the constant raised by 2 or the second alpha lowered by 2 (no decision on the state, slot, result or constant 3
+// does). Tried on the 348 form: the records declared bare at the top and assigned after the test 348; a pointer to
+// the records field taken at the top 348; the geometry block pointer named at the top 348; a const reference to the
+// records field bound at the top 348 (all fold to the same code); the player count clamped back into the short, as
+// the sibling 0x38450 writes it, 346 (165 on the 14 lead); `result` left uninitialised and set true in an else arm
+// of the geometry test 347; `lines` declared ahead of `result` 348; the 0x39780 result named first 348; both alphas
+// typed `long` 345 (the constant 2 still -7 against -6).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
