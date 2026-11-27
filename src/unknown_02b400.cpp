@@ -599,9 +599,14 @@ void function_3f660(transform4x3f const *matrix)
 
 struct s_28580_view
 {
-    byte field_00[0x44];
+    bool initialized;
+    byte field_01[3];
+    transform4x3f previous;
+    long ring;
+    real angle;
+    real phase;
     real previous_time;
-    byte field_48[0x20];
+    point2f points[4];
     point2f direction;
     point2f target_direction;
     real speed;
@@ -761,7 +766,7 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
    address escapes. It takes no arguments, so the marker changes no call.
    The body doesn't match yet, but with the marker its prologue is
    retail's; its caller 0x25a10 doesn't match yet either. */
-// score 530 (was 597): the aligned 0xb8 frame agrees. The exit displacement leads to a body 80 bytes
+// score 529 (was 530): the aligned 0xb8 frame agrees. The exit displacement leads to a body 80 bytes
 // short (the first cosine and the cube now take retail's float constants). Float angle literal 593;
 // float angle literal with promoted camera component 597; named double cosine 596; named double
 // turn increment 597; named distance span 596; plain phase pointer 597; direct phase field 597; double
@@ -828,6 +833,13 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // matched 0x27520 does) 527 (2717 B), with the x82e52f pair 526 (2718 B; a local/global mix, kept only with a match);
 // the pairs as direct point2f_set calls with the pointer evaluated after the draws, at all six sites 546 (2686 B), at
 // the two crossing arms only 546.
+// M3 lane 7 r237 (h2m fast with 0x25a10, 0x22bbca, 0x17d9a0 and 0x28580). Kept 530 -> 529: the view record's members
+// typed (the initialized flag, the previous transform, the ring index, the angle, the phase and `point2f points[4]` at
+// +0x48, 0x28580 unchanged), the points read through the record in place of a pointer local. Tried on it: the records
+// pointer local in the second loop in place of the global array at each use 566 (2666 B); the quarter step on the two
+// globals 564 (2701 B), with the span's else value on the globals too 545 (2717 B: the else value then shares the
+// step's subtraction, the test keeps its own, two where retail has three); the previous transform read through the
+// record at each use (no pointer local) 677.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -847,17 +859,16 @@ void function_27aa0(void)
     g_4b9d98 = *(real *)(definition + 0x24) * (1.0f - blend) + blend;
     g_4b9d9c = (definition[0] & 1) != 0;
     transform4x3f identity = *g_4687d0;
-    transform4x3f *previous = (transform4x3f *)(state->field_00 + 4);
-    point2f *points = (point2f *)state->field_48;
-    if (!state->field_00[0])
+    transform4x3f *previous = &state->previous;
+    if (!state->initialized)
     {
         memset(state, 0, sizeof(*state));
-        filter_random_pair(points + 0);
-        filter_random_pair(points + 1);
-        filter_random_pair(points + 2);
-        filter_random_pair(points + 3);
+        filter_random_pair(state->points + 0);
+        filter_random_pair(state->points + 1);
+        filter_random_pair(state->points + 2);
+        filter_random_pair(state->points + 3);
         *previous = *(transform4x3f *)g_48568c;
-        state->field_00[0] = 1;
+        state->initialized = true;
     }
     vector3f motion;
     function_28580(g_4857b8, time, &motion);
@@ -883,24 +894,24 @@ void function_27aa0(void)
     vector3f heading;
     matrix_transform_vector(&relative, &forward_axis, &heading);
     double angle_delta = atan2(heading.j, heading.i);
-    real *angle = (real *)(state->field_00 + 0x3c);
+    real *angle = &state->angle;
     /* retail keeps the turned angle unrounded for the cosine and sine */
     double turned = *angle - -(angle_delta * *(real *)(definition + 4));
     *angle = (real)turned;
     real cosine = (real)cos(turned);
     real sine = (real)sin(turned);
-    real volatile *phase_reference = (real volatile *)(state->field_00 + 0x40);
+    real volatile *phase_reference = (real volatile *)&state->phase;
     real stepped_phase = *phase_reference - *(real *)(definition + 0xc) / (step < 0.0001f ? 0.0001f : step) * relative.position.z;
     *phase_reference = stepped_phase;
     real crossing = (real)floor((double)stepped_phase);
     *phase_reference = (real)((double)*phase_reference - crossing);
-    long *ring = (long *)(state->field_00 + 0x38);
+    long *ring = &state->ring;
     *ring -= (long)crossing;
     while (*ring < 0) *ring += 4;
     while (*ring >= 4) *ring -= 4;
-    if (crossing < 0.0f) filter_random_pair(points + ((*ring + 3) % 4));
-    else if (crossing > 0.0f) filter_random_pair(points + *ring);
-    if (*(real *)(state->field_00 + 0x40) < 0.0f || *phase_reference >= 1.0f) return;
+    if (crossing < 0.0f) filter_random_pair(state->points + ((*ring + 3) % 4));
+    else if (crossing > 0.0f) filter_random_pair(state->points + *ring);
+    if (state->phase < 0.0f || *phase_reference >= 1.0f) return;
     real offsets[4] = { 0.0f, 0.7135000228881836f, 0.34220001101493835f, 0.579800009727478f };
     for (long i = 0; i < 4; ++i)
     {
@@ -927,7 +938,7 @@ void function_27aa0(void)
     for (long j = 0; j < 4; ++j)
     {
         long index = (*ring + j) % 4;
-        real distance = (j + *(real *)(state->field_00 + 0x40)) * step + g_4857dc;
+        real distance = (j + state->phase) * step + g_4857dc;
         real fraction = (distance - g_4857dc) * inverse_span;
         real centered = fraction * 2.0f - 1.0f;
         real offset_from_center = centered >= 0.0f ? centered : 0.0f - centered;
@@ -938,8 +949,8 @@ void function_27aa0(void)
         if (relative.scale != 1.0f) { x *= relative.scale; y *= relative.scale; z *= relative.scale; }
         real dx = relative.up.i * z + relative.left.i * y + relative.forward.i * x + relative.position.x;
         real dy = relative.up.j * z + relative.left.j * y + relative.forward.j * x + relative.position.y;
-        points[index].x -= (dy * sine * g_4b9d94 + dx * cosine) * *(real *)(definition + 8) * radius * 0.5f;
-        points[index].y -= (dy * cosine * g_4b9d94 - dx * sine) * *(real *)(definition + 8) * radius * 0.5f;
+        state->points[index].x -= (dy * sine * g_4b9d94 + dx * cosine) * *(real *)(definition + 8) * radius * 0.5f;
+        state->points[index].y -= (dy * cosine * g_4b9d94 - dx * sine) * *(real *)(definition + 8) * radius * 0.5f;
         if (*(real *)(definition + 0x28) != 0.0f)
         {
             real t = ((s_27aa0_record *)g_4b9c74 + 1)[index].fraction;
@@ -966,12 +977,12 @@ void function_27aa0(void)
         }
         ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[0] = size * cosine * 0.5f;
         ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[2] = 0.0f;
-        ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[3] = points[index].x;
+        ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[3] = state->points[index].x;
         ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[1] = size * sine * aspect * 0.5f;
         ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[4] = size * sine * -0.5f;
         ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[5] = size * cosine * aspect * 0.5f;
         ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[6] = 0.0f;
-        ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[7] = points[index].y;
+        ((s_27aa0_record *)g_4b9c74 + 1)[index].coordinates[7] = state->points[index].y;
     }
 }
 
@@ -1048,6 +1059,11 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // random real 854 (same code); the double helper returning the header's random real 852 (3504 B); the float draws with
 // the vertex pointer declared in each arm 849 (3498 B, 0x36b50 258 -> 286), plus the clamp into a long divisor 832
 // (3514 B, 0x36b50 286). Re-measured: the long divisor alone 857. Body unchanged.
+// M3 lane 7 r237 (h2m fast with 0x36b50, 0x38390, 0x27aa0 and 0x22bbca; control 832): the particle loop as a plain
+// `j < start + count` loop 863; the tick delta read once ahead of the loop 852 (3507 B); the drift read once ahead of
+// the loop 881 (3523 B); the limit as `g_4670fc * count` 832 (same code); the admission test as `!inside && active <=
+// limit` 844 at retail's 3483 B (state still on the stack), with the vertex pointer declared in each arm of the age
+// test as well 851 (3492 B: the state takes EBX and the function returns `ret 4` as retail, but 0x36b50 258 -> 286).
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1404,6 +1420,17 @@ bool function_143c0(long, short, short, real);
 // short mode local compared at each use 335 (the word takes EDI); the begin-only fresh compare 173, with the short count
 // 285, with the point arm first too 265; the mode word named for the entry bool and the begin compare 167, with the point
 // arm first 142, plus 0x1cbe0 145, plus the float-bits A and B 244, plus the short count 223 (aligned to the loop pad).
+// M3 lane 7 r237 (h2m fast with 0x36b50 and 0x1cbe0). Lane 11 r175's 72 lead rebuilt (72), with retail's bool at the
+// point-scale call test 348. Lead (held as a patch; each piece is kept only with a match): on that 348 form the records
+// pointer read at the top, ahead of the geometry test, 14 at 1420 B: the allocator then ranks the constant 2 above
+// the second alpha (-4 against -6: the entry block gains one referenced value and the block after the geometry test
+// loses two) and every row is retail's but the records load, which now comes ahead of the geometry call. Tried on the
+// 348 form: the second color's operands swapped 348; the begin arms as a switch on the mode 300; the line arm first on
+// `== 2` 348; `result` declared after `lines` 348; the reset flag stored ahead of the records read 348; the age test
+// enclosing the arms 348; `count * g_485600` 348; the particle pointer ahead of the vertex pointer 349; the age test as
+// `<= 0.0f` 348; the loop's arms swapped on `if (lines)` 342; the existing reset helper 0x1bbd0 at both sites 358
+// (1394 B, a call; diagnostic with `inline` on its definition, not kept: 348, the same counts as the written pair); the
+// plain begin call in either arm 382 (1383 B, out of line); the geometry test as an early `return true` 355 (1408 B).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {

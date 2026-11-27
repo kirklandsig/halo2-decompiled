@@ -1042,6 +1042,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // vector2f perp with dot_product2d at both perpendicular dots 660 (3499 B, +0x60, fr=0x88); normalize_inline on 462 base 763 (3503 B, +0x60);
 // on the 457 base (MIN(1.0f, ratio) both + axis-first frame_velocity dot3f): dot_product2d at 0.99 test 660 (3499 B, +0x60), double-parens 0.99 + cross3f_staged + dot3f(&local_7, &local_9) 467,
 // symmetric if/else s yx 729, direct == local_22 bool flip 661, early field_50 457 (3504 B, al=165, mk=56: under 8-point keep bar).
+// M3 lane 7 r237 (h2m fast with GB15's companion list; control 462): the side point's sum with the two operands swapped
+// 462, local_14 declared with the opening locals 462 (both the same code); the side value as `local_24 = local_23;
+// if (!local_22) local_24 = -local_24;` 649 (3502 B); the side point's y member assigned ahead of its x on the ternary
+// 706 (3499 B, first difference +0x4e: every 4-byte home four bytes lower, as the earlier select form); the direction copied
+// as a brace initializer from the three input members in i, j, k order 764 (3487 B); local_19's test written as
+// `field_14 > 0.0f ? field_14 : ...` 706 (3500 B); local_18 as the float product `field_1c * 0.5f` 703 (3499 B).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
