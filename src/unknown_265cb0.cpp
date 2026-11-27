@@ -1220,6 +1220,15 @@ real function_30bf0(vector3f *vector);
 // Forms: the motion vector zero-initialised 262; the clip amount also pinned at zero from below 155 (1312 B); the seat
 // element pointer non-const 90 (1308 B, as the listed const one); the close-band result as a conditional expression 84
 // (same code); the range read after the delta rows 87. Body unchanged.
+// M3 lane GB r33 (10 fast trials with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84 at 1310/1308 B;
+// body unchanged): scoping `real secondary, primary;` separately inside `if (!actor->unknown007 && use_facing)` and `else`
+// with duplicated tier checks eliminates GB9's seat-loop `xmm1`/`xmm2` reloads and recovers exact retail homes for `result`
+// (+8), `amount`+`distance_squared` (+0x1c), `motion` (+0x24), `seat_countdown` (+0x34), `plane` (+0x38), `seat_ptr` (+0x48),
+// `delta` (+0x4c), and `a`/`b` (+0x58/+0x5c), but MSVC does not tail-merge the two tier checks: 164 (1343 B, +0x27), with
+// `PIN` 185 (1340 B), + `seat` pointer 181 (1343 B), + split `mode == 0` 317/320 (1428/1431 B); single `if/else` (no `bool
+// facing`) with scoped `facing_secondary`/`facing_primary` + `PIN` + split + `seat` 136 (1313 B; inline `distance_squared`
+// 136); on `PIN` + split + `seat` (70 at 1310 B, `range * scale` same 70): + `dot3f` plane + `vector3f_add_scaled` clipped
+// 80 (1310 B), + `vector3d_from_points3d` delta 72 (1310 B, mk=32, fixes first-cross k row).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

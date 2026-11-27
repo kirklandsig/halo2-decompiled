@@ -1113,6 +1113,17 @@ PRIVATE __forceinline void function_2922b5(vector3f *arg_0, vector3f const *arg_
 // 2scales+add+add_scaled 451 (al 123, mk 45; without k_real_max 554 at 2886 B), scale+add_scaled+scale+add 451 (al 119,
 // mk 54: matches all 57/57 Rotation 2 insns and final 30 tail insns verbatim, +1 pad at loop from symbol shift; without
 // k_real_max 551 at 2886 B).
+// M3 lane 2 r161 (h2m fast with 0x1eb8a0's file in the image, without it 1093 at 2434 B; control 265 at 2889 B).
+// Allocator reading: the success flag's entry piece (true, read only at the inactive exit) wins EBX at priority 26, so
+// the entry pushes EBX and the exit returns `mov al, bl`; retail stores an immediate 1 and returns a literal 1.
+// `return local_0;` at the end of the active block with `return true;` after it 627 (2878 B: the entry, the flag,
+// minimum and copy homes and the inactive exit are then retail's byte for byte, aligned differences 148 -> 127, but
+// the corner block is short and the loop sits four instructions off); that with `local_6` read first in the active
+// block 623 (2873 B, the radius reload goes); that with `local_13` at function scope 223 (2888 B, aligned 66: the
+// corner block becomes retail's, the half-width reloaded and negated per corner; left: the second cross's up i
+// folded, a jump-padded loop head, the rotations' operand sides and the tail); two returns with `local_13` at function
+// scope alone 266 (2888 B, aligned 67); the earlier held lead (`local_6` first and `local_13` at function scope) rebuilt
+// on this main 314 (aligned 87). Leads only: both moves are declaration moves past stores, kept only with a match.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

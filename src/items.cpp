@@ -2155,6 +2155,16 @@ struct s_item_flags_view_10b850
 // 2-def flag helper + scoped ray + rotate_direction + exact slot names 790 (fr=0x12c, al=346, mk=154, all local stack
 // offsets exact; + inline ITEM_GET re-read + dot3f flow 832, mk=155, lines 0x10b8ae..0x10b997 byte-exact). Still blocked
 // on entry dead-byte stores, double gravity reload, and noinline 0x16a040.
+// GB34 (22 clean + 1 diag fast trials across 2 batches, control 813 at 4096/4096 B, fr=0x154, 6 peers MATCH; body unchanged):
+// diagnostic 1-def field_bit_test + default: __assume(0) in switch #2 reproduces all 4 entry/gravity dead-byte stores (reusing
+// the first byte slot, as retail does) without any 2-def branch (877 at 4070 B, fr=0x144, peers MATCH; NOT kept, forbidden
+// __assume), whereas 1-def field_bit_test + case 4: default: emits no dead-byte stores (898, fr=0x148); shared 1-def/2-def
+// flag helpers across 0x10b850/0x10cf50/0x10da60 give 898/861 (break 0x10cf50/0x10da60); inline/forceinline c_flags templates
+// 929 each; case 4: default: alone 813; switch #1/#2 as if/else 882/815; combined flags_12c mask 813; angular before velocity
+// 813; flow if-abs 879 (fr=0x150); spin local sin/cos 899; gravity trials (all still CSE single product): physics_gravity_get()
+// 865 (fr=0x148), mixed dt/g_510c54->rate 885/883, add-negated second 851 (4096 B), const down + vector3f_add_scaled 973,
+// ordinary inline item_apply_gravity 814, real& item_sub_scaled 865 (fr=0x148), item->linear_velocity.k on first 850 (4096 B),
+// split around angular 858, direct gravity test 858. Still blocked on entry dead-byte stores, double gravity reload, and noinline 0x16a040.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

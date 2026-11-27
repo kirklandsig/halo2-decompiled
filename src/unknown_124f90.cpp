@@ -4607,587 +4607,12 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 48 (was 48): the tail still sets flag3 with a word `or` where retail uses a byte `or` (the flag bits are
-// word bits in the header, so a byte bitfield would be needed; r122 below: the constant 8 is held in EBX for the
-// second pending test), the second pending test reads AL where retail shifts DL by 3, and the count's NONE compare
-// uses an immediate where retail holds -1 in EDX.
-// MiniMax H (11-20): kept the second pending test as plain `!local_1->flag3`: 72 -> 48.
-// Earlier at 72 (was 81): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
-// word bits in the header, so a byte bitfield would be needed), the second pending test reads AL where retail shifts
-// DL by 3, and the count's NONE compare uses an immediate where retail holds -1 in EDX.
-// MiniMax C (11-20): no new form, no lower score (72): the two gain pins still trade scratch registers (retail gives the gain byte its register ahead of the bits' copy), the field_c store still sits one slot late and the controller compares still use an immediate where retail holds NONE in edx; the body stands as found.
-// Earlier at 72 (was 81; a second score line, merged in m3 lane 12 r165): both gain pins trade scratch registers (retail gives the gain byte its register ahead of the
-// bits' copy, ours the copy first, which also leaves the tail's scratch registers one step off), the field_c store
-// sits one slot late, and the controller compares use an immediate (retail holds NONE in EDX for both compares and
-// for the count's default).
-// MiniMax H (11-19, round 95): no new form, no lower score (81): an annealing permuter over this function's forms made no
-// gain either (39 tries, its best was the baseline), and what is left is the same: both gain pins trade scratch registers,
-// the controller compares use an immediate where retail has one in the second block only, and the second flag3 test shares
-// a word load with the flag6 store.
-// Earlier at 81 (was 81): both gain pins trade scratch registers, the controller compares use an immediate,
-// [r153: see the m3 lane 12 r153 entry at the end of this note]
-// and the second flag3 test shares a word load with the flag6 store (lead in M3 lane 2 r104 below: 64, not kept).
-// The second pending test through a one-use low-byte view scores 50. That alias was reverted.
-// MiniMax I (11-19): no new form, no lower score (81): both gain pins still trade scratch registers, the controller compares still use an immediate and the second flag3 test still shares a word load with the flag6 store; the one-use low-byte view that reaches 50 was reverted, so the body is unchanged.
-// Earlier at 81 (was 122): both gain pins trade scratch registers, the controller compares use an immediate,
-// and the second flag3 test shares a word load with the flag6 store. The countdown now uses byte operations.
-// Earlier at 122: the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
-// and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
-// widened (see r136 at the end of this note).
-// Earlier at 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
-// permutation-gain byte and the gain bits trade EAX/EDX, the field_c store sits one slot late); the synchronisation byte is
-// widened (`xor edx, edx` ... `and edx, 0x7f`, retail byte ops), and the tail's flag tests, next-chunk test and stream store differ
-// (see r114 below). Earlier: the pitch result and the argument held swapped stack homes and the pitch bounds pair address was
-// formed differently (both fixed in r114). See the b6U walk below.
-// MiniMax D (11-17): no new form, no lower score (158, was 158); the pitch bounds pair address
-// (retail's lea +8), the pitch and argument hold swap and the two clamp joins remain. The single-exit
-// decibels_pin (168) and a long pin copy (171) regress; the permuter (30 tries, annealed) found no
-// better form.
-// Earlier at 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
-// pair address is formed differently, and the two clamp joins in the tail differ. See the b6U walk below.
-// MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
-// retail's and the gain argument's homes and the joined clamp stores still differ.
-// Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
-// Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
-// Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
-// Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
-// long next-chunk candidate 254; completed-chunk early exit 241.
-// Shared clamp common result 255; forced gain-add inline 234; gain before packet 234; long controller count 235; named
-// flag masks 234.
-// Both branch gain names 234; raw gain before pitch 268 (frame 0x494); playback-bound rereads 234;
-// pitch-range rereads 258; existing-stream branch first 235; recovered-frame form with shared scale 237.
-// Definition after packet initialization 237; branch gain writeback 234; current-chunk candidate 234;
-// sequential gain workspace 234; direct processed-gain initialization 234 (fast); all restored.
-// Pitch lower snapshot 273; native flag3 view 236; pitch workspace subtraction 234; zero-default controller gain 267; readonly parameter/range views 234 (fast); all restored.
-// Shared sum accumulator 234; commuted sum 233; returned bit home 234; native sum
-// inputs 234; native inputs plus bit home 234; early raw gain with accumulator,
-// commuted sum or native inputs 268 each (frame 0x494, worse count).
-// Native nested packet with original/part/whole/aggregate clears 234/304/316/309;
-// reverse part clears/entry declaration/late packet/entry with part clears 304/234/283/304.
-// Original packet view and clear boundaries restored.
-// Round 160: Native permutation gain/count, controller gain array, promotion coefficient and all three
-// together 234 each; native clear-member addresses 234; chained packet flags 293; upper-first shared pin
-// 234; pin input home name 234. Original fields, clear ranges and helpers restored; protected chunk
-// interface unchanged.
-// Round 356: Native playback-parameter value 311; named pitch span and complete promotion
-// adjustment 234/234; parameter/span 311; parameter/adjustment 311; span/adjustment 234;
-// all three 311; with native pitch-range value 337. Original input pointers and expression parts restored.
-// Round 254: live voice-table fields, alone/with scale/raw-gain-first/both 293/249/277/302;
-// the same four with live pitch-parameter fields 293/249/293/244. All regress;
-// original voice/parameter receivers, scale observations, gain schedule and body restored.
-// Round 195: Processed-gain producer ordinary/noinline/combined declarations 234 each;
-// forceinline 373. With raw gain before pitch 268/268/268/374; the 268 forms use frame
-// 0x494. Both declaring files and original body restored; gain homes and clamp joins remain.
-// Lane 10 r13: the extra frame words are decibels_add's copies of the gain and location fields
-// (retail reads both in place and copies only the gain argument). With the file's decibels_sum:
-// outer and inner 279 (frame 0x494; a field bound through the dword type still gets a copy);
-// inner only 279; outer only 234 (identical); both with the location field cast to long 315;
-// outer (cast) with decibels_add inside 272; both, with the gain argument a dword (so only it is
-// copied, retail's loads and copies) 279: frame 0x494, but retail adds location + inner with the
-// location loaded first and shares one scale load between the pitch and the 0x1251e0 argument,
-// so ours is one instruction short and every later line shifts; that with a scale local shared by
-// the pitch and the call 258 (retail's shared scale load; the location add and the pitch/argument
-// temporaries' slots remain); with decibels_add outside 260. All restored.
-// Round 219: readonly conditional next chunk 239; complete countdown arms 215 (plain, kept); both
-// 227; word countdown 229; conditional/word 234; complete arms/word 224; all 217, with role names
-// 217. Sub-eight gains 227/229 restored; all other forms restored.
-// Round 154 (fast): one long gain seeded from arg_1, updated in place (`*(real *)&gain = location
-// + (playback gain + gain)`, then `gain = function_1251e0(...)`) with one shared scale local 241
-// (frame 0x494, opening exact up to the pitch bounds); plus 0x126000's pitch_bounds pointer with
-// gain/pitch names 238 (first difference +0xba, aligned listing 108 against 147); gain declared
-// first 256; real gain 295; outer operands swapped, decibels_sum on the variable, in-place
-// permutation sums 238 each (identical code). Retail loads the location gain into its own register
-// before the inner sum (one instruction more); every form folds it into addss, and that one-line
-// shift dominates the positional score. Next: find that load, then the single-exit pin.
-// Round 168: Native processed real gain with original/early declaration and signed/unsigned raw bits 215 each; all four with shared scale 287. Original body restored; gain homes and clamp joins remain.
-// Round 247: sequential inner/outer/both reference-input gain sums 269/215/269; both with shared
-// scale 242, before pitch 276, before pitch with scale 256, role names 269 and entry declaration
-// with scale 242. Reference-input sequences recover frame 0x494 but regress; original body restored.
-// Round 224: Live definition/permutation/playback, definition-permutation/definition-playback/
-// permutation-playback/all/all-pitch-parameters 307/364/681/385/709/864/878/878. Definition-only
-// recovers frame 0x494 but regresses; original receivers, gain homes and complete countdown arms restored.
-// Round 270: actual signed-long location-gain field alone/outer reference sum/both
-// reference sums 215/256/306; outer/both with shared scale 257/295; both with scale
-// and native pitch bounds 295; both with early gain/early gain and scale 306/295.
-// Outer sum recovers frame 0x494 but regresses; original body and shared field restored.
-// Round 161: real gain sum (location + (playback gain + argument)) with one scale local 295 (frame 0x494;
-// the argument is added in place where retail copies it, the location folded where retail loads it
-// first); without the scale local 306; scale local with the original sums, pitch only/both 215/286;
-// real outer sum over decibels_add's inner 255. All restored.
-// Round 164: inner decibels_sum with `(dword)arg_1` inside the outer decibels_add 255 (frame 0x494,
-// exact to +0x7e; the location field is still copied, retail loads it into XMM1 first); outer
-// decibels_sum over the by-value inner 214; operands swapped by value 286; first form plus a shared
-// scale local 255 (0x49c); both reference sums inner-first 255.
-// Round 235: native real incoming gain with direct/inner-part/location-value/both forms
-// 306/306/306/306; each with shared scale 295. Frame 0x494 recovered, gain and clamp
-// loads still differ; original signature, caller argument and executable body restored.
-// Round 253: Unsigned incoming gain bits with original/reference inner and outer sums and shared scale;
-// scores 215/255/215/255/286/255/286/255.
-// Original executable source restored; no qualifying gain.
-// Round 34 (m3 lane 2, fast; the baseline is now 222): retail also passes each permutation-gain sum to the pin
-// through memory (real -> long -> parameter copy -> real) and stores the pinned value once at the join from EAX,
-// where ours stores in each arm. Outer decibels_sum over the by-value inner 222 (same code); location seeded as
-// a real and `+=` the inner real sum 306 (1030 bytes); location seeded as a long and `+=` a named by-value inner
-// 222 (same); the real sum written out 306; each pin argument as decibels_add(local_6, converted gain bits) 241
-// (1073), operands the other way 291 (1116); this file's decibels_pin single-exit (as src/unknown_2197f0.cpp's)
-// 237 (1036; 0x12a810 still matches), with the decibels_add pin arguments 231 (1052).
-// J224: Native byte views for pending/completed/both/submitted/pending-submitted/
-// completed-submitted/all state units 238/231/242/234/245/239/254; all with native short
-// pitch bounds 254. Completed-byte/all-byte units with reference inner gain and native
-// bounds 278/293; with both reference sums 278/293 (frame 0x494, first +0x44).
-// Original record declaration, body, gain helpers and every call restored; the two
-// extra argument homes and clamp joins remain. One incomplete-image comparison excluded.
-// Round 73 (fast; positional score (length) / LCS-aligned count, base aligned 147): the controller count
-// defaulted to 0xff and overwritten (retail's single store at the join) 234 (1045) / 144, a NONE char
-// default 275 (1040) / 162; that join with this file's decibels_pin single-exit 251 (1027) / 154; join,
-// single-exit pin and `decibels_pin(decibels_add(local_6, converted permutation gain bits))` at both pin
-// sites 228 (1043) / 142, the decibels_add operands the other way 258 (1086) / 148; pin and arguments
-// without the join 231 (1052) / 145; round 154's opening (shared scale local, pitch-bounds pointer, gain
-// seeded from arg_1 and updated in place) 245 (1052; exact to +0xba) / 110, with join, pin and arguments
-// 255 (1041) / 105 (42 aligned lines closer: the lead); that opening without the scale local 269 / 118,
-// with join, pin and arguments 281 / 115; gain/pitch names on both 245 / 255 (the two slots stay put).
-// Left in the lead: the unfolded location add at +0xba (as 0x1251e0 and 0x126c30) and retail's memory
-// round trip between each pin argument's sum and the pin parameter.
-// N314: Packet field owns both unpinned gain producers before the existing clamp; original/inner reference/
-// shared scale/both 222/269/277/249, with shared branch gain workspace 222/269/277/249. Inner reference
-// alone recovers frame 0x494 and first +0x44 but regresses; the packet stores fold away. Original body,
-// gain homes, scale observations, helpers, countdown arms and protected call inputs restored.
-// Round 308: actual playback gain-bit member with original/inner/outer/both in-place sums
-// Round 308: 222/269/222/269; with native signed location-bit member 222/269/263/306.
-// Round 308: Original physical types, both headers, sum helpers and body restored; gain homes and clamp joins remain.
-// N329: Existing file-local gain sum with first-reference/second-value inputs at
-// inner/outer/both/both-plus-scale: 262/221/262/248; first-value/second-reference 263/222/263/249.
-// NOT kept: one-point gain below threshold; shared users regress. All signatures and body restored.
-// F338: Incoming gain parameter owns the raw sum until the processing call, nested/sequential
-// additions crossed with shared scale and named pitch span: 224/224/276/276/224/224/276/276.
-// All restored; aligned frame 0x49c/0x494, initial gain homes and integer clamp joins remain.
-// M337: Existing whole decibel values through raw/processed/both submission gain
-// stages, seven subsets and complete entry lifetimes: [222, 222, 222, 222, 222, 222, 222, 222].
-// NOT kept: unmatched scalar-record/copy forms; all restored, gain homes and clamp joins remain.
-// m3 lane 16 r83 (fast): retail's three sums all read like one add helper taking a real first operand and a
-// long-bits second (only the second is copied): playback gain + copied argument, location + that sum, the
-// converted permutation byte + copied local_6. Such a helper (real a, long b) for both opening sums 269
-// (frame 0x494, inner sum exact; the location add still folds), its parameters swapped 269 (same code), at
-// the two pin sums too 247 (1060 bytes; pin operands as retail, but our real -> long -> pin copy collapses),
-// with this file's pin single-exit 261 (0x12a810 still matches), default-first 275 (loses 0x12a810, 25);
-// on 0x1251e0's tail the same helper 23 (was 15). Chunk index read into a local before the next-chunk test
-// 222 (the load moves above the permutation test as retail, zero-extended into ECX); the stream bit through
-// a stream pointer 221 (retail splits that store into load/or/store). All restored.
-// N367: Complete initial-pitch/packet-pitch/parallel branch-gain adjacent producers, seven subsets
-// 222/254/254/222/222/254/254; all with sequential promotion adjustment 254. NOT kept: ties or regressions;
-// original complete arithmetic, packet stores and helpers restored. Frame 0x49c/0x494, gain-input homes and
-// pin joins remain.
-// B440: Existing gain operators at raw nested/argument/inner/update producers
-// 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
-// MiniMax H (11-06) reached 167 from 222. The caller's gain and the location's unknown08 are added
-// to the playback's gain through the decibels type (s_decibels' operator+, as 0x21e330's reverb sums do),
-// and the scale is read once into a real local. The frame is retail's 0x494 and the scale stays in xmm2.
-// Not kept: reading the pitch bounds as a pair through &pitch_lower (local_18[0]/[1]) gave 164, three
-// points, under the bar. Still differs: the pitch result and the argument hold swapped stack homes
-// ([0xc] against [0x10]) and the two clamp joins in the tail differ.
-// Raw/complete operators with native reused scale 167/252; adjacent pitch bounds too
-// 164/249. Four pitch/gain/raw-result role-name forms on that graph each 164. Native
-// 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
-// NOT kept: one-use value record and bit copy, combined ownership forms without equality.
-// Original complete body, primitive helpers, observations, clears and interfaces restored.
-// N379: Incoming parameter owns raw and processed gain through both submissions; nested, sequential,
-// native-real and mixed sums 223/223/312/269; with coherent twice-used scale 273/273/299/246.
-// NOT kept: all regress; original parameter lifetime, gain homes, packet, helpers and body restored.
-// N381: Existing incoming gain-value contract with scalar/member/operator/parameter-owned raw sums,
-// without/with coherent scale: 222/306/275/275/277/295/287/287. NOT kept: no byte match;
-// original incoming type, caller, gain homes, helpers and entire body restored. Frame and pin joins remain.
-// N383: Both parallel branch gains through the existing compound operation, scalar/nested/compound/
-// staged raw producers 241/245/247/245; coherent twice-used scale 302/188/242/188.
-// NOT kept: unmatched record/copy operations; 188 grows to 1075/1057 bytes. Original body restored.
-// N385: Existing pin argument-owned/early-lower mutation, unsigned value argument/completed result,
-// signed readonly-reference early/completed and unsigned readonly-reference early/completed:
-// 237/231/237/237/222/237/237/237. NOT kept: no byte match; original pin and full body restored.
-// Frame 0x49c/0x494, initial gain homes and integer pin joins remain.
-// P351: Pin lower-only/both bound comparison truths in bool/byte/short/long:
-// 222/222/222/222/222/222/222/222. NOT kept: no byte match; frame 0x49c/0x494, gain-input homes and pin joins remain.
-// Original complete body and existing helpers restored.
-// F399: Existing native gain-class pin input with integer/class returns, early/common
-// results and direct/overloaded comparisons: 222/227/247/216/251/241/247/216.
-// NOT kept: six-point lead below eight, unmatched record contracts and regressed shared
-// clamp user; original pin, all three calls and whole body restored. Frame and pin joins remain.
-// F401: Existing reference sum at both parallel permutation-gain producers, mutable/readonly
-// converted parts crossed with inner reference sum and coherent scale: 222/222/269/269/277/277/249/249. NOT kept:
-// ties or regressions; original arithmetic/body restored. Frame/gain homes and pin joins remain.
-// N389: Complete state-word bit6 extraction, paired bit3 extractions and paired bit3
-// updates, seven subsets, then the complete bit6 update: 222/222/222/222/222/222/222/222.
-// NOT kept: no frame/gain-home improvement; original state accesses and full body restored.
-// N391: Paired mutable/immutable short/long/real/double pitch endpoints:
-// 263/263/253/253/222/222/277/277. NOT kept: no equality; extra argument
-// homes and pin joins remain. Original endpoint expression and full body restored.
-// N397: Complete native pitch, processed-gain and both submission-gain home identities 222/222/222/222/222/222/222/222.
-// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
-// MiniMax B (11-18, round 2): no new form, no lower score (122): the first difference is still the swap between EAX
-// and EDX in both pin sums - retail loads the permutation-gain byte into EDX and the gain bits into EAX (the second
-// sum has the byte in EAX and the gain in ECX), and this build has each pair the other way round; the byte's
-// sign-extension, the bits' store to [esp+0xc] and the sum's operand order are retail's, so the swap is the
-// allocator's choice and the body stands.
-// MiniMax B (11-18): no new form, no lower score (122): the first difference is still the swap between EAX and EDX in
-// both pin sums (retail keeps the permutation-gain byte in EDX and the gain bits in EAX, this build the other way
-// round), and the later differences follow from that swap; the byte's sign-extension, the bits' store to [esp+0xc]
-// and the sum's operand order are retail's, so the swap is the allocator's choice and no spelling of the two
-// operands moved it this round.
-// b6U (11-06) statement-by-statement walk against retail (0x128ca0-0x1290be), fast build: no behaviour difference found.
-// Checked: the two memsets and the two stores (0x128cfc-0x128d18, local_3 clear is 4 + 0x2c + 4 + 0x444 bytes);
-// pitch (0x128d1a-0x128d58, upper - lower scaled, plus playback pitch, plus lower); gain sum (0x128d58-0x128d83,
-// location + (playback gain + argument)); 0x1251e0 and 0x12a1b0 arguments (0x128d89-0x128dab); permutation and
-// pitch-bound lookups (0x128dbd-0x128e13); promotion term (0x128e23-0x128e9b: 0x12a9d0 result in st0, spilled and
-// reloaded); bit 9 test (0x128ea3-0x128ead); both pins (-64 / 0.0 from 0x44a0b4 / 0x45dbd8; 0x128ebb-0x128efc and
-// 0x128f86-0x128fcb); 0x21f8a0 / 0x21f720 / 0x129f20 argument registers; synch count update (0x128f4c-0x128f6e);
-// bit 6, bit 3 and next_permutation tests (0x128fec-0x129031); 0x1286b0 arguments (0x12905a-0x129077, the voice's
-// sound_index read unmasked); the stream bit (0x129093-0x1290b5). 0x21fa80 (edi = &local_3) left as it was.
-// Change: the next-chunk test is one condition (retail 0x12903e-0x129058: chunk word, chunk count - 1 compare, then
-// chunk + 1 against 0xffff in one chain) instead of a NONE default overridden under a test; same behaviour, 167 -> 158.
-// Tried: the in-body inline_depth(0) pair removed 270 (promotion lookup then inlines); a named local for chunk + 1 166.
-// Not kept (score-only, no behaviour change): reading the pitch bounds through &pitch_lower 164 (retail 0x128d2e forms
-// that pair pointer with lea +8); flag6 stored as a byte (retail 0x12908f is `or byte [esi+4], 0x40`, ours stores the word; not tried, a narrowing cast).
-// M3 lane 10 r114 (fast with the file's 76 functions; plain check: all 68 matched still match, the other seven unchanged):
-// kept, 158 -> 130: decibels_pin as a single exit, the form of unknown_2197f0.cpp's copy (the result joined in EAX before one
-// field_c store, as retail; 0x12a810 still matches; reading the bits through an `s_decibels` built from them in the pin gives
-// the same code); each permutation-gain sum as `s_decibels((real)gain) + s_decibels((dword)local_6)` (retail's addss memory
-// operand is the gain bits copied into operator+'s by-value operand); the synchronisation value as a long holding NONE
-// (retail stores DL from the EDX that holds NONE for the compares); the pitch bounds through `short const *pitch_bounds =
-// &local_4->pitch_lower` with a named `lower`, matched 0x126000's form (the head and both stack homes then agree);
-// the permutation's gain (+4) and chunk count (+0xe) named in its type (same code). Steps: the single exit alone 168
-// (1041 B); with s_decibels sums local_6 first 235 (1119 B), gain first 158 (1076 B); NONE in a long 133; the pitch pair 130.
-// Tried on the way: a char synchronisation value 204, on the pitch-pair base 201 (retail's byte ops and DL from NONE, but
-// the scratch registers upstream rotate); the field stored in each arm 218; a byte value with `(byte)NONE` 158 (folded to
-// 0xff); `short next_chunk_index` before the test 141; `flags |= 0x40` for flag6 133 (same code: the word read by the second
-// flag3 test is reused for a word RMW); the gain bits as `*(s_decibels *)&local_6` 130 (same code). Diagnostics, not kept:
-// the second flag3 test as `!local_1->flag3` or `!(flags & 8)` 117 (1052 B, `test al, 8`, further from retail: difflib-aligned
-// 64 against 54 differing instructions); `(short)(chunk_index + 1) != NONE` 126 (a width-only cast, aligned 69); the stream
-// store ahead of the flag6 store 117 (stores out of retail's order): it shows retail's second flag3 test reads a byte and the
-// flag6 store is a byte RMW because nothing reuses the flags word there, so retail's test must not share the word load.
-// M3 lane 12 r136 (fast with 0x1293f0; the plain check agrees on the kept form): kept, 130 -> 122: the next-chunk test through the
-// existing 0x219290 (`short next_chunk = (short)function_219290(...)`; retail has that function's body in line: the chunk word
-// loaded ahead of the null test, `movsx eax, ax`, `inc eax`, `cmp ax, 0xffff`, and the sum pushed) in place of its body written
-// out here. Tried: the stream bit through the existing 0x12a420 (retail's else block is that function in line) 131 alone, 123 with
-// the kept form (its copy comes out as one `or byte ptr [eax + 3], 8`, two instructions short; the same code with 0x12a420 in a
-// file of its own, or written as a bit-field store on the stream type, which still matches 0x12a420); the stream bit through a
-// named stream pointer 131 (that block is then retail's load / lea +0xc / or / store); the sibling 0x21c400's if/else short next
-// chunk 126, with a short chunk local 126; each pin sum as a named sum then `+=` 162 (both arms, 1048 B), first arm only 125,
-// second arm only 112 (1056 B: the pin's copy of its argument is gone, so that count is a length coincidence, aligned 54 -> 59);
-// a char synchronisation value 201. On the kept form with the 0x12a420 call: the else arm first 125, an early return after the
-// chunk start 123, a long next chunk 123, a named real or decibel value for the permutation gain 123 (same code), the pin result
-// in a named long 123, the sum passed without a local 123, the voice read from the table at the first channel call 121 (a mix),
-// the second flag3 test as an early return or the whole tail unnested 123 (same code), the else block in an inline helper 123
-// (same code); 0x12a420 called ahead of the flag6 store 122 (1054 B, aligned 54: the two stores out of retail's order).
-// Still differs: (1) the shared flag-word load (`mov ax, word ptr`, `or eax, 0x40`, word store); every difference from the second
-// flag3 test to the end follows from it (diagnostic, not a valid form: without that test the code from there to the end is
-// retail's, 0x12a420's copy included, aligned 34). (2) Both pin sums: the permutation-gain byte and the gain bits trade EAX/EDX,
-// and the field_c store sits behind the next statement's loads, which leaves the tail's scratch registers one step off.
-// (3) The synchronisation byte is widened.
-// Round 622: separate raw and processed bits 122; direct processed result 122; shared decibel call result 122;
-// decibel value at submission 122; call-result decibels and named permutation gains 122; call-result decibels and
-// real sums 195; submission decibels and named permutation gains 122; submission decibels and real sums 188.
-// Six forms tie at 122. The direct real sums remove the pin-argument homes and shorten the body to 1027 or
-// 1035 bytes. The pin registers, byte-versus-word flag access and widened synchronisation count remain.
-// The sum and clamp shared by both submissions, taking permutation byte, permutation record,
-// converted permutation gain, or permutation byte with decoded gain, each returning the bits
-// or writing the packet: 122/122/122/122/122/122/122/122. Pin registers and store order unchanged.
-// M3 lane 15 r98 (fast with 0x1293f0, 0x12a810, 0x1251e0, 0x125e60, 0x12a420, 0x12a9d0, all MATCH; control 122, LCS-aligned
-// 49): the synchronisation value as a char 189 (1054 B, aligned 78: the byte ops at the store are retail's, but the scratch
-// registers from the voice lookup on rotate); as a char defaulted to NONE and overridden 189 (same code); the first flag3
-// test with its two other conditions nested inside it 122 (same code); the second flag3 test as `(flags >> 3) & 1` 122 (same
-// code: the word load is still shared with the flag6 store); that plus the stream bit through the existing 0x12a420 123.
-// Synchronization count from postdecrement as char, byte or long 189/147/122.
-// Default char plus postdecrement 189, branch-local publication 208, default
-// char plus prefix decrement 189, single-read subtract as char or long 188/129.
-// NOT kept: no gain in the existing pin layout and byte update.
-// Countdown variants using the packed byte: long 122, char 189, byte 147, sentinel-first long 122,
-// char default 189, bitfield read with a packed write 129, masked byte update 147, per-arm store 187.
-// Default before the effect gate: char 189, packed byte 81, existing bitfields with byte count 81.
-// Low-byte view: completion mask or bitfield 65/65; pending shift or bitfield 50/50; paired pending
-// and completion 94/94. Byte pending test with byte set 53 and with both set and clear 53.
-// NOT kept: pairing the narrow accesses or changing the pending writes shortens past retail.
-// Publication effect index 81; inactive publication arm first 212; countdown uses decoded count 91;
-// effect index and countdown reuse 91.
-// M3 lane 2 r104 (fast with 0x1293f0 and the callees, all matched; plain confirmed; aligned exact/stack-masked/
-// register-masked 68/68/23 at 81). Lead, NOT kept (a width cast is kept only with a match; the body is main's):
-// 81 -> 64 (58/58/21): flag6 set through the flags' low byte, `*(byte
-// *)&local_1->flags |= 0x40`, the form the matched caller 0x1293f0 uses for the fading bit of the same field (retail
-// 0x12908f is `or byte ptr [esi + 4], 0x40`): 65, the second flag3 test then loads a byte as retail's and no longer
-// shares the word; and the stream bit through the existing 0x12a420 in place of its body written out here 64 (that
-// call alone on main 83: two points up, so not kept either). Tried:
-// the count as `long count = NONE` before the effect gate 122 (retail's `or edx, -1` shared by both NONE compares, but
-// the count load is widened: `xor edx, edx; mov dl, cl; and edx, 0x7f`), on the kept form 122; `char count = NONE` on
-// the kept form 203 (1054 B: the upstream registers rotate); `byte count = (byte)NONE` 64 (same code); both on main's
-// flag6 store: long 122, long with the byte store 121; on the kept form, flag6 as `local_1->flags |= 0x40` 83 (1060 B,
-// the word load is shared again), `long count = NONE` with a byte-cast load 122. Left: the pins' EAX/EDX, the field_c store's slot, the
-// controller compares' immediates (retail EDX = NONE), the inner chunk push order, the chunk-set call's argument
-// loads, and the flag6 / stream stores' forms swapped (ours load/or/store then memory or, retail the reverse).
-// Current permutation through test and gain 81, with update arm first 144. Shared packet properties,
-// effects, both, or properties from spatialization onward 81/81/81/81. Common pin after selecting
-// permutation or signed adjustment 244/241. NOT kept: address lifetimes leave both pin register
-// pairs unchanged. Sharing the pin removes retail's two separate calculations and shortens the body.
-// Signed permutation gain parts 81, named gain operands 81, separate pinned result 81,
-// unclamped bits held through the pin 81, post-pin channel indices 81, nullable controller 130,
-// update-before-start dispatch 144, pinned decibel round-trip 81. NOT kept: the tied pin
-// forms retain the register exchange and the controller and dispatch forms regress.
-// M3 lane 12 r153 (fast with 0x1293f0 and the callees, all matched; aligned exact / register-masked 67 / 21 at 81):
-// lane 2 r104's lead re-measured 64 (57 / 18): flag6 set through the low byte as 0x1293f0 sets the fading bit, and the
-// stream bit through the existing 0x12a420 (main's line is that function's body written out; the call alone is 83).
-// Reading of the first difference: in both pins the two scratch temporaries (the permutation-gain byte and the copy of
-// the gain bits into operator+'s by-value operand) take the next registers in the opposite order from retail (pin one:
-// retail byte EDX, copy EAX after the bit-9 test's ECX; ours byte EAX, copy EDX; pin two: retail byte EAX, copy ECX;
-// ours byte EDX, copy ECX), as if this build allocates the operand copy first. On the lead, each the same code (64):
-// the copy named first and the sum written `local = s_decibels((real)gain) + local;`; one `s_decibels gain =
-// s_decibels((dword)local_6);` ahead of the bit-9 test used by both pins; the byte converted through `(real)(long)`;
-// the operand passed as `*(s_decibels *)&local_6`; the stream bit through a named channel-state pointer.
-// M3 lane 8 r196 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 81): lane 2
-// r104's lead rebuilt 64 (diagnostic). The pin sums with the bits as the left operand, both 210 (1102 B), the first only
-// 182 (1079 B); the permutation gain through an inline accessor taking the permutation (both pins) 81, the started bit
-// (`flags >> 9`) through an inline accessor 81, the bits named as a decibel value before the first sum 81 (all three the
-// same code: the gain byte keeps EAX and the bits EDX). Body unchanged.
-// Clamp selects bits through conditionals 114; separate lower/upper or upper/lower selections 160/162;
-// existing real clamp 169; two bound assignments 150; decibel result with typed bounds 192;
-// in-place bit or decibel clamp 177/163. NOT kept: all raise the count, and all but the
-// conditional selection also raise the matched fade user. Both pin register exchanges remain.
-// M3 lane 7 r195 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; plain confirmed): kept,
-// 81 -> 72: flag6 set through the file's inline flags_set_bit (retail's second pending test reads a byte and its flag6
-// store is a byte `or`, so the store does not share the test's word load; a setter taking the flags' address gives
-// that, 73), the same setter at the two byte-view stores of matched 0x128020 and 0x1293f0 (both still match), and the
-// stream bit through the existing 0x12a420 (72). The setter at the bit-9 store, the pending clear and the pending
-// set 72 (same code, not applied). Tried on the kept form: `char count = NONE` 208 (1049 B: retail's `or edx, -1`
-// block, but the scratch registers rotate from the pitch-range lookup on; on main's form a cast on the bit-field
-// read, signed char, post-decrement or declared inside the gate 189 each, declared at the top 246), `long count =
-// NONE` 122; the first pin sum with the bits as the left operand 174 (1074 B), the second 138 (1077 B); one to three
-// redundant paren pairs in the float products 72 (same code); the first controller block as if/else, or both lookups
-// through one inline accessor, 72 (same code); the pin sums' right operand as an aggregate copy of the bits, the bits
-// in a decibel local, the left operand named as a decibel value, a real or a long 72 (same code each); a decibel local
-// then `+=` 201 (1022 B). A 1500 s permuter run (147 tries): best 50, only with a volatile byte store of the packet's
-// word (not allowed). Leads, NOT kept (a spelling picked among parallel tests): the second pending test as plain
-// `!local_1->flag3` 48 (1059 B; the tail's scratch registers are then retail's, but the test is `mov ebx, 8; test bl,
-// al` and both later `or ..., 8` take BL); the flag6 test as plain `!local_1->flag6` 100 (1053 B, aligned 22: the
-// test is `test al, 0x40`, two instructions short, and everything after it is retail's); the first pending test
-// plain 74, flag6 + first 99, flag6 + second 104, first + second 92, all three 109. Reading: from the flag6 test on
-// retail's scratch registers are one step further round (its flag6 copy takes DL where ours takes CL), and in both pin
-// sums retail gives the gain byte its register before the bits' copy (EDX then EAX; EAX in place then ECX), ours the
-// copy first; a form that evaluates the gain byte first should bring the pins, the field_c store and the tail together.
-// One or two named copy locals of the parameters (the symbol-count lever that moved 0xb93b0's XMM triple) 72 (same code).
-// Both pin objects assigned 72, direct-initialized 72, decoded real member accumulated 181,
-// signed gain initialized then summed into its member 201, pin argument from the value member 72.
-// Named started test 72, scoped pitch/gain setup 72, scoped permutation lookup 72. The tied forms
-// keep both scratch register exchanges. Real-member arithmetic shortens the pin input copies.
-// Attenuated gain name, opening gain/pitch names, submission gain names, shared unpinned
-// level, read-only voice record, playback record reference, selected permutation reference,
-// and shared pinned level all 72. The two pin register pairs and packet store order stay put.
-// Synchronization count as short/word/dword with the separate decrement or postdecrement
-// 116/120/122 either way. The inactive-controller branch assigns a short/dword default 116/122.
-// NOT kept: word reaches the retail length but keeps separate NONE comparisons, and dword widens the count extraction.
-// M3 lane 15 r122 (fast with 0x1293f0, 0x12a810, 0x12a420, 0x125e60, all MATCH; control 48: on it the constant 8 sits in
-// EBX for the second pending test, `test bl, al`, the flag3 set `or word ..., bx` and the stream bit `or cl, bl`): the
-// second pending test as `!TEST_FIELD_BIT(...)` 72 (1054 B: that test, the flag3 set and the stream bit's load / or /
-// store are then retail's shape, and from the flag6 test on only the scratch rotation differs, one step behind
-// retail's), as `!(bool)((flags >> 3) & 1)` 72 (same code), as `!((flags >> 3) & 1)` or `!(flags & 8)` 48 (same code
-// as now). On the 72 form: `char count = NONE` 208 and `signed char` 208 (the count block is then retail's exactly,
-// `or edx, -1` shared by both NONE compares and the count's DL, but the pitch-range lookup's EAX/ECX and every later
-// block rotate), `long count = NONE` 122; the char count declared at the top of the not-started block 230, after the
-// field_c store 235, after the first channel call 202, after the impulse call 203, at the function's top 239.
-// M3 lane 14 r133 (fast with 0x1293f0/0x12a810/0x1251e0/0x125e60/0x12a420/0x12a9d0, all matched; control 48): the second
-// pending test as `!TEST_FIELD_BIT(local_1->flag3)` 72 (1054 B: from there on the test and both `or byte ..., 8` are
-// retail's, the scratch registers one step off and 0x12a420's copy an in-place `or`), as `!(bool)((flags >> 3) & 1)` 72,
-// as `!(bool)(flags & 8)` 72 (same code each); the flag3 set through flags_set_bit 48 (same code), with the
-// TEST_FIELD_BIT test 72; on the 48 form `long count = NONE` 123, `char count = NONE` 203; `long count = NONE` with the
-// TEST_FIELD_BIT test 122. Both pins still store field_c after the channel-index load where retail stores it first.
-// M3 lane 12 r165 (fast screen with 0x1293f0, matched throughout; control 48; body unchanged). Reading: retail's scratch
-// registers in both pins are a plain EAX, ECX, EDX rotation in the order the instructions stand, with the gain byte's
-// load taking its register ahead of the bits' copy (pin one EDX then EAX after the bit-9 test's ECX; pin two the byte
-// in place in EAX, then ECX, and the tail's lea EDX, voice EAX, channel ECX follow from that); ours gives the copy its
-// register first in both and then hoists the byte's load above it. Forms that give the same code (48): a file-local
-// add taking the gain (real or long) first and the decibel value second, `return decibels += gain`; the copy made
-// inside such an add from a const reference (`s_decibels result = b; return result += a;`); the gain byte passed as a
-// char parameter, first or last, with the operator sum inside; the bits copied by a 4-byte memcpy inside an inline
-// maker of the right operand. Forms where the pin's parameter copy folds away (177 at 1043 B, the copy still first):
-// an add returning a fresh long from (bits, real), from (real, bits), in place on the bits, or as a decibel value from
-// `a.value + b.value` either way round; the sum as a real expression with the bits read through a by-value accessor,
-// either operand order; the existing decibels_add(bits, bits of the gain) 177. Only a gain that goes through memory as
-// type-punned bits ahead of the copy is loaded first: decibels_add(bits of the gain, bits) 201 (1086 B: pin registers
-// as retail's in both pins, the in-place EAX included, but the gain is stored and reloaded twice), a reversed-operand
-// copy of that add 201, the gain as a by-value decibel first parameter 219 (1102 B). 1 to 8 initialised unused locals
-// at the top (diagnostic) 48 each, and on the char count form 203 each (same code: no symbol-count effect here).
-// The count: `char count = NONE` re-measured 203 (1054 B): its block is retail's (`or edx, -1`, both compares against
-// EDX, byte extraction), but the first controller block's field compare becomes `cmp dword ptr [eax + 4], -1` (one
-// scratch load fewer, the three missing bytes) and the pitch-range index is tripled in place with the definitions
-// pointer in ECX, so every scratch register from there on is one step round; `long count = NONE` 123 (retail's block
-// but for the widened extraction, nothing else moves). On the char form: the first block's field in a named long, as
-// if/else, the effect index in a local 203 each (same code), zero default then an if 207; the count block through an
-// inline taker returning char 203 (pointer or lookup passed), returning long 123.
-// LEAD 17 (1059 B, plain-confirmed with 0x1293f0, 0x128020, 0x12a810, 0x1251e0, 0x12a420 and 0x125e60 all still matched;
-// aligned 3/3, only the count block's three rows left; patch build/r165/lead-0x128ca0-17.patch; NOT kept, it is built from
-// forms that need a byte match). Its parts: (1) each pin sum through one decibel local that is declared, assigned the
-// permutation's gain and then assigned the sum (`s_decibels x; x = s_decibels((real)gain); x = x + s_decibels((dword)
-// local_6);`): the first assignment keeps the gain byte's load ahead of the bits' copy, so both pins take retail's
-// registers (EDX then EAX; in place in EAX then ECX) and the tail's scratch registers follow. The same local initialised
-// at its declaration is the old code; a function-scope decibel local for the gain alone, assigned in both arms, 107
-// (pin two then loads the copy and adds the gain into it); a long or real local for the gain 48 (same code); the sum as
-// `x += ...` 67; the bits first in the second assignment 203. (2) The second pending test back through TEST_FIELD_BIT as
-// the other two tests are written (alone 72; retail's `shr dl, 3; test dl, 1` and both byte `or`s). (1) + (2): 19.
-// (3) The voice's channel index read as `g_4e6378[arg_0].channel_index` at the first pin's call (the pointer local at
-// every other use): the field_c store then stands between the voice reload and the index load as in retail, 19 -> 17.
-// On (1) + (2) alone: the pin result written back into the local first, a named long for it, a cast on the index, the
-// index in a short local, field_c written through a packet pointer, the decibel local declared at the function's top
-// 19 each (same code); the count declared ahead of the pin 188. A 606 s annealing permuter run from (1) + (2) (62 tries)
-// found nothing below its baseline.
-// The count on the lead: `char count = NONE` 204 (aligned 37/38, masked 4/5: the block is retail's exactly, and the
-// rest is the upstream shift described above), `long count = NONE` 120 (aligned 3/2: only the widened extraction),
-// `short` 113. What moves the upstream code with a char count is the constant itself: with the first controller
-// block's two tests written against 0 (a diagnostic) the char form differs from retail in those two test rows only
-// (23, aligned 2/2 with part (3); patch build/r165/diag-0x128ca0-char-23.patch), with either test alone against NONE
-// the shift is back, with `x + 1 != 0` tests it is gone again (the tests then come out as lea / test), and with a
-// count default of -2 it is gone too (15, the count block then its own constants). So this build shares the char
-// count's -1 with every 32-bit NONE compare of the function and holds EDX for it from the block ahead of the first
-// one, and retail shares it with the count block's two compares only. Forms that keep the shift (204 each): the
-// first block's tests cast to dword, to a pointer type, to a 64-bit integer, or against 0xffffffff, or written as
-// two-case switches (either or both); that block's arms
-// swapped (`== NONE` first) 206, its inner test swapped 204; the pitch-range index named, its operands swapped, the
-// table pointer named, plain pointer arithmetic; the count taken through an inline with a pointer or reference
-// output, with the default set inside it, or written straight to the playback's byte; the whole count block in one
-// inline; 1 to 3 char, 1 short and 1 to 7 long initialised unused locals. On a long count: the extraction cast to
-// char, signed char or byte 120 each, written into the count's low byte through a cast of its address 144, masked
-// into the low byte 127. The controller's synch bits declared in a 32-bit unit (with a long count 134, a byte count
-// 140, a char count 214) grow this body and lose matched 0x127390 (32).
-// M3 lane 7 r206 (h2m fast with 0x1293f0/0x1251e0/0x12a420/0x125e60/0x12a810, matched throughout; control 48; L = the LEAD
-// 17 above, re-measured 17; Lc = L with `char count = NONE`, re-measured 204): on L, a char count declared inside the
-// effect-index block with its NONE in an else arm 204, declared there with the default 204; the count as `(char)0xff`,
-// `signed char`, `'\xff'` or `~0` 204 each, `(byte)NONE` or `byte` 255 17 each, `int` NONE or `unsigned long` 0xffffffff
-// 118 each (only `xor edx, edx` ahead of the extraction left in the count block); the playback byte stored NONE then
-// overwritten under the controller test 200 (1055 B). On Lc: the first controller block as a file-local forceinline
-// helper 204; a file-local pointer-or-NULL controller getter for the first block 59 (1056 B), for both blocks 65; the
-// count step as `synch_count = count - 1` 207; the two packet stores ahead of the pitch lookups 67 (1057 B), the pitch
-// bound read ahead of the permutation 45 (1058 B), the permutation sum swapped 204, the effect-index store first 208, the
-// bound read right after the range 81. A char count with each subset of L's three parts 203-209 (all shift at +0x12a).
-// A 604 s annealing permuter run on Lc (39 tries) reached 165 only with swapped call arguments. The compile-only build
-// gives `or dl, -1` for a char count too and shares nothing, so it cannot screen the swap.
-// M3 lane 16 r167 (H2M fast with 0x1293f0, matched throughout; control 48; body unchanged): lane 12's lead 17 re-measured
-// 17, and `char count = NONE` on it 204 again. On that char form: the count declared inside the effect-index block as its
-// first statement 204, after the controller pointer 204; `count = controller->synch_count--;` 204; the effect index read
-// once into a long for the test and the lookup 204. On this body: both pins' gain through an inline getter returning the
-// decibel value 48 (same code), the getter returning a named decibel local 50 (1054 B). Also on the char form: one
-// controller-pointer variable for both controller blocks 204; the pitch range through a getter of src/unknown_218ac0.cpp's
-// shape 204; a 607 s annealing permuter run from it (41 tries, baseline 201 in its full image) reached 165 only by
-// swapping two arguments of the set-chunk call (a false-match form) with temporaries, nothing usable.
-// Attenuation in the opening decibel, separate initialized or assigned decibel, unsigned bits
-// from the call or through it, signed-bit view, or existing decibel value member: 48 each.
-// Attenuation as a decoded real 180. NOT kept: the decoded real shortens to 1043 bytes and
-// moves the first difference to the gain setup. The tied forms leave both pin register pairs.
-// M3 lane 12 r170 (h2m fast with 0x1293f0, matched throughout; control 48; L = the LEAD 17 above, re-measured 17; Lc = L
-// with `char count = NONE`, re-measured 204): on L, the playback byte stored in both arms of the controller test (no count
-// local) 207 (1064 B); a `char count;` declared after the controller pointer and set in both arms 204; the count from a
-// conditional on the controller's field, the countdown under its own test, 210 (1064 B); on Lc, the first controller block
-// written NONE-first with the zero default set ahead of an inner `if` 208 (1052 B). Every one still moves the scratch
-// rotation from the pitch-range index (+0x12a). Diagnostics on Lc (reverted): a file-local accessor returning the effect
-// index, or returning the playback pointer itself, used at one site each (the count block's test, the first block's test,
-// the pitch-range index, the field_2c store, the playback byte store, the 0x200 flag store) 204 each (same code: such
-// accessors fold away and do not move the scratch rotation here).
-// Both pin scratch pairs and the synchronization default still differ.
-// Converted gain member before each sum 48, separate assigned offset and sum 50, shared pin workspace 107.
-// Staged pins with direct channel reads in both calls 17. NOT kept: mixed direct and saved voice access.
-// Signed count governing the controller update 101, debit from the selected count 161, separate count producers
-// 101, separate validity-arm publication 194. NOT kept: all four change the early sentinel allocation.
-// Both pins with an independent processed level constructed from bits or copied from its decoded value:
-// short adjustment with direct construction 48/48, short or long adjustment assigned to the level 48/48 and
-// 48/48, direct signed tag adjustment assigned to the level 48/48. The pin register pairs and extent agree
-// with the opening build. NOT kept: no gain.
-// M3 lane 2 r133 (h2m fast with 0x1293f0/0x1251e0/0x125e60, matched throughout; control 48; L = the LEAD 17 rebuilt,
-// re-measured 17; Lc = L with `char count = NONE`, re-measured 204, its second controller-field test folded to
-// `cmp dword ptr [eax + 4], -1` where retail loads the field into ECX first). Both controller lookups through the
-// existing pointer getter 0x2198f0 (its result cast to the controller view) on L 229 (1019 B), on Lc 237 (1026 B),
-// the first lookup only on Lc 222, the count block's only on Lc 224: LTCG leaves the getter out of line (a call) in
-// every form, so retail did not reach the controller through it. On Lc the pin block's arms swapped (the
-// initialised-channel arm first) 208 (1049 B, shift still at +0x12a). Body unchanged.
-// The shared decibel addition's by-value operand updated with the compound operation or decoded
-// member before returning 257/257. Direct/named construction from the decoded sum 177/177.
-// Const-reference operand with copied result, direct constructor, returned compound sum, or
-// named decoded sum 177/308/48/308. NOT kept: copying the operand and returning the compound
-// sum ties. The other forms shorten the function and some change the matched gain producer.
-// Round 463. Valid-arm byte, char, long or short count with direct sentinel publication 208/208/208/212.
-// With staged pin gain producers, shifted pending test and direct channel read 194/194/201/205. The
-// direct sentinel shifts registers at +0x12a and keeps the count comparisons displaced.
-// First, second or both gain scopes ending at the packet write 48 each. Separate decibel
-// operands with permutation first, processed bits first, or both scoped to publication 48 each.
-// Channel arguments named after publication, with or without scoped gain objects, 48 each.
-// The two scratch-register exchanges and full-width synchronization sentinel still differ.
-// M3 lane 6 r230 (H2M_FAST with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt, re-measured 17;
-// Lc = L with `char count = NONE`, re-measured 204): the definitions view named once for the range and bound lookups on
-// L 17, on Lc 204 (same code each); on Lc the flag cleared before the decrement 203 (1053 B); the count block as a
-// function in the controller file 166 (1017 B, it stays a call); on Lc the four statements after the range lookup
-// (permutation P, field_34 store Z, effect-index store E, bound B) in the 22 orders not listed above: PZBE 216, PEZB
-// 208, PEBZ 210, PBZE 218, PBEZ 218, ZPEB 209, ZPBE 221, ZEPB 78, ZEBP 82, ZBPE 44, ZBEP 81, EPZB 79, EPBZ 79, EZPB 78,
-// EZBP 82, EBPZ 82, EBZP 82, BPEZ 45, BZPE 44, BZEP 81, BEPZ 82, BEZP 82. With the bound early the first controller
-// block and the count block are retail's and only the pitch block's registers move. Body unchanged.
-// M3 lane 12 r175 (H2M_FAST with 0x1293f0, matched; control 48; L = the LEAD 17 above, rebuilt from its patch, re-measured
-// 17; Lc = L with `char count = NONE`, re-measured 204): on Lc, the count through a reference bound to a char local 204, the
-// first block's two NONE tests written constant-first 204; on L, `short count = NONE` 111 (1056 B: the count block's
-// `or edx, -1` and both register compares are retail's with no upstream shift, but the extraction adds `movzx dx, dl` and
-// the second pin's scratch registers then rotate one step), `long count = NONE` 118 (extraction `xor edx, edx` / `and edx,
-// 0x7f`, the rest of the block and the second pin as retail), `word count = NONE` 115 (0xffff is shared with the lookup's
-// mask: `mov edx, 0xffff`, `and eax, edx`). Body unchanged.
-// M3 lane 15 r135 (h2m fast with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt from its patch,
-// re-measured 17; Lc = L with `char count = NONE`, re-measured 204): on L the char count declared at the function's top 248
-// (1074 B), at the top of the not-yet-started arm 237 (1074 B), just before function_21f720 198 (1056 B), just before the
-// chunk-queue call 199 (1056 B); on this body `char count = NONE` in place 203 (1054 B), declared just before function_21f720
-// 197 (1056 B). Every char form keeps the scratch shift at the pitch-range index (+0x12a); a declaration live across a call
-// lengthens the frame. Body unchanged.
-// M3 lane 14 r150 (h2m fast with 0x1293f0, MATCH throughout; control 48, aligned 36). The aligned rows: both pins'
-// scratch pair (the gain byte and the bits' copy trade registers), the field_c store one row late at the first pin, the
-// count's `or dl, 0xff` with immediate compares for retail's `or edx, -1` and register compares, the tail's rotation
-// after the second pin, and the second pending test with the constant 8 in EBX. Tried: the processed bits bound by a
-// `s_decibels const &` to the local and passed as the sum's right operand in both pins 48 (same code); the
-// permutation's gain bound by a const reference to its converted value, then summed, in both pins 152 (1062 B: the
-// gain is stored and reloaded); the voice's current permutation named in the second arm's test for the test and the
-// gain 48 (same code); the channel index named once ahead of the started test for both channel calls 164 (1038 B: it
-// is read ahead of the pins and kept across them); the first pin's result and the channel index named ahead of the
-// field_c store 48 (same code: the store still follows the index load).
-// Processed accumulator constructed, assigned, copy-constructed or copy-assigned before compound pin additions 177/177/177/177.
-// The same four with the permutation conversion preceding accumulator preparation 177/177/177/177. NOT kept: they remove the retail by-value pin homes.
-// Both start-arm sentinel compares still use immediates and the gain-pin scratch pairs remain exchanged.
-// Invalid controller link as inactive byte: separate active-first/inactive-first arms 208/212,
-// byte initialized from the link 131, joined selected byte 203. Complement test on effect/link/both
-// 138/129/140, with link-derived inactive byte 151. NOT kept: all raise the score.
-// M3 lane 16 r188 (H2M_FAST with 0x1293f0, MATCH throughout; control 48): the first pin's sum written bits first
-// (`s_decibels((dword)local_6) + s_decibels((real)gain)`) 181 (1079 B), both pins that way 210 (1102 B); the count's
-// extraction cast to byte 48; the count taken as `count = controller->synch_count--;` 48; the first controller block's
-// listener gain as an if/else 48 (same code each). Body unchanged.
-// The pin scratch pairs and controller sentinel still differ. Completed guard 48, absent
-// successor first 83, both 83, with pending guard 83. Return on absent/valid successor
-// 83/48, with completed and pending guards 83/48. NOT kept: the absent-first forms
-// shorten to 1053 bytes and raise the score. The native shifted pending read remains.
-// With staged gain assignments and shifted pending test, use the sampled count for the debit
-// as signed char/short/long or byte 207/123/126/79. With a retained synchronization handle,
-// signed char/byte 207/79, and with both controller handles retained 207/79.
-// NOT kept: the signed byte moves the first difference to the pitch setup, and all forms regress.
-// M3 lane 7 r231 (H2M_FAST with 0x1293f0, MATCH throughout; control 48; L = the LEAD 17 above rebuilt, re-measured 17; Lc
-// = L with `char count = NONE`, re-measured 204). Allocator reading: L and Lc reference the same values at the same costs
-// in the entry block, and the first integer pass sees 20 values there in both (its only difference is the NONE constant
-// with 5 references in L and 6 in Lc, retail's count), but after it the char form keeps 19, so
-// each second-pass entry value scores 6 x 19 = 114 instead of 120 and one of them loses its tie with the pitch-bounds and
-// pitch-range values (EAX first in L, ECX after them in Lc); a forced-ranking search's best single decision on Lc (that
-// pick back) gives 43, leaving only the pitch-range block (retail forms the range pointer with `lea` and reads +8 and +2
-// through it) and branch offsets. Forms on Lc: without the decibel-local assignments 208 (1049 B), without the
-// TEST_FIELD_BIT pending test 209 (1049 B), with the voice pointer for the channel index 204; the pitch bounds read as
-// the record's two fields (no pointer) 207 (first +0x8f); the count extraction cast to char 204 (same code). Body
-// unchanged.
-// M3 lane 4 r266 (H2M_FAST with 0x1293f0, 0x1251e0, 0x12a420, 0x125e60, 0x12a810, MATCH; control 48; L = the LEAD 17 above
-// rebuilt, re-measured 17; Lc = L with `char count = NONE`, re-measured 204). The char count is the field's own type:
-// matched 0x127390 compares the same playback byte with NONE. Allocator reading: on Lc the shifted entry value is a
-// second-pass candidate whose entry-block count is 19 against L's 20, so it scores 114 and falls behind the three
-// 120-point pitch values. Named parts in the entry block, each on Lc and L: the pitch range index 204/17, the upper
-// pitch bound 204, the permutation index 204/17 (same code each: the names fold away). Body unchanged.
-// M3 lane 8 r245 (H2M_FAST with 0x1293f0, MATCH; L = the LEAD 17 above rebuilt, re-measured 17; Lc = L with `char
-// count = NONE`, re-measured 204). Allocator reading: on Lc the definitions pointer reloaded after the 0x12a1b0 call
-// (3 entry-block refs) is a second-pass candidate that sees 19 referenced candidates there (L 20), scores 114 and takes
-// ECX behind the five 120-point entry values; Lc also keeps a NONE constant candidate live in the first controller
-// block. Forms: one definitions pointer local for the playback parameters, pitch ranges and bounds, on Lc 209, on L 24;
-// on Lc the bounds read through the pitch-range index again 243 (1074 B), the first block's listener gain as if/else
-// 204 (same code), its effect index read once into a long 204 (same code), the gain defaulted to 0 then overwritten
-// under the test 208 (1052 B). Body unchanged.
+// MATCH (was 48): arg_1 is taken as the decibels value it is (the caller 0x1293f0 passes the same bits), the gain sum
+// and the 0x1251e0 result stay s_decibels, the count is a char set to NONE (the playback byte's own type), and the
+// channel index is read from g_4e6378 at both channel calls as the sibling 0x21c400 does. Builds on M3 lane 8 r245's
+// lead (17, with the char count). Gemini lane GA r35.
 // @retail 0x128ca0
-void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
+void function_128ca0(short arg_0, s_decibels arg_1, s_looping_channel_spatialization const *arg_2)
 {
 	s_sound_voice *local_0 = &g_4e6378[arg_0];
 	s_sound_playback *local_1 = SOUND_PLAYBACK_GET(local_0->sound_index);
@@ -5202,9 +4627,8 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	short const *pitch_bounds = &local_4->pitch_lower;
 	real lower = (real)pitch_bounds[0];
 	real local_5 = ((real)pitch_bounds[1] - lower) * local_17 + local_1->pitch + lower;
-	s_decibels gain_sum = *(s_decibels *)&local_1->location.unknown08 + (*(s_decibels *)&local_1->gain + *(s_decibels *)&arg_1);
-	long local_6 = *(long *)&gain_sum;
-	local_6 = function_1251e0(local_2, local_6, local_17);
+	s_decibels gain_sum = *(s_decibels *)&local_1->location.unknown08 + (*(s_decibels *)&local_1->gain + arg_1);
+	s_decibels local_6((dword)function_1251e0(local_2, *(long *)&gain_sum, local_17));
 	function_12a1b0(arg_0, (s_looping_track_sound *)local_1, arg_2, (s_looping_channel_properties *)&local_3);
 	s_sound_pitch_range *local_7 = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[local_2->pitch_range_base + local_1->pitch_range_index];
 	s_sound_permutation const *local_8 = &SOUND_GLOBALS_CHUNKS->permutations[local_7->first_permutation + local_1->permutation_index];
@@ -5229,12 +4653,14 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	}
 	if (!(bool)((local_1->flags >> 9) & 1))
 	{
-		s_decibels local_12 = s_decibels((real)local_8->gain) + s_decibels((dword)local_6);
+		s_decibels local_12;
+		local_12 = s_decibels((real)local_8->gain);
+		local_12 = local_12 + local_6;
 		local_3.field_c = decibels_pin(*(long *)&local_12);
-		function_21f8a0(local_0->channel_index, (s_looping_channel_properties *)&local_3, (s_looping_effect_playback *)local_3.field_48);
+		function_21f8a0(g_4e6378[arg_0].channel_index, (s_looping_channel_properties *)&local_3, (s_looping_effect_playback *)local_3.field_48);
 		function_21f720((s_looping_impulse_parameters *)local_3.field_468);
 		sound_voice_queue_chunk(arg_0, local_8, local_1->chunk_index);
-		byte count = 0xff;
+		char count = NONE;
 		if (local_1->effect_index != NONE)
 		{
 			s_sound_controller_view *local_13 = (s_sound_controller_view *)((s_record_pool *)g_51ebd8)->data + (local_1->effect_index & 0xffff);
@@ -5244,15 +4670,17 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 				local_13->synch_count--;
 				local_13->synch_playback = false;
 			}
-			local_1->unknown03 = (char)count;
+			local_1->unknown03 = count;
 		}
 		local_1->flags |= 0x200;
 	}
 	else if (local_0->permutation)
 	{
-		s_decibels local_15 = s_decibels((real)local_0->permutation->gain) + s_decibels((dword)local_6);
+		s_decibels local_15;
+		local_15 = s_decibels((real)local_0->permutation->gain);
+		local_15 = local_15 + local_6;
 		local_3.field_c = decibels_pin(*(long *)&local_15);
-		function_21fa80(local_0->channel_index, (s_looping_channel_properties *)&local_3, (s_looping_effect_playback *)local_3.field_48, true);
+		function_21fa80(g_4e6378[arg_0].channel_index, (s_looping_channel_properties *)&local_3, (s_looping_effect_playback *)local_3.field_48, true);
 	}
 	if (!TEST_FIELD_BIT(local_1->flag6))
 	{
@@ -5261,7 +4689,7 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 			sound_voice_queue_chunk(arg_0, local_8, local_1->chunk_index);
 			local_1->flag3 = false;
 		}
-		if (!local_1->flag3)
+		if (!TEST_FIELD_BIT(local_1->flag3))
 		{
 			short next_chunk = (short)function_219290((s_permutation_group *)local_8, local_1->chunk_index);
 			if (next_chunk != NONE)
@@ -5318,7 +4746,7 @@ void function_1293f0(void)
 		if ((1 << SOUND_PLAYBACK_GET(local_3->sound_index)->state) & 0x1e)
 			function_21c400((short)local_2, *(real *)&local_5, (s_looping_channel_spatialization *)&local_8);
 		else
-			function_128ca0((short)local_2, local_5, (s_looping_channel_spatialization *)&local_8);
+			function_128ca0((short)local_2, *(s_decibels *)&local_5, (s_looping_channel_spatialization *)&local_8);
 		if (!TEST_FIELD_BIT(local_4->source_updated) && local_4->source && local_4->source->proc2)
 			local_4->source->proc2(local_4->object_index, (long)local_4->source_data, local_4->definition_index, local_4->pitch_range_index, (long)local_3->permutation, *(long *)&local_3->unknown10);
 	}

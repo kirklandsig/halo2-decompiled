@@ -2432,6 +2432,11 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // the nearest reset 551 (all the same code); the plane distance as `dot3f(point, &plane normal) - d` on main's body 565
 // (2893 B); the prism loop and its square inside `if (count > 0)` (a redundant guard) 550 (2878 B: the square then
 // follows the `jle` as in retail, but the index store stays ahead of it and the frame cells keep their places).
+// M3 lane 7 r239 (H2M_FAST with 0x120790 and 0x2469b0, both MATCH; control 551): the plane's i, j and k read once into
+// locals used by the distance and the projection, with `offset = 0.0f - distance` for the three projected rows, 553
+// (2880 B); that with the distance as one expression 550 (2875 B); the coefficient locals without the offset 552;
+// `projected = *point;` then each row's scaled offset added in place 615 (2910 B); both averages as the sum divided by a
+// named `real count` 571 (2889 B). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

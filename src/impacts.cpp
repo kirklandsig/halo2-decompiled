@@ -843,6 +843,9 @@ struct s_227af0
 // zero stores 4 (same code); `up` in the third call only 8, in the first only 6, in the second only 8; the length test
 // negated 313. Diagnostic (alias locals of the position parameter, not keepable): the symbol numbering moved by one to
 // eight gives 4, 24, 24, 24, 24, 14, 14, 20, so no numbering alone gives both calls.
+// M3 lane 3 r320 (h2m fast; control 4): the threshold test as `!(length >= 0.001f)` 313 (1692 B); with the constant
+// on the left 4; `normal` as a const pointer 4; the else-if test as `(!impact->unknowne || !unknown)` 4; the two unused
+// normalize results cast to void 4 (all four the same code).
 // @retail 0x227af0
 void impact_orientation_get(
 	s_impact const *impact,
