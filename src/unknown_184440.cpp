@@ -625,6 +625,13 @@ __forceinline bool function_184448(long arg_0)
 // together 966; local_5 and local_6 as two conditional initialisers 965 (same code). 0x48e70 is machine 3's now, but its
 // lever (its register use hidden from link-time code generation: an `inline` definition or a separate non-LTCG build)
 // is a held or flag-only form, so this stays BLOCKED-BY 0x48e70.
+// M3 lane 12 r196 (fast screen with the callers 0x9cca0/0x184060/0x184250 and 0x48e70, all MATCH each run; control 965).
+// The start face's plane distance through the existing plane_distance_to_point in place of its body written out 965 (the
+// same count; that block's three products then run z, y, x as retail's do), but the full check then lost the matched
+// 0x1c4590 and 0x24cf66 (whole-image flips), so it was reverted. Forms: the projected point through the
+// existing vector3f_add_scaled 1009 (4553 B), with the distance helper as well 1009; the two sample offsets through it
+// 964 (4591 B; one lower at another length, not kept); the two force sums through it 986 (4563 B). Still BLOCKED-BY
+// 0x48e70 for the reloads after its calls.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

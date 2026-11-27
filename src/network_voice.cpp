@@ -2001,6 +2001,13 @@ static inline dword voice_get_player_mask_inlined(void);
 // are read again where retail reuses CL); the mask test and the three queries as nested ifs 64 (same code); the outer
 // test as `local & active & bit` 122 (405 B); the outer bit written out at both tests 64 (same code). Still BLOCKED-BY
 // 0x53bb0. Body unchanged.
+// M3 lane 12 r196 (fast screen with 0x54890, 0x53a20, 0x53bb0, 0x53b90 and 0x53b40, all MATCH unless noted; control 64): the
+// inner index unsigned 64, the outer test as two nested ifs 64, the four masks signed 64 (the same code each); the muted
+// test through the existing out-of-line 0x53850, first 136 or last 134 (387 B: it stays a call). Diagnostics on the
+// flags, restored at once: this body alone in a new auto-inline (/Ob2) file 64 (the same code, 0x53bb0 still called);
+// with 0x53bb0 moved into that file as well it expands in every caller (here 105 at 446 B, 0x54890 83, 0x53a20 84), so
+// the expansion follows the helper's own compile and not the caller's: retail's single expansion here is not a split of
+// the callers' flags. Body unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
