@@ -435,6 +435,16 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // four-byte temporary, which this build lacks); the within-limit flag tested before it is set 475 (3113 B), with the
 // scoped scratch 475 (frame 0x8a4). Retail keeps `count` in EBX across the main loop where this build keeps `scratch`
 // there. Body unchanged; still BLOCKED-BY 0x262a30.
+// M3 lane GA r28 (16 fast trials with 0x2605d0/0x2613d0/0x2600a0/0x262a30/0x13e2d0/0x260060/0x2600e0 all MATCH; control
+// 422 at 3097/3077 B, frame 0x8a8, aligned 156, masked 111): `+0x4c` read ahead of `0x270590` 421 (-1, under bar); drop
+// `distance_squared` local 422 (same code), drop `length` too 630; inline `dot` in `if` without range 632; range after
+// `dot` test 422; first evaluator pass via existing `function_2600a0(actor_index, context, NULL)` 606 (3077 B, frame
+// 0x8a4, packs bool flags at +0xa/+0xb and moves `count` into EBX); tail `0x271300` before `if (selected != NONE)` 578
+// (masked 107); first pass + tail + early `+0x4c` 527 (3077 B, frame 0x8a4, masked 101); `if (selected != NONE)` return
+// tail 538 (3056 B, 775/775 insns), with helper calls 550 (3048 B, frame 0x8a4, masked 95); sorted nested breaks 531;
+// sorted bool stop 541; `if (count == 0)` else helpers 550; `if (count > 0)` main loop 575; second evaluator nested `if`
+// 527; `+0x55` via `normalize3d` 626. Remaining -29 B gap is opposite cross-file inlining (retail inlines 0x262a30 and
+// calls 0x2600a0 at site 2; this build does the reverse). Body unchanged; still BLOCKED-BY 0x262a30.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
