@@ -10073,6 +10073,8 @@ extern bool g_485a74;
 // Measured, none kept: if/else in both senses (85), three ternary senses on one call (85), nested ifs (95), `short
 // cull_mode = cond ? settings->cull_mode : 0` (88), `short cull = 0; if (...) cull = ...` (84, set-then-override, still
 // xor first). Source unchanged.
+// score 70 (was 85): in the second switch, case 17 comes first and falls through into the `enabled = true` store of
+// cases 3 and 16. Retail's jump-table entry for mode 3 lands at 0x44503, the tail of case 17. Still BLOCKED-BY 0x14b60.
 // @retail 0x44370
 bool __stdcall function_44370(long mode)
 {
@@ -10114,10 +10116,10 @@ bool __stdcall function_44370(long mode)
         else function_15680(0);
         switch (mode)
         {
+        case 17: g_485a74 = 1; // falls through: retail shares the store below with cases 3 and 16
         case 3: case 16: enabled = true; break;
         case 10: enabled = true; function_0495e0(); break;
         case 11: enabled = true; function_0496f0(); break;
-        case 17: g_485a74 = 1; enabled = true; break;
         }
     }
     else g_467130 = 0;
