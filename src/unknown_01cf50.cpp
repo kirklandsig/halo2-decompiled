@@ -9386,12 +9386,12 @@ void function_52d40(long bitmap_index, byte *shader, long tag, dword flags)
     sampler_state_write(0, D3DTSS_ADDRESSV, ((shader[0x2e] & 4) | 2) >> 1);
     sampler_state_write(0, D3DTSS_MAGFILTER, shader[0x2e] & 1 ? 1 : 2);
     sampler_state_write(0, D3DTSS_MINFILTER, shader[0x2e] & 1 ? 1 : 2);
+    sampler_state_write(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
     sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
     sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
     sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
     sampler_state_write(0, D3DTSS_COLORSIGN, 0);
     sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
-    sampler_state_write(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
     function_0222d0(D3DRS_CULLMODE, 0);
     function_0222d0(D3DRS_COLORWRITEENABLE, 0x10101);
     function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
