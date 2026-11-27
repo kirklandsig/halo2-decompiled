@@ -2,6 +2,26 @@
 
 The newest entry comes first.
 
+## 2026-11-27: 10992 functions match
+
+```
+matched 10992 of 11326 game functions (2305676 of 2786206 bytes, 82.75%)
+matched 1435 of 1436 Havok functions (282693 of 290362 bytes, 97.36%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1604, #1603: `0x2cbf0` and `0x4ff50` match.
+
+## 2026-11-27: 10990 functions match
+
+```
+matched 10990 of 11326 game functions (2303996 of 2786206 bytes, 82.69%)
+matched 1435 of 1436 Havok functions (282693 of 290362 bytes, 97.36%)
+```
+
+1 new matches, none lost:
+- Machine 3's batch 382 (#1599): `0x10de40` match.
+
 ## 2026-11-27: 10989 functions match
 
 ```
