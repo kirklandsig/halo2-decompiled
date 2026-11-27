@@ -1947,6 +1947,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // (0x73530 8); the group loop bounded by the summary's machine count 878; the output clear ahead of the capacity
 // read 854 (2796 B, 0x73530 8: not kept). Body unchanged; still BLOCKED on the link's inline choice for the opening
 // 0x192e60 call.
+// M3 lane GA r28 (16 fast trials with 0x73530/0x63220/0x192e60/0x193300/0x1932c0/0x1931a0/0x193250/0x631f0/0x91e30 all
+// MATCH, 0x91f00 34 throughout; control 871 at 2780/2828 B, fr 0xd0, al 1304, mk 1024): cache two-use `spread_limit`
+// 982 (2656 B, fr 0xd4); cache two-use `allowed` imbalance 975 (2648 B, fr 0xd4); `add_mask` minimum via 3-way `if`
+// (`type > 3 ? (type == 4 ? field_5fc : height) : 1`, no jump table) 872 (2784 B); `add_mask` maximum via
+// `ratings_party_limited` 871 (same code); switch helpers result-first without `__assume(0)` 956 (2665 B, 803/798
+// insns); excess early `{ result = false; return result; }` 895 (2752 B, al 1170); `rated_count > 0` first 871;
+// `total_counts[i]++` before rated check 871; positive admission with `else { result = false; return result; }` 871;
+// excess `if` without ternary 872; team-type checks in 3/4/5 order 880; merged team blocks 908 (2752 B, mk 997);
+// combined retail lower half (no-assume switch + 3-way min + `ratings_party_limited` max + `if (!balance)` + excess
+// return) 965 (2644 B), + result-first party min/max/spread 983 (2639 B, al 829, mk 926), + scoped `machine_ids` and
+// `long histogram[16]` memset 1027 (2591 B, fr 0xb0, al 822, mk 888); `summary->machine_count` group loop 900. Body
+// unchanged at 871; still BLOCKED on the link-wide inlining split (`0x192e60` vs `0x193300`/`0x631f0`).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

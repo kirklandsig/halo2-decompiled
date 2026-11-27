@@ -369,7 +369,16 @@ void function_19c6d0(s_record_pool *data, long key0)
 	}
 }
 
-// score 108 (was 119): retail keeps the pool parameter in EBX from entry (the allocator's first pass; ours
+// score 65 (was 108): GB r28 kept a two-field counted stack `s_flagged_keys` (`long count; long elements[50];`) with
+// `long index = flagged.count; flagged.count = index + 1; flagged.elements[index] = entry->key;` and the callers'
+// `long temporary;` for `sort_4byte` (108 -> 65, +0x91, 400/393 B, sub esp 0x198, ret 4, all peers including 0x19c190
+// and 0x19c6d0 MATCH). The struct places `flagged.count` at [esp+0x14] directly ahead of `flagged.elements` at
+// [esp+0x18] (below `keys` at [esp+0xe0]), prevents caching `flagged.count` across `sort_4byte`/`binary_search_4byte`
+// (freeing ESI in Loop 3), and borrows EBX in Loop 1 with a `[esp+0x1ac]` reload of `data` so `data` wins EBX from
+// entry while staying a stack parameter (`ret 4`). Remaining diffs: 4-instruction order of `entry->key` load vs
+// `flagged.count++`, `ecx`/`edx` swap at `qsort`/Loop 2/`sort_4byte`, and Loop 3 hoisting `data->high_water_index`
+// into EDI where retail reloads `[ebx+0x38]` inside the inner bitmap loop.
+// Earlier at 108 (was 119): retail keeps the pool parameter in EBX from entry (the allocator's first pass; ours
 // colours it only in its second pass, from the release call on, after its first-pass priority ends at -40 with -72 of
 // live-not-referenced blocks across the first loop), borrows EBX for the flagged count (kept in memory, so a zero
 // register serves the zero store and tests), passes sort_4byte a separate scratch slot shared with the spilled valid
@@ -408,14 +417,23 @@ void function_19c6d0(s_record_pool *data, long key0)
 // unsigned long count 108 (breaks 0x19c6d0 to 2); data_find_index direct/in iterator helper 109/108 (+temp 149/149);
 // drop dead iterator.datum_index init 108 (+temp 149); out-of-line record_pool_iterator_step 151 (368 B); if(table)+temp
 // +find 157 (370 B); diagnostic high_water_index reload+temp 177 (348 B: promotes data to incoming EBX, breaking 0x19c190).
+// GB r28 (58 fast trials with 8 peers MATCH unless noted; control 108 at 393/393 B, +0x11, al=43, mk=27; kept 65 plain-confirmed):
+// `long temporary;` alone 149 (375 B), + early-return / while / direct `iterator->data` bitmap helpers 149/151/151, + scoped `keys` 147 (148 without temp), + table-first 149, + `continue` 149, + split `flagged_count` inc 137 (393 B, frame 0x198, ret 4, 0x19c190 MATCH; without temp 125), + Loop 2 `data->size` 136 (383 B, ret, breaks 0x19c190; with split inc 111 at 417 B, +0x33, ret 4, 0x19c190 MATCH), + `datum_get_absolute_inlined` 186, + `for` iter 230, + `data_iterator_next_calling` 153, + keys after flagged 135;
+// counted stack `s_flagged_keys` + `long temporary;`: post-inc `flagged.elements[flagged.count++]` 153 (methods / flagged-first / table-first 153, without temp 154, pre-inc 152, Loop 2 `data->size` 142 breaking 0x19c190); kept split `long index = flagged.count; flagged.count = index + 1; flagged.elements[index] = entry->key;` **65** (400/393 B, +0x91, al=50, mk=9, all peers MATCH; `push_index()` / `push_ptr()` / `push_ref()` / `push_cref()` 65; 3-use `long key` 97 at 393 B); value-taking `s_flagged_keys::push(long)` (one-caller method, not kept) **51** (400/393 B, +0x11d: first 285 B through `sort_4byte` + epilogue + search tail byte-exact, al=39, mk=5; `data_find_index` / double-guard / inline-Loop-3 / `s_data_datum_iterator` / early-ret / `bitmap` local 50-51; `iterator->index` in loop 145; `while &&` 138; `for (index>=0 && ...)` 131; `>>` shift test 79); diagnostic non-hoisted `high_water_index` read on `s_flagged_keys::push` **0** (MATCH, all 9 match; not kept: `volatile` forbidden).
+struct s_flagged_keys
+{
+	long count;
+	long elements[50];
+};
+
 // @retail 0x19c7e0
 void function_19c7e0(s_record_pool *data)
 {
 	long keys[50];
-	long flagged[50];
+	s_flagged_keys flagged;
 	s_table_c *table = get_table_c();
 	long count = 0;
-	long flagged_count = 0;
+	flagged.count = 0;
 
 	if (table)
 	{
@@ -427,7 +445,11 @@ void function_19c7e0(s_record_pool *data)
 			{
 				keys[count++] = entry->key;
 				if (entry->flags & 1)
-					flagged[flagged_count++] = entry->key;
+				{
+					long index = flagged.count;
+					flagged.count = index + 1;
+					flagged.elements[index] = entry->key;
+				}
 			}
 		}
 	}
@@ -442,7 +464,10 @@ void function_19c7e0(s_record_pool *data)
 			level_datum_get(data, datum_index & 0xffff)->value = keys[i];
 	}
 
-	sort_4byte(&flagged_count, flagged, flagged_count, function_19c7c0, 0);
+	{
+		long temporary;
+		sort_4byte(&temporary, flagged.elements, flagged.count, function_19c7c0, 0);
+	}
 	s_record_pool_iterator iterator;
 	s_level_datum *datum;
 
@@ -451,7 +476,7 @@ void function_19c7e0(s_record_pool *data)
 	iterator.datum_index = NONE;
 	while ((datum = (s_level_datum *)data_iterator_next_inlined(&iterator)) != NULL)
 	{
-		if (binary_search_4byte(datum->value, flagged, flagged_count, function_19c7d0, 0) != NONE)
+		if (binary_search_4byte(datum->value, flagged.elements, flagged.count, function_19c7d0, 0) != NONE)
 			datum->flag = true;
 	}
 }

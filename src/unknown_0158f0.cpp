@@ -339,6 +339,8 @@ bool function_015b10(
 // variants; unmasked 50; a `palette_total` local 3; post-inc 71; `D3DPalette_Register` 82), held as a patch: linking
 // that SDK routine into the image flips the matched 0x24cf66 (src/unknown_24c7c1.cpp, 0 -> 2, two loads swapped at
 // +0x3bd) in all seven variants.
+// M3 lane 1 r176 applied that SDK-call form again: on r1016 it matched with 0x24cf66 still matched (0 lost), but on
+// r1017 it flips 0x24cf66 again (+0x15b70 -0x24cf66), so main's code stays and the form stays held.
 // @retail 0x15b70
 void function_015b70(void)
 {
