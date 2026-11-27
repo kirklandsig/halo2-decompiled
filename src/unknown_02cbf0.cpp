@@ -104,9 +104,10 @@ static __forceinline long floor_to_long_inline(real value)
 // the three terms in retail's order, the word built in two steps with the flags and the category first, and the
 // category term in the long domain) all compile to the bytes we already have; the whole second word as one
 // expression measures 86 (1036 bytes), and the permuter (3 tries, 375 s) found nothing below 10.
-// score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
-// kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)
-// and the pool register set before the bit-count test. Round 149 below. Earlier rounds' notes follow.
+// score 3 (was 10): left: the pool register set before the bit-count test (retail `mov edx, esi` ahead of the
+// `jbe`, ours after the `movzx`). Earlier left at 10: the first word's OR order (retail ORs flags and category before
+// the kept top bits) and the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`).
+// Round 149 below. Earlier rounds' notes follow.
 // Earlier at 17 (was 17): this round's source permuter over the body found no better form (22 tries in
 // 310s, best 17 on the reduced image and on the full image, equal to the baseline, no confirming
 // build), so the body is unchanged.
@@ -378,6 +379,19 @@ static __forceinline long floor_to_long_inline(real value)
 // entry declared first/last, short index local, ptr-arith entry. A volatile read of the old word puts it last as
 // retail does but costs 81 (scheduling changes everywhere). Lead: retail's tree is (cat | flags) | old, ours
 // (cat | old) | flags; only the global-array read of the old word reaches it (11, `lea` entry, second word flips).
+// M3 lane 12 r197 (fast screen with 0x133390, 0x133520 and 0x133f70, MATCH each run; check.py --fast and the plain check
+// agree). Unused-local diagnostics at the top showed the first word's OR order is a symbol-numbering state (period 8;
+// 7 or 15 more give retail's order); only the locals declared ahead of that statement count, so the body had one too
+// many there. Kept: one `index` local set to NONE on both failure paths in place of a separate result copy 10 -> 6
+// (first word as retail); the kind stored as one field update with the bit argument read back from the field (no
+// kind word local) 6 -> 3 (kind shift as retail). Also measured: `category` declared second, third or fourth (both
+// caller declarations and the three calls with it) 10 each, 0x133f70 lost (8); no result local with early
+// `return NONE;` 46 (1021 B); on the kept index form: the kind word as one expression either way round 72/72, the kind
+// call folded into the store 6, the old bits first in two statements or one named expression 72/72; on the kept form:
+// the pool argument read from the global again 19, bits read before the NULL store 6, `bits != 0` 3, a fresh section
+// pointer for the second lookup 3, the state read moved ahead of the `if (added)` test 5, `state->active == 0` 3. A
+// forced-ranking search moved nothing (the state's rank from -89 to 815 keeps 3): the copy's place is the scheduler's.
+// The permuter (53 tries, 600 s) found nothing below 3. Unused locals at the state, bits and added points: flat (3).
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, dword flags,
     long tag, dword key, long category, short instance, long material, byte *object, short mask, byte mode,
@@ -386,10 +400,9 @@ short function_2cbf0(long geometry, dword flags,
     real second_opacity, real depth, word level, point3f const *position, real radius)
 {
     long index = g_4c0b78.current++;
-    long result = index;
     if (index >= 850 || geometry == NONE)
     {
-        result = NONE;
+        index = NONE;
         --g_4c0b78.current;
     }
     else
@@ -472,10 +485,8 @@ short function_2cbf0(long geometry, dword flags,
         entry->flags = (entry->flags & 0x1fffffff) | ((dword)*(word *)(section + 0x14) << 29);
         long object_tag = *(byte **)entry->unknown10 ? **(long **)entry->unknown10 : NONE;
         long kind = function_2d000(object_tag, entry->tag, (entry->flags >> 18) & 0x7ff);
-        dword kind_word = (dword)kind << 29;
-        kind_word |= entry->unknown00 & 0x1fffffff;
-        entry->unknown00 = kind_word;
-        void *added = function_449e0((short)index, (bool)((kind_word >> 12) & 1), entry->tag == NONE);
+        entry->unknown00 = (entry->unknown00 & 0x1fffffff) | ((dword)kind << 29);
+        void *added = function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), entry->tag == NONE);
         if (added)
         {
             s_2cb30_state *state = g_4c0b78.state;
@@ -494,9 +505,9 @@ short function_2cbf0(long geometry, dword flags,
         }
         else
         {
-            result = NONE;
+            index = NONE;
             --g_4c0b78.current;
         }
     }
-    return (short)result;
+    return (short)index;
 }
