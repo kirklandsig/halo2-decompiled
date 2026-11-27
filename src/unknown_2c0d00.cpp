@@ -1073,6 +1073,24 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // declared in it 755 (3724 B); the combined flags declared in the non-blocking arm only 748; the self-unit pointer chosen
 // by a ternary 887. LEAD (a redundant store, kept only with a byte match): `else straight = true;` on the no-actor path
 // re-measured on this base 544 (+0x91, retail's store and jump). All restored.
+// M3 lane 14 r163 (plain check unless marked; the reduced image builds 0x25d810 differently and drops the NONE register,
+// so its scores here run far off: 675 fast against 405 plain for one form). With the no-actor `else straight = true;`
+// (match-only): `straight` declared without a value and set true first in the actor arm and in the else 847 (fast); the
+// actor pointer declared after the three flags 784 (fast); the type-7 device flags in one named two-use local again 405
+// (3731 B, first +0x91: the head is retail's; left the unit location copy's registers, retail object pointer EDX and
+// halves EAX/ECX, the object query's argument registers, the loop head, and the first marker loop, where retail swaps
+// position/direction EBX/EBP and jumps over the loop-head pad); that plus the object radius ahead of the offset 411.
+// All restored.
+// GB26 (24 fast trials with 15 peers/callers, all 12 matched peers MATCH, control 718 at 3731/3731 B, +0x4a, mk=104):
+// nested object/sphere `d <= r*r` gates 718 (sphere alone 718 mk=86, obj alone 718 mk=82, both 718 mk=64); retail
+// direction-first vel dots + `(sphere_flags | obstacle_flags) | moving` 715 (mk=100); both together 715 (3731 B,
+// 921/921 insns, mk=60, keeping `dot3f(direction, &difference)` 715, + `object_radius` first 715; NOT kept: -3 under
+// bar); uninit `straight` + top/inner + outer `else straight = true;` 722 (+0x3c, VC hoists store ahead of branch and
+// drops 0x2c0e9a; both elses 865); direct marker index 899 (3793 B); marker dir-first 718 (mk=246); combined/nested
+// sphere height and sphere radius decl 718 (same code); one-expr vehicle dot 720; `s_ai_object` pos 720; `bool moving`
+// 751; direct `object+0x248` + nested/dots 857 (3713 B, local-count phase; + uninit `straight` + early `enabled` 860).
+// Match-pursuit on 718: nested/dots + `else straight = true;` 550 (3731 B, +0x91, mk=54); + early `enabled` 849 (+0x1,
+// 3750 B); + direct `object+0x248` 816/818 (+0x1, 3732 B). Body unchanged at 718.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

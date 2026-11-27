@@ -1808,6 +1808,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // candidate shares found_weapon_class's dead home; the outputs pack class, type, result, mode. The same capture of
 // mode+class 830 (2853 B; 0x1dc8c0 56), mode+type 1009 (2806 B; 0x2963f0 106, 0x1dc790 93), all three 1043 (2854 B);
 // the mode capture with the outputs declared type, class, mode 804, that order alone 812 (same code each). Body unchanged.
+// M3 lane 5 r253 (fast screen with 0x2963f0, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, all MATCH; control 812 each). Read from
+// the register allocator: the second request's mode reads form one candidate over the direct kinds and the inheritance
+// loop (priority -369, never coloured, so `this` takes EBP there), where retail holds a separate mode value in EBP for
+// kinds 1-4 and reads the output's home in the loop. With 0x2963f0 reading found_mode through its own address (lane 7
+// r146's match-only probe, 804) the mode output drops to 4 references, but the found-mode test and store blocks then
+// count one candidate fewer, so found_mode ranks -39 against found_weapon_class's -38 and loses EBP to it. Forms on the
+// probe: the mode copied into a named local after the loop for the found_mode store and the second request 1008 (2837
+// B: found_mode takes EBP again, but the copy outranks the request's table temp and takes found_mode's dead home); the
+// copy for the second request only 1008; 0x1dc790's found-flag loop 997; with the copy 997. A forced-ranking search on
+// the probe (16 decisions) found nothing below 804. Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2528,6 +2538,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // candidate shares found_weapon_class's dead home; the outputs pack class, type, result, mode. The same capture of
 // mode+class 830 (2853 B; 0x1dc8c0 56), mode+type 1009 (2806 B; 0x2963f0 106, 0x1dc790 93), all three 1043 (2854 B);
 // the mode capture with the outputs declared type, class, mode 804, that order alone 812 (same code each). Body unchanged.
+// M3 lane 5 r253 (fast screen with 0x2963f0, 0x1dc790, 0x1dc8c0 and 0x1dd9d0, all MATCH; control 812 each). Read from
+// the register allocator: the second request's mode reads form one candidate over the direct kinds and the inheritance
+// loop (priority -369, never coloured, so `this` takes EBP there), where retail holds a separate mode value in EBP for
+// kinds 1-4 and reads the output's home in the loop. With 0x2963f0 reading found_mode through its own address (lane 7
+// r146's match-only probe, 804) the mode output drops to 4 references, but the found-mode test and store blocks then
+// count one candidate fewer, so found_mode ranks -39 against found_weapon_class's -38 and loses EBP to it. Forms on the
+// probe: the mode copied into a named local after the loop for the found_mode store and the second request 1008 (2837
+// B: found_mode takes EBP again, but the copy outranks the request's table temp and takes found_mode's dead home); the
+// copy for the second request only 1008; 0x1dc790's found-flag loop 997; with the copy 997. A forced-ranking search on
+// the probe (16 decisions) found nothing below 804. Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
