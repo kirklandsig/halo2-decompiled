@@ -8046,7 +8046,7 @@ void function_47ea0(short stage, byte flags);
 // (0.0001f at 0x45dbdc, 1.0f at 0x45dbc0) agree; no behaviour bug. Found: 0x30830 is called with
 // the camera and scale globals (retail loads 0x4b9e14 and pushes 0x4b9ecc; the callee would
 // substitute them for NULL, so only the bytes differed); retail tests its result as a byte (`test
-// al, al`), ours `test eax, eax`: a (byte) cast gives retail's test but the same score (325), dropped. The
+// al, al`); with 0x30830 returning bool (#1603) ours tests it the same way. The
 // 8-byte `double angle` local gave the frame a slot retail lacks (0x20bc) and moved the tag out of
 // ecx; cos/sin of atan2 written twice (one fpatan) gives tag in ecx, eight stack arguments and
 // retail's 0x20b8 frame, so the volatile pointer and `selected` local are gone (points/count are

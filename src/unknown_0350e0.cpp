@@ -6818,8 +6818,9 @@ bool function_30830(vector3f const *d, point3f const *a, s_camera const *camera,
 // the cos and sin calls as 0x4f7e0 writes the same call (no double local, which kept every register save at entry).
 // The form is M3 lane 3's (r313), held there only for the call line in 0x4f7e0, which is now in the claim that makes
 // this change; M3 lane GA r18 and GB r21 had traced every remaining difference to that parameter order and return.
-// Earlier (20): the separate `if (facing && *strength > 0.0f)` projection block took the body from 43 to 20; the clamps
-// use PIN, which re-evaluates the clamped expression as retail does (function_50650 inlined twice and then called).
+// Earlier: marioag0412 (#728) took it from 270 to 43 with the PIN clamps, which re-evaluate the clamped expression as
+// retail does (function_50650 inlined twice and then called); the separate `if (facing && *strength > 0.0f)` projection
+// block then took it from 43 to 20.
 // @retail 0x4ff50
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
     real cosine, real *strength, real *horizontal, real *vertical, real *out)
