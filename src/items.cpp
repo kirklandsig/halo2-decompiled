@@ -1049,6 +1049,17 @@ struct s_item_collision_bsp
 // conditional geometry selection 338/338/351/329. Reading the returned
 // plane in the same forms 363/363/367/262.
 // NOT kept: each raises the score and merges retail's two query sites.
+// M3 lane GA round 36 (38 fast trials with 0x10c850/0x10cec0/0x10d4e0/0x10d5f0 all MATCH; control 190, 1366 B, al=86,
+// mk=47; body unchanged): on the shared-spin_scale lead (1364/1361 B, 326/325 insns, score 235, al=58, mk=29, recovering
+// all stack homes and the x87 tail-merge), function_x82e52f at the speed draw stays out of line (263-272, 1329 B,
+// 317/325 insns; with function_2477b1 + plane_distance_to_point + vector3f_add_scaled mk=31; vector3f_rotate_into_axes
+// 373, 1236 B). On the full-size 326-insn lead: function_2477b1 on matrix->rotation with accumulated d hits 238 (al=57,
+// mk=23, recovering plane.j/k/i load order); plane_distance_to_point or unparenthesized distance 234 (al=56, mk=26);
+// 2-statement left+up / up+left then += forward 236 (al=56, mk=27); single-expr left+up+forward 237 (mk=24); direct
+// surface_plane in NONE arm 243 (mk=24); in-place surface_plane *= offset / vector3f_scale + add 250 (327 insns); inlined
+// 0.05f - distance / delta vector 244; commuted offset * n, pos += n * offset, early offset decl, i/j/k or j/k/i locals,
+// coeff-first, and z/y/x marker locals 235-236. Left: offset still takes the mulss LHS (+2 movaps) while plane transform
+// lacks retail's movaps xmm5, xmm2 (-1 insn).
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -2155,6 +2166,16 @@ struct s_item_flags_view_10b850
 // 2-def flag helper + scoped ray + rotate_direction + exact slot names 790 (fr=0x12c, al=346, mk=154, all local stack
 // offsets exact; + inline ITEM_GET re-read + dot3f flow 832, mk=155, lines 0x10b8ae..0x10b997 byte-exact). Still blocked
 // on entry dead-byte stores, double gravity reload, and noinline 0x16a040.
+// GB34 (22 clean + 1 diag fast trials across 2 batches, control 813 at 4096/4096 B, fr=0x154, 6 peers MATCH; body unchanged):
+// diagnostic 1-def field_bit_test + default: __assume(0) in switch #2 reproduces all 4 entry/gravity dead-byte stores (reusing
+// the first byte slot, as retail does) without any 2-def branch (877 at 4070 B, fr=0x144, peers MATCH; NOT kept, forbidden
+// __assume), whereas 1-def field_bit_test + case 4: default: emits no dead-byte stores (898, fr=0x148); shared 1-def/2-def
+// flag helpers across 0x10b850/0x10cf50/0x10da60 give 898/861 (break 0x10cf50/0x10da60); inline/forceinline c_flags templates
+// 929 each; case 4: default: alone 813; switch #1/#2 as if/else 882/815; combined flags_12c mask 813; angular before velocity
+// 813; flow if-abs 879 (fr=0x150); spin local sin/cos 899; gravity trials (all still CSE single product): physics_gravity_get()
+// 865 (fr=0x148), mixed dt/g_510c54->rate 885/883, add-negated second 851 (4096 B), const down + vector3f_add_scaled 973,
+// ordinary inline item_apply_gravity 814, real& item_sub_scaled 865 (fr=0x148), item->linear_velocity.k on first 850 (4096 B),
+// split around angular 858, direct gravity test 858. Still blocked on entry dead-byte stores, double gravity reload, and noinline 0x16a040.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

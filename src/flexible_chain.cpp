@@ -1117,6 +1117,12 @@ void __stdcall function_1160c0(real dt)
 // user worse); its dot through the existing dot3f, either operand order, 95 (0x2551f0 122, 0x1ff360 96, 0x26d570 71);
 // the rest-offset copy ahead of the vertical and the axis 273 (1370 B); the velocity rows ahead of the predicted rows
 // 128 (1380 B). Body unchanged.
+// M3 lane 7 r239 (H2M_FAST with 0x116750, 0x1160c0 and 0x17c540, all MATCH; control 95). Retail's rotation forms the dot
+// k, j, i as ours and cross_j and cross_k right after the projection, but holds axis i in a register through the block
+// where ours loads it again. Forms on today's base: the inverse time step ahead of the loop 105; the tick increment ahead
+// of the stiffness product 102; cosine then sine named ahead of the rotation call 135 (1373 B), sine then cosine 132
+// (1373 B); angle, sine and cosine ahead of the rest-offset copy 296 (1377 B). A forced-ranking search (40 decisions)
+// finds nothing below 95. Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

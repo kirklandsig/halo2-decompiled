@@ -4858,6 +4858,19 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // homed from BL, [esp+0x14..0x16], [esp+0x17], press/hold/release at [esp+0x18..0x1a], the target entry at [esp+0x1b],
 // which also holds the behaviour-4 secondary-select bit), so the missing four bytes are the byte result plus one more
 // byte slot. A forced-ranking search over ten single decisions finds nothing below 1411.
+// GA34 (49 fast trials with 27 matched peers all MATCH, control 1412): direct barrel+0x10 (no `value` local) 1443;
+// direct bitfield reads on barrel flag3/trigger flag6/all 1425/1412/1421 (+no `value` 1453); signed `char` trigger/barrel
+// state or `word` `value_16e` 1412 each (+all 1448); ramp/cooling ternary arms 1469/1463; double clamps + unhoisted
+// `1.0f - scale` 1454 (+bool `result`/`blocked` 1465); down/up without `primary`/`secondary` locals 1466 (snaps retail
+// entry BL + EDI/ESI and magazine `or bl, al`); plus double clamps 1453, plus ramp/cooling arms 1383 (fr=0x30, 5652 B;
+// not kept: uses a one-use request pointer and entry `blocked = false` set in test — dropping the pointer gives 1411);
+// stripping entry `blocked = false` snaps EBP=weapon across the whole trigger loop (1623, mk=639; retail behavior order
+// 1620, al=672, mk=510; all retail case orders 1585, al=618, mk=409); direct barrel flag0 instead of `weapon_request_barrel`
+// where ready was already checked recovers EBP=weapon, EBX=i*12, ESI=trigger_entry (1469; with bitfield view 1463, 5696 B,
+// fr=0x28); plus unmerged press/hold case 0/3 barrel reads and primary-first case 4 cuts masked diffs to mk=376 (1672,
+// 5856 B; without split45 1490/1533, mk=406/384, ret[600:800] 186/200 masked-exact), but fr=0x28 vs retail 0x38 shifts
+// ~180 stack offsets (retail also tests bytes +0x170/+0x171 as `> 0` (`ja`) and shares state 6/8 barrel-request tail).
+// Body unchanged.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
