@@ -6218,6 +6218,13 @@ void __stdcall function_d6bc0(long object_index);
 // local 29 on main's body, 172 on the field-test form (same code each); the object's NULL declared ahead of the engine
 // lookup and the 0x15a090 call 207 (879 B) on main's body, 201 (864 B) on the field-test form; the field-test form with the
 // flag declared false at the loop top 172 (same code). Body unchanged.
+// M3 lane 11 r175 (h2m fast; base 29; the early-return helper lead rebuilt at 21, 869 B): on the helper form, the helper
+// taking the countdown field by reference (`short &timer`: retail forms and spills that field's address) 26, by pointer
+// 26 (both dots' term orders flip); the index test on `entries[i].index` inside the helper (no index parameter) 182
+// (858 B), the index field passed by reference as well 182, the timer by reference with the field test 182. Allocator
+// reading on the field-test helper form: `entries` is again coloured late at 8 (+132 over eight referencing blocks, -124
+// over 37 live unreferenced ones) and takes EDI; a forced-ranking search over 16 single decisions found 43 at best.
+// Body unchanged.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
