@@ -1633,6 +1633,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // local) 20; that with the flag read ahead of the matrix 25; the early-return test reading the entry header's object
 // 365 (1386 B); the current object taken from the entry header 386 (1408 B); the parent default and mirrored flag
 // declared once ahead of the render test for both arms 391 (1411 B). All restored.
+// M3 lane 2 r161 (h2m fast with 0xb8bd0/0xbdc40, both MATCH; control 20 at 1399 B): on lane 3's else-arm defaults form,
+// one parent-object local for the matrix and the flag 45 (1391 B), the matrix through the existing 0xb8bd0 48 (1387 B),
+// the flag read first through object_get with the defaults in the same order 18 (1394 B, that form's code); on the base,
+// one parent-object local with the flag read first 43 (1390 B), the parent-object local for the matrix only 44 (1390 B).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
