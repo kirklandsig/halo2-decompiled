@@ -595,6 +595,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // stores NULL twice, a dead store), every inclusive or in-for index form 132-135 (557 B); a bare seat declaration, the
 // index, then `seat = NULL;` ahead of the guard 6; the guard's two arms each setting NULL 5. In every one the zero is
 // still its own EAX candidate (compare and NULL store from EAX, the first extended index sharing it).
+// M3 lane 5 r256 (h2m fast, control 8). Ledger on the exclusive bound: the index 18 (guard-block def at n5 +10, latch
+// +24), the count 16 (load and compare at n5 +20, latch +12), both -16; each candidate added to the guard block moves the
+// count +4 and the index +2, so two more there (and the zero dropping out) would be needed. Forms: the exclusive bound
+// against a `long` count read at the outer block's top 14, against a `long const` count read in the guard block 11; the
+// bit test without the bool cast, exclusive 138 and inclusive 140 (the whole function's -1 sharing changes); the
+// exclusive scan under `if (tag->seats)` 147 (557 B). All restored.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {

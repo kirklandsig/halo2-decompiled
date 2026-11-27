@@ -1197,6 +1197,20 @@ void __stdcall function_25eea0(
 // `mk=4`; same with `0x1e4a50` do-while, `continue`, `bonus+=score`, `weight*factor`, `score` ptr, outer/inner swap/rename),
 // and adding `ratio`/`excess`/`range_limit`/`weight_ternary`/`l1_bonus`/`num`/`scale`/`max_dist` flips the Loop 2/Loop 3
 // `addss` parity to **`mk=3`** (`100`, 120 consecutive Loop 2 + Loop 3 cover insns exact); `pos_dist` combo hits `fd=+0xc0` (`105`).
+// GA35 (29 fast source trials + /Ob1 diagnostic probes across 3 batches with 11 peers MATCH; control 111 at 1306/1306 B,
+// +0x52, al=50, mk=13; body unchanged): on HEAD (111), commuted Loop 3 bonus 1 / both / local, nested leader guard without
+// local, Loop 1 `weight * factor` / commuted add, commuted weight mul, Loop 2 commuted bonus / add / `outer` decl first,
+// nested cover guard, Loop 3 `if/else` bonus 1 (plain and commuted) all tie at `111`; Loop 1 ternary clamp / weight split
+// `246`; Loop 3 per-arm `+=` `244`, `< 1` ternary `124`; `0x1b0710` param reorder + commuted bonus 1 `109`; dropping
+// `#pragma inline_depth(0)` (or `#pragma inline_depth(1)`) with `actor_get`, `object_get`, `vector3d_from_points3d`,
+// `magnitude3d` (with or without `function_1e4a50`) auto-inlines `0x1e5240` (`362`, `1336 B`). Loop 3 `real *score =
+// &positions[i].score;` for all 3 adds `246` (top or after `j` loop; `244` with `0x1b0710` reorder; all loops `234`); for
+// the first 2 adds only `100` (`1306/1306 B`, `mk=12`, fixes `addss xmm0, [ecx]`, not kept: mixed pointer/direct writes).
+// Diagnostic (`/Ob1` on `src/character_tag_accessors.cpp` + dropping `#pragma inline_depth(0)` + real helpers `actor_get`,
+// `object_get`, `vector3d_from_points3d`, `magnitude3d` + `0x1b0710` reorder): hits `100` (`al=40`, `mk=3`, fixing `0x1df560`
+// SI-before-CX and all 45 Loop 2 insns verbatim; `+ pos_dist` `82` at `+0xc0`, `al=22`; `+ *score` for first 2 Loop 3 adds
+// `34`, `mk=1`, matching 181 consecutive insns 407-587 verbatim), but `/Ob1` regresses `0x25eea0` (`0 -> 303`) where retail
+// auto-inlines `0x1e5240`.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

@@ -570,6 +570,14 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // the terminator and plain name indexed re-measured 75 (196 B), with `i` declared ahead 77; the plain name stored
 // ahead of the append test (the arm overwriting it) with the indexed terminator 66 (191 B; a redundant store, one
 // point), on the per-iteration pointer form 97 (183 B). Body unchanged.
+// M3 lane 7 r239 (H2M_FAST with 0x24a64d/0x24a763/0x24a52b/0x24a7bf/0x24a09b, all MATCH; control 67). A per-iteration
+// `entry = &entries[i]` at the loop top with the loop test indexed, the name test, ascii argument, buffer and copy
+// source through it and the terminator and plain name indexed 75 (196 B, aligned 9: the terminator and plain name are
+// retail's; ours keeps the merged per-iteration pointer in ESI past the loop where retail runs a scratch cursor in ECX
+// and forms the entry again from i after the append test); the loop test through it too 75 (same code); the terminator
+// through `buffer` 97 (178 B); the plain name through it 83 (189 B); on plain locals the entry formed inside `if
+// (append)` with a nested name test and the built arm ending in `break` 84 (197 B). A forced-ranking search on the 75
+// form finds nothing lower (the pointer's register is the loop optimiser's choice). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

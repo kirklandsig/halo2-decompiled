@@ -2535,6 +2535,17 @@ bool function_1900a5(long index);
 // properties cursor; + `record_space`/`property_space` 704 at 2910 B, al=343, mk=533; + `last_write` 706, al=337; + `if (variant)`
 // per-arm `failed = true` 711, al=337, mk=492; + `dup continue` 742, al=345, mk=486; with `j < 6` 696; carried `next_properties`
 // 736 / + space 704). Positional score remains gated by `/arch:SSE` (`0x1900a5` `cmovne`) and `/Ob1` helper inlining blockers.
+// M3 lane GA r35 (84 fast trials across 7 batches with 11 peers MATCH; control 633 at 2862/2862 B, +0x1a; body unchanged):
+// Built a match-only lead (held as a patch; uses /arch:SSE, inline on 0x647d0, query_time_elapsed, and request due/duplicate flags)
+// reaching 2862/2862 B, frame 0xc0, 398 (+0x28d, mk=39) with nested direct completion (`g_509454[group].players[i].state == 2 || 5`
+// without `player` local or `continue`: drops masked diffs 380 -> 61 and matches lines 1-181 and 496-776 verbatim), direct
+// `values->players[i]` in the request loop (`no_player`), `variant->field_8 == record->type` (`mov [esp+0x20], edx`), and
+// separate team `XUID key` (`al=44, mk=29` at 2862/2862 B, recovering `lea esi, [ebx-0x14]` and `eax/ecx/edx` identity copy plus
+// `function_749b0` clamp verbatim). Remaining diffs on that lead: `jle` vs `mov eax, 0x50c474` order, `key` reload after scan vs
+// `values->unknown10` re-read, `properties_used` in `edi` vs `edx`, `cmp mem, reg` on `record->type`, and stack slot offsets.
+// Also tried on the lead: `before6_step`/`before6_idx`/`after6_idx`/`props_first`/`pbefore_id`/`no_rec_local`/`j_lt_rcount`,
+// `while`/`if (records_used > 0)`/`do-while`/`for` duplicate scans, `long`/`dword` `record->type`, `memcpy` vs `XUID` copy,
+// `byte key[12]`, `record_matches_id` inline helper, and `!=` early `continue` (398-652).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

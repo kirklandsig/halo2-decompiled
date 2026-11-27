@@ -403,6 +403,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // register); the advance so bound without the pointer 55; on the pointer the half height bound by `real const &` 12, the
 // half width so 12 (both the pointer form's code). Allocator ranking re-read: the copy and the advance piece both rank 162 in the
 // draw block (18 candidates), the copy made later is coloured first. All restored.
+// M3 lane 1 r178 (fast screen with 0x2008fc 0x200891, both MATCH; control 14; the bounds record through a one-use pointer
+// re-measured 12, only the XMM3/XMM4 pair left), all on the pointer: the half height computed ahead of the half width
+// 24; the sprite width and height read into named `long` locals converted at the products 12; the two bounds spans
+// named ahead of the products 12; the pulse result declared, then assigned 12; both halvings through a file-scope
+// `static real const` 0.5 12 (the 12s the pointer form's code). All restored.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

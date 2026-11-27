@@ -823,6 +823,13 @@ struct s_24e9c7_points
 // `1.0f + placement->size` 125, the scale read into a `real const` 125, the across pair declared j first and written
 // forward first 125, the size computed ahead of the bitmap pointer 125 (all the same code); the side point computed ahead
 // of the up point 139 (738 B).
+// M3 lane 8 r248 (fast screen with 0x24e59f/0x22a664, both MATCH each run; control 125; body unchanged). Frame reading: with the
+// slots kept in creation order (sizes ascending), retail's 8-byte cell above the result can only come from a 4-byte object
+// founding the second slot before the result's and the side pair joining it later; no form here makes such an object.
+// On the in-place side form (side set to `size * (0.0f - forward_j)` and `size * forward_i`, scaled by the half width;
+// re-measured 139, 742 B): the up products as `-result * forward_i` / `-result * forward_j` 139; the bounds height and width
+// named ahead of the height 139; up y as `-(result * forward_j)` 139; back as `0.0f - side.x` / `0.0f - side.y` 139 (all
+// the same code); the size step written y first 138 (739 B).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

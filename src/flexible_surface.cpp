@@ -1045,6 +1045,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the projection 155 (0x2551f0 78, 0x26d570 200); the cross terms computed j, k, i 130 and the j and k rows as
 // `sine * cross` 130 (same code everywhere); an i local beside the k local 150 (all three matched callers lost).
 // Body and helper unchanged.
+// M3 lane 8 r248 (fast screen with 0x118140 and 0x117c80, MATCH each run; control 130; body unchanged). Frame reading: the
+// missing cell is the slot retail opens for its second spilled cross term in the rotation; the random sample and the
+// tail's stored temporaries then join that newer slot (+0x18) instead of sharing the sine's (+0x14), so the frame follows
+// the shared rotation helper's spills. Head forms: the rate cast `(real)field_2_3` 130 (same code); the rate read into a
+// `short` local ahead of the draw, the time product after it 123 (ESI and the seed update as retail, but the rate is
+// loaded as a word and widened later, and the time stays on the x87 stack with `fst`); the tick count read into a `long`
+// ahead of the draw 204 (894 B); both read ahead 172 (885 B); the tick count converted to a real ahead of the draw with
+// the rate as `short` 201, as `long` 173; the rate alone as `long` ahead of the draw 197.
 // M3 lane GB r33 (10 fast trials with 0x118140, 0x117c80, 0x2551f0, 0x1ff360, 0x26d570, 0x1462e0 all MATCH unless noted;
 // control 130 at 889/880 B; body and helper unchanged): both table draws through existing `random_unit_vector` (0x1462e0)
 // 125 (888 B, under keep bar; al=102, mk=69); on `random_unit_vector`: `g_55ecd0` clamp as ternary `PIN` 125, `double wave`

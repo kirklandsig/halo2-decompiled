@@ -285,6 +285,12 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // root written into it), chosen among trials by the TU's net function count, and the normaliser writes out
 // reciprocal_normalize.h's helper instead of calling it. A spelling picked for the count is layout steering (same
 // ruling as 0x296e60 on 11-27), so main's body stays; the form is kept as a held lead.
+// M3 lane 11 r178 (fast screen with 0x1132f0, 0x11df30, 0x142a60, 0x141ce0, 0x1420f0; control 64): the normalisation
+// through the existing normalize_particle_direction_2b 64 (630 B); only the products through the existing
+// scale_particle_vector_2b (retail's mixed operand order) 64 (630 B: the products stay factor-first while the direction
+// is a plain local); the angle pair through function_11df30 on a vector2f view 64; both 64; both with the transform as a
+// call to function_142700 347 (417 B: its /Ob1 file keeps it a call, caller 0x1132f0 52). BLOCKED-BY 0x142700 (retail
+// expands it here). Body unchanged.
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -2870,6 +2876,13 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // spelling, retail multiplies then adds on one 0.5 register); the overlay id read in place (no `id` local) 837 (3403 B, the
 // loop's channel_play still inlined two levels); the blend products after the aiming channel_play calls re-measured 769
 // (3403 B; seven points, below the gate), with the id in place too 853 (3386 B).
+// M3 lane 11 r178 (fast screen with 0x111590, MATCH; control 776): the overlay loop through a file-local `inline`
+// helper 1031 (3207 B: the helper stays out of line), `__forceinline` 776 (same code); the two aiming-screen lookups as
+// ternary initialisers 835 (3403 B); the first slot update's rate as a named local 776 (same code); the projection
+// output declared in each of its two blocks 764 (3406 B, frame 0xc8: a declaration moved into branches, match-only),
+// with the ternary lookups as well 847 (3385 B). Lead: retail's dead store of the definition's model-tag chain at entry
+// has the shape of an inlined callee's unread, memory-homed parameter (as 0x26d0e0's unread third parameter shows),
+// not of a local of this body. Body unchanged.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

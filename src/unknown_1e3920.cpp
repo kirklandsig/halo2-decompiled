@@ -1404,6 +1404,11 @@ void function_1e3b60(long actor_index);
 // (1784 B: 0x25d700 expands at all three sites); the sampling call written in 0x263210's own form (actor offset,
 // 0x28fa60 or the copy) 503 (1704 B); the first prop index read through the named actor field 404 (same code). Still
 // BLOCKED-BY 0x262ba0.
+// M3 lane 15 r156 (h2m fast with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form; 0x262ba0 control 404 at
+// 1624 B). In 0x262ba0: `sample` and `update` as two declarations 404; the sampling arm setting `update` then `sample`
+// in two statements 404; the motion and context records declared at the loop body's top 404; the prior state read after
+// the flag declarations 404; the next link read after the prior state 404 (all the same code). Still BLOCKED-BY 0x262ba0
+// (0x2641c0's expansion; its noinline declaration is in another lane's file this round).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

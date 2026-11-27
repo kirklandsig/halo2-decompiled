@@ -1081,6 +1081,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // and re-pointed at the zero vector for the first tick 717 (2860 B, 0x1eb6f0 22); with `vector3f qr = *(counter == 0 ?
 // g_4687a4 : q);` 711 (2851 B, frame 0x24 again, 0x1eb6f0 2: the out pointer and the scratch sample swap ECX/EDX); with
 // the output copy written member by member 721 (0x1eb6f0 22); both of the last two 746 (0x1eb6f0 22). Body unchanged.
+// M3 lane 6 r254 (H2M_FAST with 0x1eb6f0, 0x1ed4a0 and 0x30bf0, all MATCH unless noted; control 567). The 0.866
+// direction test through the existing dot3f, either operand order, 568 each; the first clamp's 12/8 factor named
+// ahead of t (retail selects it there) alone 679 (2858 B; 0x1eb6f0 22); the output position pointer declared at the
+// top of the body, after or before `fail`, 722 each (2876 B; 0x1eb6f0 11). Body unchanged.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

@@ -5775,6 +5775,10 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // matched 0xc60c0's look-limit branch (cross3f_staged for both, through a frame aggregate) compiles in retail to this
 // build's schedule here (all three up components loaded first, the k row through a copy of forward.j), so retail's
 // later up.i load is particular to this function.
+// M3 lane 14 r166 (h2m fast with 0xc8290, 0xde190, 0x1fe120 and 0xc60c0 MATCH, 0xc7840 491; control 169): the local
+// vector through this file's existing unit_vector_to_frame (declared ahead) 262 (684 B: it stays a call); the local's rows
+// reading the direction at each use, no component locals, 262 (682 B); the aim copied into forward member by member,
+// i, j, k 173 (767 B) and k, j, i 173 (767 B); the yaw minimum test as `yaw < limits[0]` 169 (same code). Restored.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -10054,6 +10058,13 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // the j and k rows, so every spelling gives the same order in all three rows (the i row's
 // spelling only picks which conversion is made first). Retail's mixed rows need the up j/k values ranked more than
 // six temps above the across ones; swapping the scale calls leaves those ranks as they are.
+// M3 lane 14 r166 (h2m fast with 0xcfc90, 0xcf040, 0x24f590 and 0x185be0 MATCH; control 397). Reading: the tail keeps
+// NONE in ESI (one candidate for the material test, the damage record's material store, the three NONE arguments and
+// the owner stores) and the unit index in EDI; retail uses immediates there, materialises NONE in ECX for the owner
+// only and keeps the unit index in ESI. A forced-ranking search over 20 decisions found nothing below 397. Forms: the
+// owner's two long NONEs as one chained assignment 397; the parent seat test through the typed
+// `parent_definition->unit.seats.address` 397, the hit block's seat test the same way 397; the hit material as a member
+// store (`material_index.m_index = ...`) 397; the hit seat read as `*(definition + 0x1fc)` 397 (all the same code).
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
