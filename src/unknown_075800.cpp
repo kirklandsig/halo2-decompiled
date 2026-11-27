@@ -180,8 +180,8 @@ public:
 };
 
 /* finds the session with an id. The session's id comes through network_session_get_key (0x5a620, expanded in place
-   as retail has it): the store through its id pointer is why a caller reads its own address-taken globals again after
-   this call (0x59940 and the tracked session's state). */
+   as retail has it). Its store through the id pointer means the compiler cannot prove that this call leaves a
+   caller's address-taken globals unchanged, so 0x59940 reads the round state again after it. */
 // @retail 0x75800
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *session_id)
 {

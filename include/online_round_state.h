@@ -2,8 +2,8 @@
 #define ONLINE_ROUND_STATE_H
 
 /* ONLINE_ROUND_STATE.H: the online arbitration round of the current session (0x510514..0x510547). One object in
-   retail: 0x73bc0 sets every member in one sequence when it registers a round; 0x73b10 reads the round's status
-   from it, 0x73dc0 ends it, 0x73ca0 reports the round and 0x755d0 polls the register, report and extend tasks.
+   retail: 0x73bc0 sets every member but 0x51053c in one sequence when it registers a round; 0x73b10 reads the
+   round's status from it, 0x73dc0 ends it, 0x73ca0 reports the round and 0x755d0 polls the register, report and extend tasks.
    0x59940 passes the address of the session id at 0x510528 to the session lookup (0x75800) and reads the state at
    0x510518 again after that call; 0x598f0 compares through the same address. */
 

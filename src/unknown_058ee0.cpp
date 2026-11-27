@@ -285,8 +285,8 @@ void function_737b0(c_helper_a *helper);
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, s_session_id const *id);
 
 /* retail reads g_510518 again after the session lookup and before it sets the flags: the round state is one object
-   (online_round_state.h) whose session id member the lookup receives, and the lookup (0x75800) fills its copy of a
-   session's id through network_session_get_key's pointer, so the call may have changed the state. */
+   (online_round_state.h) whose session id member's address the lookup (0x75800) receives, so the compiler cannot
+   prove that the call leaves the object unchanged. */
 // Roasted-Codes (#1527 comment, 2026-11-26; fast reduced-image scores): the tracking globals defined in
 // src/unknown_072db0.cpp with externs here 20 (the reread stays folded); a `const bool &` on the first test 19.
 // @retail 0x59940
