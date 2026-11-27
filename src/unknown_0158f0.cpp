@@ -308,7 +308,7 @@ bool function_015b10(
 	return created;
 }
 
-extern "C" VOID WINAPI XGSetPaletteHeader(D3DPALETTESIZE Size, IDirect3DPalette8 *pPalette, UINT Data);
+extern "C" VOID WINAPI XGSetPaletteHeader(D3DPALETTESIZE, IDirect3DPalette8 *, UINT);
 
 // @retail 0x15b70
 void function_015b70(void)
