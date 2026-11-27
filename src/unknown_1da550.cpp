@@ -328,6 +328,15 @@ void function_e3f00(long object_index);
 // as its argument 23 (the inline parameter acts as a named value). On main's body: the force span named once for the
 // test and the division 118 (764 B, retail subtracts twice); the speed test as `impulse >= 1.5f || body_speed >= 1.5f`
 // 20.
+// M3 lane 5 r255 (fast screen with 0x1da550 and 0x1da9e0, MATCH each run; control 16). Scheduler reading: in the event's
+// block our code-generation order is limits, span, NONE store, globals, definition, index, push; the scheduler lifts the
+// globals and definition loads to the top but the index load sits in another memory group, one that depends on the NONE
+// store, so it stays behind it. Without that dependence the same schedule would give retail's order (index first, the
+// store last before the call), and the index already takes EDX there. Forms: diagnostic (removed), the constructor's
+// NONE store moved into the call's first argument with a comma 16 (the front end still emits the store first); the
+// definition pointer named ahead of the limits 16; a named globals pointer 16; the definition pointer named ahead of
+// the event 16; the index read as the definition's second long 16; the globals pointer `const` 16 (all the same
+// code); re-measured: element pointer + named index + owner store first 23 (the index takes EAX, materials EAX).
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {

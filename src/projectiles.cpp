@@ -1286,6 +1286,12 @@ real function_30bf0(vector3f *v);
 // diagnostic: `t` clamp + maxgrav + `/ (double)two_a` 253 (all 7 match), + min before opt + late path 202 (mk=40, all 7 match), + plain `if (forced_speed)` first 263 (971 B, mk=31, F=0x2c, fdiv=3, early fsqrt, callers lost).
 // M3 lane GB r28 (20 fast trials with 0xfa580 and all 6 matched callers; control 216 at 983/983 B, +0x2, al=232, mk=159; body unchanged):
 // uncast all `sqrt` 216 (same code: C++ `<math.h>` routes `sqrt(float)` to `sqrtf`); `delta` component loop 217; direct `velocity` with `velocity.k = inverse_time * delta.k + time * gravity * 0.5f` (either factor order) 258 (984 B), + late `path_distance` 258 (al=316, mk=153), + maxgrav + `if/else-if` `t` clamp 248 (983 B, mk=132: matches all 24 velocity-block insns); `forced` ternary (`forced ? *forced : speed; if (!forced && time_scale)`) 282 (plain 284; 1003 B, 6 callers lost); `if (forced) ... else if (time_scale)` 218 (all 7 match); `result` reusing `found` 259 (6 callers lost); diagnostic quadratic helper 308 (923 B, F=0x30, fdiv=2, 6 callers lost); uncast all `sqrt` + maxgrav + `-1.0f * root / two_a` 215 (986 B, mk=134); C `double` `sqrt((double)discriminant)` in `t2` (alone or all `sqrt`) 267 (964 B, F=0x2c, fdiv=3, divss=1, 6 callers lost), + maxgrav 206 (983 B, fdiv=3, divss=1, mk=86, all 7 match), + `t` clamp + direct velocity & late `path_distance` 204 (983 B, mk=74, all 7 match; + `minimum` before `optimal_time` 250 at 987 B; + plain `if (forced_speed)` first 195 at 983 B, F=0x2c, mk=67, 6 callers lost). NOT kept (206/204): `sqrt((double)discriminant)` alone regresses to 267 (6 callers lost), combines parts that regress alone, and emits `fild; fmulp` where retail has `fimul` (proving `sqrt(discriminant)` is `float` at the arc-sign multiply in retail).
+// M3 lane 5 r255 (fast screen with 0xfa580 and the six matched callers; control 216 at 983 B, aligned 203, masked 71): the
+// planar delta through the existing vector2d_from_points2d (origin and target read as 2-D points) 216 (same code); that
+// with the gravity tested as `(0.0f > gravity ? 0.0f : gravity) > 0.0f` 215 (986 B); that with the horizontal square
+// written i first 216; the gravity product declared ahead of the horizontal root 216 (same code); the gravity product
+// declared first of all, ahead of the delta 250 (975 B, all six callers lost). Retail takes the horizontal root (x87)
+// in the entry block and parks it in a dead argument home; ours sinks it below the gravity tests.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2758,6 +2764,17 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // `s_projectile` fields 29, typed `s_projectile *parent` 29, `vector3f child_position` + center scale 29, both `vector3f` + scale 29,
 // late `child_position` + scale 29, `center` assign + scale + swapped add 27 (match-only operand order; x fixed, y stays child-first),
 // `parent_index` local 505; diagnostic phase locals k=1,2 before `center` + scale 29/29. `0x1ca690` short arg remains held as a patch.
+// M3 lane 5 r255 (fast screen with 0xf8eb0, 0x1ca690, 0xa84e0, 0xfcea0, 0xfcbc0, 0x1697c0, 0xd6660, 0xd6c80; plain-confirmed).
+// Held, not kept: 0x1ca690's third and fourth parameters `short` (both retail callers load the 16-bit value with `xor ecx,
+// ecx; mov cx, word` and push the dword, as for a 16-bit formal; 0x1ca690 stays matched) 29 -> 12; alone it raises the
+// other caller 0xf8eb0 from 1013 to 1017, and 0xf8eb0's blend through the existing helpers (982) costs the matched
+// 0x1c4590 and 0x24cf66 in a full check (see the 0xf8eb0 and 0xfaa60 notes). On the 12 form, left (all order forms,
+// match-only): the damage scale stored after the three locals, data.scale before the flags OR and
+// collision.unknown24 before vector.k, the three together 4 (only the centre add's x/y operand order left); unused locals
+// 1..7 on that 4 inert; the centre scaled through vector3f_scale 4, that with the add's inputs as (child, centre) 2 (the
+// y add still loads the child first: the centre members rank 526/521/532 and the child's 525/529/533 for x/y/z); on that 2:
+// the centre typed vector3f 2, the child typed vector3f 2, the centre declared bare and assigned 2, the inverse inside the
+// scale call 2, the two child scale clears as one chained assignment 2, the child position declared at the loop body's top 2.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {
@@ -3145,6 +3162,17 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // + both 1014, + `!= 10` 1027); velocity lerp via `vector3d_from_points3d` + `vector3f_add_scaled` 1048 (4706 B; + pointer 1046; + `0x1ca690`
 // short 982, NOT kept: part regresses), via `scaled_difference3f` + `vector3f_add` 1030 (4695 B), 3 subtractions first with/without pointer
 // 981/1013; per-arm `function_faa30` in range check with `!= 10` 1023 (4687 B). Body unchanged.
+// M3 lane 5 r255 (fast screen with 0xfc330, 0x1ca690, 0xfaa60, 0xfaa30; plain-confirmed). With 0x1ca690's third and fourth
+// parameters `short` (held, see 0xfc330's note) this body measured 1017 (4683 B); held:
+// the collision velocity blend as the existing vector3d_from_points3d (velocity minus the projectile's) and
+// vector3f_add_scaled (the projectile's plus the difference times t) 1017 -> 982 at retail's 4682 B. Same base:
+// scaled_difference3f with vector3f_add 1032 (4694 B); the difference written into the velocity in place 1011 (4684 B);
+// with the functions this file already expands: vector3f_scale then vector3f_add 1015 (also with the scale call as the
+// add's argument, or collision.t read at each use 1015), the difference by helper and the sum written out 1031 (4665 B);
+// collision.t read at each use with the blend written out 1016; `remaining *= 1.0f - t` 1052 (4713 B); the definition's
+// +0xc2 field typed `short` 1017 (same code). The helper pair is held: one more function expanded in this file costs the
+// matched 0x1c4590 and 0x24cf66 in a full check, and the 0xfaa60 change that offsets that count has no gain of its own (see
+// its note). Body unchanged.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -3658,6 +3686,11 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // Component setter for input/fallback/both/marker/input and marker/fallback and marker/all 1153/1145/1131/1132/1152/1144/1160.
 // All three fixed-size copies 1146. One reinitialized damage record scoped to the damage and selector phase 1146.
 // NOT kept: the two best forms change retail's integer copy shape and keep the 0x21c frame. The scoped record leaves the comparison unchanged.
+// M3 lane 5 r255 (fast screen and plain check): the direction normalized through this file's own projectile_normalize
+// in place of the header copy of 0x30bf0, 1146 (same score; only the squared-length sum order changes, aligned rows
+// 750 -> 744). Not kept: no gain of its own; the round used it only to offset 0xf8eb0's blend, which newly expands
+// vector3f_add_scaled here (one more function expanded in this file costs the whole-image ties 0x1c4590 and 0x24cf66),
+// and a form chosen for that count is not accepted. Body unchanged.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)
