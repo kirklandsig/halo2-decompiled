@@ -268,6 +268,13 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // loop around the call (GB r16's dead loop) lifts it over; retail's call sits in the entry block of a function with one
 // caller, so retail's threshold or the library body's cost differed from this build's (a link-wide setting, not this
 // source).
+// M3 lane 14 r163 (H2M_FAST with 0x1d3f0; control 99): the title's allocation override (0x12280) declared without its
+// __forceinline 99; the allocation and free overrides (0x12280, 0x122c0) both plain 99; the free override's 0x82 arm
+// without its volatile read (diagnostic) 99; both together 99 (the overrides still match; the library body's inline
+// cost does not move with them); a __forceinline redeclaration of the SDK call here (diagnostic) 99 (ignored); the NULL
+// arm as an early return 103 (26 B). Lead: the SDK library member holding the palette call is the only one of that
+// library this build pulls from the library itself (the held members are linked first, in retail's order); its place
+// in the link may be what retail's inliner saw.
 // GB26 (12 real + 1 flag diag fast trials with 0x1d3f0 and file peers; control 99 at 30 B, 0x1d3f0 76): `extern const`
 // `g_43e8d8` with retail values {3,2,1,0,32,64} 99 (0x1d3f0 76), + no `noinline` 99 (0x1d3f0 75); `result = palette;
 // created = true; if (!palette)` 99; `bool created` branch `*out` 93 (36 B, 0x1d3f0 91); `*out = NULL` before call 99

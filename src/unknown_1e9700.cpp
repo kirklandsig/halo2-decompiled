@@ -417,6 +417,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // helpers' file (/Ob1) was on this round's avoid list. Forms: the old maximum through a plain call of the existing
 // 0x196960 141 (420 B), the team maximum so 103 (425 B), both 140 (423 B: the getter stays a call); the row formed
 // ahead of the enable read 94 (434 B); the clamp's upper test as its own `if` (no else) 96.
+// M3 lane 13 r165 (H2M_FAST, about 185 runs, all agreeing with check.py --fast): a byte match, held as a patch. It
+// models 0x510ca0 (the enable byte), 0x510cb0 (the results record's valid flag) and 0x511bf4 (the input counters) as
+// one object, from which retail's reload of the enable byte after the counter store follows, with the player block in
+// 0x1968b0's expanded shape (a counter pointer, the clamp on a `value` copy) and the team test as a byte compare.
+// Not landed: the same range holds separately declared globals (0x510ca1 the lock, 0x510cb1, 0x511000 and others),
+// and 0x510cb1 as a member beside the valid flag changes the results getters' code, so the one-object layout is not
+// yet a consistent model of retail's data.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
