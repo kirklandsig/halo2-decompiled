@@ -501,8 +501,10 @@ real function_d5bc0(string_handle group_a, string_handle group_b, string_handle 
 	return result;
 }
 
+/* inline: retail inlines it into function_b7b40 (src/unknown_0b7b40.cpp) and calls it everywhere else; this file is
+   built /Ob1, so without the keyword it is no candidate */
 // @retail 0xd5c90
-void function_d5c90(long object_index, real *body_vitality, real *shield_vitality)
+inline void function_d5c90(long object_index, real *body_vitality, real *shield_vitality)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
 	byte *field_4_2 = (byte *)function_d5b60(object_index);
