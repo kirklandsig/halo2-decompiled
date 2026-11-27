@@ -1283,6 +1283,16 @@ s_3c9a0_matrix g_4c1b68;
 // registers where retail re-reads them from g_4c1b08; with one fewer reference on the row-1 `m10 * far_x` temp the packer
 // would give retail's layout. A forced-ranking search on the 208 form finds no single decision close (best -7). The
 // references, the pair and the split loops are steering forms, kept only with a byte match.
+// M3 lane GA r31 (34 fast trials, 0x3c9a0/0x16a90 MATCH and 0x3c3c0 74 throughout; control 291): on HEAD, two separate ifs
+// on width_scale 291, tanf/sqrtf 293, column-order g_4c1b38 292, g_4c1b68.scale in g_4c1b38 301, x-before-y in corner loop
+// 291, const-ref divide helper 291, min/max const-ref templates 292 (by value) / 296 (by ref, stays out of line under /Ob1;
+// all three clamps 302), !(width_scale > 1.0f) 306, (real) cast on tangent2 293. On r236's 210 form (1390 B, frame 0x4c):
+// c[1] before c[0] 211, real_point3d_set 210, .x/.z stored ahead of near_y sqrt 222 (1372 B), column-order g_4c1b38 219,
+// x-before-y 210, unrolled 12 axis statements 210, unary -corner_y 210, point3f *p = g_4c1b08 231, real const &tangent2 210,
+// z,x,y,scale + camera.x/y in g_4c1b38 210, !(width_scale > 1.0f) 211 (1387 B, folds second compare), 1.0f >= width_scale 210,
+// swapped corner multiply operands 210; min/max template on pair+3loops 227 (out of line). Diff reading on 210: ours keeps
+// m00/m10/m20 and -near_y/near_y/-far_y in XMM and spills m01/m11/m21, where retail keeps m00/m01/m10/m11/m21 in XMM and
+// reloads g_4c1b08[0..1,3].y from memory. Body unchanged.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1488,7 +1498,26 @@ void function_41040(short index, long part_index, long group, byte weight,
     }
 }
 
-// score 305 (was 352): logic matches retail block by block (no behaviour difference found); what still differs is register
+// score 305 (was 352). M3 lane GA r29 reached 81 (1200/1204 B, +0x1b; all matched peers in the file incl. 0x4dfa0,
+// 0x4de20 and 0x4e0d0 still MATCH, full check 0 lost): the shared `+ mode * 0x132` moved into a 5-argument
+// `record_material(tag, pass, stage, entry, dword mode)` (0x4dfa0 passes 0, 0x4de20 index, 0x4cbf0 out->unknown04), the
+// `material` and `instance` locals dropped, and `out->value10` read back for the 0x1cb20 and 0x4cbb0 arguments. Not kept
+// at review: the gain rests on dropping the two named locals and reading the stored fields back in their place, which is
+// kept only with a byte match; the 5-argument helper alone (with `(byte)mode` and both locals) 305, with
+// `out->unknown04` and both locals 370 (machine 3 review trials). Still differs in the 81 form: `+0x1b` `add esi` vs
+// retail's `mov [esi+g_4ba138]; lea esi` (4 B, from retail inlining 0x449e0), `out->value0c` load order (`tag` before
+// `flags`), the 2-block primitive switch order (`0x11` before `0x10`), and `test eax, eax` vs `test al, al` on 0x4cbb0.
+// M3 lane GA r29 (42 fast trials across 3 batches, all 10 peers MATCH; plain confirmed 81): `record_material` 5-arg
+// with both locals dropped 81 (pre-computed `offset = mode * 0x132` breaks 0x4de20 at 51); factoring a 4-caller
+// `material_block_ready` helper gave 80 (68 without `!= false`, 102 with `if (ready) result = true`) but shifted two
+// unrelated LTCG functions (0x1c4590/0x24cf66) so dropped; with an inner `s_44940_entry *entry = &g_4ba138[index]`
+// block (held as a patch) 20 at exact 1204/1204 B, +0x244; existing `visible_entry_geometry(index)` with
+// `(bool)((byte)(...)&1)` / `!=0` / `(bool)` 182 (with `(byte)mode` arg 304, without 5-arg helper 335). Tried on the 20
+// lead (all 20 unless noted): primitive switch default top/mid/top+sep45/goto/inline return helpers/signed char/sep
+// cases/4-5 first dup 20, no-dup 66 (1184 B), no default 104 (1216 B); `out->value0c` signed/unsigned, `0x3fe00u`,
+// tag-first, bitfield structs, `(tag<<11)&0x7fff800u`, sub-locals/renamed locals 20, `+` 22, `^` 22, two stores 310;
+// 1-3 phase locals 20.
+// Earlier (305, was 352): logic matches retail block by block (no behaviour difference found); what still differs is register
 // allocation: retail keeps tag in ebp and stage in edi and leaves pass in its stack slot, ours puts pass in ebp and tag in
 // edi, so the 0x15d70 call setup, the case 18 pass*10 and the record_material reads differ; retail also loads the source
 // fields as [esi+g_4ba138] and takes the address afterwards (lea), and reloads out->value10 for the 0x4cbb0 call.
@@ -2118,6 +2147,16 @@ extern long g_485a60;
 // `g_4ba138[index]` at every use 463 (1471 B); `short bitmap` 357 and `char texture` 356 (positional only: `char`
 // emits `cmp al, 0xff` where retail has `movsx edx` + `cmp edx, -1`), both 370, `signed char` + `short` 370; on the
 // 291 form each 291.
+// M3 lane GA r31 (41 fast trials across 3 batches, control 370, all 13 peers MATCH; body unchanged): tested lane 7
+// r236's inline-helper hypothesis directly: passing the flag's address or a `bool &` to a `static inline` helper setting
+// `*flag = true` after 0x15c90 still folds both stores away once inlined (291 on GB r23's form; `static inline` wrapping
+// 0x15c90 stays out of line under `/Ob1`, 423/300; `__forceinline` wrapping 0x15c90 inlines 0x15c90 itself and still
+// drops the flag, 461/466), ruling out an inlined `bool*`/`bool&` helper as the cause of retail's [esp+0x58] byte stores.
+// Also tried on HEAD: typed s_primitive_* structs matching 0x4dc60 in original order 370 (`s_primitive_header *mask`
+// 370, with `size` before `buffer` 357, same as raw `size` before `buffer` 357; statement-order only, not kept),
+// direct shader 400, `(bool)((... >> 20) & 1)` 398, texture before bitmap 370, inline visible_entry_geometry shape 423,
+// inline 0x4dc60 color-stream twin 408 (on GB r23 401), mask = 0 430; on GB r23: `entry_index` for tail calls 383
+// (masked 67), `entry_index` + inline geometry + arm1 bitmap reset + texture first 384 (masked 59).
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)

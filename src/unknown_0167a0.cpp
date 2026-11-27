@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "reset_storage.h"
+#include "timed_effect.h"
 #include "unknown_11c920.h"
 #include "globals.h"
 #include <xmmintrin.h>
@@ -352,7 +353,6 @@ byte function_016a90()
 	return g_485ac2;
 }
 
-long g_485898;
 
 // @retail 0x16ac0
 bool function_016ac0()
@@ -437,7 +437,6 @@ struct s_1b230_function
 	byte *data;
 };
 
-extern double g_4858a0;
 real function_13b390(void const *function, real input, real range);
 
 // @retail 0x1b230
@@ -984,6 +983,10 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // first and case 18 width last 101 (732 B, the two no longer merge). Reading: the flip fires only when 14/18 and 12/13
 // end on the same two zero stores (and case 10 stores width at [8] from xmm0); once 14/18 ends on its width store
 // (the [0] store most blocks end on) nothing flips.
+// M3 lane 15 r155 (h2m fast with 0x19be0/0x19ca0/0x176a0): advancing `out` itself keeps 0x19ca0's match (no new pointer),
+// but every such form rebuilds the switch: `out += 2;` then ascending `out[0]`/`out[1]` zeros in 12 and 13 104 (688 B), in
+// 12 only 88 (708 B), 13 falling into 12's advance 104 (688 B), the advance with `out[1] = out[0]` 104 (688 B); the zeros
+// through `(&out[2])[0]`/`[1]` ascending 6 (folded to the direct stores).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

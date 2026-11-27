@@ -1628,6 +1628,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // B); the scale named there 100 (1411 B); the parent's flags word in a named dword ahead of the bit test 20; the parent
 // node in a named long at the arm top 20; the index and the node both read at the arm top ahead of the defaults 20
 // (same code each).
+// M3 lane 6 r252 (fast screen with 0xb8bd0, 0xbdc40, 0xbfa40 and 0xbdb60, all MATCH; control 20 at 1399 B). Forms on
+// the pool's and the arm index's references: the parent index read from the object at each of its three uses (no
+// local) 20; that with the flag read ahead of the matrix 25; the early-return test reading the entry header's object
+// 365 (1386 B); the current object taken from the entry header 386 (1408 B); the parent default and mirrored flag
+// declared once ahead of the render test for both arms 391 (1411 B). All restored.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

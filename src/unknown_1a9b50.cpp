@@ -1032,6 +1032,12 @@ extern point2f *g_468778;
 // prop, threading and the slot / facing / actor registers all retail's; left the in-place add right after the call, the
 // dot summed k, i, j, and float copies where retail moves integers), with only the 0.866 copy member by member 390;
 // pointer dot with both / first / second copy member by member 314 / 407 / 407. Body unchanged.
+// M3 lane 14 r164 (H2M_FAST with 0x265d30, MATCH each run; control 280 at 1557/1549 B, difflib-aligned 101). Forms on
+// the prop pointer's definition (retail `xor ebx, ebx` ahead of the index test, then the node in EBX throughout): one
+// conditional definition `local_3 = index != NONE ? prop_node_get(index) : NULL` 429 (1570 B); that with the first block
+// tested on the pointer 431 (1574 B); the NULL and the lookup kept and the first block tested on the pointer 425 (1574 B);
+// the unit index read at the top of the outer test 417 (1576 B); the distance limit given its maximum in an else arm
+// instead of its initialiser 382 (1563 B). Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

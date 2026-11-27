@@ -333,6 +333,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // force arm 232 (816 B); the clamp and the update-time difference both after the force arm 242; update declared ahead
 // of force 218 (the update-first code); the hidden return tested ahead of force on `initialized && valid` with update
 // started from force 224 (813 B); that with update first and `if (force) update = true;` 120 (first +0x8).
+// M3 lane 6 r252 (fast screen with 0xd1850 and 0x3d2c0, both MATCH; control 21). Allocator reading: the object's
+// whole-function candidate ranks -7 (50 from its five referencing blocks, -57 over the 26 blocks of the sample chain it
+// only lives through), so it is never coloured in the first pass; its split piece from the hidden test onward takes EBX
+// and the head piece stays in EAX. Forms: the object as `byte const *` 21; the hidden test as `(... & 1) != 0` 21; the
+// object through the existing object_get accessor 21 (same code each); its position named once for the three
+// position uses (`point3f *position`), after the hidden return 230, beside the object lookup 245 (814 B). All restored.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -1,5 +1,6 @@
 // @flags /O2 /Ob1 /Gr
 #include "launch_stack_storage.h"
+#include "timed_effect.h"
 #include "unknown_11c920.h"
 #include <xtl.h>
 
@@ -597,6 +598,14 @@ long g_55e6c0;
 // const` 29; the format call given `entry->width, entry->height` 29 (forwarded); the entry pointer as `s_unknown_01dcc0
 // *const` 29 (the three the same code); the +0x7c clear after the two header zero stores 32; the linear flag stored right
 // after the data pointer 153 (484 B; 0x1d770 55, 0x1db10 4, 0x1dc40 1). All restored.
+// M3 lane 3 r319 (h2m fast with 0x1dc40/0x1db10/0x1d770, all MATCH unless noted; control 29): the select store ahead of
+// the header word on main's folded packing 121 (479 B); the busy test as `result = !entry->data && !entry->flag95; if
+// (result)` 159 (472 B), with the select first 153 (477 B; 0x1db10/0x1dc40 10, 0x1d770 213); the kind stored right after
+// the clamp with the select first 68; round 122's lead re-measured 31 (484 B), on it the kind stored after the levels clamp
+// with the select first 52 (484 B). Reading: the merged clamp value is coloured in the first pass (36: its three arm
+// definitions at 4 each, its store in the join block at 24) before the height's top piece (fourth pass, 24), so it takes
+// EAX; a two-decision forced-ranking search on this body (160 tried) gives 17 at best (the clamp moved to EDX, this body's
+// folded packing left). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
@@ -646,7 +655,6 @@ bool function_1df20(long index, long kind, long width, long height, bool alterna
     return result;
 }
 
-extern long g_485898;
 long function_12d400(long type, long size, long user_data, long update, long release);
 
 // @retail 0x1dc40
