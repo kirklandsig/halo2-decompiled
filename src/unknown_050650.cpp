@@ -1146,6 +1146,14 @@ struct s_collision_result_buffer_1697c0
 // M3 lane 2 r158: the r157 form (sine and cosine passed straight in, the pitch axis through vector3f_assign), 239, lost
 // 0x1c4590 (5) and 0x24cf66 (2) in the full check of the tree merged with main (as lane 12 r193 had seen); restored to
 // main's 270 form, held as a patch.
+// GB30 (27 valid fast trials + 1 plain ripple check; control 270 at 1431/1423 B, 0x297d30 23, 7/7 matched peers MATCH):
+// axis_rotation.h function_x84d9e8 339/334/294/292 (0x297d30 245); direct (sin, cos) + vector3f_assign 239 plain (1427 B,
+// 0x297d30 23, + best_dir/NONE 236, + early-return norm 244; NOT kept: still loses 0x1c4590 (5) and 0x24cf66 (2) in plain
+// check); real_point3d_set 239/236/244 (same code, NOT kept: pointer cast); negated cross (+ cross * sine) 192 (1423 B) on
+// 244 / 269 on 239 (NOT kept: raises 0x297d30 23 -> 48 and emits addss for retail subss); on 239: vector_i/vector_j locals
+// 285/295 (7d30 158/245), dot kji += 291 (7d30 146), cross3f order 239, (cos-sin)+proj 310 (7d30 146), vassign out 330
+// (7d30 142), header normalize3d / single-exit magnitude3d / pitch normalize3d 265, fabs>= 332, !(norm>0) 239; on HEAD +
+// direct (sin, cos), ER 272 / SE 281. Body unchanged at 270.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
