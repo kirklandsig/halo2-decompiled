@@ -494,6 +494,14 @@ static __forceinline long real_to_long(real value);
 // alone becomes `test eax, eax; jns`), with the two range draws through local_10 422, with the length's squares in
 // i, j, k order 375; the sign test as `(long)local_11 < 0` 417; the resolver through a call to 0x210850 445 (1807 B),
 // with `inline` on that helper's definition (diagnostic) 466 (1889 B). Body unchanged.
+// M3 lane 3 r317 (H2M_FAST with 0x1fdce0, 0x1fe410, 0x2104b0, 0x210850 and 0x259d0, all MATCH; control 373, aligned
+// exact/register-masked 324/112). The three end sums through vector_products.h's existing vector3f_add on the stored
+// output (`vector3f_add(output, (vector3f const *)&local_4, target)`) 378 at 1854 B (321/109): retail's tail exactly
+// (all three components read back through the copy's destination pointer) but for the x row's operand order, and the
+// 7 bytes the third input's missing ESI home costs elsewhere then show; the operands passed the other way round 378
+// (the same code: the order follows the operand ranking); through the local output vector 429; that tail with the
+// +0x3c limit read at each use 453 (1840 B); the resolved-point copy as `= *local_3` 380, with the tail 385.
+// Body unchanged; still BLOCKED-BY 0x2104b0's link-time summary (retail reloads the random state after it).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
