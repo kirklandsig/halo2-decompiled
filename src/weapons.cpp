@@ -4248,6 +4248,11 @@ long unit_get_player_index(long unit_index);
 // (three names) +0. On main's body: the unit-index volatile dropped 649 (2503 B); the +0x16c status bits as a word
 // bitfield 594; the owner's player through WEAPON_UNIT_GET 593; one `if (fired)` call after the magazine if/else 593;
 // the four allowed forms together 656 (2495 B).
+// M3 lane 7 r237 (h2m fast with 0x101db0, 0x159dd0, 0x101b10 and 0x101b80, MATCH each time; control 593): single
+// pieces of GA round 9's held lead on main's body, each a declaration order or a named part (kept only with a match):
+// unit_tag_index declared before tag_index 592; rounds declared before burst 593; the barrel pointer right after the
+// weapon 595; the magazine definition pointer before the magazine pointer 570 (2546 B, first difference +0x13); the
+// misfire threshold named `chance` 592.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

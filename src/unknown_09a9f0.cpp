@@ -1168,6 +1168,22 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // entity's re-read field 46; R with the flag test inverted (clear arm first) and 0xbb780 given the local and the
 // entity's first field 75; R with only the object read through the entity's re-read field 77 (the re-read is
 // forwarded before the merge when no store lies between). Body unchanged.
+// M3 lane 5 r254 (reduced-image screen with 0xbb780, 0x108e10 and 0xa5b10, control 8; R re-measured 77, F with the
+// store and attach through 0xbb780 re-measured 67). Retail scan: this is the only function in the image that tests the
+// header flag and then reloads the table data. Forms: a by-value copy of the entity between the two lookups with its
+// fields given to 0xbb780, on F, on the local form, or with the store and attach written out, 114 each (frame +0x18:
+// the copy is kept and the data pointer stays shared, so a store to a local that never escapes does not end its
+// reach); `result` raised through a file-local inline taking `bool &` ahead of the object read, on R 72, on F 61; the
+// second store through a file-local inline taking `long &` with the plain index 42, the second store kept with the
+// store and attach through 0xbb780 on the re-read field 42 (the listed plain-index code); a file-local attach inline
+// whose parameters are `dword const &` (converted temporaries) for the value, the index or both, on F 67 each and on R
+// 77 each (the temporaries fold before the lookups are merged). Diagnostic, a lead: the out value stored again from
+// `d` between the two lookups, on R 63, on F 53: on F the data pointer is then reloaded through the kept table pointer
+// and the index masked again from EAX, as retail does, with no field store; what is left is the emitted store of the
+// out value itself and `d` cached in EBP for it. So the reach is ended by a store to memory that has really escaped
+// (the out value's address goes to the first virtual call; its home is the incoming slot of `d`, and the entry's `mov
+// [esp + 0x1c], eax` is `value = d` written over `d` itself); retail has such a store between the lookups before code
+// generation and none in its bytes.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1254,8 +1270,7 @@ void c_turret_entity_definition::v26(long index, long b, s_entity_state *state)
 // @retail 0xa3a00
 long c_object_type_definition::v27(long a, long b, long c, long d)
 {
-	c_object_type_definition const *volatile saved_definition = this;
-	return function_a5e70(a, b & 0x3ff, d);
+	return function_a5e70(a, b & 0x3ff, d, this);
 }
 
 // @retail 0xa09b0
@@ -1421,10 +1436,8 @@ void c_device_type::v10(s_creation_request *request, long parameter, long size, 
 // @retail 0xa02e0
 long c_item_type::v27(long a, long b, long c, long d)
 {
- // Preserve the local definition pointer stored in the retail stack frame.
- c_object_type_definition *volatile definition = this;
  byte *object = (byte *)OBJECT(a);
- long result = function_a5e70(a, b & 0x3ff, d);
+ long result = function_a5e70(a, b & 0x3ff, d, this);
  if (b & 0x400)
  {
   bool flag = (object[0xc1] & 1) != 0;
@@ -1440,9 +1453,7 @@ long c_item_type::v27(long a, long b, long c, long d)
 // @retail 0xa0be0
 long c_projectile_type::v27(long a, long b, long c, long d)
 {
- // Preserve the local definition pointer stored in the retail stack frame.
- c_object_type_definition *volatile definition = this;
- long result = function_a5e70(a, b & 0x3ff, d);
+ long result = function_a5e70(a, b & 0x3ff, d, this);
  if (b & 0x400)
  {
   byte *object = (byte *)OBJECT(a);
@@ -1472,350 +1483,25 @@ bool c_projectile_type::v8(long a, long b)
  return result;
 }
 
-// score 5 (was 5): retail masks the 16-bit group index with and eax, 0xffff,
-// ours truncates it with movzx eax, ax. Writing (index & 0xffff) gives the and
-// but swaps the object (esi) and flags (edi) registers (12). Tried with the
-// mask: flags declared first / long / b used directly (12), early returns
-// (47), real pointer into the group (15), a 12 byte group struct indexed (12),
-// one (flags & 0x800) && group != NONE test (24, 12), unsigned index (12),
-// 0x9d450's object address form (12); (dword)(word)index is unchanged (5).
-// Dropping the volatile this copy loses retail's push ecx/[esp] store (55).
-// With the mask, any extra use of object (an added read at the end) gives it
-// esi again, so the swap is a use-count tie that the separate word read of
-// (word)index breaks. Also tried with the mask: bit tests as (flags >> 10) & 1
-// (12), result declared first (12), the compares' operands swapped (17), a
-// group_index local (12); the base class v27 call without the copy (52).
-// Round 34 (LTCG harness, base 1 = 5): with the mask, the volatile copy, object and flags in the five
-// other declaration orders 12/51/12/51/51; a plain long or dword index 12/12; the index field read at
-// each use 12 (also with b direct 12); the group value through an inline value getter, read twice,
-// 14 (b direct 14); a `real const &` for the two power reads 12 (b direct 12); permuter (600 s, 53
-// tries) none better.
-// Round 49 (one-link LTCG screen, exact at 5; with the mask 12 unless noted): 1-8 unused locals before the
-// copy, the flags or the call 12 each (no numbering tie); every narrow read (`*(word *)`, `(short)` or
-// `(word)` with or without `& 0xffff`, `(long)(word)`) compiles to movzx (5), every full-width mask to the
-// swap: re-read through a dword or long pointer, `(dword)index`, a 12-byte group struct, a typed state
-// pointer for d (word form 5), dead object loads or copies 12; object looked up again for the index/store
-// 56/55; the base class v27 called inline 51 (as the listed base-class call). Fast: the result bit set
-// before the store (mask) 14; the call's mask from b only (mask) 12; a typed state view for d with the word
-// read 5, with the mask 12; the index's low word read from the object 5; the power value in a local (mask)
-// 17. Re-measured: an index local (mask) 12; the 0x800 and NONE tests combined (mask) 12; a value pointer
-// into the group (mask) 15.
-// Round 32 (lane 17, fast): the masked group address written at both uses 15; with the mask, the index read
-// into a value local right after the call 49 (188 bytes), a const object pointer 12, `b` passed to the call and
-// the flags local declared after it 12, the 0x400 test and compare as nested ifs 12.
-// Round 94, all with the full-width mask: a handle pointer 12; a reference test with a direct index
-// read 12; a direct test with a reference index 12; a const object pointer 12; an un-named group
-// entry 15; const flags 12; a mutable handle reference 12; the entry predeclared in the flag scope
-// or the function scope 12/12. Original narrow-read body restored.
-// Round 88 (one-link LTCG screen, exact at 5), all with the full-width mask: `do {} while (false);` at each of 20 statement
-// boundaries 12 (47, 188 bytes, at the two after the 0x800 store); the power copied as long, both stores or the first only,
-// 12/12; the index by value 12; the power through a const pointer 12; a group index local before the entry 12; the NONE
-// test as `index + 1 != 0` 12; `b` throughout with no flags local 12.
-// Round 215 (lane 3, fast), full-width mask unless noted: the mask alone 12; a dword bitfield's low word 12; a 12-byte group array indexed
-// `[index & 0xffff]` 12; a by-value one-long handle with inline accessors 12; a group local masked after the test 12; `(dword)(index << 16) >> 16` 12;
-// the object through a typed view 12; a word bitfield's low word 5 (movzx, no mask).
-// Round 78 (m3 lane 1, fast; control 5), all with the full-width mask unless noted: a dword result 12; a groups
-// pool local 12; the entry as `&data[(index & 0xffff) * 12]` 12; a const entry pointer 12; the multiply as
-// `12 * (index & 0xffff)` 12; a dword result with the word read 5. Re-measured: const flags 12 (round 94); a const
-// value local for the two group reads 24.
-// Round 95 (m3 lane 16, fast), all with the full-width mask: the swap is a use-count tie (diagnostic: without
-// the 0x400 test the object takes esi, 40); flags read once through the parameter's address 12; the call's mask
-// read through the parameter's address with flags copied after or before the call 12/12 (the loads merge before
-// allocation); an object header local 12; object and flags declared, then assigned 12. Retail's code in this file
-// never zero-extends with a reg-reg movzx, only `and r, 0xffff`.
-// Round 158 (fast), all with the full-width mask: the object local named `device` 12; the mask on a second read of
-// the field through an indexed long view 12; the field read directly at the NONE test and the mask 12 (re-measured);
-// the group index read into a local at entry 50; flags declared before the lookup with the call's mask from `b` 12;
-// the object through the existing inline object_get 12.
-// Round 165 (m3 lane 5, fast, 0xa5e70 kept): both value checks through one shared inline (value, source, bit) update
-// helper returning the bit or 0, with `result |=` at each, 56 (190 bytes) with the word read and 58 (192) with the mask (the
-// zero arm is not threaded); the 0xa5e70 call through an inline (object index, flags, update) forwarding helper with the mask
-// 12, passing the masked flags 12, with the word read 5. The tie is not moved by the call's argument webs.
-// Round 189 (m3 lane 4, fast, 0xa5e70 and the sibling v27s kept): the volatile definition copy declared after object
-// and flags (mask) 51; `(word)(index & 0xffff)` 5 (same code as the word read: the narrowing conversion gives object
-// ESI); the call's mask as `(word)(flags & 0x3ff)` with the index masked 12; `(dword)index % 0x10000` 12; the group
-// value through the existing cross-file inline device_group_get at the compare and the store (mask) 15.
-// Round 98 (m3 lane 10, fast with 0xa5e70 and the sibling v27s, which all stay matched; control 5), full-width mask unless noted:
-// the base class's v27 called inline with the flags local / with `b` direct 51/51, with the word read 52 (the base is inlined,
-// but its definition copy lands in an incoming argument slot, so the frame has no `push ecx`); eight renamings of the object
-// local, the flags local and the `b` parameter (early and late names, the parameter itself named flags) 12 each: names do not
-// order the two registers; the group value's whole address expression written at both uses 15 (word read 8: the shared address
-// then includes the +4); 0xa5e70's flags parameter declared dword, word or short (definition and header; 0xa5e70 and its other
-// callers still match) 12 each; the call's mask from a narrow read of the flags, `(word)flags`, `(word)b`, `(short)b` or a
-// word read through the parameter's address, 12 each. Diagnostics (not kept): with the mask the flags take ESI at three uses
-// each (12) and at four each (37); the object takes it with the 0x400 test removed (40); with the word read the object takes
-// ESI even with one of its 0x140 reads removed (6), so the word read does not act through a use-count tie alone.
-// Round 119 (m3 lane 9, fast with 0xa5e70, matched each time), with the full-width mask unless noted: the call's mask
-// from the flags local and both tests from `b` 12; only the 0x800 test from `b` 12; the group value pointer (or NULL)
-// from a forceinline taking the object 36 (189 bytes); the index reference bound at the function's top, before the
-// call, 12, with the word read 5. In the mask listings the group data reuses ESI after the flags (retail: after the
-// object). Diagnostic, compile-only: /G5, /G6, /G7 and /GB all keep `movzx eax, ax` for the word read.
-// Round 246 (m3 lane 3, fast; the mask alone re-measured 12), all with the full-width mask: the entry assigned to the
-// object local (diagnostic) 12; the group row as a `long *` indexed `(index & 0xffff) * 3` with the value at [1] 12; the
-// group data base in a local 12; `real &` references for both state fields 12; the volatile definition copy between the
-// object and the flags 51. The entry always takes ESI; the mask hands it the flags' ESI, the word read the object's.
-// Round 123 (m3 lane 16, fast; the mask re-measured 12), all with the full-width mask: the volatile copy typed with the
-// device type 12; the 0x800 block as guard returns 47 (188 bytes); a pointer to the state's power field 12; the object
-// looked up after the a5e70 call 18 (retail's homes: object ESI, flags EDI, the mask kept; only the head moves after the
-// call, so the object loses the tie only while its range spans the call); permuter (1800 s, 167 tries) none below 12.
-// Round 124 (m3 lane 16, fast; control 5), all with the full-width mask: 0xa3fd0's idiom (a `long group` value local, the
-// masked address written at the compare and at the store) 15; that local with the group value read once into a named local
-// used twice 24; flags declared before the object 12; the 0x400 test and compare nested 12; a `long group` local with an
-// entry pointer 12.
-// Round 174 (m3 lane 8, fast with 0xa5e70; control 5), all with the full-width mask: the object through an offset local
-// `(a & 0xffff) * 12` as matched 0xa1f70 and 0x9d450 read theirs 12; a `long` flags local 12; the group value as a
-// const reference to the masked entry's +4 15; a `byte *` state local for the four accesses 12; both copies written as
-// dword moves 12. Matched 0xa02e0 gets flags ESI and object EDI from the same head, as the mask form does here.
-// M3 lane 12 r134 (fast; word read 5, mask 12), all with the full-width mask unless noted: flags as a `long &` bound to
-// `b` 12; the object read through an OBJECT_HEADER pointer 12; the call's mask from `b` with the tests through a
-// `dword const &` to `b` 12; the index as a `dword const &` 12. Diagnostics: the index as a value local with the word
-// read 10 (`movzx eax, si`: the object keeps ESI there too, the index takes ESI after it); the object looked up with
-// `(word)a` and the group index masked 49 (`movzx ecx, ax` shifts the head 5 bytes, but the object takes ESI and the flags
-// EDI as retail); the object looked up with `(dword)a % 0x10000` 12, the index masked with `0xffffL` 12. So ours swaps
-// the pair exactly when both lookups zero-extend with `and r, 0xffff`; retail has both and keeps the object in ESI.
-// M3 lane 13 r106 (fast; word read 5, mask 12), all with the full-width mask unless noted: `__assume(object != 0)` after the
-// lookup 12 (word read 5); the object bound to a `byte *&` 12; flags bound to a `dword &` of a copy of `b` 12; the masked
-// index as a `long const &` 12; the 0x800 test as `(flags >> 11) & 1` 12 (word read 5), as a `(bool)` of it 26 (187 bytes);
-// `result |= 1 << 11` 12; `result |= flags & 0x800` 25 (both arms 50); a dword result 12; the 0x800 test held in a named
-// bool 26 (187 bytes). Diagnostics (semantics changed, not kept): the 0x800 arm's `result |=` constant changed to 0x801 or
-// 0x1800, the 0x800 test changed to 0xc00, the group mask or the object mask changed to 0xfffe: 1 each (retail's object
-// ESI and flags EDI; only the changed constant differs); the 0x400 arm's constant changed 13, the 0x800 arm setting 0x400
-// 1, the 0x400 arm setting 0x800 13. So the flags win ESI only while the 0x800 arm tests and sets the same constant and
-// both lookups mask with the same 0xffff; the shift and bool spellings fold to that constant before allocation.
-// Also (fast, mask): the update flags as a local overlay (a dword and a 10/1/1/20 bitfield view), tested through
-// the bits, 12 (word read 5); the result as that overlay, its bits set through the fields 12, only the 0x800 bit
-// through its field 12 (the bitfield forms lower to the same test/or constants before allocation).
-// M3 lane 10 r119 (fast with 0xa5e70, matched each time; mask control 12), all with the full-width mask: the body moved
-// to the end of the file 12 (source position does not order the pair); the entry address written multiply-first 12; the
-// state's two fields as `((real *)d)[0x24]`/`[0x25]` 12; the object's fields as `((real *)object)[0x50]` and
-// `((long const *)object)[0x4f]` 12; the 0x800 test as `(flags & 0x800) == 0x800` 12. Word-read body kept (5).
-// M3 lane 16 r136 (fast with 0xa5e70/0xa02e0/0xa0be0, matched each time; mask control 12), a 60-form combination screen with
-// the full-width mask over field pointers declared next to their bases: the group index as a const reference in the block,
-// a `long const *` declared after the object, a value local or read in place at both uses; the object's power through a
-// `real const *` declared after the object; the state's power through a `real *` declared after the flags; the state's
-// group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
-// in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
-// pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
-// M3 lane 11 r121 (fast; word read 5, mask 12), all with the full-width mask: 0 to 8 initialised dead locals after the object
-// 12 each (diagnostic: no referenced-local count shift); one or two dead locals initialised with 0x800, 0xffff, 0x400 or
-// `b + i` 12 each (dead constants do not join the pair); flags dword/long x result long/dword x index reference long/dword,
-// all eight 12; the group entry through a `(index & 0xffff) * 12` offset local 12, with the object through 0xa1f70's offset
-// local as well 12, the object offset local alone 12.
-// M3 lane 13 r113 (fast with 0xa5e70, matched each time; mask control 12: the group data then reuses ESI after the flags,
-// retail after the object), all with the full-width mask: a `long` group offset local `(index & 0xffff) * 12` added to
-// the data at both reads 31 (189 bytes), the same offset local feeding the entry pointer 12; the object through the
-// matched 0xa1f70 offset form with that group offset 12, on it the call's mask from `b` and the flags local declared
-// after the call 12; the 0x400 arm's result bit set before its store 14. Word-read body kept (5).
-// M3 lane 11 r128 (fast with 0xa5e70, matched each time; word read 5, mask control 12), all with the full-width mask: the
-// definition copy without `volatile`, as a one-member aggregate (initialised, member-assigned, or declared after the flags),
-// a one-element array, or a plain local whose address goes to an unused pointer, 53 each (the dead store is removed: no
-// `push ecx`); the base v27 called inline passing `c`, passing the unmasked flags, or a constant size 51 each (its copy
-// takes the incoming slot of `a`; flags ESI, object EDI); the call's result through a `long &` to a named local 12, read
-// through a `long const &` into the result 12, the result declared first and assigned at the call 12, the call's mask in
-// a named local 12, the state through a `byte *` local passed to the call 12. Diagnostics (semantics changed, not kept):
-// the object mask 0xfffe together with the 0x800 arm setting 0x801, 2 (object ESI: breaking both constant pairs does not
-// swap back, so it is no parity effect); the call's mask changed to 0xffff (three uses of that constant) 13, still swapped.
-// M3 lane 6 r202 (fast with 0xa5e70, matched each time; word read 5, mask 12): with the full-width mask, 1 to 32 dead
-// initialised longs ahead of the object (K = 1-6, 8, 10, 12, 14, 16, 20, 24, 28, 32) 12 each, so the pair is no symbol-count
-// tie; a 12-byte group element typed (identifier, flags, value, desired value) through a pointer indexed `[index & 0xffff]` 12,
-// indexed `[(word)index]` 5 (movzx); that typed pointer with the 0x800 test and the NONE test combined 12; the a5e70 call ahead
-// of the object lookup with the typed pointer 18. Word-read body kept (5).
-// M3 lane 6 r213 (fast with 0xa5e70, matched each time; word read 5): with the full-width mask, the group mask written
-// `0xffffu` 12, the group stride written `12u` 12, the 0x800 arm's bit written `0x800u` 12 (suffixes fold: the constant pairs
-// stay shared); the result started at 0 and accumulated (`result |= function_a5e70(...)`) with the mask 12, with the word read
-// 5 (same code).
-// M3 lane 7 r198 (fast with 0xa5e70, matched each time; control 5): the group index masked with an unsigned literal
-// `0xffffu` 12 (the same swap as the mask); `(long)(unsigned short)index` 5 (movzx); with the word read, the object's
-// power through a `real const &` 5, the 0x400 test and compare as nested ifs 5, a `long` flags local 5 (all the same
-// code as the word-read body). All restored.
-// M3 lane 11 r134 (fast with 0xa5e70, 0xa02e0 and 0xa0be0, matched each time; word read 5, mask control 12), all with the
-// full-width mask: the 0x400 arm's bit set as `result |= flags & 0x400` 46; the entry as `&data[(index & 0xffff) * 12]` 12;
-// a `real *` to the state's 0x90 field for the 0x400 test and store 12; the NONE test written `NONE != index` 12; the
-// flags local typed `word` (`(word)b`) 12. Word-read body kept (5).
-// M3 lane 4 r237 (fast with 0xa5e70, MATCH each time; control 5), with the full-width mask: the group field read in place at the
-// NONE test and inside the masked address at the compare and the store 15; the masked entry address (used twice) computed
-// before the NONE test 24 (187 B, first +0x70: the head then has retail's object ESI and flags EDI with the mask, but the entry
-// is formed ahead of the compare); a two-use `long group = index & 0xffff` before the NONE test with the address written at
-// both uses 25 (188 B, the head flipped the same way), the same local inside the NONE block 15; a one-use masked index, group
-// data base or scaled offset before the test 12 each (forwarded to the use); the entry declared outside and assigned in the
-// NONE block 12; the call's mask from `b` with the object looked up after the call 18. Diagnostic (semantics changed,
-// reverted): the call's mask 0x3fe 13, still swapped. Reading: only a two-use group computation anchored ahead of the NONE
-// compare gives retail's head pair with the mask.
-// M3 lane 4 r241 (H2M_FAST; control 5): both real checks through one forceinline bool helper (stored, value) used in each
-// test, with the mask 15, with the word read 8; 0xa5e70 given the base slot's unused third parameter (a state size) with
-// every caller (0xa3a00, 0xa02e0, 0xa0be0, 0x9d450, all still MATCH) passing its own `c`: word read 5, mask 12 (the unread
-// argument adds no use that moves the pair); with the mask, the group index masked through a forceinline absolute-index
-// helper 12, the index read by value and masked in place inside the NONE block 12, the entry started at the group data and
-// stepped by `+= (index & 0xffff) * 12` 12. All reverted.
-// M3 lane 7 r201 (fast with 0xa5e70, 0xa02e0, 0xa0be0, 0xa3a00 and 0x9d450, matched each time; word read 5, mask control
-// 12): 0xa5e70 given a fourth, unused parameter taking the definition by const reference, every v27 passing `this`, and no
-// definition copy here, 55 (the unused argument and its temporary are both removed: no `push ecx`, so the dead store
-// is not a dropped by-reference argument); the definition copy as a plain local with an unreachable call taking its
-// address (diagnostic) 7 with the word read, 14 with the mask (the store stays but lands one instruction early, flags
-// still ESI with the mask). Diagnostics with the mask (unreachable address-takers, reverted): `b` kept in its stack home
-// with the flags a real copy made after the object 12 (same code: the flags still take ESI, so it is not the parameter
-// against a local), `a` in its home 12, `d` in its home 60 (196 bytes). Reading: matched 0xa02e0 (one object read, two
-// flag uses) gives the flags ESI, so ESI goes to the heavier of the two; here both have three uses and retail gives the
-// tie to the object, ours to the flags. With the mask, the definition copy's pointee typed const (as the file's other
-// copies are), typed as the const device type, or as `void const` 12 each (same code).
-// M3 lane 4 r239 (fast with 0xa5e70, 0xa02e0 and 0xa0be0, MATCH each time; control 5, mask control 12), all with the full-width
-// mask: the two device bits gathered in a second local and or-ed into the result at the return 59 (193 B); the NONE test
-// inverted with the group work in the else arm 12; the object's power read as `((real *)object)[0x50]` at both uses 12; the two
-// device bits tested on `flags >> 10` 48; the group index bound as `dword const &` and compared with `(dword)NONE` 12; the
-// unused `c` evaluated in the call's last argument 12; a by-value copy of the index inside the NONE block for the mask 12 (the
-// 12s are the mask's own code). Diagnostic (reverted): `result += 0x800` 13, still swapped, so the 0x800 pair is keyed by the
-// constant's value and not by the operation. r237's entry address ahead of the NONE test re-measured 24 (187 B): the head pair
-// is retail's there, with the index in ESI and the entry in EDI.
-// M3 lane 15 r128 (H2M_FAST with 0xa5e70, MATCH each time; word read 5, mask 12): the group index as `((dword)index << 16)
-// >> 16` 12 (folds to the mask); as `(dword)(word)index & 0xffff` 5 (same code as the word read: the movzx stays, the mask
-// is dropped); with the mask, the 0x400 compare written object-first 13, both compares written value-first 16, the object
-// pointer typed `byte const *` 12 (same code). Word-read body kept (5).
-// M3 lane 14 r141 (H2M_FAST with 0xa5e70, MATCH each time; mask control 12), all with the full-width mask: the object
-// bound through a `byte *const &` used for the 0x800 arm's index read 12; the group pool pointer read into a local at the
-// top, ahead of the call, 49 (188 B); the index as a const value local 12; the object pointer itself const 12; the entry's
-// value read as `((real *)entry)[1]` at the compare and the store 12. Word-read body kept (5).
-// M3 lane 8 r222 (H2M_FAST; word read 5, mask 12), all with the full-width mask unless noted: redundant paren pairs (1, 2
-// or 3) around the call's mask, the 0x400 store's source or the entry expression 12 each (no phase: integer picks); both
-// value compares as `!(x == y)`, each alone or both 12 each (word read 5); the bit tests as `(flags & bit) != 0`, each or
-// both 12; the result bits as `result = result | bit`, each or both 12; a second object local for the 0x800 arm's index
-// read 12 (word read 5); the 0x400 test from `b` with the other uses on the flags 12 (word read 5). Word-read body kept (5).
-// M3 lane 4 r246 (H2M_FAST with 0xa5e70 and 0xa02e0, MATCH each time; control 5), all with the full-width mask: the entry as a
-// `real *` stepped by `(index & 0xffff) * 3` and read at `[1]` 12; the byte offset written `* 3 * 4` 12; the value read as
-// `((real *)data)[(index & 0xffff) * 3 + 1]` at both uses 15; the definition copy declared after the object and the flags
-// 51 (first difference +0x0), last after flags and object 51; the flags local declared ahead of the object 12. The head
-// pair stays swapped (flags ESI, object EDI) whatever the constant 12 is spelled as. Word-read body kept (5).
-// M3 lane 7 r216 (H2M_FAST with 0xa5e70, MATCH each time; control 5, mask 12), all with the full-width mask unless
-// noted: one, two or three redundant paren pairs around the call's mask or around the masked group index 12 each
-// (integer homes ignore them); the object bound to a `byte *const &` read at the 0x400 store 12; the result through a
-// `long &` for both `|=` 12; the index masked as `index & ~0xffff0000`, `index & (word)NONE` or `index ^ (index &
-// 0xffff0000)` 12 each (all fold to the one constant); `index - (index & 0xffff0000)` 27 (191 B, not folded); the 0x800
-// test held in a bool named ahead of the call 55 (192 B). Word-read body kept (5).
-// M3 lane 12 r175 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: both result bits set through a
-// file-local by-address bit setter (dword result) 12; the 0x800 test as `(flags >> 8) & 8` 12, on a `(word)flags` view 12;
-// the group mask taken on an unsigned 64-bit value 12; the object looked up through a `long const &` to `a` 12 (every
-// spelling folds to the same 0x800 and 0xffff constants before allocation). Word-read body kept (5).
-// M3 lane 5 r236 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: the entry chosen as
-// `index != NONE ? <masked entry> : NULL` and tested `if (entry && ...)` 37 (190 B: the NULL test is not threaded into
-// the NONE test), that with the value compare nested under `if (entry)` 37, the entry started NULL and set under the NONE
-// test 37; the flags local as `(dword)b` 12; a value `long index` with a `byte const *` entry 12. Word-read body kept (5).
-// M3 lane 7 r217 (H2M_FAST; word read 5, mask 12), all with the full-width mask: both device-bit tests from `b` with the
-// flags local only for the call's mask 12; the flags local ahead of the object with the call's mask from `b` 12; the entry
-// pointer declared with the index reference and assigned in the NONE block 12; `NONE != index` with a const entry pointer
-// 12; the 0x800 arm's result bit set ahead of its store 14. Diagnostics (semantics changed, reverted): `| 0x3ff` or
-// `| 0xffff` on the call's result 48 (192 B), `& NONE` 12.
-// M3 lane 7 r219 (H2M_FAST; word read 5, mask control 12), all with the full-width mask: the object pointer and the
-// flags both const 12; the result declared bare and assigned from the call 12; the call's mask as `flags % 0x400` 12; both
-// device-bit tests written constant-first 12 (all the mask's code; the flags keep ESI). Word-read body kept (5).
-// M3 lane 7 r222 (H2M_FAST with 0xa5e70, 0xa3a00, 0xa02e0 and 0xa0be0, MATCH each time; word read 5, mask control 12):
-// with the full-width mask, k integer immediate stores to a scratch array at the top for k = 0..33, k integer copies for
-// k = 1..32 and k real-constant stores for k = 1, 2, 4, 8 (diagnostic; counts like these move 0x254490's reload pair)
-// leave the object in EDI every time, so the pair is no numbering window; the function in a file of its own (same
-// flags) with the base v27 called and inlined at link time, mask form, 51 at 186 B (the inlined base's copy of `this`
-// takes the unused third argument's home, no `push ecx`; flags ESI, object EDI: the same code as the same-file base
-// call above). Word-read body kept (5).
-// M3 lane 6 r238 (H2M_FAST with 0xa5e70 and 0xa02e0, MATCH each time; word read 5, mask 12). The allocator's ranking
-// with the full-width mask: flags 37 against object 36, and on a tie the object would be coloured first (it is created
-// later), so one point is missing. Flags: two references in the entry block, which references 10 candidates (4 x 10),
-// one in the 0x800 test's block (2 x 2), less 3 and 4 for the two blocks of the 0x400 arm they are live through. Object:
-// 2 x 10 + 2 x 3 + 2 x 4 + 2 x 2, less 2 for the 0x800 test's block. Constants used twice count as candidates of their
-// blocks: 0xffff (both lookups) and 0x400 (its test and its result bit) in the entry block, 0x800 in its test's block,
-// 0x44 (the two real compares); the word read leaves 0xffff with one use (entry count 9: flags 33, object 42 with its
-// separate word load), which is where retail's registers come from at 5. In the word-read form the NONE test compares
-// memory and the index is loaded again as a word, the first load being shared only after allocation; a full-width second
-// load is merged with the first before allocation whatever its type. All with the mask: the masked read through a
-// pointer-typed view of the field 12; through a 64-bit view narrowed to 32 bits 12; through a one-long aggregate view 12;
-// through a by-value copy of that aggregate 12; the 0x400 arm's copy through a named long temporary 12, through a named
-// real 12; the 0x800 arm's copy through a named long temporary 12; both arms 12 (a one-use temporary is forwarded, so
-// neither store block gains a candidate); the flags read through a `dword const *` to the parameter at all three uses
-// 12, at the two tests only 12, at the 0x800 test only 12, once into the flags local through a `long const *` 12 (a plain
-// read through the parameter's address folds back to the parameter). Word-read body kept (5).
-// M3 lane 7 r225 (H2M_FAST; word read 5, mask 12). Allocator readings on the mask form: with `b` forced into EDI it is a
-// byte match (so the mask form is retail's code); `b` ranks 37 (40 in the entry block, -3 and -4 through the 0x400 arm,
-// +4 at the 0x800 test) against the object's 36 (20 + 6 + 8 - 2 + 4), and a tie would go to the object. The entry
-// block counts ten candidates: this, a, the object table pointer, the object, b, d, result and three constants, 0xffff,
-// 0x400 and the 0x44 of the two real compares (a constant used in two blocks is counted in their common dominator, here
-// the entry; with the second compare made integer, diagnostic, the entry counts nine and the object wins); with the
-// definition copy removed (diagnostic) the entry counts nine and the registers are retail's. So one entry candidate
-// fewer, or one more in the 0x400 compare, the 0x400 store or the NONE test block, gives retail's registers. All with
-// the mask: the copy as `static_cast` to the base 12; `NONE != index` 12; `result = result | 0x800` 12; a `long` flags
-// local 12; `(flags & 0x800) != 0` 12; the index as a value local 12; a const entry pointer 12 (all the mask's code).
-// M3 lane 13 r155 (H2M_FAST with 0xa5e70, 0xa3a00 and 0xa02e0, MATCH each time; word read 5, mask control 12). The
-// ranking written out per block (n = values referenced in the block: entry 10, 0x400 compare 3, 0x400 store 4, 0x800
-// test 2, NONE test 2): flags = 4 x entry - compare - store + 2 x test = 37, object = 2 x entry + 2 x compare + 2 x
-// store - test + 2 x NONE = 36. Retail's registers need object >= flags, so any one of: entry 9, compare 4, store 5,
-// 0x800 test 1, NONE test 3. Diagnostics (semantics changed, reverted): the 0x800 arm setting 0x801 alone 1 (only that
-// constant differs: the 0x800 test's block then counts one value and the object takes ESI); the 0x400 arm setting 0x401
-// alone 13 (still swapped: the entry and the store block both lose the constant). All with the mask: the two result bits
-// set through one-bit bit-field members of a shared-storage view of the result 12, only the 0x800 bit so 12, both flag
-// tests through one-bit bit-field members of a view of the flags 12 (bit-field tests and sets become the same 0x400 and
-// 0x800 constants before allocation); the index as a value local with a `long const &` bound to it, the NONE test
-// through the reference and the mask on the local 12, the reverse 12, a second value local for the NONE test 12, a
-// reference-bound copy inside the NONE block for the mask 12 (every copy is merged: the NONE test's block keeps two
-// values); an empty `do {} while (false);` after the 0xa5e70 call or after the definition copy 12 / 12 (straight-line
-// blocks are merged, no join is kept); the base v27 called inline re-measured 51 (its copy takes `a`'s dead home). Word
-// read kept (5).
-// M3 lane 16 r189 (H2M_FAST; word read 5, mask control 12). The allocator's ranking re-read on the mask form: the flags
-// parameter 37, the object 36, with the object created later (a tie would be the object's). All with the mask unless
-// noted: the request bits pre-masked into a local (`b & 0xc00`) for both tests with the call's mask from `b` 46 (192 B);
-// the index read by value and masked in place inside the NONE block 12; the entry as the address of a 12-byte row of a
-// three-long view 12; the 0x400 arm nested with references to both power fields 12; the volatile definition copy in a
-// scope block of its own 12, with the word read 5 (same code each). Word-read body kept (5).
-// M3 lane 3 r309 (H2M_FAST with 0xa5e70, MATCH each time; word read 5), all with the full-width mask: the volatile
-// definition copy declared after the a5e70 call 43 (189 B); the 0x800 arm as a `do { ... } while (false);` block with a
-// break for each failed test 47 (188 B); the 0x800 arm through a file-local forceinline (group index, state value
-// pointer) update helper returning bool, then `if (...) result |= 0x800;`, 12; no object local, OBJECT(a) at each of the
-// three field reads 82 (208 B); the entry as the address of `((dword *)data)[(index & 0xffff) * 3]` 12. Word-read body
-// kept (5).
-// M3 lane 4 r262 (H2M_FAST with 0xa5e70, MATCH each time; word read 5), all with the full-width mask unless noted. A
-// forced-ranking search on the mask form matches with the object raised 36 -> 37 or the flags lowered 37 -> 35. The one
-// point is the 0x800 constant shared by the test and the `|= 0x800` (it is counted in the 0x800 test's block): a test
-// whose constant is not 0x800 at allocation gives retail's head. `(byte)(flags >> 11) & 1` 26 (187 B: object ESI and
-// flags EDI as retail, but the shift stays, `mov eax, edi; shr eax, 0xb; test al, 1`); `(byte)(flags >> 8) & 8`,
-// `(word)(flags >> 8) & 8`, `(char)(flags >> 8) & 8` and `(bool)(flags >> 11 & 1) != false` 26 each (the same); the
-// flags' second byte, `((byte const *)&flags)[1] & 8`, 19 (object ESI, but the flags take EBX for `test bh, 8`, and the
-// 0x400 test becomes `test bh, 4`), both tests that way 19. Folded to the shared constant before allocation, 12 each:
-// `*(word const *)&flags & 0x800`, `((flags >> 8) & 0xff) & 8`, `(flags & 0x800) >> 11`, `(b >> 11) & 1`, `(flags >>
-// 10) & 2`, a `word` flags local tested `(flags >> 11) & 1`. Other: `(long)(flags << 20) < 0` 35; `!(~flags & 0x800) ==
-// false` 32 (191 B); the 0x400 arm's copy through memcpy 12; the result bits through the existing link-time-inlined bit
-// setter 0xbfe20 (`(dword *)&result`, bit 11 and/or 10, true) 12 for the 0x800 bit, the 0x400 bit or both, 5 with the
-// word read (its shifted constant folds before allocation). Wanted: a 0x800 test (or bit set) whose constant is not
-// shared at allocation and still assembles as `test edi, 0x800`. Word-read body kept (5).
-// M3 lane 5 r249 (H2M_FAST; word read 5, mask control 12). Allocator ledger of the mask form: the flags 37 (entry +40 at
-// n10, the 0x800 test +4, -3/-4 over the 0x400 blocks), the object 36 (tie 14 against 13, so one point either way flips
-// it); the entry counts ten values because the two 0xffff masks become one shared constant counted in the entry (the
-// word read leaves nine, and the object is then referenced in the index block by a separate narrow load that is merged
-// into `movzx eax, ax` only after allocation; retail emits that merge as movzx elsewhere, 67 times, so retail's `and`
-// is a real full-width mask). Forms with the full-width mask: `(dword)index % 0x10000` 12, `index & 0xffffu` 12,
-// `(dword)index << 16 >> 16` 12 (each still one shared constant); the volatile copy typed as the derived type 12; the
-// power value named once for the 0x400 compare and copy 19. Diagnostic (removed at once): a compiler barrier between the
-// NONE test and the mask 9 (190 B: object ESI and flags EDI as retail, but the NONE test compares memory and reloads).
-// M3 lane 15 r151 (H2M_FAST with 0xa5e70, MATCH each time; word read 5, mask 12), all with the full-width mask: the
-// index reference bound between the two arms (ahead of the 0x800 test) 12; the index as a `dword const &` compared
-// with `(dword)NONE` 12; the index read into a two-use value local between the arms, ahead of the 0x800 test, 2 (the
-// object takes ESI and the flags EDI as retail, with the mask: the only difference left is the load, which now sits
-// between `test edi, 0x800` and its `je` where retail loads after the branch; the allocator then ranks the object 42
-// against the flags 41, the object being referenced in the 0x800 test's block); that local with the 0x800 and NONE
-// tests combined 2; that local read right after the a5e70 call 49 (188 B). Lead: the object needs one reference in
-// the 0x800 test's block (or the 0x800 constant unshared there) while the load stays after the branch.
+/* the device type's part of an object update: the base update, then the power value (bit 10) and the
+   value of the power group (bit 11). The base update takes the definition last and never reads it:
+   retail stores `this` to a stack slot of its own ahead of each of its five calls */
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
- // Preserve the local definition pointer stored in the retail stack frame.
- c_object_type_definition *volatile definition = this;
  byte *object = (byte *)OBJECT(a);
- dword flags = b;
- long result = function_a5e70(a, flags & 0x3ff, d);
- if ((flags & 0x400) && *(real *)(d + 0x90) != *(real *)(object + 0x140))
+ long result = function_a5e70(a, b & 0x3ff, d, this);
+ if ((b & 0x400) && *(real *)(d + 0x90) != *(real *)(object + 0x140))
  {
   *(real *)(d + 0x90) = *(real *)(object + 0x140);
   result |= 0x400;
  }
- if (flags & 0x800)
+ if (b & 0x800)
  {
-  long const &index = *(long const *)(object + 0x13c);
+  long index = *(long const *)(object + 0x13c);
   if (index != NONE)
   {
-   byte *entry = g_4e0328.groups->data + (word)index * 12;
+   byte *entry = g_4e0328.groups->data + (index & 0xffff) * 12;
    if (*(real *)(d + 0x94) != *(real *)(entry + 4))
    {
     *(real *)(d + 0x94) = *(real *)(entry + 4);

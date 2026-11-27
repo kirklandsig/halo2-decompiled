@@ -2443,6 +2443,12 @@ static __forceinline long player_round_ticks(real value)
 // packed). Diagnostic, restored: the lunge cooldown's fld/fistp written in the body 703 (the same code, so the inline
 // asm does not stop the home packing).
 // Still BLOCKED-BY 0xb8540 (a stub under the expanded 0xccd20), 0x151b80 and 0xe68c0's file flags.
+// M3 lane 8 r246 (fast screen with 0x151b80, 0x151aa0, 0x151940 and 0x14e970, unchanged each run; control 703): the
+// latch's expiry product written rate first 703; the two angle tests in the other order 703 (both the same code); the
+// activity decay as `if (ticks < 0) ticks = 0; idle = (short)ticks;` 701 (2740 B, retail's length; a gain of two, under
+// the bar); both activity masks tested on the buttons with no `activity` copy 721 (2714 B); the two later weapon
+// lookups in block locals of their own 703 (the same code). Body unchanged; still BLOCKED-BY 0x151b80, 0xccd20 and
+// 0xe68c0's file flags.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

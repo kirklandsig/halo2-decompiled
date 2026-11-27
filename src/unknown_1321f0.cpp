@@ -1021,6 +1021,13 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // bsp global read at each use 70, definition inside the stamp test 206, filter started NULL 199, entry passed without
 // its cast 70. A forced-ranking search says that form matches once the centre pointer outranks the instance index
 // (204 -> 217); no source form found that adds that.
+// M3 lane 16 r198 (H2M_FAST, on the late store plus the named index, control 70): the allocator ranks the zero-extended
+// instance index 216 (the 0x132e60 argument block 56, the index block 128, the duplicate branch's search 96, minus 64 over
+// five blocks it spans unread) above the centre pointer 204 (call block 112, plane test 120, minus 28 over the two test
+// blocks between); one more integer value referenced in the plane test (+24) or the index unread in the call block
+// (-56) would flip them. Forms, each on that base: the duplicate branch's search compares `cluster->instances[j]` 99
+// (1364 B), the stamp store through `cluster->instances[j]` 228, the append argument so 230, the stamp test so 171, the
+// 0x132e60 argument so 127, `long instance_index` 116. Body unchanged (11).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {

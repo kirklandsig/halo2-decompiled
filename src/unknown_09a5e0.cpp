@@ -2345,12 +2345,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
-	c_unit_type *volatile local_0 = this;
 	s_9d450 *local_2 = (s_9d450 *)arg_3;
 	long local_18 = (arg_0 & 0xffff) * 12;
 	byte *local_1 = *(byte **)(local_18 + (long)g_4e0300->data + 8);
 	dword local_3 = (dword)arg_1;
-	long local_4 = function_a5e70(arg_0, local_3 & 0x3ff, arg_3);
+	long local_4 = function_a5e70(arg_0, local_3 & 0x3ff, arg_3, this);
 	if (local_3 & 0x400)
 	{
 		long local_5 = *(long *)(local_1 + 0x13c);

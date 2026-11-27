@@ -1914,6 +1914,22 @@ long function_1e4a10(long index);
 // in-radius flag read once into a bool for its three tests 222 (896 B); the six-name set re-measured 4, with the actor
 // index declared inside the type test and tested in a nested if (no assignment in the condition) 4; on it the shield
 // damage renamed, and the body and shield damage both renamed, 4/4 (names do not reorder the split pieces). All restored.
+// M3 lane 5 r254 (reduced-image screen, control 8). Back-end trace: each float value that lives across a call is
+// split and the pieces come back after the call in ascending piece number; the pieces are made in ascending candidate
+// number and take the free numbers from the top down (37, 35, 34, 31, 30, 29, 28 here), then new ones. This body
+// numbers the inverse 17, the maximum 18, the shield 19, the scaled shield 20, the body damage 21 and then the
+// constants (zero 24, 1.0f 25, 0.0001f 26); retail's two orders need inverse, maximum, zero and then the scaled shield
+// and 1.0f, so the scaled shield would have to be numbered after the zero constant, which no local is. Forms:
+// everything after the scaling in a forced-inline helper taking `multiplier * shield_damage` as an argument
+// (diagnostic) 28 (the parameter is numbered among the locals; the value moves to the inverse's stack home); the
+// product unstored at the accumulator store and the stun test (the listed 28) is a temporary numbered after the
+// constants, but its piece is made last and gets a new number, so the zero still comes back first; the store written
+// `(multiplier * shield_damage) * inverse` 28, the product as `shield_damage * multiplier` at both places 28 / 28, a
+// three-factor product either way round 184 / 184. Diagnostics: the unstored product with 1 to 12 dead probe locals 28
+// each, 25 at 6 and 7 (function_d5bc0's order then retail's, the zero still first after the other two calls); this
+// body with 6 probes ahead of the body damage (the listed 4): the body damage moves behind the constants (zero 22,
+// 1.0f 23, 0.0001f 24, body 25) and the scaled shield keeps 20; the probes declared after the shield damage instead,
+// 5 / 6 / 7 / 8 / 13 / 14 of them, 8 / 4 / 4 / 7 / 8 / 8 (the numbering follows the count of symbols, not their place).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -4017,6 +4033,24 @@ enum
 // + i > NONE 329. Dropping `current` (DAMAGE_OBJECT at owner stores) 466 (1902 B, naturally recovers retail's `lea eax,
 // [reg - 1]; test eax, eax; jl` loop head), + consistent accumulator.field_4_2-> 462. `kill` after owner stores 396
 // (1888 B, al 221); `(bool)` cast on kill 309; named `damage_tag` local 309; `if/do-while` parent walk 309 (all same code).
+// GB28 (fast with 0xd9b60/0xdb210/0xd8cb0, 0xdb210/0xd8cb0 MATCH; control 309 at 1885/1880 B, +0x21; 13 trials, body unchanged):
+// accumulator.field_4_2-> in pre-damage block only 309, + reported shield_material 297 (1882 B, al 179, mk 22; mixed read, match-only),
+// + retail orders 283 (1880 B, +0x32, mk 15: lines after kill block through tail exact, leaving only def lea, count EDI/lea, d5b60/obj_def
+// scratch, event AX/BX and kill EBX/ESI); const member-address definition 309; inline tag_get 309; 2-use owner_player local 312 (nested 309);
+// direct DAMAGE_OBJECT owner stores 466 (1902 B); forceinline set_owner 309; while reverse pass 309; prefix --i 309; short region_index 444;
+// event type via s_damage_object_datum 498.
+// M3 lane 2 r160 (fast screen with 0xd9b60 5, 0xdb210 and 0xd8cb0 MATCH each time; control 309 at 1885 B): the kill
+// block's two vitality stores through a block-local pointer from its own lookup 355 (1902 B); the event word read into a
+// named short ahead of the tests 309 (same code); the event block's type test through the pool datum 498 (1891 B); the
+// side-effect block's team read through `object` 340 (1880 B); that block's type test through `object` 279 (1885 B: not
+// kept, retail reads the pool datum's type byte there, at +3 of the entry it then takes the object from), both 373
+// (1867 B); the report call taking `objects[i]` 309 (same code). The r140 lead rebuilt (accumulator-field shield read,
+// node stores in record order, body flag first, friendly ahead of the definition, `kill = true` first): 283 at 1880 B.
+// On it four groups are left: the head's tag load (ECX with an in-place add; retail EAX then `lea ecx, [eax + 0x10]`),
+// the count (ESI; retail EDI, with the first index through `lea eax, [edi - 1]`), the scratch pair in the inlined info
+// lookup (ECX / EAX exchanged) and the event block (word in BX; retail AX, victim index in EDX). A forced-ranking search
+// on that lead lists eight register moves (2665 candidate decisions, none of the 24 tried lowers 283), so more than
+// three decisions still separate it from retail.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)

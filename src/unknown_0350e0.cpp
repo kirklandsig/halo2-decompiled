@@ -1,4 +1,5 @@
 #include "filter_storage.h"
+#include "timed_effect.h"
 #include "material_records_storage.h"
 #include "render_source_storage.h"
 #include "visibility_storage.h"
@@ -1230,7 +1231,6 @@ long function_35510(long format)
 extern byte g_485a77;
 real g_48597c[36];
 extern byte g_4858bc;
-extern short g_4858c8;
 extern real g_485a0c[8], g_485a34, g_485a40;
 extern long g_485a2c;
 long g_4858cc;
@@ -6352,7 +6352,6 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 }
 
 
-extern double g_4858a0;
 struct s_masked_list;
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining);
 bool __stdcall function_37a60(void *state);
@@ -6888,7 +6887,6 @@ s_light_definition_storage g_light_definition_storage;
 s_filter_buffer_storage g_filter_buffer_storage;
 
 extern byte g_485a75, g_485a76;
-extern long g_485898;
 void function_15680(short mode);
 void function_15370(short mode);
 extern s_record_sources *g_467138;

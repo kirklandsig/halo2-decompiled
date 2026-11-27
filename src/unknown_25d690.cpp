@@ -1186,6 +1186,11 @@ void function_2640c0(long object_index, s_object_motion_view *result);
 // after the lookup 84; the lookup as NULL then an if 92; the flag test held in a bool 12, with the copy in the last
 // arm 84; the flag test negated with its `result = 0` arm last 71; the call's result set after `result = 0` 93
 // (323 B); the copy declared after the first lookup call 113 (302 B).
+// M3 lane 16 r198 (H2M_FAST with 0x263ed0, control 12): the matched sibling 0x25c9d0's lookup spelling (the actor read
+// through actor_get at both uses, no actor local) 86 (retail keeps the actor pointer: `add ecx, esi` then the field), with
+// the copy at the top of the last arm 93; the squad index named for the test and the lookup 86, with the copy in the last
+// arm 93; `short result = 0;` with the failed second lookup's `else result = 0;` dropped 89 (321 B), with the copy in the
+// last arm 93 (317 B).
 // @retail 0x25cb60
 short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *arg_4, long arg_5, short arg_6)
 {

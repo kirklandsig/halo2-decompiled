@@ -236,6 +236,10 @@ struct s_reference_filter_view
 // false` 6; `if (!require_flag) { if (allow_any) true else !flag } else flag` 67 (285 B); one nested ternary
 // `require_flag ? flag : allow_any ? true : !flag` 66 (285 B); `if (!require_flag) result = allow_any ? true : !flag;
 // else result = flag;` 67 (285 B).
+// M3 lane 16 r198 (H2M_FAST, control 6): the out-of-line block holds the two arms in source order (both end in jumps,
+// one threaded past the result test), so the arm order inside it follows the chain's order. Forms: `allow_any == false`
+// 6, `!allow_any ? !flag : true` 6, `flag ? false : true` 6 (same code each); the bit tested at each use with no flag
+// local 83 (299 B); the flag as `(bool)(((dword)entry->flags >> 5) & 1)` 79.
 // @retail 0x2623a0
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference)
 {

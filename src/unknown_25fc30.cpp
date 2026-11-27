@@ -1086,7 +1086,24 @@ void __stdcall function_25eea0(
 }
 
 #pragma inline_depth(0)
-// score 253 (was 253): the cover loop's line index stays in memory where retail keeps it in EBX (sharing the zero
+// score 111 (was 253): GB r31 kept (53 valid fast trials across 5 batches; plain 253 -> 111 at exact 1306/1306 B, 343/343
+// insns, fd=+0x52, fr=0x24, al 200 -> 48, mk 71 -> 13; 58/58 matched peers/includers MATCH): added the 0x40-byte
+// `s_firing_position_geometry` sub-struct (+0x0c..+0x4b) to `s_type_b36ac5`, used `geometry = &positions[i].geometry`
+// across all three loops with direct `positions[i]` for `unknown4c`/`score`, and used sibling 0x1b0780's `zone` ternary.
+// Alone `geometry` across all three loops gives 247 (al 45, mk 12: Loop 2 `add eax, 0x14` and entire 148-insn Loop 3/cover/
+// epilogue with `lea edx, [ecx-0x48]`, `lea edi, [edx+0x34]`, `j` in EBX, and 3 counters zeroed by EBX) and `zone` ternary
+// alone gives 251 (zone base ESI). Remaining diffs: weight/quotient XMM1/XMM2 colouring (lines 30-78), `0x1df560` SI/CX and
+// `0x1b0710` EAX/ECX arg setup, Loop 2 x87 `fst` keep (diagnostic `double d` hits 95, mk 10, not kept), and Loop 3 first
+// bonus ternary XMM2/XMM0 swap. Also tried (fast): `geometry` + Loop 3 direct + `1e4a50` do-while + `zone` 117 (same after
+// guard 117), `geometry` Loop 1+3 + `zone` 117, `geometry` Loop 3 only 252 (with `position` kept 252, with `zone` 251, with
+// `1e4a50` 252), `geometry` Loop 2+3 + `zone` + commuted adds 246, `geometry` all 3 + `1e4a50` 245, + `pos_dist` 114 (al 32,
+// fd +0xc0, hoists load before `comiss`) / 243, `max_dist` 252, `point3f const *pos` Loop 2 246, Loop 2 direct / inline
+// assign / `double len_sq` / `ge_lt` 251/251/117/249, `leader_index` hoisted / nested 286/251, inner weight clamp 319,
+// commuted Loop 2/3 adds 111; on `dir3 + 1e4a50 + zone` (235): switch-type 250, ternary max / outer result / `move_res` /
+// preinc `j` / no-`type` / fn-scope `j` / `while` `j` / counter reorder / `point` after guard / Loop 2 kji all 235, no-`point`
+// 343, `if/else` bonuses 241, `pos_dist` 246, chained zero 250, ptr/ref Loop 3 322/251, all after guard 316, diag dropping
+// `inline_depth(0)` + `distance3d` + `1e4a50` 383. Earlier notes follow.
+// Earlier 253 (was 253): the cover loop's line index stays in memory where retail keeps it in EBX (sharing the zero
 // register); the allocator ranks the moving counter (-38) above the index (-44) for EBX. Also the weight block's
 // quotient and weight colours (retail quotient XMM1, weight XMM2), retail keeping the leader distance on the x87 stack
 // (`fst`), and the 0x1df560 argument loads. The fast screen needs 0x1e1f20 0x1e5240 0xb9dd0 0x1b0710 0x1df560
@@ -1145,6 +1162,17 @@ void __stdcall function_25eea0(
 // even when all other helpers are called (`366`), while `distance3d` confirms retail's `add eax, 0x14` + `fst` (though
 // retail sums i/j/k rather than k/j/i); match-only probe (`pos_dist` + zone ternary + `leader_unit` + `double d` +
 // post-if + GB25 cover layout) reaches `186` (`1308/1306 B`, al 42, mk 28). Body unchanged.
+// GB28 (44 fast trials with 6 callees MATCH; control 253 at 1321/1306 B, +0x35, al 200, mk 71; body unchanged):
+// Loop 3 direct `positions[i]` + two-use `point3f *line_pt = &context->lines[j].point;` before `if (type == 0 || type == 1)`
+// reaches `161` (`1306/1306 B`, `343/343` insns, al 173, mk 31; `162` before `type`/`distance`; `j` wins `EBX` via extra
+// loop-depth-2 `j` ref, all 3 counters zeroed by `EBX`, 45-line tail exact; NOT kept: new field pointer mixing pointer and
+// direct reads of `lines[j]`, hoists `lea esi,[ebp+0x280]` above the type test, and parts alone give `251`/`252`). With
+// `line_pt` inside `if` `237` (`1306 B`, al 190, mk 47, `j` stays spilled; with `position` kept `253`/`252`, no `point`
+// `342`/`345`); typed `s_line *line = &context->lines[j]` `254` (all 4 forms); Loop 3 direct `if` no-continue / `result >=`
+// / ternary max / no-`type` / `distance`-inside `251`; reusing `type` local `236` (`1306 B`, drops retail's post-call reload);
+// Loop 1 `weight*factor` / `score = ...` / inline clamp `253`; inner weight clamp `319`; per-branch weight `313`; `zone`
+// ternary + nested leader `251`; Loop 2 if/else `score +=` `266` (mk 50), `* bonus` `253`, `delta.k`-first `252` (mk 61),
+// nested band `253`; cover if/else `score +=` `260`; `line_pt` + `zone`/`pos_dist`/all-3-direct `247`-`255`.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,
@@ -1191,17 +1219,17 @@ void __stdcall function_25f290(
 	{
 		for (i = 0; i < count; i++)
 		{
-			s_type_b36ac5 *position = &positions[i];
+			s_firing_position_geometry *geometry = &positions[i].geometry;
 
-			if (position->unknown4c && context->unknown18 > position->unknown18)
+			if (positions[i].unknown4c && context->unknown18 > geometry->unknown18)
 			{
-				real factor = 1.f - position->unknown18 / context->unknown18;
+				real factor = 1.f - geometry->unknown18 / context->unknown18;
 
 				if (0.f > factor)
 				{
 					factor = 0.f;
 				}
-				position->score += factor * weight;
+				positions[i].score += factor * weight;
 			}
 		}
 	}
@@ -1209,47 +1237,43 @@ void __stdcall function_25f290(
 	if (actor->unknown030 != NONE)
 	{
 		s_squad_firing_view *squad = (s_squad_firing_view *)(g_51e9d8->data + (actor->unknown030 & 0xffff) * sizeof(s_squad_firing_view));
+		s_firing_zone_view *zone = squad->zone_index != NONE ? &((s_scenario_zone_view *)g_4e0350)->zones[squad->zone_index] : NULL;
 
-		if (squad->zone_index != NONE)
+		if (zone && ((zone->flags & 0x10) || ((zone->flags & 0x20) && zone->unknown4e != NONE)) &&
+			squad->leader_index != NONE &&
+			!function_1df560(actor->unknown024, ((s_unit_team_view *)((s_unit_weapon_view *)((s_object_header_weapon_view *)g_4e0300->data)[squad->leader_index & 0xffff].object))->team))
 		{
-			s_firing_zone_view *zone = &((s_scenario_zone_view *)g_4e0350)->zones[squad->zone_index];
+			long leader_index = squad->leader_index;
+			real inner;
+			real outer;
+			point3f origin;
 
-			if (zone && ((zone->flags & 0x10) || ((zone->flags & 0x20) && zone->unknown4e != NONE)) &&
-				squad->leader_index != NONE &&
-				!function_1df560(actor->unknown024, ((s_unit_team_view *)((s_unit_weapon_view *)((s_object_header_weapon_view *)g_4e0300->data)[squad->leader_index & 0xffff].object))->team))
+			function_1b0710(leader_index, actor_index, &inner, &outer);
+			inner = (real)sqrt((double)inner);
+			outer = (real)sqrt((double)outer);
+			function_b9dd0(leader_index, &origin);
+			for (i = 0; i < count; i++)
 			{
-				long leader_index = squad->leader_index;
-				real inner;
-				real outer;
-				point3f origin;
+				s_firing_position_geometry *geometry = &positions[i].geometry;
 
-				function_1b0710(leader_index, actor_index, &inner, &outer);
-				inner = (real)sqrt((double)inner);
-				outer = (real)sqrt((double)outer);
-				function_b9dd0(leader_index, &origin);
-				for (i = 0; i < count; i++)
+				if (positions[i].unknown4c)
 				{
-					s_type_b36ac5 *position = &positions[i];
+					vector3f delta;
+					real distance;
+					real bonus = 12.f;
 
-					if (position->unknown4c)
+					delta.i = geometry->position.x - origin.x;
+					delta.j = geometry->position.y - origin.y;
+					delta.k = geometry->position.z - origin.z;
+					distance = (real)sqrt((double)(delta.i * delta.i + delta.j * delta.j + delta.k * delta.k));
+					if (!(inner > distance) && outer > distance)
 					{
-						vector3f delta;
-						real distance;
-						real bonus = 12.f;
-
-						delta.i = position->position.x - origin.x;
-						delta.j = position->position.y - origin.y;
-						delta.k = position->position.z - origin.z;
-						distance = (real)sqrt((double)(delta.i * delta.i + delta.j * delta.j + delta.k * delta.k));
-						if (!(inner > distance) && outer > distance)
-						{
-							bonus = (1.f - (distance - inner) / (outer - inner)) * 12.f;
-						}
-						position->score += bonus;
+						bonus = (1.f - (distance - inner) / (outer - inner)) * 12.f;
 					}
+					positions[i].score += bonus;
 				}
-				scored = true;
 			}
+			scored = true;
 		}
 	}
 
@@ -1257,13 +1281,12 @@ void __stdcall function_25f290(
 	{
 		for (i = 0; i < count; i++)
 		{
-			s_type_b36ac5 *position = &positions[i];
-			point3f *point = &position->position;
+			s_firing_position_geometry *geometry = &positions[i].geometry;
 			short behind_cover = 0;
 			short exposed = 0;
 			short moving = 0;
 
-			if (!position->unknown4c)
+			if (!positions[i].unknown4c)
 			{
 				continue;
 			}
@@ -1277,7 +1300,7 @@ void __stdcall function_25f290(
 
 				if (type == 0 || type == 1)
 				{
-					short result = function_267a80(&context->lines[j].point, &context->lines[j].direction, point, &distance, 0);
+					short result = function_267a80(&context->lines[j].point, &context->lines[j].direction, &geometry->position, &distance, 0);
 
 					if (nearest > distance)
 					{
@@ -1300,7 +1323,7 @@ void __stdcall function_25f290(
 
 					if (result == 0 && context->unknown55)
 					{
-						result = function_267a80(&context->lines[j].point, &position->unknown40, point, NULL, 0);
+						result = function_267a80(&context->lines[j].point, &geometry->unknown40, &geometry->position, NULL, 0);
 						if (moving <= result)
 						{
 							moving = result;
@@ -1309,8 +1332,8 @@ void __stdcall function_25f290(
 				}
 			}
 
-			position->score += behind_cover >= 2 ? 0.f : behind_cover >= 1 ? 1.5f : exposed >= 2 ? 4.f : exposed >= 1 ? 6.5f : 10.f;
-			position->score += moving >= 2 ? 0.f : moving >= 1 ? 3.f : 6.f;
+			positions[i].score += behind_cover >= 2 ? 0.f : behind_cover >= 1 ? 1.5f : exposed >= 2 ? 4.f : exposed >= 1 ? 6.5f : 10.f;
+			positions[i].score += moving >= 2 ? 0.f : moving >= 1 ? 3.f : 6.f;
 
 			if (!scored)
 			{
@@ -1330,7 +1353,7 @@ void __stdcall function_25f290(
 							{
 								cover_bonus = (1.f - (nearest - 3.f) * 0.083333336f) * 10.f;
 							}
-							position->score += cover_bonus;
+							positions[i].score += cover_bonus;
 						}
 						break;
 					}

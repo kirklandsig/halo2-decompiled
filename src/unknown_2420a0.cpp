@@ -633,6 +633,11 @@ PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg
 // the inner getter/structure copy 2; the existing three-component setter 176 (716 bytes); reversed second-sum
 // operands 2; getter/structure copies for both points 2; both z differences named after the distance 108 (694 bytes).
 // The named y square moves the z store to retail's position but changes the x87 operations. All forms restored.
+// M3 lane 16 r198 (H2M_FAST with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160): a forced-ranking search over the
+// scheduler region of the copy and the distance (about 60 single height changes of one, at the region's nodes 10-26)
+// gives no form with the z store first, so it is not a near tie. Forms: the marker point at function scope 2, the other
+// point at function scope 2, `j` declared with `k` 2, the root named as a double before the float conversion 4, the
+// inner loop under `if (count > 0)` 164. Body unchanged.
 // @retail 0x243c00
 void function_243c00(long slot)
 {

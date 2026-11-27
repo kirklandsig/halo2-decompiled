@@ -818,6 +818,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // branch swap), whose file does not include the header; the member unused loses nothing. `operator[]` with remove_at
 // through it (the shared array's two members) loses 0x54590 instead. On the member: the list local kept at the loop
 // top 809; the coefficients alone 774; the fractions alone 753.
+// M3 lane 14 r164 (H2M_FAST, single address; control 808 at 4260/4259 B, frame 0x1d8 against 0x1d4, difflib-aligned
+// 352, 226 with stack offsets masked). Retail forms the element pointer in place (`mov edi, [esi + eax + 4]` folded,
+// then `add esi, eax`, spilled) with the list header in EBX, the shape of a pointer with more than one definition. Forms:
+// the element pointer declared ahead of the loop and assigned at its top 808 (same code); the list pointer declared
+// ahead of the loop 808 (same code); 1/2/4/8 dead initialised longs at the top of the body 808 each, the frame staying
+// 0x1d8 (not a symbol-count state); the second rigid body looked up with the clamped slot local 829 (4267 B, frame 0x1dc);
+// local_15 initialised from the clamped slot 929 (4273 B); the zero vector local_25 and response_fraction declared after
+// the object-type block 853 (4259 B, retail's length). Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
