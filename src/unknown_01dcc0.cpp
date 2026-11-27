@@ -1,5 +1,6 @@
 // @flags /O2 /Ob1 /Gr
 #include "launch_stack_storage.h"
+#include "timed_effect.h"
 #include "unknown_11c920.h"
 #include <xtl.h>
 
@@ -646,7 +647,6 @@ bool function_1df20(long index, long kind, long width, long height, bool alterna
     return result;
 }
 
-extern long g_485898;
 long function_12d400(long type, long size, long user_data, long update, long release);
 
 // @retail 0x1dc40

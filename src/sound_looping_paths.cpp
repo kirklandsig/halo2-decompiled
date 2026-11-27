@@ -1090,6 +1090,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // or ctor disable existing/gains stack overlay -> 1044-1229 at 3426-3465 B). Remaining 37 B on the 785 lead: targets.count
 // hoisted into EBX across override/first scan (blocking mov ebp, 0xfdff, or ebx, -1 and existing.count reload), first-scan
 // movsx source, and addss operand order in approach.
+// M3 lane 3 r318 (fast screens with 0x18bb80 and nine callees, the eight matched ones MATCH; control 837; body
+// unchanged). Retail's override loop reloads the target count after each decibel store through the target pointer,
+// and the target loop reloads the existing count for every target, which reads as each count kept in one object
+// with its elements. Measured on main's body: the existing indices as a count-first record alone 876 (frame 0x4e0 and
+// 3327 B as retail's, and the four query arrays then take retail's homes exactly: gains +0xec, indices +0x1f0,
+// portals +0x2f0, clusters +0x3f0; difflib-aligned 983 against 1015, masked 594 against 631); the targets alone 933
+// (3301 B); the choices alone 1016 (3412 B); existing and targets 928 (frame 0x4e4); existing and choices 1024; all
+// three 995 (frame 0x4e8, 3400 B); the existing record with both counts long and the query count read directly 937
+// (3285 B). The floor's fourteen reloads still need its declaration changed in a file another lane holds this round.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
