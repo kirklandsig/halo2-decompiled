@@ -345,6 +345,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // code); the index output stored after the gain 288. The only known source of 0x14b240's write summary is a reference or
 // pointer to one of its whole locals (lane 13 r110), a form this round's rules revert even with a match, so the summary
 // blocker stands. Body unchanged.
+// M3 lane 2 r158 (fast screens with 0x18dc90, 0x14b240, 0x249d60 and 0x18ae50; control 287, twin 295 throughout): the output
+// limit as `count > 64 ? 64 : count` 287; the distance as the travel plus the disk distance added in a second statement
+// 287; the seed's sound index named once for the four seed stores 360; the fill loop's reset ahead of its order store
+// 290; both range tests written with the limit on the right 287. Still BLOCKED-BY 0x14b240's write summary.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

@@ -2970,119 +2970,20 @@ void function_4d830(s_render_transform_record const *record)
 }
 
 
-PRIVATE __forceinline real maximum_25ca0(real first, real second)
-{
-    real result = second;
-    if (first > second)
-        result = first;
-    return result;
-}
-
-// MiniMax E (11-16): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register; two new spellings of the shared helper maximum_25ca0 (the second parameter overwritten in place, and the else form that keeps the second argument) give retail's compare order with the result in the wrong register, and a permutation run of 30 tries found nothing below 26.
-// MiniMax D (11-14): no new form, no lower score (26): retail keeps the maximum in the second loaded register and
-// compares the first loaded against it (comiss xmm0, xmm1 and a copy into xmm1) where this build keeps it in the first
-// loaded register and compares the second against it (comiss xmm1, xmm0 and a copy into xmm0); the reciprocal is still
-// folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call
-// setup where retail repeats it. Only a per function floating point switch reaches that shape and the rules forbid it.
-// MiniMax E (11-14): no new form, no lower score (26): the sibling 0x174f80 in src/unknown_173b90.cpp carries retail's
-// exact shape for the same source pattern - the maximum's compare, the explicit multiply and the repeated call setup -
-// and that file only reaches the shape under a per-function optimisation switch which the rules forbid adding here;
-// without the divisor's round trip through the stack this build folds the reciprocal into a division and scores 47.
-// MiniMax B (11-13): no new form, no lower score (26): the comparison against 0.0001f still has its operands the other way round and its result in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register, and both arms still share one call setup; the body's volatile anchor is the only thing that keeps the reciprocal's explicit mulss, and the body without it folds into a division and scores 47.
-// MiniMax H (11-12): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and both branches still share one call setup; the body also still carries a volatile cast on the stack temporary, which the rules forbid.
-// MiniMax H (11-11): no new form, no lower score (26): retail keeps the maximum in the second loaded register and compares the first loaded against it, multiplies g_4b9ff8 by the reciprocal with an explicit mulss and repeats the call setup in each branch; without the divisor's round trip through the stack the reciprocal is folded into a division (47) and with the multiply's operands reversed the body grows to 173 bytes (37), so the body stands.
-// MiniMax I (11-11): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup.
-// MiniMax D (11-11): no new form, no lower score (26): the value is g_4b9ff8 times the maximum's reciprocal and the compiler's floating-point mode folds that into a division by the maximum, where retail has an explicit mulss; the maximum's compare also keeps its operands the other way round, and only a per-function pragma would stop the folding, which the rules forbid.
-// MiniMax S (11-10): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup; the maximum and the reciprocal as locals, the enabled branch first and the plain maximum all score 47 or worse, and the permuter's run reached its time limit without a measured variant.
-// MiniMax A (11-10): no new form, no lower score (26): the body is unchanged at 169 bytes, as retail's; in the default floating-point mode the compiler keeps the maximum in the first-loaded register and compares the second-loaded against it, while retail keeps the maximum in the second-loaded register and compares the first-loaded against it, so the compare's operand order, the copy's direction and the branch's polarity all follow from that one choice; the swapped-arms ternary (`first <= second ? second : first`) does reach retail's loads and `comiss xmm0, xmm1` but still copies into the first-loaded register and branches with `jae` where retail has `jbe`, and it scores 26 as well; a per-function precise-floating-point pragma (which the rules forbid) reaches retail's length and its maximum's compare and copy, but the call setup is still hoisted above the branch and the padding still differs, so it would still score 16.
-// MiniMax A (11-10): no new form, no lower score (26): the maximum's compare reaches retail's operand
-// order (`comiss xmm0, xmm1`) with the ternary spelling, but the copy then goes the other way and the
-// branch is `ja` where retail has `jbe`; the divisor's round trip through the stack is what makes the
-// length 169 (without it the body is 154 bytes and scores 50).
-// MiniMax E (11-10): no new form, no lower score: the maximum's compare has its operands swapped
-// and lands in the other register, the divisor makes a round trip through the stack where retail
-// keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, and the two branches
-// share one call setup where retail repeats it.
-// MiniMax G (11-13): no new form tried this round, no lower score (26): the maximum's comparison still has its
-// operands the other way round and its result in the other register, the divisor still makes a round trip through the
-// stack where retail keeps it in a register, and the two branches still share one call setup where retail repeats it.
-// The value of constants[3] is read back through the volatile anchor already in the body, and no further volatile
-// anchor may be added, so the spelling that reaches retail's shape (the one the coordinator rejected for its
-// per-function pragma) cannot be kept.
-// MiniMax R (11-10): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register; the forms tried this round (the destination compared with the constant, the constant on the left of the compare, the less-than and less-or-equal spellings, the two-local forms with either declaration order and the four if/else spellings) measured 26, 27 and 28, never below the body above.
-// MiniMax H (11-05): no new form, no lower score; without the divisor's round trip through the stack the multiply is explicit again (a mulss by g_4b9ff8) but the maximum still lands in the other register, the reciprocal's register order differs and the two branches still share one call setup; the four forms of the maximum all give that same 47, the round trip with an explicit multiply gives 35, and the maximum's registers follow the live ranges rather than the source order.
-// MiniMax H (11-04): no new form, no lower score; the maximum's comparison operand order, the divisor's round trip through the stack and the shared call setup still differ.
-// MiniMax D (run 37): no new form, no lower score; the maximum as `first <= second ? second : first` gives retail's comiss operand order but still scores 26, the maximum without the round trip through the stack scores 47, the four forms of the maximum (the two ternary orders, the if/else and the initial-value form) score 47 or 48, and retail's own phi copies the maximum into g_4b9fa4's register while ours keeps it in 0.0001f's.
-// MiniMax A (11-03): no new form, no lower score.
-// MiniMax G (11-12): no new form tried this round, no lower score (26): the 0.0001f comparison still has its
-// operands the other way round, the divisor still makes a round trip through the stack, and the branches still
-// share one call setup.
-// MiniMax H (11-13): no new form, no lower score (26); the comparison against 0.0001f has its operands the other way round, the divisor makes a round trip through the stack and both arms share one call setup.
-// MiniMax S (11-14): no new form, no lower score (26): the body was re-measured after the other edits in
-// this file and did not move; the shared maximum helper was left alone because it has a second caller,
-// and the flag local stays a byte because retail's own home is a byte as well.
-// MiniMax D (11-14, run 90): no new form, no lower score (26): retail keeps the maximum in the second loaded
-// register and compares the first loaded against it, multiplies g_4b9ff8 by the explicit reciprocal and repeats the
-// call setup in each branch, where this build keeps the maximum in the first loaded register, folds the multiply into
-// a division and shares one call setup; this round six new spellings of the maximum helper (the if/else with the
-// second argument as the then value, the swapped arms and the init-and-if forms) all give 26, the lowest of them 25
-// only by computing the minimum instead of the maximum, so that one was not kept; the body stands at 26 (169 bytes,
-// as retail's).
-// MiniMax R (11-15): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup where retail repeats it in each of them.
-// score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
-// order and copies the other register, the divisor makes a round trip through the stack, and
-// both branches share one call setup where retail repeats the setup in each of them.
-// Coordinator review (MiniMax C): the lane's 16 needed a #pragma optimize("p") pair around
-// the function (a per-function compiler setting, not kept); its body without the pragma (ternary maximum, the
-// divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
-// MiniMax D (11-06): no new form, no lower score.
-// MiniMax E (11-08): no new form, no lower score: the maximum's compare has its operands swapped and the divisor makes a round trip through the stack here, while retail keeps it in a register.
-// MiniMax E (11-09): no new form, no lower score: the maximum's compare has its operands swapped and the divisor makes a round trip through the stack here, while retail keeps it in a register.
-// MiniMax D (11-09): no new form, no lower score: the maximum's ternary and its if/else spelling
-// both give retail's `comiss` operand order, but the result then lands in xmm0 where retail keeps it
-// in xmm1; the 26-scoring body stays.
-// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 26 (169 bytes, as retail's); the maximum's comparison has its operands in the other order, the divisor makes a round trip through the stack where retail keeps it in a register, and both branches share one call setup where retail repeats it; the only form that reached retail's shape needed a per-function #pragma, which the rules forbid.
-// MiniMax R (11-09): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, the clamp still reloads 1.0f, and the two branches still share one call setup where retail repeats it in each of them. This round: the enabled branch first gives 29 and was restored, the reversed multiply gives 32 and was restored, and the round trip with an explicit multiply, the maximum in a local and the four forms of the maximum were all measured and all score worse or the same.
-// MiniMax A (11-13): no new form tried this round, no lower score (26): the comparison against 0.0001f still
-// has its operands the other way round and its result in the other register, the divisor still makes a round
-// trip through the stack where retail keeps it in a register, and both arms still share one call setup; the
-// body's volatile anchor is what keeps the reciprocal's explicit mulss, and the body without it folds into one.
-// MiniMax C (11-15): no new form, no lower score (26): retail's 1.0f comes from a memory load and its multiply
-// by the reciprocal is an explicit mulss, so giving that 1.0f a name of its own (a const real g_45dbc0 = 1.0f
-// in this file) keeps the multiply only in the one-expression form, which measures 47 (157 bytes), and with the
-// present body it measures 29; the maximum's compare also keeps the other way round (comiss xmm1, xmm0 and a
-// copy into xmm0 where retail has comiss xmm0, xmm1 and a copy into xmm1) whatever order the source writes.
-// MiniMax S (11-15): no new form, no lower score (26): the body is unchanged; what still differs is the maximum's
-// compare operand order and the register its result lands in, the divisor's round trip through the stack, and the
-// one call setup that the two branches share.
-// MiniMax C (11-16): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the
-// MiniMax C (11-16): other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit
-// MiniMax C (11-16): reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function
-// MiniMax C (11-16): floating point switch, which the rules forbid.
-// MiniMax R (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
-// MiniMax S (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
-// MiniMax C (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
+// The reciprocal is stored in constants[3] before the multiply (retail's explicit mulss, no fold into a division),
+// and constants[3] is chosen before the one call, whose setup the compiler then repeats in each arm as retail does.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
     real constants[4];
-    *(volatile real *)&constants[3] = maximum_25ca0(0.0001f, g_4b9fa4);
-    real value = g_4b9ff8;
-    value *= 1.0f / *(volatile real *)&constants[3];
+    constants[3] = 1.0f / (0.0001f > g_4b9fa4 ? 0.0001f : g_4b9fa4);
+    real value = g_4b9ff8 * constants[3];
     value = 0.0f - value;
     constants[0] = value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
     constants[1] = 0.0f;
     constants[2] = g_4b9f18;
-    if (!(enabled))
-    {
-        constants[3] = 0.0f;
-        D3DDevice_SetVertexShaderConstant(-81, constants, 1);
-    }
-    else
-    {
-        constants[3] = g_4b9f9c;
-        D3DDevice_SetVertexShaderConstant(-81, constants, 1);
-    }
+    constants[3] = enabled ? g_4b9f9c : 0.0f;
+    D3DDevice_SetVertexShaderConstant(-81, constants, 1);
 }
 
 // @retail 0x1cd90
@@ -10428,15 +10329,8 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
-// MiniMax I (11-05): matches (score 0) with a #pragma inline_depth(0) ... #pragma inline_depth() pair around
-// the function (keeps the 0x16ac0 call out of line) plus the single expression for world_effects; held, since
-// new #pragma lines are not taken. The lead stays a source form that keeps 0x16ac0 out of line without a pragma.
-// MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
-// decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
-// expression for world_effects gives 65; the original 16 is kept.
-// Coordinator ruling 2026-11-02 (the user deferred): /Ob1 on src/unknown_0167a0.cpp matches 0x13680 (MiniMax R) but
-// loses 0x13c20, so that file's flags stay; the lead is a source form that keeps 0x16ac0 out of line here.
-
+// Retail calls 0x16ac0 out of line here (its only caller); the inline_depth pair keeps it out of line.
+#pragma inline_depth(0)
 // @retail 0x13680
 void function_13680(bool skip_effects)
 {
@@ -10448,8 +10342,7 @@ void function_13680(bool skip_effects)
         return;
     }
     bool draw_ui = !skip_effects && g_485898 != 6;
-    bool world_effects = false;
-    if (!skip_effects && g_485898 != 7 && function_022710()) world_effects = true;
+    bool world_effects = !skip_effects && g_485898 != 7 && function_022710();
     if (!function_016ac0() && !skip_effects && effect && effect->unknown3c &&
         effect->unknown40 > 0.0f && function_022710() && function_01de20(18))
     {
@@ -10460,6 +10353,7 @@ void function_13680(bool skip_effects)
     }
     else function_2bcd0(1, 1, draw_ui, world_effects, 0, 0, 0.0f);
 }
+#pragma inline_depth(255)
 
 
 s_reset_storage g_reset_storage;
