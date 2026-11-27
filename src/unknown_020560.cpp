@@ -1596,6 +1596,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // of scan 2 and the delta taken from it 554 (2112 B, masked 116); with `dot3f(&offset, &delta)` 549 and with `offset`
 // declared beside `delta` 549 (both the same code); with the scan-2 distance as `length_sq3f(&offset)` 628 (2057 B). A
 // forced-ranking search on the first form (30 single decisions) moved neither the frame nor the count. Body unchanged.
+// M3 lane 4 r269 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418). Retail forms scan 2's x address
+// from one induction pointer and the y/z addresses from the other, as scan 1 does; the planar idiom tried for that split:
+// the offset's (x, y) through vector2d_from_points2d on the planar views with k written 563 (2095 B); x written with
+// (j, k) through vector2d_from_points2d on the (y, z) pairs 540 (2125 B, frame 0x18), that with length_sq3f(&offset) 646
+// (2039 B); on the entries-per-use scan 2 (re-measured 549): the planar (x, y) 458 (2122 B, frame 0x20, `nearest` loses
+// its scan-1 register), x written with the (y, z) pair 856 (2367 B, frame 0x30). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
