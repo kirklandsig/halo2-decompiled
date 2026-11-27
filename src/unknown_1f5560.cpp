@@ -1974,6 +1974,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // as the centre plus offset with the origin taken off by vector2d_from_points2d 196 (1177 B); the clamp as an `if`
 // storing 1.0f 250 (1141 B); the type-one difference normalized in the centre's own storage 198 (same code); the side
 // flag `bool const` 198 (same code). Body unchanged.
+// M3 lane 3 r317 (H2M_FAST with 0x29a190 and 0x1f9580, both MATCH; control 198 at 1173 B, aligned exact/masked
+// 213/80). A forced-ranking search over 40 single decisions: best 194 (no match), as before. Forms: the trace sector read
+// from the field at each use (no local) 226 (1176 B); the desired point set member by member 198, the 3-D origin set
+// member by member 198, NULL for the trace's location argument 198 (the same code each); the arc cosine named and the
+// sign applied by a ternary 273 (1200 B). Diagnostic, restored: the held `inline` on 0x210d10's definition re-measured
+// on this body 236 at 1158 B (aligned 128/67, first difference +0xd7; 0x210690/0x210770/0x210d10/0x29a190 still MATCH,
+// 0x299460 726 at 3349 B, 0x1fe620 373). Body unchanged.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -1233,6 +1233,19 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // eax, 0xffff` for the physical block), which every source spelling here merges into one mask; a forced-ranking
 // search puts the result's second web in ESI for 183 (then the bitmap takes EBP as retail, but the zero register
 // in EBX after the load call and the loop's homes still differ).
+// M3 lane GA r25 (74 fast trials with all 7 file/callee peers MATCH; control 193, al 104, mk 55; body unchanged):
+// E1 (0x12c960 result = texture before build call, 0x12c960/0x12ccf0 stay MATCH) + if (restricted) priority = 2 +
+// switch assigning D3DResource *fallback then result = (D3DTexture *)fallback; failed = true; + block_index for entry
+// and *block_indices for time store hits 91 (660/658 B, +0xc5, 223/223 insns, al 56, mk 24: matches +0x000..+0x0c5
+// verbatim, reproduces 2xAND, bitmap EBP, result ESI, and all 30 switch/epilogue insns verbatim; without fallback 99,
+// orig priority 107, level-if 106; NOT kept: mixed block_index/*block_indices read, match-only). Clean E1 + T01 +
+// failed = true switch + for-loop calling 0x12c990(..., false, false, false, 0, &waited, &failed) + restricted = false
+// before g_468841 hits 116 (656/658 B, +0x3c, 222/223 insns, al 50, mk 24: bitmap EBP, result ESI, block_indices EDI,
+// g_4e6454 EBP; with failed early too 117/122; NOT kept: moves restricted = false ahead of retail's 0x12ce61 store and
+// late restricted = false scores 220). Nested if (g_4e6470 > 0) reproduces retail's exact 29-insn priority/call-setup
+// (priority ECX, mov ebx, ecx) at 220-230; outer-if single exit 190/216; shared local 193/220; all *block_indices clean
+// 220; physical_memory_touch 211; shared non-forceinline resident helper 327 (breaks 0x12c990). Left on 91 lead:
+// g_4e6470/g_4e6474 EAX/ECX swap, priority in ECX, zero register in EBX after 0x12c990, and clean 2xAND.
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

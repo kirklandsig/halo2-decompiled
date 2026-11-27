@@ -3428,6 +3428,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // fallback to the saved block's copy of the field when the current one is NONE 41 (90 B: both loads straight into EBX);
 // the id NONE unless the preferences are initialised 36 (89 B, the flag test leads); the field read into a `dword` and
 // converted into the long id 30 (same code: the conversion is propagated).
+// M3 lane 2 r157 (h2m fast with 0x2c9a58, matched in each; control 30): the id held in a file-local enum type with a NONE
+// enumerator 30; the field read through the preferences global's address (`(&globals)->current...`) 30; the guard as
+// `if (map_id == NONE) goto done;` with the walk unnested and the label at the end (single exit) 30; the definition
+// pointer declared at the top and assigned in the loop 30; re-measured the iterator at function scope ahead of the id 30
+// (all the same direct EBX load). Diagnostic: global optimisation off from the marker on 45 (94 B; 0x2c9a58 26).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
