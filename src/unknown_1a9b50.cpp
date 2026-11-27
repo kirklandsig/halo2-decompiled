@@ -1674,6 +1674,13 @@ static __forceinline long real_to_long(real value);
 // bare and cleared at the top of the far arm 383; the object velocity pointer declared just ahead of the facing test
 // that first uses it 446 (1908 B); the result declared ahead of the slot pointer 382 and the near-limit flag ahead of
 // the limit 382 (same code each). Body unchanged; the false exit still lands last (first difference +0xf, its jump).
+// M3 lane 15 r154 (H2M_FAST with 0x25d740, 0x25d690, 0x1a9d80 and 0x1a9e00, all MATCH; control 382 at 1904 B): the
+// computed entry result puts the 0x25d740 site under three tests (the result, the else of the field_12 test, the
+// field_18 test), where this build's link expands the getter and retail's calls it, so the threaded false exit and the
+// call do not come together here (BLOCKED-BY the link's inlining limit, not a source form). Forms on this body: the
+// three direction rows written i, j, k 382; the alignment dot written i first 382; the first dot written i first 382
+// (same code each); the first dot named before its divide 381, with the 1 added after the quotient 381 (a gain of 1,
+// not kept); the actor lookup ahead of the entry tests 489 (1909 B). Body unchanged.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
