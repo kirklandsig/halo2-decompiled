@@ -1270,6 +1270,24 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // `bmp=EBP`, `result=ESI`; NOT kept: moves `restricted = false` ahead of retail's 0x12ce61 store); on that lead,
 // `fallback` breaks `bmp=EBP` (211; + `phys` ptr 211, 6/7 peers), `pri_else2` 223, uninit `priority` 223, `drop_local4`
 // 122, `!loaded` first 129, and `long mode` / non-dup nested / `if/else` wait / `touch_block` inline all tie 118.
+// GB31 (34 fast trials across 3 batches, all 10 peers MATCH unless noted; body unchanged): on E1 + `if (restricted)
+// priority = 2` + `failed = true` switch + `for`-loop calling `0x12c990` (220, al 126, mk 57): unsigned `dword` time/entry
+// masks 220/220 (entry breaks 0x12ccf0), `if (index != NONE)` in entry/touch 220/220 (entry breaks 4 peers), byte-offset
+// `* sizeof` in entry/time 220/220, 16-bit bitfield union 220, `s_physical_block *block` local 220, `dword` touch helper
+// 220, reusing `loaded` in fallback loop 220, non-volatile `resident` 220, nested `g_4e6470 > 0` (`!restricted` guard) 220,
+// `datum_get_raw` (`data->size`) 222 (breaks 0x12c990), outer `!` skipping early return 216, pre-guarded `block_indices[i] !=
+// NONE` 257 (breaks 0x12c450, custom-calls `bitmap` in EAX); in `0x12c990`'s `else if`, local-vs-array mixed read (both
+// orders, + `block` ptr) stays 1xAND inside the inlined `for`-loop at 211 (0x12c990 MATCH; with `fallback` 211, nested 216
+// `pri=ECX`, no `fallback` 219). Without E1: `for`-loop calling `0x12c990` + `priority` + `failed` switch 191 (`block` ptr
+// 191; with one-use `fallback` 185 at 658 B but mk 57 vs 55, not kept; nested `g_4e6470` 217 `pri=ECX`). On GA25's 91
+// mixed-read lead: `block` ptr / `waited = false` / `do ... while (++i < 3)` tie 91, nested `g_4e6470` / uninit `priority`
+// 223, `for (p = ...)` 214, `for (i = 0; i < 3; i++)` 317 (unrolled). Body restored.
+// M3 lane 7 r238 (fast, with 0x12c960, 0x12ccf0 and 0x12c990 MATCH): the block's time store ahead of the entry lookup
+// 193 (643 B); with the getter setting its result ahead of the build call 194; that store order with the priority's
+// `if (restricted) priority = 2;` arm 197; with the fallback switch setting `failed` for the single exit 189 (661 B);
+// getter order + switch 214 (663 B); getter order + store order + switch 185 (655 B); all four 179 (655 B: the getter
+// block and the zero tests closer, the result still in EBP and the bitmap in ESI; a store reorder and a repeated
+// priority arm, held as a patch as a lead, not kept); getter order + priority arm + switch re-measured 220 (669 B).
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

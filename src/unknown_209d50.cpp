@@ -382,6 +382,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // first in the arm 83 (277 B), with the volatile home 12 (same code); the frame reference declared `*const *const`
 // volatile-free 95, `*const *` with the volatile home 12. A forced-ranking search on the null-first body (43 single
 // decisions) gives nothing below 82: its folded frame load is not a colouring or scheduling choice.
+// M3 lane 3 r319 (h2m fast with 0x2099f0, which stays matched; volatile-free forms): the result copy made after the
+// expression-index slot with `result = NULL` first in the arm 83 (277 B); the first size as `(short)(parameter_count <<
+// 2)`, null first, 83 (same code); the copy after the slots with `return NULL` from the arm 90 (277 B); the index stepped
+// inside the call's element argument (`&arguments[argument_index++]`), null first, 80 (277 B, the frame load still folded);
+// the frame reference and the result copy after the three slots, null first, 79 (282 B). All restored.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

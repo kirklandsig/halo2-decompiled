@@ -53,12 +53,12 @@ void function_1cf50(void);
 void function_14f60(short stage, short index);
 bool function_143c0(long tag, short index, short stage, real priority);
 byte g_485a77, g_55e6bd;
-short g_4858c8;
 long g_4e6978, g_4e697c;
 long g_485a78[2];
 extern byte g_485a76;
 #include "texture_stage_storage.h"
 #include "sampler_state.h"
+#include "floor_to_long.h"
 struct s_type_7ba8e9;
 s_type_7ba8e9 *function_137550(long tag, short bitmap);
 bool function_14390(short stage, s_type_7ba8e9 *bitmap, real priority);
@@ -5622,59 +5622,30 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 
 #define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
 
-// MiniMax I (11-15): no new form, no lower score (498): the camera flag read out of the reset storage block scores
-//   447, but that read is a cast into the aggregate and is kept only with a match, so the body stands. What still
-//   differs: retail reloads g_4858c8, g_4858c4 and g_4858b8 at every use and keeps the constant 1 in ecx across the
-//   body, where this build hoists those loads out of the again-loop; the body is 1696 bytes against retail's 1700
-//   and the first difference is at +0x1f.
-// MiniMax H (11-14), NOT kept at review (a cast read into the reset storage block is kept only with a match, and it left 0350e0.cpp's extern unresolved; 0x19530 498 -> 447, 0x37a60 529 -> 519 back to main): the camera flag at 0x4858c8 is the first word of the reset storage block, so it is now read
-//   from there (a view of the aggregate, like the shader pointer next to it) and reloaded at every use as retail does;
-//   the separate global is gone and the file that writes it writes the same aggregate word. The body is 1704 bytes
-//   against retail's 1700 and the first difference is at +0x1f. What still differs: g_4858b8 is still a separate
-//   global, so retail's reload of it is missing, and retail keeps the constant 1 in ECX across the body.
-// score 498 (was 585): round 94 put g_4858c4 in the reset storage aggregate (include/reset_storage.h), so it is
-// reloaded after calls as retail does; 1696 bytes against retail's 1700; g_4858c8 and g_4858b8 below remain separate.
-// Earlier 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
-// matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
-// Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
-// does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;
-// g_485a78[mode - 24] is indexed; case 26 compares an int; case 16 compares clamped == value.
-// The score rose 25 only because ours merges the else with case 2 at the later block and drops case 2's own copy at
-// 0x195a0 (retail keeps the earlier one and jumps back: `jne 0x195a0`); a goto label, `break` plus a tail call and
-// the negated test all compile alike. The old `(short)surface` argument scores 591.
-// Remaining blocker (not in this body): retail reloads g_4858c8, g_4858c4 and g_4858b8 at each use and keeps the
-// constant 1 in ECX (`mov ecx, 1` before the loop head, then `mov [esi], ecx`, `mov edi, ecx`, `push ecx`) where ours
-// hoists those loads out of the again-loop. Diagnostic only (not kept): a file-scope `short *p = &g_4858c8;` plus
-// the same for g_4858c4 and g_4858b8 gives 116 with the old argument and 447 with the fixed one (the layout shift
-// above), so they are members of an address-taken struct in retail, as 0x350e0's note says for g_4858c4.
-// Walk (b4B, statement by statement against retail 0x19530-0x19b67, jump table 0x19b68): all 25 live cases, the two
-// null slots (modes 7, 11: no case; default __assume(0) = unchecked jmp at 0x1954c), the dimension defaults (1x1 start
-// 0x19540-0x19546, 0x0 on a missing surface 0x19b15, 640x480 for case 6 0x19660, 4x4 for case 27 0x19b55), every
-// tag offset (+4 +0xc +0x14 +0x64 +0xd0), the 0x143c0/0x144f0/0x137550 bitmap-index ECX constants (1 or 0) and
-// case 16's in-range test (0x19850-0x19862) agree with retail: no behaviour difference found. Layout-neutral
-// cleanups (fast 612 before and after): the (short) casts on 0x14f60/0x143c0 arguments (their parameters are short),
-// the dead `&stage` / `(void)&param` address-taking and case 16's written-out clamp (now PIN, file-local macro as in
-// 0x167a0's file; same bytes). Tried: recursive call function_19530(18, ...) for the mode 18 re-dispatch 612
-// (same loop as the goto). No new include, helper or double local.
+// The camera flag at 0x4858c8 is a member of the reset storage aggregate (include/reset_storage.h), like the shader
+// pointer next to it, so it is read again at every use. Every case leaves through `break`. Mode 18 shares the surface
+// block of modes 24 and 25 (retail jumps from 0x198d2 into 0x19a4d); their fallback is the same call as mode 2 and
+// retail jumps back to it (0x19a47 to 0x195a0). Modes 7 and 11 have no case (null table slots).
 // @retail 0x19530
-void function_19530(long mode, byte const *context, long stage, long *width, long *height)
+void function_19530(byte const *context, long stage, long mode, long *width, long *height)
 {
+    long surface;
 again:
     *width = 1;
     *height = 1;
     switch (mode)
     {
-    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, stage, 0.0f); return;
-    case 2: function_14f60(stage, 1); return;
+    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, stage, 0.0f); break;
+    case 2: function_14f60(stage, 1); break;
     case 3:
         function_14f60(stage, 1);
         texture_surface_dimensions(1, width, height);
-        return;
-    case 4: g_51f3c8[1][stage] = NULL; return;
+        break;
+    case 4: g_51f3c8[1][stage] = NULL; break;
     case 5:
         function_14f60(stage, g_4858b8);
         function_01dd60(g_4858b8, width, height);
-        return;
+        break;
     case 6:
         function_14f60(stage, 3);
         if (g_4b4b58[3].data && !g_4b4b58[3].flag95)
@@ -5683,8 +5654,8 @@ again:
             *height = g_4b4b58[3].height;
         }
         else { *width = 640; *height = 480; }
-        return;
-    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f); return;
+        break;
+    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f); break;
     case 10:
         if (g_4858c8 && g_4858c4)
         {
@@ -5704,21 +5675,21 @@ again:
                 if (bitmap) function_14390(stage, bitmap, 0.0f);
             }
         }
-        return;
+        break;
     case 12:
         if (!g_4858c8) function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f);
         else function_144f0(stage, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
-        return;
+        break;
     case 13:
         function_14f60(stage, 9);
         texture_surface_dimensions(9, width, height);
-        return;
+        break;
     case 8:
         function_14f60(stage, 10);
         texture_surface_dimensions(10, width, height);
-        return;
-    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, stage, 0.0f); return;
-    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, stage, 0.0f); return;
+        break;
+    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, stage, 0.0f); break;
+    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, stage, 0.0f); break;
     case 16:
         function_143c0(g_4e6978, g_4e697c, stage, 0.0f);
         if (g_4e6978 != NONE)
@@ -5732,42 +5703,36 @@ again:
                 *height = *(short *)(bitmap + 6);
             }
         }
-        return;
+        break;
     case 17:
         function_14f60(stage, 19);
         texture_surface_dimensions(19, width, height);
-        return;
+        break;
     case 18:
         if (!g_485607)
         {
-            long surface = function_25960();
-            if (surface != NONE)
-            {
-                function_14f60(stage, surface);
-                function_01dd60(surface, width, height);
-                return;
-            }
+            surface = function_25960();
+            if (surface != NONE) goto set_surface;
         }
         function_143c0(*(long *)(g_485a80 + 0x64), 0, stage, 0.0f);
-        return;
-    case 19: function_14f60(stage, 21); texture_surface_dimensions(21, width, height); return;
-    case 20: function_14f60(stage, 22); texture_surface_dimensions(22, width, height); return;
-    case 21: function_14f60(stage, 13); texture_surface_dimensions(13, width, height); return;
-    case 22: function_14f60(stage, 17); texture_surface_dimensions(17, width, height); return;
-    case 23: function_14f60(stage, 23); texture_surface_dimensions(23, width, height); return;
+        break;
+    case 19: function_14f60(stage, 21); texture_surface_dimensions(21, width, height); break;
+    case 20: function_14f60(stage, 22); texture_surface_dimensions(22, width, height); break;
+    case 21: function_14f60(stage, 13); texture_surface_dimensions(13, width, height); break;
+    case 22: function_14f60(stage, 17); texture_surface_dimensions(17, width, height); break;
+    case 23: function_14f60(stage, 23); texture_surface_dimensions(23, width, height); break;
     case 24:
     case 25:
+        surface = g_485a78[mode - 24];
+        if (surface != 25 && surface != 26 && surface != 27)
         {
-            long surface = g_485a78[mode - 24];
-            if (surface == 25 || surface == 26 || surface == 27)
-            {
-                function_14f60(stage, surface);
-                function_01dd60(surface, width, height);
-            }
-            else
-                function_14f60(stage, 1);
-            return;
+            function_14f60(stage, 1);
+            break;
         }
+    set_surface:
+        function_14f60(stage, surface);
+        function_01dd60(surface, width, height);
+        break;
     case 26:
         {
             byte *definition = g_4e3b44[*(long *)(context + 8) & 0xffff].bytes;
@@ -5781,7 +5746,7 @@ again:
             }
             byte *bitmap = *(byte **)(parameters + 8) + index * 12;
             function_143c0(*(long *)bitmap, *(short *)(bitmap + 4), stage, 0.0f);
-            return;
+            break;
         }
     case 27:
         if (g_485a76)
@@ -5800,38 +5765,18 @@ again:
             *width = 4;
             *height = 4;
         }
-        return;
+        break;
     default: __assume(0);
     }
 }
 
-long g_485a60;
 
-// MiniMax C (11-14): no new form, no lower score (146): retail's inlined floor sequence is still a call to floor
-// here, the frame is still 0x8 against retail's 0xc and g_485a60 is still kept across the loop.
-// score 146 (was 353): retail inlines 0x16ae0's floor body (its asm; a 0xc frame with the value's slot) where ours
-// calls floor, so ours keeps g_485a60 in EDX across the loop where retail keeps the definition table. Round 126:
-// binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
-// the existing 0x16ae0 called 210; flag test before the source pointer and full-expression 0x19530 outputs 146.
-// Diagnostic only: 0x16ae0's body as a file-local forceinline copy gives 736 bytes and 150 (not kept: a twin).
-// Round 65 (m3 lane 1, on the 353 body before round 126 merged): the existing 0x16ae0 with per-use binding reads
-// and a counted loop 210; that with the original slot/destination/source locals 365 (0x16b90 back to 47); the
-// location tag in a local 214; a file-local forceinline asm copy 158 (a twin, not kept). Lead: exposing g_485a60's
-// address (diagnostic only) gave 42 at 736 bytes: retail reloads g_485a60 after the state stores and holds g_4e3b44
-// in EDX; 0x16ae0 is `inline __declspec(noinline)` in src/unknown_0167a0.cpp, which keeps it out of line here.
-// b8D (11-17) walk against retail, fast build on r836: every field, offset, loop bound, callee argument and constant
-// agrees (0x45dbd4 is 3.0, 0x45dbd8 is 0.0, 0x44a04c is the float 0x3f317218), and so does every branch sense, NaN
-// included: comiss/jbe at 0x18b31 and 0x18b38 skip the floor when count <= value or unordered, ucomiss/jnp at 0x18c73
-// and 0x18c7a skips the update only when the stored level is ordered-equal. Changed: the log factor is multiplied as
-// `(real)log(..) * 0.6931471824645996f` (as 0x167a0 does), where the old `(real)(log(..) * f)` promoted the float
-// constant to a qword operand; retail's is `fmul dword` at 0x18d00; same value, score unchanged (146). Not fixed:
-// retail's floor (0x18b3e..0x18b6e) is 0x16ae0's body inlined, ours calls the CRT floor on a double, so NaN and
-// huge values differ; a file-local forceinline asm copy gives 738 bytes and 155 (a twin, not kept). retail loads
-// g_485a60 at 0x18c43 and again at 0x18cc2 after the dword stores at 0x18cb7 and keeps g_4e3b44 in edx from 0x18abf;
-// ours defines g_485a60 in this file with no address taken and hoists it, an `extern` before and the definition after
-// the function is 146 too. Also measured: one named slot pointer for the stores 185 (705 bytes; retail redoes
-// movsx/shl for each store at 0x18b85 and 0x18b97), the maximum as `height > width`, `width <= height`,
-// `width < height` or `height >= width` ternaries 176, as if-assignments 147 to 172 (retail's cmovle is at 0x18ce5).
+// The level at 0x485a60 is a member of the reset storage aggregate (include/reset_storage.h), so it is read again after
+// the state stores (retail 0x18c43, 0x18cc2). The floor is the shared inline of include/floor_to_long.h, 0x16ae0's body,
+// which retail has inline at 0x18b3e..0x18b6e. The lightmap test is 0x226d0's body with the bsp pointer taken again
+// after it (retail reads its +0x1c again at 0x18c62). Every record field is addressed from the state at each use.
+// 0x19530 takes its mode third: retail loads it between the pushes of the width pointer and the stage (0x18be8).
+// The log factor is multiplied as a float, as 0x167a0 does (retail's `fmul dword` at 0x18d00).
 // @retail 0x18a90
 void function_18a90(byte *state, word const *descriptor)
 {
@@ -5843,13 +5788,12 @@ void function_18a90(byte *state, word const *descriptor)
             memcpy(state + 0x1320 + binding[2] * 0x40, state + 0x320 + (signed char)binding[0] * 0x40, 0x40);
             if (binding[3] & 2)
             {
-                byte *source = state + 0x320 + (signed char)binding[0] * 0x40;
-                if (*(long *)source != NONE)
+                if (*(long *)(state + 0x320 + (signed char)binding[0] * 0x40) != NONE)
                 {
-                    byte *definition = g_4e3b44[*(long *)source & 0xffff].bytes;
-                    if ((real)*(long *)(definition + 0x44) > *(real *)(source + 0x18))
+                    byte *definition = g_4e3b44[*(long *)(state + 0x320 + (signed char)binding[0] * 0x40) & 0xffff].bytes;
+                    if ((real)*(long *)(definition + 0x44) > *(real *)(state + 0x338 + (signed char)binding[0] * 0x40))
                     {
-                        byte *bitmap = *(byte **)(definition + 0x48) + (long)floor(*(real *)(source + 0x18)) * 0x74;
+                        byte *bitmap = *(byte **)(definition + 0x48) + floor_to_long_inline(*(real *)(state + 0x338 + (signed char)binding[0] * 0x40)) * 0x74;
                         if (bitmap[0xe] & 0x10)
                         {
                             *(long *)(state + 0x328 + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 4);
@@ -5865,23 +5809,23 @@ void function_18a90(byte *state, word const *descriptor)
             if (binding[1] != 11)
             {
                 *(long *)(state + 0x1320 + binding[2] * 0x40) = NONE;
-                function_19530((signed char)binding[1], state, (short)binding[2],
+                function_19530(state, (short)binding[2], (signed char)binding[1],
                     (long *)(state + 0x1328 + binding[2] * 0x40), (long *)(state + 0x132c + binding[2] * 0x40));
             }
             else
             {
-                byte *location = NULL;
+                bool available = false;
                 if (g_4e0344 && *(long *)((byte *)g_4e0344 + 0x80) > 0 && g_4e0348)
                 {
                     byte *first = *(byte **)((byte *)g_4e0344 + 0x84);
-                    if (*(long *)(first + 0x1c) != NONE &&
-                        *(long *)(first + 4) == *(long *)((byte *)g_4e0348 + 8) && g_485a60 != NONE)
-                        location = first;
+                    if (*(long *)(first + 0x1c) != NONE && *(long *)(first + 4) == *(long *)((byte *)g_4e0348 + 8))
+                        available = true;
                 }
-                if (location)
+                if (available && g_485a60 != NONE)
                 {
-                    byte *destination = state + 0x1320 + binding[2] * 0x40;
-                    if (*(long *)destination != *(long *)(location + 0x1c) || *(real *)(destination + 0x18) != (real)g_485a60)
+                    byte *location = *(byte **)((byte *)g_4e0344 + 0x84);
+                    if (*(long *)(state + 0x1320 + binding[2] * 0x40) != *(long *)(location + 0x1c)
+                        || *(real *)(state + 0x1338 + binding[2] * 0x40) != (real)g_485a60)
                     {
                         byte *definition = g_4e3b44[*(long *)(location + 0x1c) & 0xffff].bytes;
                         byte *bitmap = *(byte **)(definition + 0x48) + g_485a60 * 0x74;
@@ -5905,16 +5849,11 @@ void function_18a90(byte *state, word const *descriptor)
     }
 }
 
-extern long g_485a64, g_485a68;
-extern real g_485a6c, g_485a70;
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale);
 
-// score 5 (was 6): the 0x48 float store is written before the 0x44 one, which
-// moves the 0x48 load into retail's order. The last difference is retail's
-// early g_485a64 store. A form at 4 needed
-// `*(volatile long *)&g_485a64 = 0`, a volatile store to a global, so it was
-// not kept.
+// The four values at 0x485a64..0x485a70 are members of the reset storage aggregate (include/reset_storage.h), whose
+// address goes to 0x16b90 below, so they are stored in source order.
 // @retail 0x1bbf0
 void function_1bbf0(long tag, long first, long second, long third, long fourth, real scale)
 {
@@ -5946,8 +5885,8 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
         byte *definition = g_4e3b44[tag & 0xffff].bytes;
         g_485a64 = *(word *)(definition + 0x3e);
         g_485a68 = *(word *)(definition + 0x40);
-        g_485a70 = *(real *)(definition + 0x48);
         g_485a6c = *(real *)(definition + 0x44);
+        g_485a70 = *(real *)(definition + 0x48);
     }
     else
     {

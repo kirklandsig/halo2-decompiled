@@ -607,6 +607,17 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // random * range + lower 13 (lerp form 171); `volatile real scale` 17 (retail loads the scale at 0x155204 after the
 // k store at 0x1551fb, ours hoists it once xmm0 is free). No outside piece changed; the operand order follows
 // register state, not any text.
+// M3 lane 12 r197 (fast screen with 0x170d70 in the image, MATCH each run; control 13; body unchanged). Row reading: retail
+// builds all three rotation rows as axis * projection + v * cosine; this body does so for i only (j and k cosine first).
+// The order is a symbol-numbering state: unused-local diagnostics just ahead of the rotate call (16 or 24 of them) give
+// 8 with i and j in retail's order and only k left; ahead of the sine/cosine they act like ones at the top (period 8,
+// products only). Forms: `sinf` for the rotation's sine 21, `cosf` for its cosine 21, both 33 (re-measured); the sine
+// and cosine declared bare at five earlier points with their assignments in place 13 each (same code); the update
+// condition tested directly 57 (1105 B; k row then retail's); the view entry folded into the angles copy 228. Lead:
+// the dot, clamp, clamped arc-cosine and sign test are the body of matched 0x11cc90 (called with w, v), which retail
+// expands here; a call to it stays out of line (399, 978 B), also with `inline` on its definition (a held form;
+// measured, reverted); a same-file forceinline copy of that body (diagnostic, a twin) gives all three rows in retail's
+// order at most symbol counts but moves the dot/cross products (39-45, exit one byte early).
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

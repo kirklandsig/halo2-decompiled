@@ -983,6 +983,10 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // first and case 18 width last 101 (732 B, the two no longer merge). Reading: the flip fires only when 14/18 and 12/13
 // end on the same two zero stores (and case 10 stores width at [8] from xmm0); once 14/18 ends on its width store
 // (the [0] store most blocks end on) nothing flips.
+// M3 lane 15 r155 (h2m fast with 0x19be0/0x19ca0/0x176a0): advancing `out` itself keeps 0x19ca0's match (no new pointer),
+// but every such form rebuilds the switch: `out += 2;` then ascending `out[0]`/`out[1]` zeros in 12 and 13 104 (688 B), in
+// 12 only 88 (708 B), 13 falling into 12's advance 104 (688 B), the advance with `out[1] = out[0]` 104 (688 B); the zeros
+// through `(&out[2])[0]`/`[1]` ascending 6 (folded to the direct stores).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

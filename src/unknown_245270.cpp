@@ -1155,6 +1155,18 @@ void function_245400(s_source_245400 const *source, long index,
 // definition, on this body 163 (same code), on the lead 110 at retail's 783 B: the inlined copy gives retail's scale
 // select (copies, `jnp`, scaled copies) row for row; left are the three rows' operand sides in both transforms and the
 // cross, all operand-rank ties (the field loads' ranks fall on a mod-8 grid).
+// M3 lane 13 r166 (reduced-image screens; lane 5 r213's saved lead re-measured 50 at 783 B): on the
+// lead, the first edge subtraction in one redundant float paren pair (diagnostic, one more expression node ahead of
+// the cross) 46: the cross's six products then take retail's sides, only the first plane's k stays loaded twice; two
+// or three pairs 119/130; the cross written out in the helper's order 182 (with one to three paren pairs 180/167/129).
+// On the 46 form: the dot's first product in one to three paren pairs 126/135/57; one to seven unused locals
+// 46/48/48/50/46/46/46; the rotation's i row grouped (forward + left) + up as retail adds it 44, as one three-term sum
+// 46; the copies declared i, j, k (retail's copy order) 50, with the grouped i row 48. On 44: 60 to 108 unused locals
+// (diagnostic) 48-67. Reading the operand ranks: retail's j rows need forward.j at level 0 and left.j at level 7 (that product
+// wrapping) in both transforms but up.j unwrapped in the rotation and wrapped in the point transform; the point
+// transform reuses the rotation's field loads at the same levels, so the two transforms' scaled components would need
+// symbol numbers near 0x100 and far apart, which no tried form gives. On main's body the facing dot through dot3f, either
+// operand order, 235 each. Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

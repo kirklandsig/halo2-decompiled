@@ -280,6 +280,11 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // into this body (one function fewer, 65) loses nothing. So the flips follow the count of functions compiled ahead of
 // those files, not this body: counts 0 and -1 keep them, +1 to +8 lose 0x24cf66. Every matching form needs at least
 // one net helper, so this match waits on 0x24cf66's load-order tie (or a natural removal of helpers ahead of it).
+// GB32 (held at review): a byte match with 0 lost in the full check came from replacing angle_radians_112e20 and
+// function_112e21 with two new file-local helpers (the inverse-point transform and a normaliser with the reciprocal
+// root written into it), chosen among trials by the TU's net function count, and the normaliser writes out
+// reciprocal_normalize.h's helper instead of calling it. A spelling picked for the count is layout steering (same
+// ruling as 0x296e60 on 11-27), so main's body stays; the form is kept as a held lead.
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -3232,6 +3237,14 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // has seven references but falls to 9, the arms' blocks being light), at the end of both arms 71 (223 B); the out
 // value's NONE store written in both arms of the fallback test 16 (same code), with the sound index in both extra
 // arms as well 90 (260 B); the definition and sound index stores in both extra arms 69 (254 B).
+// M3 lane 6 r252 (fast screen with 0x114520, 0x114680, 0x20ba00 and 0x1145f0; control 16). Colouring re-read: the
+// index (48) is coloured first and sees ESI scored 1 against EBX 0 (the extra pointer, whose block range overlaps it,
+// wants ESI), so it takes EBX and the request priority takes ESI; retail's roles need the NONE constant coloured ahead
+// of the index (it scores 14: its two compares cost nothing, its stores 1 each in blocks of 5, 5 and 2 values). Forms:
+// the out value in its own local defined after the priority is read through the priority's own address (the local
+// takes the priority's home, frame 0x34) 16; the lookup un-nested with an if/else result 22; the request call's
+// failure as an early return 98 (215 B); the request zeroed by `= {}` 16; the extra copied by aggregate assignment
+// 16. All restored.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

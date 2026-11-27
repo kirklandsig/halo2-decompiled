@@ -58,6 +58,14 @@ public:
 
 extern real g_47f05c;
 
+// Roasted-Codes (draft #1589, released 2026-11-27; body unchanged, 172 at 743 of 738 B, first difference +60): a
+// short-circuit `!near && header-type-mask` test that picks 2 only when both allow it gave 164 (738 B, first difference
+// still +60), and explicit `real` casts on the products give retail's rounding at the same score, but this body still
+// shares one distance sum where retail computes two. Testing the hit inside the capsule's scope, before its cleanup,
+// gave 205 (693 B): it drops the selection spill and merges the returns, but the result test then follows the
+// destruction, against retail's order. Retail saves the hit to a stack byte, passes the capsule in ECX and calls the
+// matched base destructor 0xdc370; this image calls a generated cleanup with the object in ESI and the hit in BL.
+// Moving the inlining boundary of that cleanup is untested.
 // @retail 0xa9f70
 long __stdcall function_a9f70(long object_index, long mode, point3f const *position)
 {
