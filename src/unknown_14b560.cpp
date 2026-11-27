@@ -2434,6 +2434,15 @@ static __forceinline long player_round_ticks(real value)
 // gain of three, under the bar), declared after `second` 715 (2733 B); the else-block limit with lane 16's target
 // preset 701, with the `(short)(lunge + 1)` count 701 (2736 B), with both 702 (2734 B). Still BLOCKED-BY 0xe68c0's
 // file flags, 0x151b80 and 0xccd20.
+// M3 lane 3 r317 (H2M_FAST with 0x151b80, 0x151aa0 and 0x14d3a0; control 703). The frame packing (a diagnostic print of
+// the back end's slot assignment): our packer puts the two idle-block bools, the angle and the four rounding inputs
+// into the dead homes of player_index and input, where retail gives no object an argument home (its seven 4-byte cells,
+// the two position vectors and both requests make exactly 0x74). Forms: the 0x80 pair through a static forceinline
+// wrapper taking the flag 703 (the same code, like r167's plain inline one); one read of a parameter through its own
+// address (input, player_index, unit_index, all three) 703 each (the same code: the address folds before the homes are
+// packed). Diagnostic, restored: the lunge cooldown's fld/fistp written in the body 703 (the same code, so the inline
+// asm does not stop the home packing).
+// Still BLOCKED-BY 0xb8540 (a stub under the expanded 0xccd20), 0x151b80 and 0xe68c0's file flags.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
