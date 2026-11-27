@@ -5996,6 +5996,22 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // listed velocity local); the actor test as one direct bool (`from_actor = index != NONE && query`, then `if
 // (!from_actor)` the default) 168 (812 B), with the velocity local 159; on the both-in-place form the rate block's
 // scaled limits as their own locals 170. Re-measured: a/b in place 168, c/d in place 61.
+// M3 lane 1 r176 (fast with 0x1ecf50/0x1e3370/0x259d0, all MATCH each run): both random turns through the existing
+// function_259d0 (lower, upper) 61; that with both clamp pairs as named sums and each scaled product written at its
+// test 31 (every instruction before the turn-rate add is then retail's), with only the rate pair so 57, only the angle
+// pair 31; on 31 the turn rate named (`unit->unknown2dc + turn` or `turn + unit->unknown2dc`, stored and integrated)
+// 21 (plain 21), `unit->unknown2dc = turn + unit->unknown2dc` 31, `turn_rate = turn; turn_rate += ...` 53, `turn +=
+// unit->unknown2dc` stored and integrated 21; on that the sine and cosine named 28, the axis global in a pointer local at
+// the top 188 (812 B), the angle in a local for both calls 44. The permuter on the 21 form (600 s): 8 plain (811 B) with
+// the two scales as constant locals at the top and the angle read into two locals for the two calls (its best also
+// swapped the sine and cosine arguments, a wrong program, restored); without the constant locals 28, without the angle
+// locals 14. Left on 8: the turn-rate add (ours loads the field and adds the turn, retail adds the field into the turn's
+// register and copies) and one cross term's load order. The add's operand ranking puts the field load (read through its
+// shared address) above the turn local in every in-place spelling of the angle pair (the helper-only form ranks it
+// below the turn, as retail must); named scaled products move it further up. On 8:
+// the add spelled five ways, the turn declared earlier (two places), both local pairs reordered, the actor test inverted,
+// the clamps as conditional expressions, the actor index or the angle named: 8 or same ranks. A forced-ranking search
+// over 134 decisions found nothing under 8 (the gap is instruction shape, not colouring). Match-only lead, held as a patch.
 // @retail 0xd0080
 // M3 lane GA r15 (35 fast trials with 0xc49b0, 0x1e3370, 0x1ecf50 all MATCH; control 58; plain verified 37, all file peers MATCH):
 // Not kept at review, 58 -> 37 (810/810 B, first diff +0x59 -> +0x1cf): shared 2-caller clamp_turn_bounds(real const *value, limit, scale, *high, *low)
@@ -10004,6 +10020,14 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // spellings change nothing), where retail's i row is across-first and its j and k rows up-first, as main spells them.
 // The tail's NONE register (ESI) and the unit index in EDI are the allocator's; retail reloads the unit index into ESI
 // before 0xceee0 and uses immediates.
+// M3 lane 1 r176 (plain checks with 0xcfc90 and 0xcf040 MATCH; control 397): the two direction_scale calls swapped 397;
+// the material index constructed ahead of the weapon index 397; the seat group read after the center query 397; the
+// NONE defaults ahead of the point and normal copies 526; the unit through the existing unit_at_masked_index 397.
+// Reading (operand ranking of the ray rows' sums): each row sorts its three products by rank, and the (real)i
+// product outranks the (real)j one by six temps; the up component ranks just above across in the i row but below it in
+// the j and k rows, so every spelling gives the same order in all three rows (the i row's
+// spelling only picks which conversion is made first). Retail's mixed rows need the up j/k values ranked more than
+// six temps above the across ones; swapping the scale calls leaves those ranks as they are.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

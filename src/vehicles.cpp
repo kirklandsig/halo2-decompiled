@@ -968,6 +968,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // loaded ahead of the divide; ours ranks the reciprocal above both). Diagnostics, reverted: a pointer to y, y read
 // into a local after the reciprocal, k declared at the top: 107 each (same code; copies propagate and the ranks
 // follow first assignment).
+// M3 lane 1 r176 (fast, control 107): the four atan2 dot products through the existing dot_product2d
+// (vector2f_products.h), side vector first 107, input first 107 (same code); the blend weight's dot through it 107
+// (same code); both numerators through the existing cross_product2d (no side vectors) 243 (1128 B), the reversing one
+// only 217. The entry sum still adds the k square before i + j, so 1.0 takes XMM2.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
