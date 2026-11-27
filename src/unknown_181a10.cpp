@@ -1333,6 +1333,20 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // The classifier reading the data field at each use 238 (same code: one load). Left on the 1243-byte form: retail copies
 // origin and hit with float moves into separate cells (origin z, y, x) and keeps the shape in EBX for the decode.
 // Body unchanged.
+// M3 lane GA r36 (`--fast` with the file's 7 matched peers, all MATCH unless noted; control 238, 1247/1243 B, fr=0x40,
+// al=149, mk=101; 36 trials): plain non-union 3-real struct for origin aggregate 238, assigned z,y,x 311 (mk=80, retail's
+// `[eax+0x58]` ahead of `add eax, 0x50` load sequence, still one 12-byte home), x,y,z 312, via setter 251 (mk=93), via
+// constructor 251, via by-value helper / default+assign 355, with plane_distance pointer 311, with by-value coords 311,
+// paired with hit setter/ctor + aggregate publish 334, with y,x,z hit + kind-24 shape 366, with hkVector4 helper 250
+// (mk=87) / by-value both 392; hkVector4 operator() origin+hit+distance 334; hit setter + aggregate publish alone 309,
+// hit y,x,z + agg pub + first->next/ns locals 308; first->next/ns locals alone 237 (1246 B, retail's register null test
+// before kind-9 call; under bar), with plane.d retail assoc 238 (mk=97); double root->type inline helpers 238; classifier
+// with limited=1 before value + field re-read 321 (1243 B, mk=94: keeps `mov ecx, eax; cmp ecx, eax`), combined with
+// multi-return excluded bool helper 322 (1245 B, mk=87: adds retail's `setne al; test al, al`; value-compare form 322),
+// non-const bounds struct 320 (1243 B), template pin_t 334 (out of line), min/max inline helpers 238, shape methods 238;
+// instance plane via matrix_transform.h function_2477b1 separate/in-place 331/342 (fr=0x4c, mk=97), with shape +
+// `(data>>29)-1` 333, combo 336 (mk=86); j,k,i plane locals + d assoc 239 (mk=96); /Ob1 diagnostic 238 (loses 0x182800/
+// 0x183670). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
