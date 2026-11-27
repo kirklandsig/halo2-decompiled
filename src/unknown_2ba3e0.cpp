@@ -1134,6 +1134,14 @@ real g_55e618;
 // normal copied into a local vector for the dot and the rows 229 (1564 B); the perpendicular through vector3f_scale 102
 // (same code); the velocity copy as one assignment 223 (as listed); the perpendicular rows k, j, i 103; the tangent rows
 // k, j, i 102. Body unchanged.
+// M3 lane 12 r196 (fast screen with 0x2ba3e0, 0x2b8da0 and 0x2b8e10, all MATCH each run; control 102). Frame reading: the
+// packer sorts the 12-byte objects by references per byte; ours spills tangent.i and perp.j around the placement call
+// (tangent 2 references, sorted last at +0xf0; perpendicular 3, ahead of the cache), retail spills tangent.i, tangent.j
+// and perp.k (the tangent then has 4 references and packs below the sweep at +0x28, the perpendicular sits above the
+// cache, which is the twelve bytes the sweep and the record move up). So the homes follow the reflection block's spill
+// choice. Forms: the normal's three components named ahead of the dot 102; the dot declared ahead of the normal pointer
+// and assigned in place 102; the dot const 102; the perpendicular as an aggregate initialiser 102 (the same code each);
+// each perpendicular row as a copy of the dot then `*=` the normal component 190 (1545 B). Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

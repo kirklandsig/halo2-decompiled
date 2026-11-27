@@ -1204,6 +1204,16 @@ void swarm_leader_detach(long actor_index);
 // of the handler-named form: the actor pointer ranks 18 (slot-loop test block 6 values, 5 on the 4 form);
 // a forced-ranking search: the actor at 15 MATCHes, at 16 not; the memory walk's stepped pointer raised to 16 or 17 does nothing
 // and to the top 277. Body unchanged (59).
+// M3 lane 6 r251 (H2M_FAST with 0xf0fd0 and 0x1fb360, MATCH each run; control 59; the listed 4 form rebuilt, 4 at 980 B).
+// Allocator reading of the handler-named form (297), read with 0xf0fd0 and 0x1fb360 kept in the reduced image (without
+// them that image does not reproduce 297): the actor ranks 18 (the slot-loop test block references six values: index, actor,
+// slot address, handler, stop and the zero constant) above the memory walk's stepped pointer (15); forced compiles:
+// the actor at 15 MATCH, and the walk pointer at 18 (a tie it wins as the later-created value) or 19 MATCH as well, so
+// either the actor -3 or the walk pointer +3 is the count to move (the walk pointer loses 22 in the walk body, eleven
+// values, where it is live and unreferenced). A forced-ranking search on the 4 form (16 decisions) found nothing below
+// 4. Forms on the handler-named form: the walk body without the `memory` pointer local 281 (964 B); the stop tested
+// `!= NULL` and called as `(*handler->stop)(...)` 297 (same code). On the 4 form: the slot loop test written
+// `actor->current >= slot_index` 6. Body unchanged (59).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, bool value)
 {

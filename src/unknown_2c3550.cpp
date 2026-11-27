@@ -1042,6 +1042,15 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // `search_radius` 675 and `actor` renamed `actor_data` 675 (same code: names do not move these homes); the two
 // in-loop cache reads into their own block locals 675 (same code); the input pointer formed ahead of the out-count
 // test 685.
+// M3 lane 3 r317 (H2M_FAST with 0x270930, MATCH each time; control 675, difflib-aligned exact/register-masked 601/468).
+// The 0x40 flag's three-part test is the existing slot_type_enabled(9): calling it 777 (2944 B: our link keeps it out
+// of line here, `mov ecx, 9; call`, where retail expands it). Rebuilt round 129's closest shape (bool result, the
+// retry search assigning `found`, one `if (!found)` block with retail's short flag loop testing `flag` per obstacle,
+// short ignored and short retry and ignored loop indices) 739 at 2986 B (aligned 570/380); with slot_type_enabled(9)
+// 770, with that and a short frame 778; the enabled bit as `(bool)((g_557c40[0] >> 9) & 1)` on it 734 (retail's
+// `shr; test al, 1`, aligned 571/378), with a short frame 744. From there retail sets the two block pointers and the
+// last-step flag in another order at the loop head (search, last test, obstacles; `ignored` stored after the
+// out-count compare) and keeps the step counter in ECX with a dword home, where ours holds a zero in EDI.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
