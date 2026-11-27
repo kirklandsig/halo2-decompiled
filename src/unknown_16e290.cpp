@@ -1794,6 +1794,14 @@ struct s_camera_clip_reference_16ebf0
 // declared beside original_position 49, ahead of the location query 49, ahead of `fraction` 49, original_position
 // used directly 49; `point` declared first in the function 49, beside original_position 49. 1..31 unused
 // initialised locals at the top 49 at every count (not a symbol-count state). Body unchanged.
+// M3 lane 5 r253 (fast screen with 0x171d00, 0x11bed0 and 0x142a60, all MATCH; control 49). The blend's operand order is
+// the reassociation sort (descending rank, stable): point.x/z/y rank by their first reads in the plane test (below amount
+// and remainder), and a float read through `original` ranks above both, so retail's point-first products and its
+// remainder-first row x need ranks no named local reaches. Forms: a new inline point-blend helper with pointer parameters
+// and `1.0f - t` written in each row 49 ((1 - t) becomes a common temp ranked below the read); `amount` declared at the
+// top of the function 49 (its rank does not move); `point.x *= amount;` then `point.x += original->x * remainder;` per
+// row 49; the original read through a `point3f const &` 49; every product spelled remainder-first and amount-first 49.
+// Body unchanged.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

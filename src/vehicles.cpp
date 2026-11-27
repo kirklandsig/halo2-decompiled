@@ -1466,6 +1466,17 @@ __forceinline long vehicle_round(real value)
 // S+D+B+T 8; D+B 6; D+T 6. Reading of the operand ranking: in the side cross the twelve loads take weights of one step
 // each, forward.i 6, forward.j 0, forward.k 5, up.i 2, up.j 0, up.k 1 (the higher loaded first); retail needs up.k above
 // forward.i and forward.j above up.i, which no uniform shift of these weights gives.
+// M3 lane 8 r244 (fast screen), at 4. Reading: the product operand order follows ids that only inline expansions
+// advance; function locals anywhere shift the first cross as well (1-8 dead function locals before the rate 13/15/6/4/
+// 6/10/4/4), but inlined-helper locals between the two crosses shift only what follows, and exactly four there (before
+// the rate, after the strength update or inside the side block ahead of the side cross) MATCH on the plain first
+// cross (diagnostic, reverted; six there 6, four after the side block 4, four ahead of the first cross 4). Forms: the
+// clamp through the existing real_pin (0x2a0c90's file, copied in for the screen) 92 on either first cross (the upper
+// bound is loaded once into a register); the tick length through a by-value getter, forceinline or plain inline, 17 (on
+// the staged first cross 4; with 0-7 dead helper locals never 0, so it is not a plain shift); through a `real const &`
+// getter 4 (same code, and with four dead helper locals it still MATCHES, so it adds nothing); that with the ticks per
+// second through a `short const &` getter 4; that on the staged first cross with a plain side cross 4; `real dt` before
+// the rate 15; the side test in a named bool 15; the axis copy through memcpy 4 on either first cross (same code).
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2735,6 +2746,15 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // above vel.j while overlay 1's own (i + j) + k needs its j product above its k product. Forms: overlay 1 through the
 // header's dot3f (left, velocity) / (velocity, left) 376 / 376 (2007 B); both dots through dot3f in the four argument
 // orders 365 each (2011 B).
+// M3 lane 8 r244 (fast screen), at 9. Reading of the product ranks: a product's rank is a + b + min(a, b) of its two
+// leaves' ranks, a sum adds its products in falling rank, and the velocity and `left` components are ranked by their
+// first reference in overlay 1's dot (left.k, vel.k, vel.j, left.j, left.i, vel.i here), so arm 3 can only run
+// (k + j) + i when vel.k is referenced after vel.i, which in turn flips overlay 1's own (i + j) + k unless left's
+// components were ranked ahead of the velocity's in k, j, i order. Forms: overlay 1's cross folded into the dot (no
+// `left`; velocity-first i, j, k, cross-first i, j, k, and k, j, i) 377 each (2007 B); overlay 1's cross through
+// cross3f_staged with all 16 dot spellings (i, j, k or k, j, i terms, each term left- or velocity-first) best 9 (the
+// kept spelling, same code), i, j, k left/velocity/left 11, the others 26-365; the same 16 on the plain cross the same
+// scores (staged and plain cross give the same code here).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
