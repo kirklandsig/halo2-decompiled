@@ -4188,6 +4188,18 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // voice's 60. Tried on main's body: case 0's 0xe stop after the switch 8 (same code); the not-ready arm first ending
 // in `continue` 115; the voice failure first ending in `continue` 94; `if (mode == 1) continue;` with case 0's work
 // unindented 92; `case 0: break; case 1: default: continue;` with the work after the switch 49 (`test ax, ax`).
+// M3 lane 5 r254 (reduced-image screen, control 8; the no-default form re-measured 78). Back-end trace of both forms:
+// the no-default form ranks the voice 60 over the sound index 59; the index is live, unreferenced, across 21 blocks:
+// the loop preheader with seven hoisted candidates (0xffff, 1, 0, 7, 0xe, 0x1f and the sound-system global), the
+// `dec eax` test block, five landing blocks that only reload globals (three reload the pool and the sound-system
+// global, one each reloads one of them) and the plain test blocks. This body: index 69, voice 60, pool cost 4. Retail
+// takes no address of the pool, voice-array or sound-system globals (every reference is a direct load or one of the
+// two start-up stores), so none of them is aliased there. Forms: the datum-index helper spelled as one ternary
+// `return`, or with an early `return NONE` (a file-local twin, diagnostic), on this body and on the no-default form
+// 186 each (the datum is computed straight into the sound index, which then outranks the voice index and takes EDI);
+// `case 1: continue;` written ahead of `case 0` 8; the unreachable default written first 8; case 0 ending in
+// `continue` 8 (same code each), without the default 78; no default with case 0 ending in `continue` and `case 1:
+// break;`, either case order, 49.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
