@@ -131,7 +131,7 @@ PRIVATE inline real *decal_corner_point_17d9a0(transform4x3f const *matrix, real
 }
 
 /* drops the axis the plane faces: the two remaining coordinates, in the table's order */
-PRIVATE inline void decal_project_point_17d9a0(real const *point, short axis, bool side, point2f *out)
+inline void decal_project_point_17d9a0(real const *point, short axis, bool side, point2f *out)
 {
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
@@ -1187,6 +1187,20 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
 // the sixth parameter as bool on this body 385 (frame 0x1174; the argument is read from memory and `excluded` keeps
 // EDI), with the constant-initialised locals above the seed block 412, with the float radius 385; the radius with a
 // double `0.25` and no casts 398 (1773 B).
+// Gemini lane GA r31 (not kept): 338 at 1787 B (frame 0x1170; retail's registers for the vector, the source, the
+// point and the sixth argument up to line 61) by dropping the `deterministic` local for the parameter test, declaring
+// world_hit, excluded and cluster above the seed block, the seed as bits[2] ^ bits[1] ^ bits[0], the mesh as `meshes +
+// mesh_index * 0xc8` with + 0x70 at the two calls, the tail guard in retail's test order (alone 355), `bound` on the
+// left of the neighbour test, an unsigned axes counter and the existing vector3d_from_points3d and vector3f_scale for
+// the direction and the rays. Most of that gain is declaration, statement and operand order, kept only with a byte
+// match, so it is held as a lead; the rest alone (the parameter test, the two helpers and the unsigned counter in this
+// body's order) is 393 in the full check. vector3f_add_scaled was left out: it adds a helper instance in this file and
+// moves the whole-image canaries 0x1c4590 and 0x24cf66. Also from that round: retail's sixth parameter is a bool (with
+// the callers changed, retail's mov ebx); retail tests `!source || source->unknown00 == 4` again after 0x1697c0 (4
+// instructions, 1787 B) and keeps `collision` and `axes` at the same stack offset with `adjacent` at 0xc8. Tried: the
+// bool parameter with a found flag, a scoped collision record, an outer adjacent record and plain axes, about 390; the
+// short-circuit `(source && source->unknown00 != 4) || function_1697c0(...)` and its spellings 349 (retail's size and
+// re-test, but -1 and the radius take EBP, the vector moves to EBX and the sixth argument to CL).
 // @retail 0x17e670
 void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
