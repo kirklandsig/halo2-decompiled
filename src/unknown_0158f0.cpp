@@ -291,6 +291,15 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // (96); a compare with the OK code 99 (96); the failure test into a local palette with both arms storing `*out` 87 at
 // 42 B (77); the status named, then the success test 86 (96); an early `return false` on the failure test 91 at 38 B
 // (96). The nested call stays out of line in each.
+// M3 lane GA r37 (11 valid untried fast trials + 2 diag with `0x1d3f0` and file peers; control 99 at 30/95 B, `0x1d3f0`
+// 77; body unchanged): 4-case `switch (index)` passing constant `D3DPALETTE_*` literals 53 (76 B, jump table still
+// calling `CreatePalette2` out of line), named `bool created = (*out = ...) != NULL` 103 (26 B, `0x1d3f0` 96),
+// `((D3DDevice *)g_407488)->CreatePalette` 87 (42 B), 6-entry initialized `D3DPALETTESIZE` table 99, shared template
+// tail helper across `0x158f0`–`0x15b10` 103 (breaks `0x158f0`/`9b0`/`a60`), success early return 99, ternary assign
+// return 99 (`0x1d3f0` 96), template create wrapper 99, `D3DDevice_CreatePalette != S_OK` with 2-arm tail 99, const fn
+// ptr 98, `index >= 0 && index < 6` bounds guard 90 (39 B); diag `/Ob1` 99, scoped `#pragma optimize("t", on)` +
+// `auto_inline(on)` + `inline_depth(255)` 99. `D3DDevice_CreatePalette2` (`d3d8ltcg`) stays out of line in
+// every non-loop form.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
