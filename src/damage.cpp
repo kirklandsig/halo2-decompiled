@@ -1930,6 +1930,12 @@ long function_1e4a10(long index);
 // body with 6 probes ahead of the body damage (the listed 4): the body damage moves behind the constants (zero 22,
 // 1.0f 23, 0.0001f 24, body 25) and the scaled shield keeps 20; the probes declared after the shield damage instead,
 // 5 / 6 / 7 / 8 / 13 / 14 of them, 8 / 4 / 4 / 7 / 8 / 8 (the numbering follows the count of symbols, not their place).
+// M3 lane 13 r167 (fast screen, control 8): a forced-ranking search on the six-name set (4) finds one single decision
+// that halves it, a scheduling height step for one reload after function_d6a70 (4 -> 2), so each of the two shield/zero
+// pairs is its own tie. Forms on main: the shield-damaged compare as `vitality < threshold` 8; the overflow sum as
+// `overflow * (1.0f / multiplier) + body_damage` 8, as `(1.0f / multiplier) * overflow` 8; the scaled shield damage
+// through a `real &` bound to the shield damage 8; the maximum as a `real const &` bound to the call result 8 (all the
+// same code). All restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -4039,6 +4045,18 @@ enum
 // scratch, event AX/BX and kill EBX/ESI); const member-address definition 309; inline tag_get 309; 2-use owner_player local 312 (nested 309);
 // direct DAMAGE_OBJECT owner stores 466 (1902 B); forceinline set_owner 309; while reverse pass 309; prefix --i 309; short region_index 444;
 // event type via s_damage_object_datum 498.
+// M3 lane 2 r160 (fast screen with 0xd9b60 5, 0xdb210 and 0xd8cb0 MATCH each time; control 309 at 1885 B): the kill
+// block's two vitality stores through a block-local pointer from its own lookup 355 (1902 B); the event word read into a
+// named short ahead of the tests 309 (same code); the event block's type test through the pool datum 498 (1891 B); the
+// side-effect block's team read through `object` 340 (1880 B); that block's type test through `object` 279 (1885 B: not
+// kept, retail reads the pool datum's type byte there, at +3 of the entry it then takes the object from), both 373
+// (1867 B); the report call taking `objects[i]` 309 (same code). The r140 lead rebuilt (accumulator-field shield read,
+// node stores in record order, body flag first, friendly ahead of the definition, `kill = true` first): 283 at 1880 B.
+// On it four groups are left: the head's tag load (ECX with an in-place add; retail EAX then `lea ecx, [eax + 0x10]`),
+// the count (ESI; retail EDI, with the first index through `lea eax, [edi - 1]`), the scratch pair in the inlined info
+// lookup (ECX / EAX exchanged) and the event block (word in BX; retail AX, victim index in EDX). A forced-ranking search
+// on that lead lists eight register moves (2665 candidate decisions, none of the 24 tried lowers 283), so more than
+// three decisions still separate it from retail.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)

@@ -46,21 +46,19 @@ PRIVATE __forceinline real function_2922b4(real arg_0, real arg_1, real arg_2, r
 	*arg_3 = local_0;
 	return function_2922b3(arg_2 * local_0, 0.0f, arg_2);
 }
-/* arg_0 turned about the unit axis arg_1 by the angle arg_2 into arg_3, which may be arg_0 itself: the j and k
-   cross terms are taken before the first row overwrites the vector's i */
-PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const *arg_1, real arg_2, vector3f *arg_3)
+/* arg_0 turned about the unit axis arg_1 by the angle arg_2 in place */
+void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+PRIVATE __forceinline void function_2922b5(vector3f *arg_0, vector3f const *arg_1, real arg_2)
 {
-	real local_0 = (real)sin(arg_2);
-	real local_1 = (real)cos(arg_2);
-	real local_2 = (arg_0->i * arg_1->i + arg_0->k * arg_1->k + arg_1->j * arg_0->j) * (1.0f - local_1);
-	real cross_j = arg_0->k * arg_1->i - arg_1->k * arg_0->i;
-	real cross_k = arg_1->j * arg_0->i - arg_0->j * arg_1->i;
-	arg_3->i = local_1 * arg_0->i + arg_1->i * local_2 - (arg_0->j * arg_1->k - arg_0->k * arg_1->j) * local_0;
-	arg_3->j = local_1 * arg_0->j + arg_1->j * local_2 - cross_j * local_0;
-	arg_3->k = local_1 * arg_0->k + arg_1->k * local_2 - cross_k * local_0;
+	rotate_direction(arg_0, arg_1, (real)sin(arg_2), (real)cos(arg_2));
 }
 
-// score 362 (was 518): single exit, the four crosses through cross3f_staged and the clamp input as a division put the
+// score 265 (was 362): function_2922b5 calls existing rotate_direction with direct sin/cos (recovering all 63 insns of
+// rotation 1 and 55/57 of rotation 2) and natural i, j, k dot sums in the tail vector3f_assign (recovering [esp+0x5c]
+// spill and final store order, 2889/2886 B). Left: the success flag's entry piece takes EBX (retail returns literal 1 on
+// the inactive path), the second cross folds the up axis's i, the per-point half-width reloads, rays 0/1 angle*root order
+// and the tail's basis transform schedule.
+// Earlier at 362 (was 518): single exit, the four crosses through cross3f_staged and the clamp input as a division put the
 // success byte and hit flags at retail's homes; left: the success flag's entry piece takes EBX (retail returns a literal
 // 1 on the inactive path), the second cross folds the up axis's i, the per-point half-width reloads, the rotations' XMM
 // permutation and the tail.
@@ -1091,6 +1089,30 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `+=`/`-=` 184, void 2-out 183 (2895 B), weight-returning helper 444, plain static rotation 184, `rotate_vector_170d70`
 // 314, direct tail up 260 (667/667 insns), per-ray `w` local 184 (mk 93 -> 90), ternary pin 409, tail `cross3f` 257
 // (without `local_19` 265, all-4 `cross3f` 264, + `dot3f` 420).
+// GB30 (64 valid fast trials across b1-b5 + plain confirmation; 5/5 peers MATCH, callers 0x29ab90 286 and 0x29bab0 462
+// unchanged): KEPT 362 -> 265 plain (2889/2886 B): function_2922b5 calling existing rotate_direction (or
+// rotate_vector_170d70) with direct (real)sin(arg_2), (real)cos(arg_2) alone 277 (2893 B, 4-arg 277; all 63 insns of
+// rotation 1 and 55/57 of rotation 2 byte-exact) plus natural i, j, k dot sums in the tail vector3f_assign 265 (alone 357,
+// recovers [esp+0x5c] spill and final store order). Other trials: direct sin/cos at function_2922b0 call sites 466 (3-arg
+// 466, + tail ijk 471, + dot3f 694, + two-ret 669; shifts local_3 to +0x38); function_2922b5 calling axis_rotation.h
+// function_x84d9e8 655 (+ tail ijk 651); private 2-helper sin/cos wrapper 289 (+ proj_j/tail ijk 277); on 362: cross3f
+// rows 362, direct tail ijk/kji/step-kji 466/466/643, local_19 before local_17 362, per-ray w 362 (+ ang swap 358),
+// f4 direct out/if-clamp/ref-out 451/374/362, do-while ++local_17<4 684, 0-field_14 + tail kji 466; on 277/265: tail
+// dot3f (either order) 681, drop local_19 417, matrix_transform function_2477b1 770, tail cross3f 277, local_18 before
+// local_17 261 (-4), per-ray w 265, OBJECT_DATUM_GET 265, local_17-first ijk/kji 265/277, direct arg_3 stores 624, jki
+// 266, manual scale 613, add k before j 269 (2886 B). Match-pursuit lead (held as a patch; requires byte match for
+// function-scope local_13): GA r7's 184 lead + rotate_direction 97 (2892 B) + tail ijk 76 (2888/2886 B, 574/590 insns
+// before the tail byte-exact; rotate_vector_170d70 76; v-first ijk/kji 76/97; drop local_19 250; direct stores 439;
+// manual scale 425/427; cross-first 149).
+// GB32 (42 valid fast trials across b1-b3, 4/4 peers MATCH; control 265 at 2889/2886 B, +0x1d; body unchanged): on 265
+// base, all-4 cross3f 449, f4 mul swap 265, two-ret + local_6 first 623 (al 240, mk 136), local_6 before if 647, tail
+// local_9-first 465, sep tail temps 265, 3scales+2adds 648 (2886 B), staged oi/oj/ok 282, 2scales+add+add_scaled 591,
+// scale+add_scaled+scale+add 591; on 76 lead (control 76, 2888/2886 B, 667/667, al 142, mk 57): tail/all cross3f 88/280,
+// local_9-first 308/310, mat3 rows 544, scale kji 445, f4 mul swap / local_20 early / sep temps / v-first up 76, l18
+// before l17 76 (al 130), staged oi/oj/ok 93, 2nd += 445, all += 428, mat3x3_rotate 656, inline rays / f4 *arg_3 316/315,
+// 2scales+add+add_scaled 451 (al 123, mk 45; without k_real_max 554 at 2886 B), scale+add_scaled+scale+add 451 (al 119,
+// mk 54: matches all 57/57 Rotation 2 insns and final 30 tail insns verbatim, +1 pad at loop from symbol shift; without
+// k_real_max 551 at 2886 B).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -1193,8 +1215,8 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 				local_18 += function_2922b4(local_15[3], local_6, local_19, &local_20);
 				arg_3->j += local_20;
 			}
-			function_2922b5(&local_3, &local_9, local_17, &local_3);
-			function_2922b5(&local_3, local_11, local_18, &local_3);
+			function_2922b5(&local_3, &local_9, local_17);
+			function_2922b5(&local_3, local_11, local_18);
 		}
 		if (arg_6)
 			*arg_2 = local_3;
@@ -1208,9 +1230,9 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 			vector3f const *local_19 = (vector3f const *)((byte *)local_1 + 0x7c);
 			cross3f_staged(local_19, &local_1->forward, &local_18);
 			vector3f_assign(arg_3,
-				local_1->forward.k * local_17.k + local_1->forward.j * local_17.j + local_1->forward.i * local_17.i,
-				local_18.k * local_17.k + local_18.j * local_17.j + local_18.i * local_17.i,
-				local_19->k * local_17.k + local_19->j * local_17.j + local_19->i * local_17.i);
+				local_1->forward.i * local_17.i + local_1->forward.j * local_17.j + local_1->forward.k * local_17.k,
+				local_18.i * local_17.i + local_18.j * local_17.j + local_18.k * local_17.k,
+				local_19->i * local_17.i + local_19->j * local_17.j + local_19->k * local_17.k);
 		}
 	}
 	return local_0;

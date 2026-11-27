@@ -622,9 +622,10 @@ PRIVATE __forceinline real function_227811(vector3f const *arg_0, vector3f const
 	return local_0;
 }
 
-PRIVATE __forceinline void function_227812(vector3f const *arg_0, vector3f *arg_1)
+/* takes local_0 times arg_0 off arg_1; the caller computes the factor (0x227810 passes the dot of its up and
+   forward axes), so this reads arg_0 through its own parameter */
+PRIVATE __forceinline void function_227812(vector3f const *arg_0, vector3f *arg_1, real local_0)
 {
-	real local_0 = function_227811(arg_0, arg_1);
 	vector3f local_1;
 	local_1.i = local_0;
 	local_1.i *= arg_0->i;
@@ -648,44 +649,23 @@ PRIVATE __forceinline vector3f const *function_227813(s_impact_object *arg_0, ve
 	return local_1;
 }
 
-PRIVATE __forceinline void function_227814(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
-{
-	real local_0 = arg_0->i * arg_1->j - arg_0->j * arg_1->i;
-	real local_1 = arg_1->i * arg_0->k - arg_0->i * arg_1->k;
-	real local_2 = arg_0->j * arg_1->k - arg_0->k * arg_1->j;
-	arg_2->i = local_2;
-	arg_2->j = local_1;
-	arg_2->k = local_0;
-}
-
-// score 5 (371 bytes against retail's 370): the only real difference is in
-// the inlined 0x227812, where `local_1.i = local_0; local_1.i *= arg_0->i;`
-// compiles to `movss xmm1, [edi]; mulss xmm1, xmm0` and retail has
-// `movaps xmm1, xmm0; mulss xmm1, [edi]` (one byte shorter; the other reported
-// differences are the CALL alignment that follows the extra byte). One-line
-// multiplication, a named factor and the commutative order kept or worsened
-// the form. Permuter: 174 tries in 300 s (seed 999), no lower form.
-// b14I (11-17) walk against retail, fast build on r847: statements, constants, branch senses and callees all agree
-// with retail (no sort_4byte call here); the one real difference is the scale of the i component at 0x2278e4:
-// retail `movaps xmm1, xmm0; mulss xmm1, [edi]`, ours reloads `movss xmm1, [edi]; mulss xmm1, xmm0`. Measured and
-// not kept: all eight commutative orders of the three products, as separate `local_1` fields (7) or directly into
-// `arg_1->` (22), all six statement orders of the products (7, 10, 10, 11, 12, 12), and
-// `local_1.i = local_0 * arg_0->i` in one line (7: it also swaps the operands of the left component's first product
-// in the cross product). The commutative order does not reach the code, so there is no behaviour difference to record.
 // @retail 0x227810
 void impact_build_matrix(
 	long component_index,
 	s_impact const *impact,
 	matrix3x3 *matrix)
 {
-	s_impact_object *object = impact_object_header_get(havok_component_get(component_index)->object_index)->object;
+	s_havok_component *component = havok_component_get(component_index);
+	s_impact_object_header *header = impact_object_header_get(component->object_index);
+	s_impact_object *object = header->object;
 
 	matrix->up = impact->normal;
 	vector3f const *forward = function_227813(object, &impact->normal);
 	matrix->forward = *forward;
-	function_227812(&matrix->up, &matrix->forward);
+	real scale = function_227811(&matrix->up, &matrix->forward);
+	function_227812(&matrix->up, &matrix->forward, scale);
 	function_30bf0(&matrix->forward);
-	function_227814(&matrix->up, &matrix->forward, &matrix->left);
+	cross3f_staged(&matrix->up, &matrix->forward, &matrix->left);
 	function_30bf0(&matrix->left);
 }
 
@@ -851,6 +831,18 @@ struct s_227af0
 // the three calls (6-8); a fresh alias for the second or third call's operand (6-16); swapping each product's operands
 // inside function_227814 (no change); `normal` as a non-const pointer or declared at the top (4).
 // Permuter, 35 minutes (11-05): nothing below 4.
+// M3 lane 2 r160 (variant-file screen; control 4). What decides each order: the second reassociation pass sorts a
+// product's operands by descending rank, stable on the first pass's order. A float read straight through a pointer
+// symbol (`b->i` of the helper parameter that receives the global axis) ranks by that symbol's number mod 8; the reads
+// at an offset (`a->j`, `b->j`) rank by a level that moves with the float values created earlier, not with the
+// symbols. Here the second call needs its axis parameter on the same level as the first call's (0; it is 1, one symbol
+// later) and the third call needs `forward->j` below `normal->i` (4 against 2). Forms: `up` for `normal` in all three
+// calls 6, with the constraint point read in place 11, the point read in place alone 15; one axis pointer local
+// assigned before each call 22, two axis pointer locals 264; the shared staged cross helper for the file's own copy
+// (function_227814, now removed) 4, the same code, kept; the length in a named local 10; the two zero stores exchanged or chained 6 / 6; `normal` declared ahead of the
+// zero stores 4 (same code); `up` in the third call only 8, in the first only 6, in the second only 8; the length test
+// negated 313. Diagnostic (alias locals of the position parameter, not keepable): the symbol numbering moved by one to
+// eight gives 4, 24, 24, 24, 24, 14, 14, 20, so no numbering alone gives both calls.
 // @retail 0x227af0
 void impact_orientation_get(
 	s_impact const *impact,
@@ -883,13 +875,13 @@ void impact_orientation_get(
 		*half_width = 0.0f;
 		*half_length = 0.0f;
 		vector3f const *normal = up;
-		function_227814(normal, g_4687b0, forward);
+		cross3f_staged(normal, g_4687b0, forward);
 		if (function_30bf0(forward) < 0.001f)
 		{
-			function_227814(normal, g_4687a8, forward);
+			cross3f_staged(normal, g_4687a8, forward);
 			function_30bf0(forward);
 		}
-		function_227814(normal, forward, left);
+		cross3f_staged(normal, forward, left);
 		function_30bf0(left);
 	}
 	else
@@ -2401,6 +2393,22 @@ s_impact_component_iterator g_5021bc;
 // result stored straight into the global's component field, tested there and then read into the local 162, with the
 // count ternary 162; component_b started NULL and set by an if 168 (674 B); component_b's index named for the test, the
 // lookup and the data's second index 162; the data and impact index declared ahead of component_b 162.
+// M3 lane GA r29 (21 compiled fast trials with 9 matched peers MATCH; control 162 at 672/672 B, +0x1c; body unchanged):
+// on c4 (`movsx` count + impact pointer, 164): `== NONE` 164, `continue` on component_b hit 164, nested `if`s 164,
+// `while` outer loop 164, `for (long count = 0; count <= 0x20; count++)` 211 (687 B), `g_5021bc.component` in outer
+// test with inner `component` 172 (687 B), `component` after active test 172 (687 B), `g_5021bc.component` everywhere
+// 200 (681 B), `havok_component_try_and_get` helper 166, `component_b` after `impact_data_set` 193 (puts component in
+// EBP as retail but moves lookup below data set), `component_b` inside `if (impact_index == NONE)` 193, inline count +
+// iterator-next helpers 164, `continue` on existing impact 164, nested active/count `if`s 164, `constraints` pointer
+// 164, `impact_index = constraint->impact_index` 164; `component_index` local (`datum_index`) 161 on c4 / 151 on base
+// (recovers outer-loop pool in EDX, but grows frame 0x4c -> 0x50 and keeps component in ESI; not kept), `component_a`
+// inside inner `if` 114 (frame 0x50, 675 B, component still ESI; not kept), `rigid_body_index_a` local 177 (frame 0x50,
+// 680 B).
+// M3 lane 7 r238 (fast with 0x226a60 and 0x226f80 MATCH; the ledger as round 162's: component_b 180 = lookup block
+// 160 (cost 8 x w4 x n5) + 56 less 36 across the first find; the component 210): the active test's argument read
+// from the global's component field 162 (forwarded, same code); the count test through a file-local copy of 0x1d5460's
+// impact-count helper 162 (retail's movsx form, as the ternary); the component declared ahead of the loop 162; the
+// constraint index declared in the `for` 162; the impact index declared at the first find 162.
 // @retail 0x226ce0
 void function_226ce0(void)
 {

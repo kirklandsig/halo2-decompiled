@@ -805,6 +805,20 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // Forms: the centre pointer declared unset at the top or after the object 17, 17 (with the radius at both uses 29, 29);
 // the x row spelled offset first 17 (radius at both uses 29); the offset pointer 17 (30); the object's fields at each
 // use 17 (33); the offset pointer for the x row only 17 (29).
+// M3 lane 6 r253 (reduced-image screen with 0xb8600 MATCH; control 17, the radius at both uses re-measured 29). Rank
+// ledger on the radius-at-both-uses form: the definition 102 = entry +24 (n 12), transform head +48 (n 8), radius row
+// +10 (n 5), radius test +2 (n 1), secondary arm +32 (n 4), flags test +4 (n 2), less 18 where it is only live; the
+// index web 99 = entry +96, transform head +16, less 13. An equal rank already gives retail's homes (the web is the
+// later-created one), so 3 points are missing. The entry block's n counts every integer constant and global used twice
+// or more in the function (0xffff, 1, 0, 0x44 and the header array here: each is defined at entry) beside its own 7
+// values; one more such constant would lift the web by 8 and the definition by 2. Forms, all with the radius at both
+// uses: a redundant NONE test folded into the component accessor's argument 29 (same code: folded before the count);
+// both centre pointers declared ahead of the radius test 29 (the definition rises to 106: the radius test's block then
+// counts 3); the centres through the object's fields at each use 33 (x row through the two address temporaries, y and
+// z rows straight off the object, all three offset first); the secondary sum through a new three-pointer inline
+// helper 28 (every instruction retail's, only EBX and EBP exchanged; ranks unchanged at 102 and 99); that with the
+// flags bit read through a bitfield view 28 (same code and ranks). LEAD: on the helper form any change worth 3 rank
+// points matches.
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {

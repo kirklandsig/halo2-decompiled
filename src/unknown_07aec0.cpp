@@ -79,6 +79,13 @@ bool function_7af40(s_type_99af70 const *address);
 // length test against sizeof(address->ipv4_address) leaves both (the 4 stays one constant; 14); 0x7af40's ipv6 hit as
 // `result = true; break;` 14; the length test written constant-first 14 (both lose 0x783d0, 0x784a0 and 0x7ab60);
 // 0x7af40's ipv4 case as an early return 90 (0x7af40 itself lost).
+// M3 lane 15 r155 (h2m fast with the ten callers/peers; if-form 14, address EDX). Ledger on the if-form: the address
+// 30 (entry, switch head, loop body at weight 2, ipv4 test, swap block) against the counter 31 (its init block shares
+// the zero constant, the latch the bound 8); a forced-ranking search finds only counter -2 or address +2. Tried on the
+// if-form: a file-local inline byte-swap function 16; a named value local for the swap 16 (coalesced, address still
+// EDX); the 0x7af40 result in a named bool 14; the field stored to the output first and swapped in place 14; two early
+// false returns 49 (111 B). Diagnostic: the function as a const member of the address record, `this` the address, 14
+// (LTCG does not pin `this` to ECX).
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

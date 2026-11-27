@@ -568,6 +568,18 @@ c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 // two load arms and the default arm's destination named once for the copy and the request 173 (585 B, retail's length,
 // first +0x7); that per-half variant on the one-load body with the named destination 88 (562 B: 0x13fac0 is called out
 // of line, the arms stay merged).
+// M3 lane 14 r164 (H2M_FAST with 0x13fac0, 0x212bc0, 0x238c69, 0x238c21, 0x2ba9f4 and 0x2ca244, all MATCH; control 61).
+// The index and the variant as two separate globals (header and definition): the one-load body 61 (same code), and the
+// matched 0x2c5897 then stores the index after its `pop ecx` (2); on the separate globals, two load arms with the
+// variant declared per half, a named count shared by the name copy and the request (0x13fac0 then out of line) and
+// plain aggregate copies 173 (585 B, retail's length); with 0x238c69 taking the controller first as its sibling
+// 0x238c21 does (the controller then loads in the merged tail as retail) 177 (580 B); memcpy copies there 177.
+// Allocator reading on the 173 form: the variant address is one constant candidate with five references (copy, build,
+// type in the default arm; copy, type in the selected arm), priority 104 against 84 for the piece of `this` that spans
+// the arms, so it takes EBX and `this` spills; a forced-ranking search that drops it under 84 gives 58, but the copy and
+// the next use in each arm still share one scratch register (`mov eax, address; mov edi, eax`) where retail loads the
+// address again at each use, so retail's copy destination is not the same address value as the arguments. On main's
+// one-load body, the variant declared per half with 0x238c69 controller-first 76 (574 B). Body unchanged.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

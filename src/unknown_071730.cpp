@@ -573,6 +573,14 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // at the function's top 438 (first +0x18); the team array and the ratings record declared ahead of the other locals 376;
 // the property value declared beside them with its clear in place 376 (the same code each). Body unchanged; still
 // BLOCKED-BY 0x5b080's expansion at this site (the build's inline calibration).
+// M3 lane 8 r246 (fast screen with 0x5b080 and 0x706f0, plus 0x6d380, 0x6e720 and 0x7e210 for the getter trials; control
+// 376). Diagnostics on the data getter's own body (machine 3's; restored): four and twelve chained pointer copies ahead
+// of its tests 376 here (0x5b080 and 0x6d380 MATCH, 0x6e720 22, 0x7e210 883 from 871); one and three repeats of its
+// state test nested inside the range test 376 (all four users unchanged). Source that folds away adds nothing to the
+// getter's expansion cost, so a longer original getter does not explain the call at this site. Here: the two
+// session-state exits setting a named flag that guards the main arm 376 (the same code); the exits as an if/else with the
+// main arm under `!local_3 && <the first state test again>` 507 (1629 B); the exits under one `||` guard with the first
+// test repeated inside 488 (1629 B). Body unchanged; still BLOCKED-BY 0x5b080's expansion at this site.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

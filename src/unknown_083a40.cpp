@@ -1082,6 +1082,19 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // occupied record's index stored before its type 30; `collection` as `s_type_c67652 *const` 28; the occupied key copied
 // from `&collection->players[i]` (the element, key first) 28; the machine fill bounded by a `member_count` local 28 (the
 // three 28s the same code); the last record's machine stored ahead of its key copy 45. All restored.
+// M3 lane 1 r177 (fast screen with 0x84e90, MATCH each run; control 28): the swap callee as (collection, player, update,
+// other) at its definition, declaration and call 32 (the swap call is retail's row for row; left: the occupied key's
+// association, which keeps the one-byte shift, and the last record's `updates` load); on it the second loop's index as
+// dword 32, `collection` declared after `source` and `player` 32, `slot`/`occupied` declared ahead of the conflict scan 32;
+// on main's order the machine pointer as `machines + source->machine_index` 28 (same code). A compile-only screen of the
+// occupied key (it reproduces ours) keeps (inverse + cursor) + collection for: `collection` declared at the top and
+// assigned in the loop, declared after `player`, declared in the else arm after the NONE test, assigned just before the
+// slot lookup; the key as `(i + collection->players)->key`, through `update->player_index`, through a typed element
+// pointer, as byte sums in three groupings (diagnostics), through an occupant pointer named ahead of the update; the
+// second loop's index as dword. `collection` defined before the loop gives the key its own IV, as the watcher-based
+// key folds to cursor - 0x24. Reading: retail's sum groups the invariant inverse with `collection` first, so in retail
+// the base was treated as loop-invariant when the element address was rebased onto the cursor, while ours rebases only
+// the index product. The swap callee's own bytes form `index * 0xb4 + collection + 4` index first.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
