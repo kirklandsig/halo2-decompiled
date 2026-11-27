@@ -606,6 +606,14 @@ long g_55e6c0;
 // definitions at 4 each, its store in the join block at 24) before the height's top piece (fourth pass, 24), so it takes
 // EAX; a two-decision forced-ranking search on this body (160 tried) gives 17 at best (the clamp moved to EDX, this body's
 // folded packing left). All restored.
+// M3 lane 1 r178 (fast screen with 0x1dc40/0x1db10/0x1d770, all MATCH; control 29; round 51's signed pitch/packed lead
+// re-measured 29 at 484 B, its packing retail's instructions with the pitch terms scheduled first). Allocator ledger re-read
+// on this body: the merged clamp value ranks 36 (+4 in each of its three arm blocks, +24 for its store in the join block
+// of 12 candidates) and is coloured in the first pass, taking EAX; the height's top piece (24: its load/store block +12,
+// the packing +20, minus 8 for the four clamp blocks it crosses) is coloured in the fourth pass. On the lead: `offset`
+// declared bare and set to 0 just ahead of the level loop 147 (493 B); the busy test as a positive arm with `result =
+// false;` in the else 29 (the lead's code); the height stored ahead of the width 30; the +0x8c clear after the clamp 33.
+// On this body: the missing-data counter as the first arm (`if (!data)`) 150 (487 B). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

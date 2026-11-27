@@ -92,7 +92,10 @@ __declspec(noinline) void *function_449e0(short index, bool instance, bool load)
 // the three terms in retail's order, the word built in two steps with the flags and the category first, and the
 // category term in the long domain) all compile to the bytes we already have; the whole second word as one
 // expression measures 86 (1036 bytes), and the permuter (3 tries, 375 s) found nothing below 10.
-// score 3 (was 10): left: the pool register set before the bit-count test (retail `mov edx, esi` ahead of the
+// MATCH (was 3): the pool is read from the globals inside the bit-vector block, after the section lookup, and the
+// active test reads the state through the globals as 0x44e90 and 0x3f2b0's functions do; with one state local for
+// both uses the pool's copy to edx came after the `jbe`, where retail sets it ahead of it.
+// Earlier at 3 (was 10): left: the pool register set before the bit-count test (retail `mov edx, esi` ahead of the
 // `jbe`, ours after the `movzx`). Earlier left at 10: the first word's OR order (retail ORs flags and category before
 // the kept top bits) and the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`).
 // Round 149 below. Earlier rounds' notes follow.
@@ -477,16 +480,16 @@ short function_2cbf0(long geometry, dword flags,
         void *added = function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), entry->tag == NONE);
         if (added)
         {
-            s_2cb30_state *state = g_4c0b78.state;
-            if (!state->active)
+            if (!g_4c0b78.state->active)
                 ++g_4c0b78.previous;
             if (entry->unknown00 & 0x40)
             {
                 section = (byte *)function_44940((short)index, (bool)((entry->unknown00 >> 12) & 1));
+                s_bit_vector_pool *pool = (s_bit_vector_pool *)g_4c0b78.state;
                 *(void **)(entry->unknown10 + 4) = NULL;
                 word bits = *(word *)(section + 0x24);
                 if (bits > 0)
-                    *(void **)(entry->unknown10 + 4) = function_1332b0(bits, (s_bit_vector_pool *)state);
+                    *(void **)(entry->unknown10 + 4) = function_1332b0(bits, pool);
                 if (!*(void **)(entry->unknown10 + 4))
                     entry->unknown00 = (entry->unknown00 & ~0x40) | 1;
             }

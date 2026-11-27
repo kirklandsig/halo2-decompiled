@@ -793,6 +793,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // (256 B) [9] in both families; the rest 111 to 137 (216 to 240 B) [209/213]. A datum-index local
 // (`component->object_index & 0xffff`) shared by the type read and case 0, long or word, byte or long type, in four
 // orders (16 forms) 128 to 141 [209/213]. Every keepable one-read spelling still flips the caller's incoming pair.
+// M3 lane 7 r239 (H2M_FAST, caller 0x1d5bf0 in brackets; control 96 [0]). Round 60's one-read form with case 0 through
+// the word-bit view's bit2 rebuilt 28 at 256 B [0] (long type 89 [0]). On it, a rigid-body array local for retail's EBP
+// base: object index, array, absolute index, rigid body from the array, header array, type 96 [0]; the array first 94
+// [2]; header array, array, object index, absolute index, rigid body, type 118 at 268 B [155]; the object index as
+// `dword` 28 [0] and const rigid-body and header pointers 28 [0] (same code each). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

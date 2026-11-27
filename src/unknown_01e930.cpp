@@ -344,6 +344,7 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
+// score 272 (was 272): earlier 246; frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax I (11-05): no new form, no lower score. Our frame is 0x3c against retail's 0x40 because we
 // save esi at the entry, and retail's `movss` stores and `fcompi` timeout compare need /arch:SSE, which
 // this file's flags do not carry (its thirteen other functions match with them). Also tried: /arch:SSE on
@@ -353,7 +354,6 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // MiniMax B (11-03): no new form, no lower score. Retail's frame is 0x40 against our 0x3c and its
 // timeout compare (`fld`/`fcompi`) and its `movss` stores need /arch:SSE, which this file's flags line
 // does not carry; the build flags are the user's decision, so this file was not changed.
-// score 272 (was 272): earlier 246; frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
 // `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
 // size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
@@ -581,8 +581,8 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Changes (246 -> 272, 1098 bytes = retail's size): the timeout test is `!(seconds < 0.1f)` (retail's jbe also leaves the
 // loop on NaN; was `>= 0.1f`; same code), and the skip flag is `!function_2148b0(0)` (ternary and `== false` the same) instead of
 // `bool skippable = true; if (call) skippable = false;` (Kirk undoes a value set before a test and overridden; that form scored
-// 246 and is the closest to retail's `mov byte [esp+7], 1` before the call; plain form gives neg/sbb/inc). 0x1568d0 shows
-// score 7 in fast checks that also list the callers, base included (image composition, not this body). Callers 0x12bf90
+// 246 and is the closest to retail's `mov byte [esp+7], 1` before the call; plain form gives neg/sbb/inc). 0x1568d0 shows a score
+// of 7 in fast checks that also list the callers, base included (image composition, not this body). Callers 0x12bf90
 // 0x163890 0x223a21 0x2ab8c0 and callees stay MATCH.
 // `dword large = flags & 0x100; size = (large | 0x40) << 16` 273 (1102) on the old skip, 290 (1087) on the plain one. The rest of the gap is
 // flags: retail is SSE code (movss 1.0f stores, `fld dword; fcompi` timeout), this file has no /arch:SSE, so it cannot match here.
@@ -698,6 +698,18 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // direct form `function_2148b0(0) ? false : true` reads 272, the same code as main); that with `dword large` and
 // `(large | 0x40) << 16` 273; the existing function_80e14 for the retry loop (with its header) 305 (1077 B,
 // re-measured); `void *block = NULL;` declared after the start time 281.
+// M3 lane 16 r200 (fast screen, the body moved into the /arch:SSE Bink file as the exception allows, with this file's
+// functions and 0x1564e0/0x156b30/0x156960 MATCH every run; the unchanged body there reads 272). Round GA1/GA7's lead
+// rebuilt without its invented two-field return (one loading bool for both queries, the skippable flag, the size
+// ternary on the mask read back from the global, the existing function_80e14 retry, the sound object read once, the
+// movie open per arm, interleaved bins and volumes, `function_1358c0(g_55ece8.format)`, the texture stored before
+// unknown54, the positive last texture test): 294 at 1087 B, aligned 19 (the two entry zero stores, the loop pad, the
+// 10 held in EBP and the 3 through EDX). Entry forms on it, none of which gives two zero stores to one status slot:
+// `void *block = NULL;` at the top 294 (the store vanishes); the texture size and data zeroed at the top 138 (1098 B,
+// frame 0x48: two stores to two new slots, aligned 65); the block and the texture size zeroed at the top 286 (frame
+// 0x44); the texture size alone 286, the texture data alone 286 (frame 0x44 each); on the lead, the size in a named
+// local passed to the retry helper 293 (aligned 41), the skippable flag in main's direct form 302 (1082 B, aligned 73).
+// Not moved (kept only with a match).
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

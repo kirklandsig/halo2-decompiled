@@ -1370,6 +1370,11 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // setter and assigned at the call 14; the masked object index named once and used by both lookups 14 (the four the
 // same code). Still BLOCKED-BY 0x1c4b00 (its bool formal; a declaration sits in src/items.cpp, another lane's file this
 // round) and 0x1ec690 (a stub) for the copy's hoisted j/k loads.
+// M3 lane 15 r156 (h2m fast with 0x119bc0, 0x1c4b00, 0x119020 and 0x119c10, all MATCH each run; control 14): the force
+// as `function_119bc0(arg_0) != false` 97 (1039 B); as `function_119bc0(arg_0) ? true : false` 97 (1039 B); the member
+// store moved after the re-fetched object pointer, ahead of the +0x88 copy 40; the member store written
+// `(byte)local_force` 14 and the force local typed `char` 14 (both the same code). Still BLOCKED-BY 0x1c4b00 (its bool
+// formal; two of its declarations sit in other lanes' files this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
