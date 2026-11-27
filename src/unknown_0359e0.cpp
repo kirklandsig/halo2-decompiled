@@ -343,6 +343,16 @@ PRIVATE inline long swizzle_log2(dword value)
 // is live through one more block, the else-if test, so it loses 2). Forms: the tail shifts reading the short parameters
 // 146 (313 B; 0x136140 125), only the y tail reading `y` 133 (304 B; 0x136140 28); the two bit words as `long` 57; the
 // six table reads through a named table pointer 57; the mask held in a `long` 61.
+// M3 lane 16 r200 (fast screen with 0x136140 and 0x359e0, MATCH unless noted; control 57). Rank reading: the two bit words
+// are coloured first (108/99, EAX/EDX), then the entry copies (65/63) take ESI/EDI; with the copies after the mask the
+// short parameters are left uncoloured over the logarithm blocks (their weighted cost is not positive), which is what
+// sends them to the stack. Forms: the entry copies kept for the tail shifts with the table lookups reading the short
+// parameters 57 (same code); the outputs stored inside the tail's arms (out[1] then out[0] under the width test, out[0]
+// then out[1] in the else) 55 (a gain of 2, lead only); in a probe object without /arch:SSE (not kept, file restored):
+// the minimum as a ternary 80 (a branch with one store after the join, but the count in EBP), that with the arms tail
+// 80, the parameters used directly with the ternary 152 (316 B; 0x136140 28), the arms tail alone 55. On the arms tail
+// (55): the lookups reading the short parameters 55; x_bits updated first, then out[1] and out[0] in the width arm 55;
+// the minimum as if/else 80; the y shift moved into both arms' stores (diagnostic) 70 (275 B).
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
