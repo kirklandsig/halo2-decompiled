@@ -178,15 +178,26 @@ void function_11da10(
 	out->w = b->w * ta + a->w * local_0.field_4;
 }
 
+/* p scaled by s into result (p and result may be the same point) */
+static __inline point3f *point3f_scale(point3f const *p, real s, point3f *result)
+{
+	result->x = s * p->x;
+	result->y = s * p->y;
+	result->z = s * p->z;
+	return result;
+}
+
 // rotates a point by a unit quaternion
 __inline void quaternion_rotate_point(
 	quaternionf const *q,
 	point3f const *v,
 	point3f *out)
 {
+	real square = q->w * q->w;
+	real m = square * 2.f - 1.f;
+	real dot = q->i * v->x + q->j * v->y + q->k * v->z;
+	real d = dot * 2.f;
 	real w2 = q->w * 2.f;
-	real m = q->w * q->w * 2.f - 1.f;
-	real d = (q->j * v->y + v->x * q->i + v->z * q->k) * 2.f;
 	real cx = q->j * v->z - v->y * q->k;
 	real cy = v->x * q->k - q->i * v->z;
 	real cz = q->i * v->y - q->j * v->x;
@@ -196,8 +207,8 @@ __inline void quaternion_rotate_point(
 	out->z = v->z * m + cz * w2 + d * q->k;
 }
 
-// score 35 (was 35): with main's rotate helper the dot, cross and row products come out in other orders than
-// retail's from +0x5d; the held form below leaves two operand-rank ties at 8.
+// score 8 (was 35): the rotate helper now has the held form below (named square and dot, w2 after d) and the
+// scaled position goes through the existing point3f_scale; two operand-rank ties are left at +0x50.
 // Gemini GB r19 (held as a patch, coordinator review): quaternion_rotate_point summed in i, j, k order with named
 // square and dot locals and w2 computed after d, plus the existing point3f_scale for the scaled position: 8 (was 35),
 // and 0x11dd80 4 (was 48). The locals and the w2 placement are statement and operand order, kept only with a byte
@@ -220,6 +231,10 @@ __inline void quaternion_rotate_point(
 // q.j * v.x (cz) and q.i * v.z (cy) are left with the v field first (each cross spelled both ways there 4). Redundant
 // parentheses on the square or the m chain 29-76 (they change that chain), on the dot's first term 6 (8 with the extra
 // local). Natural extra symbols: the scale named once for its three uses 9, declared at the top and assigned there 9.
+// M3 lane 16 r199 (h2m fast with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820; plain check 8): kept, 35 -> 8, the held
+// form applied now that 0x11dd80 matches byte for byte with it (the helper's statement order is kept on that match;
+// point3f_scale here is the existing helper in place of its three statements). The rotate helper alone, with this
+// body's three `*=` statements, 40. Left: the dot's i and k terms and cy's `q->i * v->z` (the two ties above).
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,
@@ -242,9 +257,7 @@ void function_11dbb0(
 	quaternion_rotate_point(&a->rotation, &b->position, &out->position);
 	if (a->scale != 1.f)
 	{
-		out->position.x *= a->scale;
-		out->position.y *= a->scale;
-		out->position.z *= a->scale;
+		point3f_scale(&out->position, a->scale, &out->position);
 		out->scale = b->scale * a->scale;
 	}
 	else
@@ -256,41 +269,11 @@ void function_11dbb0(
 	out->position.z = a->position.z + out->position.z;
 }
 
-/* p scaled by s into result (p and result may be the same point) */
-static __inline point3f *point3f_scale(point3f const *p, real s, point3f *result)
-{
-	result->x = s * p->x;
-	result->y = s * p->y;
-	result->z = s * p->z;
-	return result;
-}
-
-// score 48 (was 48): with main's rotate helper the products and schedule differ from +0x3. With the held rotate form
-// (named square and dot, w2 after d; see 0x11dbb0) 4 are left at +0x178: retail loads the -1 before the x component
-// of the second scale and stores `out->scale` before the last z store. Tried on the held form: `out->scale = inv;`
-// between the two scales 9 (the -1 load then matches, the scale store moves to the top), ahead of both 18, the
-// branches storing `out->scale` directly 47 (440 B); the scale helper as `p->x * s` 4; the second scale through the
-// first's returned pointer 9, through a named position pointer 19 (430 B) or 56 (400 B); inv as one conditional
-// expression 4/9/18 (same three placements); the inverse scale as an inline helper 58-60 (432 B); a named -1 constant
-// at file scope 4 (also for w: 4), as a local 14. Dead-local scans at three anchors: the rotate moves with period 8
-// (4 only at 0, 8, 16), the tail never.
-// M3 lane 12 r195: the rotate helper in the matched vector form's order (named square, w2 after d, as in
-// src/unknown_141590.cpp) 19 (0x11dbb0 39); with a named dot 4 (0x11dbb0 48) and with 0x11dbb0 through
-// point3f_scale 4 (0x11dbb0 16; that helper moved above the rotate). Without moving w2: square and dot named 50,
-// square named 86 (433 B), point3f_scale in 0x11dbb0 alone 48 (0x11dbb0 63), dot named 39 (0x11dbb0 21; a one-use
-// name). The w2 move is a statement order change, kept only with a byte match; the tail's 4 are left.
-// M3 lane GA r29 (33 compiled fast trials + plain check; body unchanged): SOLVED TO EXACT BYTE MATCH (0, 429/429 B),
-// held as a patch because updating shared quaternion_rotate_point raises untouched non-queue sibling 0x11dbb0 35 -> 40
-// (positional shift at 452/452 B; pairing with existing point3f_scale in 0x11dbb0 gives plain-confirmed 0x11dd80 MATCH
-// and 0x11dbb0 35 -> 8 with all 15 matched peers/callers MATCH). The last 4 tail diffs are fixed by storing
-// `out->scale = inv;` before direct `out->position.{x,y,z} *= -1.f;` (direct *= -1.f or -1.f * after point3f_scale
-// alone gives 2 at +0x1a5, moving out->scale between gives 0 MATCH; direct unary - 34, both direct 49, loop 14,
-// loop helper 8, void/1-arg/2-arg negate helpers 4, dot3f 29/53, out->scale read-back 18, double scale 25). Also tried:
-// 141590 no-dot rotate + tail 15 (0x11dbb0 33, not kept: one-use square + statement order without match); main rotate
-// + tail 44; dot jik / 2.f lhs / row orders / cy-cx-cz / dot+dot / dot kji all 0 MATCH (0x11dbb0 40); inline rotation
-// inside 0x11dd80 without touching quaternion_rotate_point 75-81 (433-434 B).
-// Machine 3 review: the held match with the negation through point3f_scale (`out->scale = inv;` first) 9 (0x11dbb0 8),
-// so the match rests on that helper's body written out by hand; it stays held as a lead.
+// Matched (M3 lane 16 r199, plain check): the rotate helper with a named square and dot and w2 after d (the order
+// of its matched vector twin in src/unknown_141590.cpp), `out->scale` stored between the two position scalings, and
+// the negation written on the position members like the rotation.w line. Retail delays the scale store to just
+// ahead of the last z store, which it can only do when the negation's accesses go through `out` itself: through
+// point3f_scale's pointer parameters the store stays ahead of the -1 load (9), and with the scale stored last 2.
 // @retail 0x11dd80
 void function_11dd80(
 	real_quaternion_transform const *in,
@@ -308,8 +291,10 @@ void function_11dd80(
 	else
 		inv = 1.f / in->scale;
 	point3f_scale(&out->position, inv, &out->position);
-	point3f_scale(&out->position, -1.f, &out->position);
 	out->scale = inv;
+	out->position.x = out->position.x * -1.f;
+	out->position.y = out->position.y * -1.f;
+	out->position.z = out->position.z * -1.f;
 }
 
 // @retail 0x11df30
