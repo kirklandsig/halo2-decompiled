@@ -1115,6 +1115,14 @@ struct s_physical_block_iterator
 // `MAX(x, 0)`) 203; the switch written default, case 1, case 0 204; case 0's test as `? true : false` 201 (same code);
 // the comparison as a difference `> 0` (measured only, not overflow-safe) 203; the two weighted products named 201 (same
 // code); best_age first with both ages `MAX(x, 0)` 217. Body unchanged.
+// M3 lane 8 r248 (fast screen with 0x13d320/0x13d830/0x13d8b0/0x13d950, all MATCH each run; control 201; body unchanged).
+// Lane 1 r124's 40 lead re-applied 40 (1213 B, +0x356; left: the walk loads the block offset ahead of the handle's salt and
+// sums into best.offset's register, and the head flag's `sete; test`). On main: `better` declared without an initialiser
+// and cleared at the top of the have_best arm 201 (same code); both default-arm ages as `dword` with `MAX(x, 0)` 209
+// (1228 B); that with the cleared flag 209; case 0 written from the best side (`best.time > candidate->time || ...`) 201
+// (same code); case 0 as a ternary on equal times 284 (1182 B, +0x2f). Reading: retail's three policy cases all leave the
+// result in AL and join at one `test al, al` (default, case 1, case 0, then the join); ours places case 0 and case 1 after
+// the scan loop and threads the default arm's `setg` into the take test.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

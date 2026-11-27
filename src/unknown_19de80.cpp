@@ -1110,6 +1110,23 @@ static inline bool teams_enabled_19e1c0()
 // (1128 B: retail's stored teams byte goes); the opponent arm's teams test and the engine-text arm through the
 // existing header helper and engine getter in place of the file-local copy 390 (same code; plain result 691), but
 // including that header here lost two matched functions elsewhere in the full check, so it is not kept. Body unchanged.
+// M3 lane 4 r271 (fast screen with 0x19e0f0, 0x19ea60 and 0x19eae0, all MATCH each run; control 390, the plain result
+// 691 at 1170 B). Allocator reading from a back-end trace of the plain-result form: the remaining count is not one
+// register candidate here but fourteen small ones, one per arm (two references each), because nothing reads it before
+// the first arm branches off; the token, first read in the entry block, is one function-wide candidate and takes the
+// last callee-saved register. With one read of the count in the entry block (diagnostic) it is one candidate ranked 73
+// (about 61 without the read's own share), above the token's 52-54 and below the event's 63-70 and the token length's
+// 75-79: retail's order (result ESI, token length, event, count EBP, the token re-read per compare). A read placed in
+// the first arm's condition starts the candidate after the first call instead (514 at 1520 B, the count loaded after
+// the call). So the open point is what makes the count one function-wide value with no instruction of its own in the
+// entry block. Forms on the plain result: the name/team clamps assigning the parameter (`if (remaining > result)
+// remaining = result;`, copy, `result = remaining`) 692 (1170 B), as `if (result < remaining)` 692; that with the
+// fallback clamp the same way 686 (1176 B), the fallback alone 685; the clamps through a file-local minimum helper
+// taking both values by const reference, name/team 659 (1202 B), all five 644 (1210 B: the token length gets a stack
+// home); that helper by value 693 (1168 B). On the volatile result: the parameter-assigning clamps 519 (1525 B).
+// Diagnostic re-measured: a volatile read of the count at the top 453 (1470 B: count EBP at entry, token reloaded per
+// compare, tails apart; left there: token length EBX and event EDI exchanged, the clamp's operand order, the text
+// address copied from ESI where retail forms it again). Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

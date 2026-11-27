@@ -1360,6 +1360,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // function scope with the plain lookup 51 (140 B); the plain lookup with both calls reading the unit index again
 // through the player getter 41 (142 B); the plain lookup through a named object-header pointer 17; a unit-index local
 // for the test and both calls with the lookup reading the field 17 (the last two the plain-read code).
+// M3 lane 16 r200 (fast screen with 0x151aa0, 43 each time, and 0x152bf0, MATCH; control 5). Rank reading: on this body the
+// player sum is one value shared by the player and the lookup's reload (live into the lookup block), so it is built in
+// EDX; on the plain-read form the sum folds into the player index's own EAX value and the player is a copy (retail's
+// opening) while the unit index ranks 59 against the slot's 42. Forms: the file's player getter spelled index-first 5,
+// as `&array[index & 0xffff]` 5 (both the same code; 0x1508e0, 0x151940, 0x151c10 and 0x152bf0 stay matched); the guard
+// through the getter with the lookup and both call arguments through the player 27 (138 B); the player fetched inside
+// the guarded block with the guard through the getter 26 (137 B); the guard and the lookup through the getter with the
+// call arguments through the player 64 (150 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1809,6 +1817,12 @@ void function_150820(dword *bits, bool local_only)
 // NOT kept: The 210-byte late-hand form puts the player in ESI but passes primary in a register and grows the frame to eight bytes. All forms raise the score.
 // M3 lane 1 r157: HELD, a byte match not kept: the one-member handle record described in 0x151b80's note, used at this
 // function's unit lookup, matches it (43 -> MATCH); held with 0x151b80 for the user's ruling, body unchanged.
+// M3 lane 16 r200 (fast screen with 0x151b80, 5 each time, and 0x152bf0, MATCH; control 43). Rank reading: the hand (46) is
+// coloured ahead of the player (27) and takes ESI, the unit index (50) takes ECX where retail has EDX; a forced-ranking
+// search over 40 decisions gives 18 for the unit index in EDX alone and 29 for the hand in EDI alone, no match (two
+// decisions apart). Forms: the 0xcd4e0 arm as `else if (...) result = true;` 47; the modes array at function scope 43;
+// only the 0xcd7b0 argument re-read through the player getter 70; the hand as `primary ? 0 : 1` 43; the slot-to-weapon
+// step through the existing 0xcbd50 43 (identical code).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

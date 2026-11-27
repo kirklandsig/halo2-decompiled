@@ -385,6 +385,8 @@ void function_1544e0(transform4x3f *matrix, real distance, real angle)
 }
 
 void rotate_vector_170d70(vector3f *v, vector3f const *axis, real sine, real cosine); /* inline in src/unknown_170d70.cpp */
+union vector2f;
+real function_11cc90(vector2f const *a, vector2f const *b); /* src/unknown_11cc90.cpp */
 
 // @retail 0x154d70
 void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
@@ -406,6 +408,24 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// score 2 (was 13): one product is left: the inlined rotation's projection dot multiplies v.i by axis.i where
+// retail multiplies axis.i by v.i. M3 lane 2 r161 (h2m fast with 0x170d70 and 0x11cc90, plain check agrees): the
+// dot, clamp, clamped arc-cosine and sign test are matched 0x11cc90's body, and with the update test written in the
+// `if` itself (no one-use bool) the link-time inliner expands the existing 0x11cc90 at this site as retail does; with
+// that call the rotation's sine and cosine passed straight to the rotate call and the scaled duration named once for
+// its two stores give 2. Steps: the call with the bool kept 399 (978 B, the call stays out of line); the call with
+// the test in the `if` 16; plus sine and cosine passed straight 10; plus the named duration 2. Ablations: the call and
+// the named duration with the sine and cosine locals kept 16; no call, named duration, sine and cosine passed straight
+// 21; no call, named duration only 23. On the 16 form: the timer read at each use 24, v declared before w 16, the
+// view entry folded into the angles copy 229, the angle declared then assigned 16. On the 10 form: only the cosine
+// named 34, only the sine named 10, both named cosine first 34; non-const casts for the call 10; a forward-vector
+// pointer local 15; the duration scaled from the input bounds 161 (1104 B); named planar pointers for the call's
+// arguments 397 (the call is then not expanded); a named time-globals pointer 86 (1104 B); a pointer to the slot's
+// vector for the cross, normalize, rotate and scale 50. On the 2 form: the duration product written the other way
+// round 2, the timer stored before the duration 2; dead-local scans (1-16 at the top or just ahead of the rotate
+// call) 4-23, none at 0, so the last product is no symbol-count state.
+// Also on the 2 form: a forward-vector pointer local for the stores, the cross and the rotate call 48 (1106 B); a
+// pointer to the slot's vector for the rotate and scale calls 19.
 // MiniMax C (11-16): no new form, no lower score (13): all thirteen differences are the j and k rows of the inlined
 // rotation, whose term order is the shared rotate_vector_170d70 helper's own text in src/unknown_170d70.cpp, a file
 // this lane may not edit.
@@ -442,7 +462,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // projection * axis before vector * cosine (rotate_slot_vector); a same-behaviour twin picked for this caller, not kept
 // (twin ruling); build/held/lane8-r134-154df0-twin.patch. Kept only through the shared helper (one text for every caller).
 // MiniMax G (11-12): no new form, no lower score (13): the j and k rows of the inlined rotation still differ and follow the shared rotate_vector_170d70 text in src/unknown_170d70.cpp, which this lane may not edit; a copy of that helper written for this caller is a same-behaviour twin and was not kept.
-// score 13 (was 13): only the j and k rows of the inlined rotation differ: retail adds
+// Earlier note at 13 (was 13): only the j and k rows of the inlined rotation differ: retail adds
 // projection * axis + vector * cosine (u.j loaded before the u.i store), ours the other way round
 // (the i row agrees).
 // Tried: norm scalar 67; nested norm tests 64; early 2D cross 207; direction copy loop 271;
@@ -585,11 +605,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // MiniMax I (11-15): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined
 // rotation, whose helper (rotate_vector_170d70) is defined in src/unknown_170d70.cpp and not in this lane's file; no
 // spelling of the call made from here produces retail's operand order for those two rows.
-// score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
+// Earlier note at 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
 // rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
 // this lane may not edit.
 // MiniMax E (11-17): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, and the rotation helper (0x170d70) is defined in src/unknown_170d70.cpp, which this lane may not edit.
-// score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
+// Earlier note at 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
 // `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
 // MiniMax S (11-15): no new form, no lower score (13): only the j and k rows of the inlined rotation differ, where the
 // helper adds the projection term after the cosine term and retail adds it before; the helper's own text fixes that order
@@ -623,8 +643,7 @@ void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vec
 {
 	real timer = (real)slot->timer80;
 
-	bool update = bounds->duration > timer || priority > slot->priority9c || (priority >= slot->priority9c && bounds->duration > g_510c54->rate * timer);
-	if (update)
+	if (bounds->duration > timer || priority > slot->priority9c || (priority >= slot->priority9c && bounds->duration > g_510c54->rate * timer))
 	{
 		vector3f w;
 		vector3f v;
@@ -642,25 +661,13 @@ void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vec
 
 		if (fabs(length_sq3f(&v) - 1.0f) < 0.0001f && fabs(length_sq3f(&w) - 1.0f) < 0.0001f)
 		{
-			real dot = v.i * w.i + w.j * v.j;
-			real angle;
-			real cross;
-
-			if (-1.0f > dot)
-				dot = -1.0f;
-			else if (dot > 1.0f)
-				dot = 1.0f;
-			angle = (real)acos((-1.0f > dot) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot));
-			cross = v.j * w.i - v.i * w.j;
-			if (0.0f > cross)
-			{
-				angle = 0.0f - angle;
-			}
+			real angle = function_11cc90((vector2f const *)&w, (vector2f const *)&v);
 
 			slot->bounds = *bounds;
 			slot->priority9c = priority;
-			slot->bounds.duration = (real)g_510c54->field_2_3 * slot->bounds.duration;
-			slot->timer80 = (short)slot->bounds.duration;
+			real duration = (real)g_510c54->field_2_3 * slot->bounds.duration;
+			slot->bounds.duration = duration;
+			slot->timer80 = (short)duration;
 			slot->forward.i = (real)cos(angle);
 			slot->forward.j = (real)sin(angle);
 			slot->forward.k = 0.0f;
@@ -670,10 +677,7 @@ void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vec
 			cross3f_staged(&slot->forward, g_4687b0, &slot->vector);
 			function_30bf0(&slot->vector);
 
-			real s = (real)sin(rotation);
-			real c = (real)cos(rotation);
-
-			rotate_vector_170d70(&slot->vector, &slot->forward, s, c);
+			rotate_vector_170d70(&slot->vector, &slot->forward, (real)sin(rotation), (real)cos(rotation));
 			vector3f_scale(&slot->vector, scale, &slot->vector);
 			slot->flags |= 2;
 		}

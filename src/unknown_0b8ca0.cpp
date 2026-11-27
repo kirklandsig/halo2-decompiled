@@ -819,6 +819,16 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // helper 28 (every instruction retail's, only EBX and EBP exchanged; ranks unchanged at 102 and 99); that with the
 // flags bit read through a bitfield view 28 (same code and ranks). LEAD: on the helper form any change worth 3 rank
 // points matches.
+// M3 lane 13 r168 (h2m fast, control 17): this file's existing point-transform helper for the bounds centre, with the
+// radius at both uses, 72, alone 61 (it holds the scale in a local; retail reads it for each product); the radius at
+// both uses re-measured 29; that with the existing three-vector add helper for the secondary centre (its header added)
+// 28, every instruction retail's but EBX/EBP exchanged (ranks 102/99; a forced decision putting the definition in EBX
+// is a byte match); that with the bounding offset through a pointer 28; that with the physics call folded into the test
+// and no result local 28. Reading: on the 28 form each count that would flip the two ranks (one more entry-block
+// candidate, one fewer in the transform head or in the secondary arm) belongs to an instruction retail also has, and
+// the radius local left uncoloured is spilled to the frame (105), so retail's re-read is not that. On the 28 form, a
+// second definition local for the sphere part fetched again 129 (760 B: the fetch is repeated), copied from the first
+// 28 (same code: the copy is propagated), bound by const reference 28 (same code).
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {
