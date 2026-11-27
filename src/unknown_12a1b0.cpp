@@ -3200,6 +3200,13 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // rest moves. Forms: `distance` declared ahead of `maximum` 597, `position` ahead of `gain` 597 (both the same code);
 // the minimum floor as an `if` 703 (2500 B); the track loop's index as `short` 623 (2503 B); `alternate` as the
 // `dword` `flags & 1` with `track_alternate = alternate != 0` 662 (2508 B, frame 0x44). Body unchanged.
+// M3 lane 2 r162 (fast screen with 0x21aeb0, 0x127d00, 0x21b940, 0x21be20, 0x126df0, 0x21bd00, 0x21cf80, 0x21d060, 0x192d70,
+// 0x12abe0 and 0x21b070; control 597 at 2518 B). The track's seed pointer chosen by an if/else 613 (2504 B); the old-end
+// fade's looping bit through the existing 0xbfe40 setter re-measured 592 (under the keep bar), with the seed if/else 610
+// (2504 B); the one-use start-with-fade bool written into its test 648 (2506 B), with the setter 643; the distance test
+// written `minimum < distance` 597 (same code). `alternate` inside the definition guard re-measured 615 (2500 B; entry
+// exact to the creation call, then the creation compare order, the source copy registers and the gains clear's `lea`).
+// Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
