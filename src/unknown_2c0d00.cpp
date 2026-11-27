@@ -1091,6 +1091,18 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 751; direct `object+0x248` + nested/dots 857 (3713 B, local-count phase; + uninit `straight` + early `enabled` 860).
 // Match-pursuit on 718: nested/dots + `else straight = true;` 550 (3731 B, +0x91, mk=54); + early `enabled` 849 (+0x1,
 // 3750 B); + direct `object+0x248` 816/818 (+0x1, 3732 B). Body unchanged at 718.
+// M3 lane GA r28 (22 fast trials with 0x29a190/0x29cbb0/0x2c41b0 and 12 file peers, all 11 fast-matched peers MATCH;
+// control 718 at 3731/3731 B, +0x4a, frame 0x2cac, aligned 159, masked 68): on 718 base, early `bool enabled = true;`
+// 717 (mk 64); vehicle dot x-z-y 720 (mk 66); vehicle dot nested `if (dot > 0.0f)` 887 (fr 0x2cb0, al 142, mk 64);
+// vehicle vel `dot3f(direction, vel)` 715 (mk 64); sphere vel `dot3f(vel, direction)` 716 (mk 66); sphere
+// `dot3f(&difference, direction)` 718 (same code); clean retail bundle (x-z-y + dir-first vel + sphere diff-first +
+// nested `d <= r*r` gates) 715 (mk 50), + early `enabled` 714 (-4 under keep bar, al 155, mk 46), + nested vehicle dot
+// 884 (fr 0x2cb0, mk 46); delayed `ai_object_get` 852 (+0xe, 920/921 insns); location via `self_unit` 718 (same code);
+// `sphere_node == NONE` 786 (3727 B); reversed entry dot 720; nested vehicle dot + direct `+0x248` reread 857 (3713 B).
+// Match-pursuit (`else straight = true;` + `word device_flags`): r163 405 check 405 (mk 65); + clean retail bundle 408
+// (mk 47); + early `enabled` 401 (3731/3731 B, +0x91, al 166, mk 45); + nested vehicle dot 543 (mk 40); + direct
+// `+0x248` reread 528 (3731/3731 B, +0x91, 921/921 insns, al 131, mk 36: only 7 small local sites remain); `>` gates on
+// bundle 408 (mk 49); `else straight = true;` alone on 718 / on bundle 544 / 550 (mk 62 / 44). Body unchanged at 718.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
