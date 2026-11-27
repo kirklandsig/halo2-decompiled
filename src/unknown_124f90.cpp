@@ -4200,6 +4200,14 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // `case 1: continue;` written ahead of `case 0` 8; the unreachable default written first 8; case 0 ending in
 // `continue` 8 (same code each), without the default 78; no default with case 0 ending in `continue` and `case 1:
 // break;`, either case order, 49.
+// M3 lane 8 r247 (fast reduced-image screen, control 8; the no-default form re-measured 78, voice 60 against the sound
+// index 59: the voice gets 48 of its 60 from the voice-element block, cost 4 among six candidates; the index's entry
+// and latch blocks each only copy the inlined datum helper's result into it). On main's body: `case 1: continue;
+// default: continue;` 49, `case 1: default: continue;` 49 (both the `test ax, ax` dispatch); `default: break;` 78 (the
+// no-default code); the voice's owner read once into a named `long` for its two tests and the 0x127320 argument 8 (same
+// code), on the no-default form 78; `reason` declared at function scope 8, on the no-default form 78; the masked index
+// named at the loop top (`absolute_index`, declared ahead of the loop) for both playback reads and the advance's
+// `absolute_index + 1` 181 (575 B), on the no-default form 194 (578 B).
 // @retail 0x1282d0
 void function_1282d0(void)
 {

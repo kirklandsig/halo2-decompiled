@@ -1325,6 +1325,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (same code); the classifier reading the long view and comparing against the dword view 238 (same code); the overlay
 // with three body pointer locals, one per test 319 (1243 B, one load); the root's type test as a one-case switch 301
 // (the type is then loaded into ECX as retail, but tested with `dec ecx`, not `cmp ecx, 1`). Body unchanged.
+// M3 lane 11 r177 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238, difflib-aligned
+// 180): the material output declared at function scope (a declaration move, match-only) 230 (frame 0x44 as retail,
+// aligned 168); on it the decode as `switch (data >> 29)` (matched 0xdd990's switch on the same key; retail's `shr 0x1d;
+// dec; je`) with the instance arm as default first 230 at retail's 1243 B (aligned 170), case 1 first 324 (1227 B,
+// aligned 163); on that switch the origin through real_point3d_set 235 (1252 B), origin and hit through it 328 (1265 B).
+// The classifier reading the data field at each use 238 (same code: one load). Left on the 1243-byte form: retail copies
+// origin and hit with float moves into separate cells (origin z, y, x) and keeps the shape in EBX for the decode.
+// Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
