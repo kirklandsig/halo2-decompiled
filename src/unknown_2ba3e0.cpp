@@ -226,6 +226,21 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
 // (611 B: called, not inlined); the amount as `scale * (phase - 0.5f)` 46; no phase local 59 (647 B); a velocity
 // pointer for the three adds 47; no time local (the product inside the call) 46; the ticks getter converted and then
 // `time *= rate` 46; a named curve input 56 (652 B); the +0x34 product as `properties_values[2] * amount` 46.
+// M3 lane GA r28 (36 fast trials with all 9 matched peers in this file MATCH throughout; control 46 at 664/664 B, +0xc9,
+// 177/174 insns, al 17, mk 15): member function `s_particle_properties_2ba::function_2ba100(...) const` 46 (same code);
+// value copy `s_game_time_globals gt = *g_510c54;` / by-value inline helper 184/184 (701 B); `game_time_get_seconds()`
+// 57 (673 B); `s_particle_cache_2ba` inline methods 46; `vector3f_scale(&wind, amount * properties_values[0], &delta)`
+// with `+=` 47 (flips `j` row to `movaps+mulss [esp+0x2c]` while `i` stays `movss+mulss`), with `vector3f_add` 52
+// (655 B), `properties_values[0] * amount` 47/52, with loop add 53 (651 B); `thiscall` + `vector3f_scale` + `vector3f_add`
+// 47 (al 13, mk 11), + inline mul + `+=` 47; `real wind[3]` 46; `point3f wind` + `vector3f_add` 47 (al 13, mk 11).
+// Match-pursuit (same-file inline rvalue getters bound to `const &` helper parameters, not kept without match):
+// `ticks_mul_cref(function_146650(), rate_getter())` 44 (664/664 B, 174/174 insns, al 9, mk 9: unfolds `movss xmm0,
+// [eax+4]; mulss xmm1, xmm0` cleanly while cross-file `0x146650` folds `cvtsi2ss`), with `lvalues` / ticks-only / casts
+// 46 each; with `thiscall` + `vector3f_scale(&wind, amount * properties_values[0], &delta)` + `vector3f_add` 44 (664/664
+// B, 174/174 insns, al 5, mk 5: exact `+0x34` store and velocity load/add/store schedule); both same-file inline getters
+// into `const &` + `vector3f_scale` + `vector3f_add` 45 (al 15), + inline mul 44 (al 5, mk 5: `long const &` still folds
+// `cvtsi2ss`), + `thiscall` / `linear` pre-`wind` / `wind.n[0..2]` / `prop0`-first 44 each (al 5, mk 5), + `k,j,i` rows
+// 44 (al 7, mk 5), + `wind` at top / `delta` pre-`wind` / scale-first helper / plain struct `wind` 45 each. Body unchanged at 46.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {

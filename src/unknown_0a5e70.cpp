@@ -102,10 +102,14 @@ static void scale_vector(vector3f *v, real limit_squared, real limit)
 	}
 }
 
+class c_object_type_definition;
+
 #define CLOSE(a, b) (fabs((a) - (b)) < k_real_epsilon)
 
+/* the definition is not read here; each of the five callers (the object types' v27) stores its `this`
+   to a stack slot ahead of the call, the way the callers of 0xa4950 store theirs */
 // @retail 0xa5e70
-long function_a5e70(long object_index, long flags, long state_pointer)
+long function_a5e70(long object_index, long flags, long state_pointer, c_object_type_definition const *definition)
 {
 	s_object_state *state = (s_object_state *)state_pointer;
 	s_object_a5e70 *object = OBJECT(object_index);
