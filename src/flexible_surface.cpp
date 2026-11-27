@@ -1027,6 +1027,16 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // as retail, but the seed read moves ahead of the clock loads and the time stays on the x87 stack (`fst`) where retail
 // stores and reloads it; a one-use local and a moved statement, so a lead only); the `short` local alone 130 (same code).
 // Body unchanged.
+// M3 lane 4 r266 (H2M_FAST with 0x118140 and 0x117c80, MATCH; control 130). Dead initialised longs at the top (diagnostic)
+// K = 1..8, 12, 16: 130/152/154/154/154/154/138/138/136/136 (880 B for K = 2..6, 882 B from 7), the frame 0x1c at every K,
+// so the missing cell is not a symbol-count state. In the shared rotation helper (with 0x2551f0, 0x1ff360, 0x1161f0,
+// 0x26d570), the vector's j read into a local beside k, with or without the dot and cross written j, k, i: this function
+// 150 (883 B) with retail's 0x20 frame (first difference moves to +0x2a: the global's j and k then stay in registers and
+// two cross terms spill), but matched 0x2551f0 63 and 0x1ff360 93, so not kept. Here: the rotation through a
+// file-local copy with separate input and result parameters, called with the global for both (diagnostic: a second
+// spelling of the shared helper) 154 (880 B, frame 0x1c); the four globals only this function uses (g_55e710, g_55e714,
+// g_55ecd0, g_55ecd4) declared `static`, all four or the direction alone, 162 each (880 B, frame 0x1c: the limit call's
+// constant push is hoisted into the rotation). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -1120,11 +1130,10 @@ void __stdcall function_118430(long index)
 }
 
 #include "flexible_surface_calls.h"
+#include "shader_cache.h"
 extern s_record_pool *g_509434;
 long __stdcall function_3ddd0(long);
 void function_1cf50();
-void function_1ccb0(long);
-void function_1cd90();
 byte *g_485a80;
 // Render-state storage read by the two external state helpers.
 // Attribute pairs terminated by 255, as consumed by the retail state helper.
@@ -1143,217 +1152,17 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
-// score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
-// 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
-// tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.
-// M3 lane 2 r107 (fast with 0x117060 and 0x117100, both MATCH; fast = plain 322): with registers and numbers masked
-// 243 of 274 lines still differ, nearly all after the 0x1ccb0/0x1cd90 point: retail inlines those two (0x1c6b0 then
-// 0x1c710 twice) and calls the vertex-data setters out of line (0x3fb2d0, 0x3faae0), where ours calls the two helpers
-// and expands the setters inline, so the inlining budget, not a local form, decides the body. Lead only (a flag
-// question, not a source form): retail calls 0x1ccb0 from 0x47930, 0x52040 and 0x23ea80 but expands it here and in
-// 0x19f680. Body under `if (function_117100(index))` 322 (same code); the lighting expression passed straight to
-// 0x1bd50 (no local) 322 (same code); the material index as `= tag_index; if (== NONE) ...` 383; the cull state set
-// before the sign is formed 332 (1302 B); the definition looked up just before the side loop 416 (1315 B).
-// MiniMax I (11-17): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against this build's three stack arguments, so the scans' stack homes, the side loop and the outer vertex calls still differ; the first difference is at +0x13, where the jump into the first call's failure path lands at a different offset.
-// MiniMax I (11-16): no new form, no lower score (322): the first difference is the first call's argument setup - retail loads
-// the field into ESI, pushes it and keeps the header pointer in a stack slot, this build loads it into ECX and
-// pushes that.
-// MiniMax E (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls
-// them, both in src/unknown_01cf50.cpp, and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against
-// our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
-// MiniMax C (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in EDX/ECX/EAX against this build's three stack arguments; the lighting pointer nulled before the lookup measures 315, seven points and under the keep bar, and 0x4b2d0's convention follows from its own body, whose second argument this round still could not move from eax into ecx.
-// MiniMax S (11-14): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where ours calls them
-// (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in
-// EDX/ECX/EAX against our three stack arguments (fixed by the header), so the frame, the attribute scans, the side
-// loop and the outer vertex calls stand as they are.
-// MiniMax C (11-01): no new form, no lower score.
-// MiniMax S (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
-// MiniMax E (11-16): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 and passes the first argument to 0x4b2d0 in ECX; both callees sit outside this lane's files.
-// MiniMax B (11-18): no new form, no lower score (322): retail still inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and still passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
-// MiniMax G (11-18): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line and
-// passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against this build's three stack arguments; both callees sit in files this
-// lane may not edit, so the frame 0x2c, the attribute scans, the side loop and the outer vertex calls stand as they are.
-// Earlier: frame 0x44 versus 0x2c; attribute scans and D3D call expansion differ.
-// Integer orientation 529; null-first lighting 522; per-scan results 530; real type
-// cursors 574; existing format/state helpers 473 (kept, full); cursors/orientation
-// 573; helpers/orientation 471 (two-point addition dropped); all three 516.
-// Round 209: Fresh type-field reads/cursors 498/497; with per-scan results 482/498; existing oriented
-// tangent setter 473, tangent and normal setters 472 (one-point lead dropped); both setters with fresh
-// cursors/results 497/482. All restored; frame 0x44/0x2c, descriptor scans and outer D3D expansion remain.
-// Round 280: paired first-match scans normal/tangent and binormal/uv 514;
-// normal/binormal and tangent/uv 514; normal/uv and tangent/binormal 504;
-// triple normal/tangent/binormal 481, normal/tangent/uv 495, normal/binormal/uv 495;
-// all four 491; triple tangent/binormal/uv 487. All original scans restored.
-// Round 238: application inline/force-inline 485/485; format inline/force-inline 526/526;
-// both helpers inline or force-inline, all four combinations 528. Application-inline forms also
-// lose the 0x22a664 reduced control; all original helper declarations and calls restored.
-// Native attribute descriptor with uniform type/count observations and complete
-// result-role identities: 473/498/473/498/473/498/473/498. All original fields and scans restored.
-// Round 163: shared independent-search ordinal, original/per-search defaults
-// 473/475; with uniform descriptor-base observations 498/482; native exit-owned
-// results 510/510, with descriptor observations 533/533. All original searches
-// and APIs restored; 0x44/0x2c frame and outer vertex API expansion remain.
-// Round 264: existing 4f/2f API ordinary-inline-noinline declaration pairs, all
-// eight non-original combinations 473 each. Original declarations and body restored;
-// frame 0x44/0x2c and selective outer vertex API expansion remain.
-// Round 401: paired lookup parameter orders: five leading tag/group/variant permutations 473 each;
-// trailing context/pass swap 517; context/pass then tag/group/variant 471, pass/context then
-// tag/variant/group 471. Two-point gains rejected; every definition, declaration, caller and
-// original body restored.
-// Round 39: independent search orders T/N/B/U, N/B/T/U, N/T/U/B, B/T/N/U,
-// U/N/T/B, T/B/U/N, B/U/N/T, U/B/T/N all 473. Original search order and APIs restored.
-// Round 425: signed orientation loop 468; C++ APIs 473; unsigned attributes 510; loop/APIs 468,
-// loop/unsigned 505, APIs/unsigned 510, all 505, short orientation 539. Late sign on the signed loop
-// 453 (kept); shared vector scales alone/with late sign 468/453; opposite winding 482, late 483,
-// scales 480, both/named cull 481/481. Late sign on the original side loop 485, integer producer 469.
-// Both orientation passes and all call argument roles are preserved; other forms restored.
-// Round 429: Positive admission/entry result declarations/lexical result homes and their four
-// combinations 453 each; all with native record/cull names 453. Original body restored.
-// DL201: pointer-distance first matches, cached/direct type observations and shared/phased defaults
-// 500 each. Standard searches give 390/388/374/372 and frame 0x2c, but outline one new
-// search provider with only this caller: rejected. Literal values, readonly iterators and
-// force-inline declarations before/after the include 372 each; no inline recovery.
-// Original searches, signed orientation, APIs and helper graph restored.
-// Round 240: complete oriented/binormal/position API inputs and their pairs/all
-// 462/434/441/448/450/422/436; all with readonly vertex/rest receivers 436.
-// Keep only binormal and position values, each consumed through all three components: 422 plain,
-// 1452/1361 bytes. Original APIs, both orientation passes, fields and arithmetic preserved.
-// DL210: independent normal/tangent/texture API inputs, masks 1,2,4,5,6,7; texture with native oriented scales, masks 5,7;
-// scores 432/424/422/432/424/436/422/422. Original source forms restored.
-// Round 244: retained binormal/position readonly values, complete aggregate
-// initializers and lexical role names, seven subsets 422/453/453/422/422/453/453;
-// entry uninitialized value workspaces 422. Original carriers and body restored.
-// Round 254: Own-result scan ordinals on retained complete API inputs, cached/live count,
-// compound/break search and original/entry declarations 549/480/549/480/549/480/549/480. All restored.
-// Round 37 (lane 13, one-file LTCG harness with the D3D members, equal to the full build; harness counts): retail
-// inlines 0x1ccb0(59) and 0x1cd90 here (and in 0x19f680), but they sit in the /Ob1 src/unknown_01cf50.cpp, so ours
-// calls them and LTCG inlines the two outer SetVertexData4f calls instead (retail calls 0x3fb2d0): BLOCKED-BY 0x1ccb0.
-// Lighting pointer NULL first and set under the test 320 (base 324); each scan with its own NONE default and the
-// types read per scan 322 (aligned 258 -> 225, 1467 bytes: retail's pointer-walking scans), also with the count read
-// per scan 322; a counted side loop with `side == 0 ? 1 : -1` signs, two spellings 331 (1465); lighting and loop
-// 327; all three 320 (1481). All restored.
-// Round 39 (lane 13, harness, base 324 / aligned 258): binormal straight from *g_4687a8 326 (1469), position from the
-// vertex 324 (1464), both 326 (1481), short strip index 324 (same code); rest pointer first 324 (aligned 215, --fast
-// 422), with per-scan types 322 (aligned 182, 1467), with lighting NULL-first 320 (--fast 418), all three 318 (--fast
-// 429). All restored; BLOCKED-BY 0x1ccb0 remains.
-// Round 41 (lane 13, --fast): also BLOCKED-BY 0x4b2d0: retail passes variant/group/tag in EAX/ECX/EDX with two stack
-// arguments, ours three on the stack (0x4b2d0 sits in the same contributor file). Retail's 0..1 side loop (`side == 0 ?
-// D3DCULL_CCW : D3DCULL_CW`, sign `(real)(side == 0 ? 1 : -1)`), sign before or after the cull call 441/441 (1465 bytes);
-// lighting pointer NULL before the lookup and set under `lighting_index != NONE` 415 (retail's `xor edi, edi` before the
-// call; a gain of 7, under the keep bar), with the side loop 434, with the types read per scan 432 (1470), with the rest
-// pointer first 415, all three 435; each scan's NONE default declared just before it 424, with NULL-first lighting 480,
-// plus per-scan types 496. All restored.
-// Round 131 (m3 lane 8): the four scans through the shared vertex_input_index (include/vertex_inputs.h, also used by
-// 0x224db0) give retail's frame 0x2c, and LTCG then keeps both outer SetVertexData4f calls out of line as retail: 366
-// with a walked types pointer, 348 reading the element in the loop (kept); retail's 0..1 side loop 335 (kept; 441 on the
-// old body); the rest-vertex pointer before the vertex pointer 336 (kept: 412 without it on the final body); position
-// and binormal passed by field, no copies, 322 (kept). Not kept: lighting NULL before the lookup 315 (a gain of 7), after
-// it 318; `inline` on the 0x1ccb0 and 0x1cd90 definitions 476 (old body; 0x22a664 lost), 500 with the side loop;
-// `inline` on 0x1ccb0 alone 243 at 1339 bytes, but 0x47930 244 -> 341 and 0x19f680 316 -> 448; member-form strip calls
-// 422 (same code); the search with early returns 332. 0x19f680 has the same scan, for a later round.
-// M341: Actual typed descriptor on retained binormal/position graph, uniform type/count
-// observations and per-scan defaults, masks 0..7: 422/439/422/439/424/433/423/433. Original
-// descriptor/searches restored; frame, application convention and outer API expansion remain.
-// M3 lane 12 r123 (fast with 0x117060): the lighting pointer NULL before the lookup re-measured 315 (a gain of 7); on it the
-// definition read after the lighting setup 334, the material index by if/else 315 (same code), the strip loop's vertex
-// and rest pointers replaced by indexed reads 402 (1328 B), the body under `if (function_117100(index))` 315 (same code).
-// 0x4b2d0, 0x1ccb0 and 0x1cd90 are this machine's; retail's 0x4b2d0 takes `first` in ECX (ours on the stack: its body puts
-// it in EBP), which also decides which dead parameter homes the four scans reuse here.
-// b7B (11-17) walk against retail, fast build on r829: statement by statement, no behaviour difference found, source
-// unchanged (322). Checked against retail: the record and definition lookups (0x116b17-0x116b4b: record = pool + (index
-// & 0xffff) * 0x1258, definition from record+4, object index from record+8 into 0x3ddd0 at 0x116b55, lighting = cache +
-// 0x44 at 0x116b70); 0x4b2d0's roles (0x116b9c-0x116ba4: edx tag, ecx group, eax variant, stack the byte at context+4
-// then pass; the second parameter is never read); the material, group, variant and shader chain with their 0x1ff masks
-// and 10-byte stride (0x116bc4-0x116c4d); the vtable call at slot 10 (0x116bf6); the four scans in retail's order,
-// normal 4, tangent 5, binormal 6, uv 3 (0x116c76, 0x116ca0, 0x116cc5, 0x116ce8); the cull restore and mode per side,
-// 0x901 for side 0 and 0x900 for side 1 (0x116d61-0x116d75, 0x117042); the sign as +1/-1 (0x116d67-0x116d6b)
-// multiplying tangent (0x116d8a) and normal (0x116e86-0x116e8e) but not binormal (0x116dc7-0x116ddb); the 1.0f w
-// component (0x45dbc0 = 0x3f800000); the 2f uv from rest +0xc/+0x10 (0x116efd-0x116f5e), position from vertex +0/+4/+8
-// with header 0x101a00 (0x116fc7); the strip count re-read each pass (0x116fd7); Begin 6 / End with the 0x1000 test
-// (0x116e04, 0x117003-0x11702a). Every float is a dword movss store (no x87 rounding point), and each product is
-// independent (no sum order). Not kept, all fast on r829 and without a behaviour fix: the object index in a local
-// (retail keeps it in ESI, 0x116b4b-0x116b4e) 316, the lighting pointer NULL-first 315, both 303 (also 303 as a static
-// inline helper taking the object index and returning the pointer, 316 with an early-return helper); left are the same
-// retail inlines of 0x1ccb0/0x1cd90 (0x116d0b-0x116d3a), 0x4b2d0's register convention, and the stack homes of the
-// scans.
-// P599: Frame 0x2c agrees. The record/object-index setup, lighting result, and format-helper expansions still differ.
-// typed field conditional 322.
-// typed field initialized before lookup 315.
-// typed field assigned in both arms 322.
-// typed field passed directly 322.
-// typed field inside setup scope 322.
-// typed entry inside present arm 315.
-// select entry then field 404.
-// apply lighting in both lookup arms 322.
-// NOT kept: Both null-first typed forms gained seven points, below the eight-point minimum. The original cache expression and body are restored.
-// Record reference 322, object index before the definition lookup 300, with null-first lighting 296,
-// embedded vertex base at the record, after lighting, or after Begin 316 each, strip element
-// references 322, direct material arm first 322. NOT kept: the 300/296 forms use a one-use
-// object-index local. Retail reads the definition first. Other forms gain fewer than eight or tie.
-// The record spill, material-call convention and state expansion remain.
-// Existing virtual reference method, material traversal scoped to its output, and immutable named
-// vertex-input results, separately and together, 322 each. Typed index pointer through the existing
-// virtual method and the direct-material arm 322. The record spill, four search-result homes,
-// material-call convention and two draw-state expansions remain.
-// N421 previews: same tag-table pointer for the material kind and its direct reference 322; carry the tag
-// table into the groups lookup and refresh after the virtual call 381; variant table indexed by its actual
-// word elements 322; packed group and variant words masked at the next lookup 322; material reference
-// carried as a pointer to its tag index 322; explicit pass entry displacement 322; one tag-table
-// observation for the shader and attribute lookups 322; tag table shared by all lookups after the material
-// reference 322.
-// NOT kept: the standalone material-table refresh increases the score at the original frame size. The
-// complete chain and other lookup forms tie the reduced control at 322. Opening body restored.
-// M3 lane 11 r124 (fast with 0x117060; control 322 positional, but a sequence-aligned diff leaves 58 instructions and 22 with
-// registers and stack slots masked: the count is mostly the shift from the nine instructions of 0x1ccb0/0x1cd90 that retail
-// expands). Left after alignment: the object index in ESI ahead of the lookup, the 0x4b2d0 argument setup (BLOCKED-BY 0x4b2d0's
-// convention: the EBX/EBP exchange of variant and pass, the three scan homes and the vertex call's three spill slots follow from
-// it, since they reuse the parameter homes that call leaves dead) and the two expansions (BLOCKED-BY 0x1ccb0). The lighting pointer
-// NULL first and set under the test, the idiom of matched 0x3d430, 0x3dc90, 0x4c640 and the cached-level helper, re-measured 315
-// (aligned 53, masked 18; seven points, under the bar); the same at 1-7 unused locals (no phase effect on this integer code); with
-// the object index in a local, as matched 0x1171a0 and 0x117a80 write theirs, 303 (aligned 42, masked 14; a one-use local, so
-// match-only); the material index as a default overridden under `== NONE` 376, as an if/else with the tag arm first 318.
-// Body unchanged.
-// With the material call's two stack arguments, full baseline 280. Lighting byte pointer
-// from the cache offset or typed cache member, respectively: ternary 280/280, NULL before
-// lookup 273/273, success arm first 280/280, absent arm first 280/280. NOT kept: seven-point
-// gain is below the threshold. Record spill and draw-state expansion still differ. Body restored.
-// M3 lane 3 r307 (H2M_FAST, control 280; aligned counts from a sequence diff in brackets, control [36]): the lighting
-// pointer NULL first and set under the test re-measured 273 [31] (seven points); with the object index named ahead of
-// the lookup as well 259 [18]: every instruction ahead of the two expansions is then retail's, the 0x4b2d0 call
-// included (retail keeps that index in ESI, a variable's register; a one-use local, so match-only). On that form with
-// `inline` on the definitions of 0x1ccb0 and 0x1cd90 (diagnostic for the BLOCKED-BY 0x1ccb0 expansions; the held form)
-// the function is 6 at retail's 1361 bytes: all that differs is the order in which the three signed normal products
-// are reloaded after the make-space call, and with it their homes (retail k, j, i in xmm0..xmm2 at +0x18/+0x1c/+0x20;
-// ours i, k, j). That diagnostic costs 0x22a664 its match (42) and moves 0x47930 244 -> 341 and 0x46ea0 576 -> 561;
-// 0x19f680 and the three helpers stay matched. On the 6 form, 6 each: a redundant paren pair on one, two or all three
-// normal products, on one, two or all three tangent products, the products as `sign*x`, the products in named locals
-// declared k, j, i. The named locals declared i, j, k 11; a scaled vector local 23; the existing vector3f_scale 68
-// (1360 bytes). The frame view: the three homes have two references each and take their slots in the order the
-// reloads are placed, which follows the allocator's numbering of the three product candidates (i, k, j here); forcing
-// their priorities changes nothing, and 24 forced single decisions came no closer.
-// M3 lane 13 r157 (fast; control 280; aligned counts in brackets): 0x1ccb0(59) written out at the call as 0x19f680 and
-// 0x23ea80 write it (block-local descriptor, the 1c6b0 call, the two field writes, 1c710) and 0x1cd90 as its 1c710 call, with
-// the lighting NULL first and the object index named, 191 at 1350 B [13: the tangent's last product takes the sign's
-// register as destination, the strip loop loses its pad, and the normal products' homes]; that with a named format 191 [13];
-// 1-3 dead locals before the block, 0-8 at the top, 191 each. Diagnostic (a second copy of the descriptor helper, not
-// keepable): the same selection through a forceinline (format) helper here, 6 at 1361 B [6]: only the homes of the three
-// spilled normal products differ (retail k, j, i at +0x18/+0x1c/+0x20; ours i, k, j). Allocator view of that form: the
-// homes follow the order of the three reloads after the push-buffer reservation call, which follows the numbers of the
-// split pieces (i first, then k, then j, whose number comes out of order); retail's needs k, j, i. On that form, 6 each:
-// 1-4 dead locals at six anchors in the side and strip loops; const vertex or rest pointers; a position pointer; `int` side
-// or index; `i++`; the normal call braced; the sign declared outside the loop; the cull state declared first; the material
-// index by if/else; the provider call written inline; the shader pointer folded; a `byte *` lighting pointer. The vertex
-// pointer before the rest pointer 47 [37]; `side != 2` 7; the three products named in each declaration order 11 (i, j, k),
-// 12 (i, k, j), 12 (j, i, k), 10 (j, k, i), 10 (k, i, j), 6 (k, j, i); one or two named (nine forms) 12/10/6/11/12/12/10/10/6.
-// Lead: share the descriptor helper of src/unknown_01cf50.cpp through a header so this function can call it.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
 	if (!function_117100(index)) return;
 	s_surface_record *record = surface_record(index);
 	s_surface_definition *definition = surface_definition(record);
-	long lighting_index = function_3ddd0(record->object_index);
-	void *lighting = lighting_index == NONE ? NULL : g_509434->data + (lighting_index & 0xffff)*0x100 + 0x44;
+	long object_index = record->object_index;
+	void *lighting = NULL;
+	long lighting_index = function_3ddd0(object_index);
+	if (lighting_index != NONE)
+		lighting = g_509434->data + (lighting_index & 0xffff)*0x100 + 0x44;
 	function_1bd50(lighting);
 	function_1cdd0(0, 0);
 	function_4b2d0(tag_index, group, ((byte *)context)[4], variant, pass);
@@ -1380,8 +1189,8 @@ void __stdcall function_116b00(long tag_index, long unused, long group, long var
 	long uv = vertex_input_index(attributes, 3);
 	DWORD old_cull;
 	D3DDevice_GetRenderState(D3DRS_CULLMODE, &old_cull);
-	function_1ccb0(59);
-	function_1cd90();
+	select_immediate_descriptor(59);
+	function_1c710(g_51f0f0);
 	function_1cf50();
 	for (long side = 0; side < 2; ++side)
 	{
@@ -1392,7 +1201,7 @@ void __stdcall function_116b00(long tag_index, long unused, long group, long var
 		D3DDevice_Begin(D3DPT_TRIANGLESTRIP);
 		for (long i = 0; i < definition->strip_index_count; ++i)
 		{
-			long vertex_index = definition->strip_indices[i];
+			short vertex_index = definition->strip_indices[i];
 			s_surface_rest_vertex *rest = &definition->vertices[vertex_index];
 			s_surface_vertex *vertex = &record->vertices[vertex_index];
 			if (normal != NONE) D3DDevice_SetVertexData4f(normal, vertex->normal.i*sign, vertex->normal.j*sign, vertex->normal.k*sign, 1.0f);

@@ -406,6 +406,15 @@ void function_254200(void)
 // recomputed each iteration); only the two top-edge corners as a counted loop, the two bottom submissions unchanged,
 // 379 (1000 B; still rolled, the top moves ahead of its texture reservation and the function returns with ret 0x10
 // for retail's ret 0x14); the permuter on the whole image, 113 tries, best 4.
+// M3 lane 3 r313 (fast, control 4): a forced-ranking search again finds one scheduler-height decision per reload group.
+// The four edges named once (left, right, top, bottom) for the position calls 165 (1114 B); the point copy bound as a
+// const reference to the parameter's point 341 (1162 B); the size and the point copy const 4; the size as
+// `arg_2 + arg_2` 4; the point copied with memcpy 4 (same code each).
+// M3 lane 3 r316 (fast, control 4): the slow-path blocks after the second and third reservations are emitted in
+// code-generation order (no scheduler reordering there), so the swap is fixed before scheduling. The size written
+// `2.f * arg_2` 4; the point copy split from its declaration 4; the bitmap choice made ahead of the readiness tests 52;
+// the dimension reads width first (stores unchanged) 4; the texture and dimension block through a `long slot = 0` index
+// as 0x14390's body has it 4.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -930,6 +939,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the first texture handed to 0x14390 through a named pointer 2; the size's first value written `64.f * 0.5f` 2; both
 // readiness tests written `!= 0` 2 (all the same code); the first quad's first coordinate pair with its half products in
 // parentheses 377 (2289 B: the products are scheduled ahead of the first reservation). The two reloads stay swapped.
+// M3 lane 14 r161 (single-address H2M_FAST, control 2): the first quad's `arg_1 * 0.5f` written `arg_1 / 2.f` 2; the
+// scale copied into a named real at the function's top, or at the head of the success block, and used by the first
+// quad's texture calls 2 / 2; the lower value written `0.5f + -arg_1 * 0.5f` 2 (all the same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

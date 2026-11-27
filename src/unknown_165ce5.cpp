@@ -2228,6 +2228,25 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // with or without `== 0 ? right : left`) fixes the 0x16710b reload cleanly at frame 0x2c (173,
 // 2196 B; 5+/all uses 374, frame 0x30); shift/bitfield/TEST_FIELD_BIT channel-byte tests all fold
 // to `test byte ptr [edi + 0x19], 0xa` (331..337, 2197 B). Body unchanged (score-3 lead is match-only).
+// M3 lane 3 r313 (fast with 0x165dc1, 0x166561 and 0x11eed0; main 172, the round-232 lead rebuilt at 3): on the lead,
+// `inline` on 0xb6760's definition gives MATCH (a held form) but 0x1cd070 MATCH -> 150 and 0x106790 61 -> 113; `inline` on
+// this file's declaration only 3; an explicit cdecl convention on 0xb6760 everywhere 3. Retail's 0x106790 also keeps its
+// pointer in ESI across both of its out-of-line 0xb6760 calls (ours ECX) and expands 0xb6760's shape at its channel-0
+// tests, so retail's callers had no register summary for it: BLOCKED-BY 0xb6760. On main: the user flags read ahead of the
+// look pointer 178; a named aiming-velocity pointer for the two aiming smoothing calls 190 (2193 B); the four overrides as
+// conditional assignments 172; the first-weapon pointer ahead of the springs 172; the frame-settings reference taken ahead
+// of the yaw clamp 203 (2193 B).
+// M3 lane 3 r315 (H2M_FAST with 0x165dc1, 0x166561, 0x11eed0, 0x166992, all MATCH; control 172). Diagnostic, restored at once:
+// 0xb6760's unchanged body moved to a new file of its own built without link-time code generation, with the round-232 lead
+// here: 3 again (the lead's ESI use is then retail's at all three calls, but the argument goes in ECX where retail's own
+// 0xb6760 takes it in EAX, a link-time convention), and 0xb6760 itself 2, 0x1cd070/0x1cd8a0/0x1cdb00 MATCH -> 1 (the same
+// argument register), 0x106790 61 -> 7. So retail's 0xb6760 was built with link-time code generation and only its callers
+// lacked its register summary (the `inline` lead of round 313). Frame view (allocator): `unit` (3 references) is created
+// ahead of `mode` and `active` joins unit's slot; retail's homes need `mode` created first (the lead's two overlay calls
+// give it a fourth reference) and `active` in spring_d's slot. On main: the channel-0 flag test as a named long tested
+// `& 0xa` 172, as `(flags & 2) || (flags & 8)` 368, nested under the update call 172; the sound callback chosen by an
+// if/else 172; the lead's zoom/scope block alone (positive flags, retail's second zoom test before the tail-merged overlay
+// call) 368 (2193 B), with the clear test as one direct condition 364. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

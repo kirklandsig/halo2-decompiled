@@ -260,6 +260,20 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // Round 159 (m3 lane 14, fast, 0x1d3f0 in brackets): the call assigned inside the NULL test 99 (76); `return (*out =
 // call) != NULL;` 99 (91); the pointer declared in the if condition with two returns 99 (76); a bool from the compare
 // and one store 103 (91); the success arm first 99 (76). The SDK call stays out of line in every straight-line form.
+// M3 lane 8 r243 (H2M_FAST with 0x1d3f0, its caller; control 99 at 30 B, 0x1d3f0 76): the result and flag preset with
+// one `if (palette != NULL)` arm 90 (38 B; 0x1d3f0 80); the palette pointer started NULL and assigned by the call 99
+// (76); a bool from the compare and a ternary store 93 (36 B; 0x1d3f0 91); `*out = palette; return palette != NULL;` 99
+// (0x1d3f0 91); `*out` stored in each arm of the NULL test 103 (26 B). The SDK call stays out of line in each. Reading:
+// the link-time inliner weighs a call by its block's estimated frequency against one link-wide threshold, so only a
+// loop around the call (GB r16's dead loop) lifts it over; retail's call sits in the entry block of a function with one
+// caller, so retail's threshold or the library body's cost differed from this build's (a link-wide setting, not this
+// source).
+// GB26 (12 real + 1 flag diag fast trials with 0x1d3f0 and file peers; control 99 at 30 B, 0x1d3f0 76): `extern const`
+// `g_43e8d8` with retail values {3,2,1,0,32,64} 99 (0x1d3f0 76), + no `noinline` 99 (0x1d3f0 75); `result = palette;
+// created = true; if (!palette)` 99; `bool created` branch `*out` 93 (36 B, 0x1d3f0 91); `*out = NULL` before call 99
+// (+ no `noinline` 99, 0x1d3f0 110); `if (D3DPalette *palette = ...)` 99; ternary `*out` 99 (0x1d3f0 91); no `noinline`
+// + direct return 99 (0x1d3f0 69); `dest = out` alias 99; `*(g_43e8d8 + index)` 99; 4-case `switch` on size 40 (95 B,
+// jump table still calling `CreatePalette2` out of line, 0x1d3f0 76); diag `/O1` 94 (35 B, 0x1d3f0 91). Body unchanged.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
@@ -294,6 +308,30 @@ bool function_015b10(
 // read through the tag table at each use 86 (283 B, reloaded every outer pass); the group pointer local dropped 97
 // (259 B); the palette pointer local dropped 65; the two global stores ahead of the tag read 56 (same code). With the
 // local count: the definition read at each use 79 (299 B).
+// M3 lane 8 r243 (H2M_FAST with 0x15b10, 0x15c90 and 0x15cd0; control 56): an early return on the NONE tag 56 (same
+// code); the global-count form with the palette as `g_484dd0 + g_5093ac` 56, with the step as `i << 10` 56, with a
+// walking palette-data local stepped by 0x400 61; the group as `groups + group_index` 56; the local count declared at
+// the global's zero store 56 (the global form's code); the definition declared at its load 56. Allocator reading
+// (global form): the inner loop body (weight 4, eight candidates referenced) gives the palette pointer 256 of its 288;
+// the tag index's two blocks give it 48; the definition's first web is never coloured (-29, live through the inner loop
+// unreferenced), so its split part takes the one register left (EBP) where retail's takes EAX. With no tag-index local
+// (the two global stores first, the source's tag index read in the test and again for the definition) 56 on the local
+// count and 56 on the global count.
+// M3 GB r23 (30 real + 3 flag diag fast trials with 0x15c90/0x15cd0/0x14a60/0x1d2a0 MATCH; control 56 at 280 B): on
+// global-count (56, al=59, mk=5), store orders Common/Data/Lock 56, Data/Lock/Common 56, Common/Lock/Data 65,
+// Lock/Data/Common 65, Lock/Common/Data 65; early return / scoped decls / continue bounds / inline helpers / source
+// ptr / top decls / rename locals / dword*256 / /Ob1 / /arch:SSE / /Oi all 56; reverse bounds 57; stores before loop1
+// 76; D3DPalette_Register 113; (word)tag_index 65; slot local 67; hoisted base 61; no-ptr Common first 65; post-inc
+// `&g_484dd0[g_5093ac++]` 86 (285 B, al=27; Common first 84, al=26; flips all registers to retail's exact EAX/ECX/EDX/
+// ESI/EBX/EDI layout but adds early pointer copy); inc before Lock 83 / after Data 84; local palette_total with
+// `if (group_count > 0)` 56, store in outer 67, store in inner 63, post-inc 87. Body unchanged at 56.
+// GB26 (27 fast trials; control 56 at 280 B): 13 global-count forms (`D3DResource *`, `while` loops, a `dword` stage,
+// post-inc/pre-inc, nested/pointer bounds, a walking palette pointer, `if (group_count > 0)`, a temporary `D3DPalette`,
+// `const` pointers) 56-99. Calling the SDK's palette-header setter (the 256-entry size, the palette slot, the masked
+// palette address) in place of the three header stores matches byte for byte (280/280 B, plain-confirmed, seven
+// variants; unmasked 50; a `palette_total` local 3; post-inc 71; `D3DPalette_Register` 82), held as a patch: linking
+// that SDK routine into the image flips the matched 0x24cf66 (src/unknown_24c7c1.cpp, 0 -> 2, two loads swapped at
+// +0x3bd) in all seven variants.
 // @retail 0x15b70
 void function_015b70(void)
 {

@@ -7,7 +7,7 @@ typedef void (__stdcall *surface_render_draw)(long, long, long, long, long, long
 void function_40f60(void *, surface_render_test, surface_render_draw);
 bool __stdcall function_d4bc0(long, long, long, long, long, long, void *);
 void function_1bd50(void *);
-void function_1cdd0(real const *bounds, byte flags);
+void function_1cdd0(real const *bounds, long flags);
 void function_4b2d0(long, long, long, long, long);
 void function_1c6b0(void *);
 void __stdcall function_1c710(void *);

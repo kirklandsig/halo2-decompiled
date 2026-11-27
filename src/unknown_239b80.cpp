@@ -1026,7 +1026,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // EBX, and the loop rotated); the three exits as `goto finished;` to the one return 236 (759 B, rotated); the index
 // store as `indices[(short)hull_count++] = current;` in a `for (; ...; )` head 248 (same code); previous_angle zeroed
 // ahead of the lowest scan 270; the body ending in `return` with `if (!left_start) continue; if (differ) continue;` 357
-// (669 B, 0x239d50 8). A forced-decision search on the 236 form (40 single decisions) finds nothing below 236: the
+// (669 B, 0x239d50 8). A forced-ranking search on the 236 form (40 single decisions) finds nothing below 236: the
 // register exchange and the rotated loop are not one allocator decision away.
 // M3 lane 8 r234 (H2M_FAST with 0x239d50 and 0x239b80, both MATCH unless noted; control 144, aligned 137, masked 56; body
 // unchanged). Frame view: here the hull count (12 references) joins the dead indices argument home and the dword departure flag
@@ -1737,6 +1737,17 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // the deltas declared dx first 45, `real fraction;` ahead of the deltas 42 (same code); the reordered tail with
 // `fraction = 0.f` ahead of the deltas 49. Without the reorder: the if/else fraction 249 (880 B); the tail copy sized
 // from the result 129 (same code); the NONE copy as the first arm 129.
+// M3 lane 5 r252 (H2M_FAST with 0x239e50, 0x239d50 and 0x239b80; control 129). Re-built lane 14 r155's LEAD (the tail
+// copy ahead of `result = count`, the fraction as if/else): 42 at 888 B. Allocator reading of it: the float values
+// colour fraction (148) > denominator (92) > distance (76) > zero (54) > dy (50) = dx (50), so the zero takes XMM1
+// and dy XMM2 where retail has dy XMM0, fraction XMM1, zero XMM2. A forced-ranking search: dy ranked first 13 (left:
+// the dy * n.j and dy * fraction operand orders, which make ours one byte long, and the plane reload ahead of the
+// previous y load); dy one step above the zero 22; the zero one step below dy 29; lowering the fraction or the
+// denominator alone changes nothing. On the lead: the clamp into a separate `clamped` local 42, the clamp as
+// if/else-if 42, the outputs as `fraction * dx` / `fraction * dy` 42, the deltas declared at function scope, at the
+// top of the crossing arm, or dy alone at function scope 42 each, `real fraction;` at function scope 42 (same code
+// each: neither declarations nor spelling move these ranks); the deltas through the file's point-difference helper
+// 45 and through vector2d_from_points2d 45. Body unchanged.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

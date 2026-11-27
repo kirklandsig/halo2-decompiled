@@ -571,6 +571,24 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // compare, the NULL store and the first extended index, where retail's zero is not a register candidate at all (the
 // compare and the store reuse the index's EBP, and the first extended index gets its own `xor eax, eax` after the
 // guard). The statement order inside the guard block does not move it (the index def first gives the same code).
+// M3 lane 3 r313 (fast; control 8, exclusive bound 11): a forced-ranking search on the exclusive bound needs two decisions,
+// the index in EBP (6) and then the zero, whose constant piece takes EAX apart from the index. The zero shares the index's
+// register only when the index's 0 is defined in an earlier, dominating block: the index initialised ahead of the flags
+// test with the seat's NULL left in the guard block 14 (the guard block is then retail's `cmp count, i; mov [seat], i`,
+// but the index's xor sits in the flags block and count and index keep EBP and ESI); the seat's NULL moved ahead of
+// `result = true` 14 (the first extended index then gets its own `xor eax, eax`, as retail); the seats base read into a
+// local in each pass 26; a while loop with the index declared first 11; the index initialised ahead of the seat pointer
+// inside the guard block 11.
+// M3 lane 3 r316 (fast; control 8). Allocator ledger on the exclusive bound: the index 18 (its guard-block def with five
+// candidates referenced there, the latch's increment and extension at loop weight 2 with three), the count 16 (load and
+// compare in the guard block, the latch compare), both -16 for the three body blocks; so the count needs three more
+// points (two more candidates referenced in the guard block, or one more count reference there). Forms on the
+// exclusive bound: the element as `tag->seats + i` 11; the count and the seats base named in the guard block 24; the
+// seat's flags copied to a local for the test 11; the seat's NULL ahead of `result = true` 14. Lead (match-only, a
+// guard that repeats the loop's bound): the NULL ahead of `result = true`, the index declared in the guard block and
+// `if (tag->seat_count > 0)` around the scan 9 (count ESI, index EBP, `cmp esi, ebp` and the first extended index's own
+// `xor eax, eax` all retail's; left only the index's xor and the NULL store one block early, in the flags block); with
+// the NULL and the index in the guard block 6 (the zero web back in EAX), the guard as `tag->seat_count > i` 6.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -1107,6 +1125,10 @@ extern "C" void _ReadWriteBarrier(void);
 // three-real point setter 42 (213 B); the second parameter typed as the state itself (no cast local, the table entry cast)
 // 6 (same code); the point copied ahead of the 0x420/0x41c stores 40 (207 B); the busy field read into a named long
 // between the lookup and the barrier, tested after it, 49 (210 B).
+// M3 lane 14 r161 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): no barrier, the pool pointer named first,
+// then the state, then the actor from the pool's data 44 (208 B); no barrier, the flags test written `!= 0` 44; no
+// barrier, the flags byte bound to a `byte const &` after the actor and state 44; the actor as the pool's data plus a
+// `(word)` index, no barrier 10 (205 B: `movzx` index load, register compare of 0x26c), with the barrier 48.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

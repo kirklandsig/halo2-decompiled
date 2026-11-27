@@ -383,6 +383,19 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // small homes move four bytes down: left_i +0x5c against retail's +0x54), on it the k-less initializer 398, the
 // dot_product2d test 375, left_i const 373 (same code), local_11 declared ahead of local_12 391, the left vector built
 // right after local_8's normalization 422. Body unchanged.
+// Round 251 (m3 lane 5, fast with 0x29c860/0x29cb10, both MATCH; control 378). Readings: 0x299460's sixth parameter
+// captured inside it (a diagnostic global store) gives this body retail's frame and the side test's read of the left
+// vector's home (393 at 2815 B, first +0xab; aligned rows 132 -> 76, register-masked 119 -> 56), but nothing natural in
+// 0x299460 does that: an opaque call inside it, `inline` on 0x2108a0's or 0x210770's definition, `inline` on 0x299460's
+// own definition, or the parameter made non-const all leave this body at 378. The left vector's slot follows the frame
+// packer's density sort: with the side test reading the vector (the 393 form, or the k left to the initializer) both
+// 12-byte vectors have 5 references and sort as here; a model of the sort gives retail's slots once the actor offset's
+// home has one more reference, which is retail's tail (it reloads that home at both flag setters and pops before the
+// second; this build keeps it in EBX there). Forms: the side test and local_25 ahead of the angle call 380; the 0.9
+// block's sum written local_25 first 378 (same code); the angle stored straight into the field after the side test 380;
+// the left vector's k left to the initializer (`{left_i, local_8.i}`) 388 (2825 B, first +0xab: frame 0x5b4 as retail,
+// the side test reads the vector, the two vectors still exchanged and k an integer store); the tail's flag test written
+// flag first 378 (same code), with the 393 form 393.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

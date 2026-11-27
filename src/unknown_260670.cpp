@@ -420,6 +420,14 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // (3057 B, 0x8a4); pointer-stepped main loop 582 (3097 B); flipped main-loop test, `length_sq3f` in main loop, typed `s_type_967e20` fields,
 // `distance_squared < range * range`, flipped post-loop `if`/`else`, flipped random/sorted `if`/`else` 440 each (same code; flipped
 // random/sorted + first pass call 604, 3077 B, 0x8a4). Site 2 still expands 0x2600a0 in every form. Body unchanged.
+// M3 lane 5 r250 (fast with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30 and 0x13e2d0; control 440, frame 0x8a8): the sorted
+// loop's index as a `long` 617; the limit test reading the range local instead of the field again 810; one `delta`
+// vector for both distance blocks of the main loop 631; the range read at each use of its square (no local) 632; the
+// owner store as `if (owner == actor_index) owner = NONE;` then one store 632. Body unchanged; still BLOCKED-BY 0x262a30.
+// M3 lane 3 r315 (H2M_FAST with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, all MATCH each run; control 440): the owner select
+// as `owner == actor_index ? NONE : owner` 440; the range read ahead of the squared distance 440; the score test spelled
+// `position->score + context->unknown680 <= best_score` 440 (same code each); `best_score` declared ahead of `selected` 441;
+// the squared range named once (`range_squared`) 578. Body unchanged; still BLOCKED-BY 0x262a30.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

@@ -1933,6 +1933,14 @@ long function_2197f0(real gain);
 // after the previous-ambience block, with the current arm's clamp in place (t = ambience_fade / fade_in, then 1.0f unless
 // 1.0f > t): 54 (678 B), first difference +0x53; the gain bypass and the tail cross-jump are gone, elapsed is still in
 // XMM2 and the fade-out time is reloaded. Not kept (a one-use local and a flag).
+// M3 lane 11 r172 (reduced image with 0x221810, control 87; aligned 54). Lead: the first arm's clamp as a ternary,
+// `real t = 1.0f > time * inverse ? time / ducking->fade_in_time : 1.0f;` (or the same as an if/else, both 143 at 681 B,
+// aligned 53) gives retail's shape there exactly: the division made before the compare and 1.0 moved only on the other
+// path (`ja`, `movaps xmm1, xmm4`); left in that arm are the colours (elapsed XMM2 for retail's XMM3), the fade-out time
+// reloaded from memory where retail keeps it in XMM1 from its test, the gain added from memory where retail loads it
+// into a register, and the arm-3/arm-4 join. On the ternary: without the fade-in copy 162 (648 B: the division merges
+// into the reciprocal), with a fade-out local used by both tests and the product 148, with both 171 (644 B). On main:
+// that fade-out local 92, with the inverse from the field 98 (683 B).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4168,6 +4176,13 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // `((sound->flags >> 4) & 1)` 98 (both fold into `test byte ptr`, one constant fewer, registers then retail's); the
 // object index named for the callback 78, the start time named for the loop-top test 78, the marker address named 78
 // (all three forward-substituted, ranks unchanged). On main's body: the same two bit tests 117/100.
+// M3 lane 7 r235 (fast screen, control 8): the pool's reload points on this body are the callback block, the stop-7
+// block, case 0's stop block and two empty joins ahead of the latch; the no-default form adds three blocks (a
+// one-candidate block after the dispatch, a reload block there and a third reload join), which cost the index 2 + 4 +
+// 4 = 10 (69 -> 59). One of the two reload blocks alone would give cost 0 with the index at 63 or 65, above the
+// voice's 60. Tried on main's body: case 0's 0xe stop after the switch 8 (same code); the not-ready arm first ending
+// in `continue` 115; the voice failure first ending in `continue` 94; `if (mode == 1) continue;` with case 0's work
+// unindented 92; `case 0: break; case 1: default: continue;` with the work after the switch 49 (`test ax, ax`).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -5115,6 +5130,12 @@ struct s_128ca0
 // TEST_FIELD_BIT pending test 209 (1049 B), with the voice pointer for the channel index 204; the pitch bounds read as
 // the record's two fields (no pointer) 207 (first +0x8f); the count extraction cast to char 204 (same code). Body
 // unchanged.
+// M3 lane 4 r266 (H2M_FAST with 0x1293f0, 0x1251e0, 0x12a420, 0x125e60, 0x12a810, MATCH; control 48; L = the LEAD 17 above
+// rebuilt, re-measured 17; Lc = L with `char count = NONE`, re-measured 204). The char count is the field's own type:
+// matched 0x127390 compares the same playback byte with NONE. Allocator reading: on Lc the shifted entry value is a
+// second-pass candidate whose entry-block count is 19 against L's 20, so it scores 114 and falls behind the three
+// 120-point pitch values. Named parts in the entry block, each on Lc and L: the pitch range index 204/17, the upper
+// pitch bound 204, the permutation index 204/17 (same code each: the names fold away). Body unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

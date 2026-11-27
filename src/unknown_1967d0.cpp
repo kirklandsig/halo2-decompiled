@@ -521,6 +521,11 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // (all sites) 403 (1776 B), in the group loop only 404 (frame 8); the record read through its own address in the
 // entries call 3 (same code); the helper loop as `while` 3 (same code); the helper walking the record pointer 401
 // (1791 B), walking the update pointer 396 (1866 B).
+// M3 lane 12 r194 (h2m fast; control 3). Reading: the three sums are ties of the loop optimiser's temporaries, ranked by
+// their creation numbers modulo 2048; one shift of about 638 fewer (or 1410 more) numbers ahead of them would flip all
+// three together, and one added statement moves them by 4. Forms: the helper's element through a named pointer 419
+// (1791 B); the helper's test as `!= 0` 3; the full device copy as memcpy 3, the full entry copy as memcpy 3 (the same
+// code each); a record-side counters pointer for the group loop's three calls 435 (1775 B).
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {
@@ -1168,6 +1173,11 @@ static inline long team_score_195ed0(long team)
 // either counter order 276/276; counter-address-copy or address-counter-copy
 // 329/329. NOT kept: early counters cache the teams byte, and the address-first
 // form hits retail length while reading the teams byte before the copy.
+// M3 lane 12 r193 (H2M_FAST with 0x196470, 0x1587f0, 0x161e60 and 0x162030, all MATCH; control 100): the score helper
+// taking a `short` team 171 (1225 B); the score sampled once into a named local ahead of the rank store, re-measured
+// 210 (1161 B); the teams flag with internal linkage 100 (same code: the copy still does not reach it); the team test's
+// bool as a `? true : false` of the masked bit 100 (same code); the score helper's failure value set in an else arm
+// 170 (1225 B). Body unchanged.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

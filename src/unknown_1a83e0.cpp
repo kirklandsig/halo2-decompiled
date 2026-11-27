@@ -94,6 +94,34 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
 // the existing vector3f_add_scaled for the update and the length squared written twice all give the same code (205).
 // A forced-ranking search on it: the three segment reloads tie (i, j, k by creation); j one below k gives retail's
 // segment registers (197, update order still differs), j above the rest 29.
+// M3 lane 2 r155 (fast). Allocator reading on the i, j, k dot form: the three segment reloads are second-pass pieces
+// with equal weight (110 each: the length block, the dot block and the update block), so creation order decides; the
+// updated i and j of the first block are first-pass values (144 each) coloured before them, and the update block
+// computes k last in the negated scale's own register where retail computes it first in the segment k register (the
+// second block runs i, k, j in both builds). A forced-ranking search: the updated i dropped below 48 gives 25, below
+// 110 gives 35; the segment j raised to 170 gives 29. Tried on that form (fast): the update through the existing
+// vector3f_add_scaled into a separate vector 205, in place with `-t` as the scale 205, the squared distance as
+// dot3f(&delta, &delta) 205 (same code each); the update as vector3f_scale into an offset then vector3f_add 243
+// (1560 B). On this body: the update through vector3f_add_scaled in place 78 (same code); into a separate vector 222.
+// GA23 (43 compiled fast trials, 0x2b400/0x1f5110/0x1a8c30 MATCH): 0x11e000's 0-diff match body (single-exit or two
+// returns, dot3f, vector3f_add_scaled, 0.0f-t, ternary or if clamp, `(real)sqrt` outside, `(point, start, segment)`
+// order) 205 (al 32, mk 19, same code as `a0`); on `a0`: `length_squared` jki / `+=` kji / `+=` jki / `+=` ijk / `+=` kij
+// 205/205/201(al 26)/208/208, `squared_distance` `+=` kji 205, recomputed `length_sq3f` 205, scoped `delta` +
+// `vector3f_add_scaled` 205, direct delta sub 205, `local_7` at top 205, nested `segment_dist_sq` (`__forceinline` 205,
+// plain `inline` 944), `segment`-first dot kji/ijk 78/205; `dot` `+=` kji/ijk 205/225; `squared_distance` `+=` kji with
+// update orders kij 71 (mk 13), ikj 64 (al 41, mk 13; + `length_squared` `+=` jki 60, al 35, mk 13; `t`-first 64/71/205;
+// separate scalars 204/176/236; `sq` ijk 240/225; NOT kept: retail length_squared evaluates k, j, i and seg.k/seg.j stay
+// xmm4/xmm3); on HEAD: `length_squared` `+=` kji or jki 78. Body unchanged.
+// M3 lane 14 r162 (fast). Lead: with 0x11e000's byte-matching single-exit body (the existing helpers, `real result;`,
+// held elsewhere because 0x1a8fa0 then inlines it at its first site, 428), `(real)sqrt(function_11e000(point, start,
+// segment))` at both sites is inlined as retail does: 1578 B, the second block exactly retail's and the first block's
+// dot (k, j, i) and else branch (k first) too, aligned 32 against this body's 90, but 205 by position. Left, all in the
+// first block: the segment's k and j in xmm4/xmm3 (retail xmm3/xmm4; the three reloads tie at 104 and colour i, j, k),
+// the update computing k last in the scale's register where retail computes it first in the segment k register, so
+// the sum ends in xmm3 and its store merges after the join (retail stores per branch). On that form the segment's
+// stores in the five other orders 181 (i, k, j: retail's segment registers, its store order and update still differ),
+// 214 (j, i, k), 239 (j, k, i), 187 (k, i, j), 225 (k, j, i). A forced-ranking search needs three or more decisions
+// (the update's k value and both segment reloads forced: 67 to 243). Body unchanged.
 // @retail 0x1a83e0
 bool __stdcall function_1a83e0(long arg_0, short *arg_1, real *arg_2, point2f *arg_3, bool *arg_4)
 {

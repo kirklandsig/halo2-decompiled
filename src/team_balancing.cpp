@@ -1081,6 +1081,22 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // caller's declaration and its call) re-measured 35, on it the fill counted by extra_count (`parties[player_count + i]`)
 // 62, and the total as `extra_count + player_count` with the entry named once and copied first 76. The player count still
 // arrives in EDX: the fill value is still loaded ahead of the count and destination. Body unchanged.
+// M3 lane 8 r242 (fast screen with 0x91e30 MATCH; control 34). Allocator reading: the player count is coloured second and
+// sees EAX with a conflict score of 1 (EDX 0), and the only fixed EAX use in its range is the fill's value, so the
+// conflict is the whole fill operation, not the order of its operands in the code. Forms: the fill through a pointer
+// stepped from the first extra slot to the end 63 (199 B, no rep stosd); the entry named once for the test, the maximum
+// and the copy 74; the fill bound written `player_count + extra_count` 34 (same code); the fill counted by the extra
+// count into `parties[i + player_count]` 62. Body unchanged.
+// M3 lane 16 r195 (H2M fast with 0x91e30 MATCH; control 34). Allocator reading: the player count (priority 63) takes EDX
+// because EAX carries a conflict score of 1 from the fill block's plain load of next_party into EAX (in code-generation
+// order the fill computes its count and destination first and loads the value last; the scheduler hoists the load only
+// because EAX is free), so the arrival register follows this body's own allocation, not the caller's setup. A forced
+// pick of the player count into EAX gives 3 (a forced-ranking search): one pick plus two operand orders. With
+// `(short)next_party` (diagnostic, restored) the load becomes a sign-extending move, the score goes and the player count
+// takes EAX (7: total's lea and the clamp's `and` operands left). Forms: the fill value through a `long const &` 34; the
+// fill on its own counter 34; the fill as a `while` storing `parties[i++]` 34 (same code each); total written out at
+// each use 74; the copy written in both arms of the maximum test 51 (next_party becomes a register candidate). Body
+// unchanged.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

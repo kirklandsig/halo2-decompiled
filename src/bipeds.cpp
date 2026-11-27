@@ -23,6 +23,7 @@ files; 0xdc370, at the start of the range, is c_a's destructor
 #include "unknown_1efac0.h"
 #include "unknown_1eb550.h"
 #include "unknown_1cafc0.h"
+#include "unknown_1e1f20.h"
 #include "object_tag_definitions.h"
 #include <math.h>
 #include <string.h>
@@ -8130,7 +8131,7 @@ bool function_e63b0(vector3f const *aim, bool flag)
 /* measures a target from the biped's grab eye, against a reference
    direction: the yaw and pitch (radians) of the direction to the target, and
    the gap between the two bodies, not less than 0 */
-// score 314 (was 406; earlier 449): The logic matches retail (walked block by block, constants read from the XBE, no behaviour
+// score 219 (was 314; earlier 406, 449): The logic matches retail (walked block by block, constants read from the XBE, no behaviour
 // difference found). The reference frame is a matrix3x3 (forward, left, up): retail's frame is 0xc8, the 36 bytes
 // being that 36-byte object at +0x58 (a 12-byte local per axis overlaps the eye's locals and gives 0xa4). Still
 // differs: the other locals' slot order (retail head +0x10, to_head +0x1c, eye +0x28; ours packs the 4-byte
@@ -8146,6 +8147,47 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // into EAX/ECX/EDX after each producer (0xdf5f0 and 0xb9dd0 write a temporary at +0x34, the nearest point comes from
 // +0x44) and stores it at the join, ours passes `target` itself; block-local points copied into `target` 288 (1577 B,
 // match-only lead: one-use copies); ours is still 69 bytes short.
+// Round 160 (m3 lane 14, fast and plain): retail keeps two points, the target's (+0x34, written by every producer) and
+// a copy of it whose z alone is clamped (+0x1c; the clamp compares the target's z and the high arm re-reads the copy's
+// z), and turns the normalized direction into the frame's axes in place through a copy (left amount stored back into
+// direction.j at +0x14). Kept: the `aim` copy clamped with nested ifs (`aim.z += target_height` in the high arm, as
+// retail re-reads the copy's z there), the direction through vector3d_from_points3d, the frame block as dot3f of a
+// `world` copy into direction (atan2 on its j/i and k): 219 at retail's 1624 B. Lead (match-only, a one-use copy):
+// the same with `aim.z = PIN(eye.z, target.z, target.z + target_height)` 218; with PIN reading `aim` itself 244, its z
+// from `aim` and its top from the target 242. Without `aim`: the direction helper alone 305; the in-place frame block
+// alone 280 at 1588 B, both 280; aim alone 254. Tried on 218: the frame
+// rows hand-written k, j, i or i, j, k or dot3f(&row, &world) 218 each (same code); frame.left through cross3f 252;
+// normalize_inline 234; the clamp as nested ifs (`aim.z += target_height` in the high arm, as retail re-reads) 219,
+// with `!(target.z > eye.z)` outside 219; the copy written in each producer arm 241 (1645 B), with PIN 240; the copy
+// set by real_point3d_set with the clamped z 268. Leads (match-only): the two bipeds for the contact call named in the
+// else arm (`self`, `other`, used once each) 212 (retail loads both into ESI/EBX before the pushes, and the target
+// index then takes EBP); that with nested ifs 213. Left: retail loads the target point into ECX/EAX/EDX at the end of
+// each producer arm and keeps aim.x/aim.y in registers to the direction (ours copies at the join, those candidates
+// are never coloured), the normalize's per-component store order, the frame block's sum order and the slot order
+// (retail head +0x10, aim/world +0x1c, eye +0x28, target +0x34).
+// M3 lane GA r24 (48 fast trials with 0xdef60, 0xde9d0, 0xe63b0 all MATCH and 0xe5bc0 unchanged at 55; control 219 at
+// 1624/1624 B, +0x54, al=107, mk=53; body unchanged): assigning `aim = target` in each of the two outer arms (`t05`)
+// snaps every stack slot (`head +0x10`, `aim +0x1c`, `eye +0x28`, `target +0x34`, `self_definition +0x40`, `center +0x44`,
+// `height +0x50`, `radius +0x54`, `frame +0x58`, `collision +0x7c`), reproduces the `0x183670` `target.z`-only store, and
+// matches bytes `+0x000..+0x382` verbatim: 201 (`1637/1624 B`, `al=88`; + `+=` `k, j, i` frame dots 196, `al=85`; + `self`/`other`
+// diag `al=71`, `1637 B`), NOT kept because `+13 B` over retail (`aim` is stored inside both arms instead of carried in
+// `ecx`/`eax`/`edx` to the join). Also tried: `aim` declared before `eye` / retail decl order / renamed slots / late `aim` decl /
+// `gt` clamp / `memcpy(&aim, &target)` / in-place matrix3x3 inverse-transform helper / `+=` `k, j, i` frame dots on 219 base
+// (219 each); field-by-field `aim` copy in 2 arms or outer join / brace init / `real_point3d_set` before or after clamp (273/277,
+// `1594 B`, `target.x/y` copy-propagated); `aim` in 3 arms (240, `1645 B`); scoped `target` + `target_z` (224, `1624 B`);
+// flat `if/else if/else` (332); by-value target-point helper (531/547); inline `j *= inv; k *= inv` normalize (237 on 219, 206 on `t05`).
+// M3 lane 11 r174 (h2m fast with 0xe5bc0, 0xdef60, 0xde9d0, 0xe63b0, 0xdf5f0 and 0xb9dd0, all MATCH; control 219):
+// retail carries the aim copy in ECX/EAX/EDX from each producer arm to the join (the copy's loads moved into the arms,
+// the stores after the clamp); ours loads and stores at the join. Forms: the target's height and radius zeroed at the
+// top of the else arm 260 (1633 B); `aim = target` in each outer arm re-measured 201 (1637 B: every slot is then
+// retail's, the copy still stored in each arm; moving the copy into the arms is match-only), that with the direction
+// written as three rows (no address of aim) 201; the direction as three rows on the kept body 219 (same code); the
+// copy member by member in all three producer arms 273 (1594 B, merged and propagated); the producer block as a new
+// inline helper returning the point by value 513 (1497 B, 0xe5bc0 lost); `target = nearest_b` member by member 226
+// (1639 B: the target's z load is then moved into the arms, as a float), through real_point3d_set 226, member by member
+// with the per-arm copy 264. Diagnostics: aim as a plain three-float record copied whole 219 / 201 on the per-arm body
+// (the point type with its array overlay is not what keeps the copy in memory); the clamp and direction in a new inline helper taking the
+// point by value 244 (1612 B), reading the target's z through its pointer 219.
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {
@@ -8156,6 +8198,7 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 	point3f target;
 	real target_height;
 	real target_radius;
+	point3f aim;
 	vector3f direction;
 	real distance;
 
@@ -8185,10 +8228,17 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 		target_height = 0.0f;
 		target_radius = 0.0f;
 	}
-	target.z = PIN(eye.z, target.z, target.z + target_height);
-	direction.i = target.x - eye.x;
-	direction.j = target.y - eye.y;
-	direction.k = target.z - eye.z;
+	/* the point aimed at: the target's, raised to the eye's height but no
+	   higher than the target's top */
+	aim = target;
+	if (target.z <= eye.z)
+	{
+		if (eye.z > target.z + target_height)
+			aim.z += target_height;
+		else
+			aim.z = eye.z;
+	}
+	vector3d_from_points3d(&eye, &aim, &direction);
 	distance = normalize3d(&direction);
 	point->z = distance;
 	if (distance == 0.0f)
@@ -8199,9 +8249,7 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 	else
 	{
 		matrix3x3 frame;
-		real forward_amount;
-		real up_amount;
-		real left_amount;
+		vector3f world;
 
 		point->z = distance - (target_radius + radius);
 		point->z = point->z < 0.0f ? 0.0f : point->z;
@@ -8210,11 +8258,13 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 		frame.left.i = frame.up.j * frame.forward.k - frame.up.k * frame.forward.j;
 		frame.left.j = frame.up.k * frame.forward.i - frame.up.i * frame.forward.k;
 		frame.left.k = frame.up.i * frame.forward.j - frame.up.j * frame.forward.i;
-		forward_amount = direction.k * frame.forward.k + direction.j * frame.forward.j + direction.i * frame.forward.i;
-		up_amount = direction.k * frame.up.k + direction.j * frame.up.j + direction.i * frame.up.i;
-		left_amount = direction.k * frame.left.k + direction.j * frame.left.j + direction.i * frame.left.i;
-		point->x = (real)atan2(left_amount, forward_amount);
-		point->y = (real)atan2(up_amount, sqrt(left_amount * left_amount + forward_amount * forward_amount));
+		/* the direction turned into the frame's axes in place, through a copy */
+		world = direction;
+		direction.i = dot3f(&world, &frame.forward);
+		direction.j = dot3f(&world, &frame.left);
+		direction.k = dot3f(&world, &frame.up);
+		point->x = (real)atan2(direction.j, direction.i);
+		point->y = (real)atan2(direction.k, sqrt(direction.j * direction.j + direction.i * direction.i));
 	}
 }
 
@@ -8222,55 +8272,21 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
    (NONE for none): the one inside the grab window (function_e63b0), and when
    both are, the one with the smaller yaw when both are close, else the
    nearer; NONE when neither is */
-// score 55 (was 112) in a full build with stand-in SDK headers: the result lives in object_index's argument home
-// and the candidate in a copy (`candidate_index`), with no result local, as retail keeps them. Left: retail keeps
-// the pool pointer in esi and reloads [esi+0x44] for the weapon lookup of the inlined 0x1012c0 where ours caches
-// the data pointer, and retail calls 0xe63b0 on the candidate first.
-// Before:
-// score 112 (was 112): walked against retail block by block, no behaviour difference: the weapon slot byte at
-// +0x212 and the +0x218 table (0xe5be1-0xe5bfd), the flag inlined from function_cbd50 and function_1012c0
-// (definition byte +0x12f, bit 0; 0xe5c04-0xe5c34), previous == NONE at 0xe5c37, both function_e5d50 calls (object
-// first, then previous, offset = unit + 0x168, out pushed first; 0xe5c4d, 0xe5c83, 0xe5c95), function_e63b0 on
-// candidate then current (0xe5ca0, 0xe5cad), the 0.6 constant at 0x44ae8c, the gap test (+8, 0xe5cc6-0xe5cda), the
-// yaw magnitudes (+0, 0xe5cdc-0xe5d0a; the candidate wins only when |candidate yaw| < |current yaw|, a tie
-// keeps previous via 0xe5d36) and the three returns (candidate: 0xe5cbc, 0xe5d0f, 0xe5d23; previous: 0xe5d36; NONE:
-// 0xe5d3a) all agree; the caller 0x1515e0 (0x15165a-0x15166c) passes (unit, object, previous) and stores the
-// result. Remaining difference is allocation: retail keeps object_index in EBP and the result in the argument's
-// home slot ([esp+0x28], stored as imm -1 at 0xe5bf0), reloads [esi+0x44] for the weapon lookup (0xe5c0b) and tests
-// the first function_e63b0 result from its spill (0xe5cb2); ours holds -1 in EBP as the result, caches the data
-// pointer in ESI and calls function_e63b0 on current first. Tried: result as a reassigned parameter with the flag
-// before the unit lookup (391 bytes, 120), flat && conditions (127/132), inverted nesting (136/140), calls inside
-// the conditions (114, wrong: the second call becomes conditional).
-// M3 lane 8 r240 (fast screen with 0xe63b0 and caller 0x1515e0, which stay matched; this body measured 55 at 384 B, the
-// result now in the parameter's home and the candidate in EBP as retail). Left: our NONE is one EDX constant for the
-// home store and two compares where retail stores and compares immediates; ours keeps the object data field in ESI
-// where retail keeps the array global and re-reads the field inside the inlined weapon-flag lookup (0x1012c0's); the
-// two inside tests run current-first (the compiler reorders them to keep the first-tested result in AL). Forms: the NONE
-// store ahead of the flag 128 (382 B), ahead of the unit lookup 120 (391 B: the immediates and the store's place become
-// retail's, the data-field reload is still missing, so the rest misaligns); the flag before the unit local, the
-// candidate copy first, a named weapon index 55 each (same code); a named offset pointer for the three calls 133 (caller
-// 0x1515e0 69). On the early store: the inside results as initialisers, declared the other way round, the vectors
-// declared the other way round, the calls written current-first, 120 each (same code). Diagnostics (reverted): the
-// parameter's address stored to a probe global 84 (the field still kept, not an aliasing kill); a probe global store
-// inside 0xe63b0 gives retail's two-vector arm exactly; a self-copy through its aim parameter does not. BLOCKED-BY
-// 0xe63b0 (its call order needs it to look side-effecting to the optimiser).
 // @retail 0xe5bc0
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {
+	long result = NONE;
 	s_biped *unit = BIPED_GET(unit_index);
-	long candidate_index = object_index;
-	bool flag = function_1012c0(function_cbd50(unit_index, *((char *)unit + 0x212)));
-
-	object_index = NONE;
+	bool flag = function_1012c0(unit_get_current_weapon(unit_index));
 
 	if (previous_index == NONE)
 	{
 		vector3f measurement;
 
-		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&measurement);
+		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&measurement);
 		if (function_e63b0(&measurement, flag))
 		{
-			object_index = candidate_index;
+			result = object_index;
 		}
 	}
 	else
@@ -8280,46 +8296,43 @@ long __stdcall function_e5bc0(long unit_index, long object_index, long previous_
 		bool candidate_inside;
 		bool current_inside;
 
-		function_e5d50(unit_index, candidate_index, &unit->unknown168, (point3f *)&candidate);
+		function_e5d50(unit_index, object_index, &unit->unknown168, (point3f *)&candidate);
 		function_e5d50(unit_index, previous_index, &unit->unknown168, (point3f *)&current);
 		candidate_inside = function_e63b0(&candidate, flag);
 		current_inside = function_e63b0(&current, flag);
-		if (candidate_inside)
+		if (candidate_inside && current_inside)
 		{
-			if (current_inside)
+			if (candidate.k < 0.6f && current.k < 0.6f)
 			{
-				if (candidate.k < 0.6f && current.k < 0.6f)
-				{
-					real candidate_yaw = candidate.i >= 0.0f ? candidate.i : 0.0f - candidate.i;
-					real current_yaw = current.i >= 0.0f ? current.i : 0.0f - current.i;
+				real candidate_yaw = candidate.i >= 0.0f ? candidate.i : 0.0f - candidate.i;
+				real current_yaw = current.i >= 0.0f ? current.i : 0.0f - current.i;
 
-					if (candidate_yaw < current_yaw)
-					{
-						object_index = candidate_index;
-					}
-					else
-					{
-						object_index = previous_index;
-					}
-				}
-				else if (candidate.k < current.k)
+				if (candidate_yaw < current_yaw)
 				{
-					object_index = candidate_index;
+					result = object_index;
 				}
 				else
 				{
-					object_index = previous_index;
+					result = previous_index;
 				}
+			}
+			else if (candidate.k < current.k)
+			{
+				result = object_index;
 			}
 			else
 			{
-				object_index = candidate_index;
+				result = previous_index;
 			}
+		}
+		else if (candidate_inside)
+		{
+			result = object_index;
 		}
 		else if (current_inside)
 		{
-			object_index = previous_index;
+			result = previous_index;
 		}
 	}
-	return object_index;
+	return result;
 }

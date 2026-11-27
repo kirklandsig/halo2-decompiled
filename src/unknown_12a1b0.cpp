@@ -503,6 +503,11 @@ void function_11bed0(s_location *location, point3f const *point);
 // query's /O2 file 160 (281 B: the link expands the helper and then 0x11bed0 at the loop site); `__forceinline` here 160;
 // the /O2-file helper on the current body 80 (same code). Our link expands callees from /O2 files and never from /Ob1 ones,
 // the reverse of retail for 0x11bed0 and 0x16bbc0. Still BLOCKED-BY 0x11bed0.
+// M3 lane 3 r315 (H2M_FAST with 0x11bed0, 0x16bc00, 0x219d90, 0x125920, all MATCH; control 80): the first sound as the
+// latch's conditional expression 80; the latch's sound set by an if 80; the call through a second name for the sound 80;
+// the pool global used directly (no pool local) 80 (same code each); the latch through the called 0x16bc00 123 (170 B).
+// The site is expanded one test level deeper than retail (the inliner's calibration, as for 0x25d740 at 0x261510): the
+// spellings above leave its enclosing tests unchanged, and the forms that add tests are implied ones. Body unchanged.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1431,6 +1436,14 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // draws none. Forms: const-qualified parameters 2; the curve as a `short` from `? 0 : 1` 28; the promotion index named
 // `class_index` 2; the ring index named `sound_index` 2; the curve as `(~flags & 0x400) != 0` 4. Diagnostic: five, six or
 // seven dead longs 2 each (no symbol-count phase).
+// M3 lane 3 r316 (fast screen with 0x21be20, 0x21b870 and 0x126df0, MATCH each time; control 2). The split pass draws
+// pieces in candidate order (NONE, zero, 0xffff, the 0x80 constant drawing none, the first index, the count) from a free
+// list topped by the dropped AND-1 constant and the two float loads, then the last two numbers freed before allocation
+// (14, then 21); the reloads follow the pieces, so retail's order needs the fourth entry above the fifth. Forms: `short
+// curve` 28 and the curve passed straight 28 (both listed, re-measured); a const playing element 2; the iterator as an
+// aggregate initialiser `{ first, first, 0 }` 2 (first index 15, count 21); the walk on the step's result with
+// `iterator.index` at both uses 2 (15/21); the duration copied to a local at the call 2; 0x126df0's parameters named
+// `new_sound`/`old_sound` 2; the playing element named `sound` 2. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {
@@ -3148,6 +3161,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // true : false` 597 (same code); `bool alternate = flags & 1;` 597 (same code); `result` declared above `alternate` 597
 // (same code); the resume test as `state == 0 && (flags & 0x10)` 632 (2499 B); the missing-definition path as an early
 // `return true` in place of the final else 779 (2497 B). Body unchanged.
+// M3 lane 4 r265 (plain, control 597): the constant 1 is one allocator candidate from the entry into the loop's
+// start block, live across the whole loop, so it is never given a register; retail reloads EBX = 1 inside that
+// block (flag test, the start call's 1, the fade curve, the fade-in call's 1) and holds it at the entry. Tried:
+// the two guards joined with && 782 (2489 B, 0x18a7b0 lost); `created` declared above `combine_sources` 632;
+// `result = true` ahead of the lookup call 600; the start block's arms swapped (fade arm first) 646; `alternate`
+// inside the definition guard with `result = true` ahead of the lookup 620 (2500 B). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

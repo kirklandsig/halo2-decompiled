@@ -887,6 +887,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // one entry pointer 342 (1693 B); the scale stored as a double literal 305 (same code); the scale store right after
 // the angle store 313; the side, flag, scale and ordinal stores together after the angle store 313; the scale store
 // after the ordinal store 305 (same code).
+// M3 lane 1 r175 (fast screen with 0x29a190 and 0x298c30, both MATCH each run; control 305; body unchanged). Near arm, aimed at
+// retail's float cosine cell and SSE `y * cos` ahead of the sine's branch: the cosine read through a `real const &` in the
+// rows 305 and each quarter turn's cosine call bound to its own `real const &` 305 (both the same code: the references fold);
+// the staged y declared double 378 (1697 B); the angle store ahead of the cosine 305 (same code); each `y * cos` bound to a
+// `real const &` temporary, the y row then `x * sin + that`, 305 (only the staged product's home moves; it stays x87).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1758,6 +1763,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // components by value ahead of the sine and cosine 122, after them 118, the same with trig-first rows 118; the
 // components read into locals inside the helper 116; the sine products alone written trig-first 108 (same code); the
 // y row's terms exchanged 108 (same code); double sine and cosine parameters 169.
+// M3 lane 1 r174 (fast screen with 0x29a190, 0x298c30, 0x2108a0 and 0x210770, all MATCH; control 569): the radius is
+// still held in XMM5 across the 0x2108a0 / 0x210770 calls where retail reloads it after each; 0x1f99d0 shows the same
+// cause at its transform calls (both BLOCKED-BY the held `inline` lead on those callees). Forms: the side flag read once
+// into a `bool const` for its five uses 835 (3321 B); the cosine declared in the loop body 569 (same code); the step
+// height `arg_3->z` named once for the three rotations 775 (retail's 3372 B, but the frame moves, first +0x2); the
+// result flag declared just ahead of the sweep loop 606; the actor lookup ahead of the result flag 569 (same code).
+// Body unchanged.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

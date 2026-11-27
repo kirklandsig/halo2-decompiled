@@ -1829,6 +1829,16 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // use 568 (same code); `if (count <= 0) return false;` ahead of the scan 568 (2189 B, but a separate early epilogue);
 // the body in the found arm with `return true;` and one `return false;` at the end 566 (2189 B, frame 0x28, entry to
 // +0xc; block and query still arrive swapped), with the count read at each use 566 (same code).
+// M3 lane GA r25 (34 fast trials with 0xd4080/0x3db00/0x3dfe0/0xd1e10/0x117c80/0x13b390; control 529, 0xd4080 378,
+// 0x3db00 MATCH, 0x3dfe0 21; body unchanged): on main's 529 base, cross3f_staged in lighting_rotate 530, projection
+// before cross3f_staged 561 (0xd4080 488), two-return lighting_function 529, pinned_real in lighting_pin_color 599
+// (0x3db00 lost) and on direction0.k/luminance 538, vector3f_negate_ab+normalize3d for direction0 581 (0x3db00 lost),
+// existing vector3f_scale for the three color scales 524 (2191 B, -5 under keep bar). On lane 2 r146's retail-order
+// lead (re-measured 182 / 0xd4080 295 at 2189/1870 B, 0x3db00 MATCH): adding (type, query, block) + two-return
+// lighting_function + projection ahead of cross3f_staged pushes the pair to 171 at 2189 B (+0x19, mk 60; lines 4-53
+// minus 1 insn, 72-159, 320-569 verbatim) with 0xd4080 239 at 1870 B and 0x3db00 MATCH (held as a match-only lead;
+// with inline k/j/i rotation + lightmap-first blend 282 at +0x2b, al 87, mk 58, 0xd4080 289; ordered first normalize
+// + d0 scale order 481, mk 59).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2243,6 +2253,19 @@ real function_30bf0(vector3f *vector);
 // retail; 6, under the bar), as `i*i + j*j + k*k` 483 (1894 B); `mobile` started false and set by an `if` 362 (retail
 // stores the zero in the entry block; match-only, the direct test is main's), with the k, i, j spelling 356; the shared
 // rotation helper reading the axis through `vector3f const &` 515 (1837 B, 0xd37f0 610, 0x3db00 lost).
+// M3 lane 5 r252 (H2M_FAST with 0xd37f0, 0x3db00, 0x3dfe0, 0xd1e10 and 0x117c80; control 378). Reading: retail's
+// script-globals table (the type/address pairs at 0x471e94-0x471eb4) holds the addresses of g_467484 and g_467494, so
+// retail cannot move the angle's load above the stores into direction2; nothing takes their address in this build, so
+// ours loads g_467494 ahead of the direction2 copy. On main's body a file-scope pointer set to &g_467494 (diagnostic)
+// 378, with one to &g_467484 too 381. On lane 2 r146's lead (295, 0xd37f0 182) the same diagnostic 258, the angle load
+// then retail's; with it, the shared rotate computing the projection ahead of its cross product 197 (0xd37f0 stays 182;
+// the dot spelled three ways and through dot3f in either order 197 each, same code: the sum is reassociated (j + k) + i
+// where retail has (k + i) + j); the projection after the cross in retail's spelled order 259 (0xd37f0 262); the rotate
+// through include/axis_rotation.h's in-place helper 296 (0xd37f0 427); on 197 the mobile flag started false and set
+// 181 (first difference +0x57: the first normalize's x87 squares run k, j, i where retail runs i, k, j); on 181 the
+// normal copied component by component in four orders 181 each (same code), normalize_inline 263 (1876 B), the main
+// file's ordered-square helper with `(k*k + i*i) + j*j` 354 (x87 squares then retail's, but its j and k scaling loads
+// the inverse first), that helper scaling through vector3f_scale 357. All diagnostics restored; body unchanged.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

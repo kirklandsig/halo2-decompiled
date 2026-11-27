@@ -3102,6 +3102,23 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // i, j, k 504, with the delta through vector3d_from_points3d 518 (2302 B). A forced-ranking search (12 of 2692
 // candidates) found no single allocator decision that lowers 281: the first difference is in the scheduler, not the
 // colouring. Body unchanged.
+// M3 lane 11 r173 (H2M_FAST with 0x2f2d0/0x2e3f0/0x222d0/0x2df00/0x20d80; control 281, difflib-aligned 142). Retail keeps the
+// attenuation in its stack cell with a register copy: the 1.0 default stored after the tint, each arm of the distance clamp
+// copying and storing its result, the equal-bounds path reloading the cell. Forms: the distance and angle factors as
+// named locals defaulting to 1.0 and multiplied with the alpha clamp at the end 506 (2271 B, aligned 163); attenuation
+// declared bare beside the decoder outputs and its default assigned in place 281 (same code); the distance attenuation
+// as an if/else on equal bounds (1.0 in the taken arm) 496 (retail's 2285 B, aligned 184); the far distance named once
+// for its two reads 492 (aligned 146); the alpha clamp as the attenuation's initial value with the distance clamp
+// multiplied in 488 (aligned 205).
+// GA22 (26 fast trials, control 281 at 2286/2285 B, +0x76, fr=0x94, al=143, mk=62, 0x2df00/0x222d0/0x2e3f0 MATCH, 0x2f2d0 142, body unchanged):
+// on loop-free helper form (vector3d_from_points3d delta, dot3f x4, 3-helper reflected, vector3f_add_scaled draw point, early attenuation; 435 at 2289 B,
+// ins=568/567, al=58, mk=23): inline projection dot3f 435, basis_dot_xzy projection 436 (mk=21), running-sum projection i,j,k 457 (2286 B, al=87),
+// j,i,k 379 (2286 B, al=98, mk=30), single-expr j+i+k or k+j+i 455 (2286 B, al=73, mk=30: 2 in-place multiplies instead of retail's 1), i+(j+k) 383 (2286 B),
+// delta-first i,j,k 458, projection before inverse 435, single-div projection 445 (2285 B, ins=575), direct near bounds 435, s_camera_storage pointer 441,
+// vector3f_add_scaled reflected 544, separate projected local 435, double atan2 457, main draw point 457, basis_dot_xzy forward 456, declaration reorders
+// (direction first/last, delta early/top, motion locals at top) 435 each; with retail opacity arm order + axis_scale before angle 435 (al=56, mk=22),
+// + PIN on vertex data 435 (al=52, mk=19), + function_020d80(context, true) 445 (al=53, mk=19). The single extra movss in projection (`direction.i * delta.i`
+// loading direction.i instead of multiplying delta.i in place) shifts all 422 trailing lines by one instruction.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -6147,6 +6164,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // in 0x142570's up, left, forward order 231, the origin added first 231, both 231; the opacity and collision tests as
 // one negated early return 231; the radius renamed to sort ahead of the helper's scaled x, y and z 231 (all the same
 // code: the spill homes ignore names). Body unchanged.
+// M3 lane 3 r313 (fast, control 231): the opacity test as `0.05f < opacity` 231; the alpha as `opacity * (1.0f - t)` 231;
+// the radius as `0.35f * radius field` 231; the offset's z set first 231; the offset declared ahead of the corners 231
+// (same code each).
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -6749,6 +6769,13 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 // no value local / pow(*strength) / if (*strength) before pow / combined if (*strength && 30830) / early return / double-cast pow / raw before PIN /
 // else-if (value > 0) all 43; assign *strength after if 191 (637 B); else { *strength = value; } 119 (659 B); else { *strength = 0.0f; } 118 (666 B);
 // exponent ternary 108 (664 B); 0.0f < value/strength 99 (632 B); nested if (curve) 55.
+// M3 lane 3 r313: HELD (needs the owner's OK; held as a patch): MATCH in the fast and plain checks with 0x30830 declared
+// (d, a, camera, scale, perspective, negate, out) and returning bool (its definition, the four declarations and both calls,
+// one of them a line in contributor 0x4f7e0), and the atan2 result written at the cos and sin calls with no double local
+// (that local keeps every register save at entry: 8-byte stack parity). 0x30830 195 -> 187, 0x4f7e0 325 unchanged. Parts:
+// the reorder with the bool return 18; with the long return 1 (`test eax` for `test al`); the atan2 form alone on main 21.
+// Retail sets up `a` (EDX) before forming `d` in place in the state's ESI: under the link's last-to-first argument setup
+// `d` is declared first.
 // M3 lane GB r21 (12 compiled fast trials on the 20 base with 0x50650/0x13bb90 MATCH, 0x30830 195): typed definition/state/curve structs 20;
 // early return on count <= 0 20; nested projected check 20; inline state projection helper 293 (537 B); inline (dir, pos) wrapper 20;
 // inline curve tail helper 166 (542 B); curve read at each use 187 (682 B); curve 2-pass loop 231 (703 B); real atan2 local 21;

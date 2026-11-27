@@ -1038,8 +1038,24 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // product re-measured 217 (1270 B, aligned 37); the direction computed straight into the output's forward (no local)
 // 360 (1231 B); the else arm's forward through one pointer for its three stores and the 0x11d090 call 43 (aligned 24,
 // masked 10: the else arm is then retail's; two under the bar); that pointer at function scope for both arms 328; on
-// the 43 form the first product through function_1f087b too 47 (1264 B). A forced-decision search (14 decisions) finds
+// the 43 form the first product through function_1f087b too 47 (1264 B). A forced-ranking search (14 decisions) finds
 // nothing below 45; left are the first product's right.i/right.j colours and the second product's k, j, i schedule.
+// M3 lane 12 r193 (H2M_FAST with 0x1f0870 and 0x130f60; control 45): the first product from the `direction` local in
+// place of the copied output 43 (1261 B, but the product then reads the stack copy where retail reads the output
+// through ECX, so not closer); with the else arm's forward through one pointer as well 41 (1261 B, the else arm
+// retail's, the camera block as just described; under the bar for a non-match); the else-arm pointer alone
+// re-measured 43; the camera arm's forward through one pointer for the copy and both products 223 (1272 B);
+// previous_up bound by const reference to the player state 277 (1237 B: retail copies it before the length call).
+// Body unchanged.
+// M3 lane 15 r152 (h2m fast with 0x1f0870, 0x130f60 and 0x3c9a0, 0x130f60 and 0x3c9a0 MATCH; control 45). A forced-ranking
+// reading: the first product's three components are colour candidates in one block, ranked right.k 162 > right.i 144 >
+// right.j 108 here (retail's colours need right.j above right.i); with a staged second product all three tie at 108 and
+// the tie order (right.i, j, k) is the reverse of retail's colours. Forms: the second product through the existing
+// contact_cross of src/unknown_1f03e0.cpp 57 (1264 B), both products through it 57; the second product through the
+// existing staged matrix_cross of src/unknown_03bcb0.cpp (k, j, i with retail's operand spelling) 217 (1270 B, the same
+// code as cross3f_staged: operand order follows rank, not spelling), both products through it 221 (1272 B), the first
+// product alone 49 (1264 B). Diagnostic (reverted at once): 1 to 7 unused locals on this body 45/49/49/219/219/49/49
+// (219 at retail's 1261 B with the first product's loads moved), on the staged second product 217..223. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -327,9 +327,9 @@ void function_2f6b0(s_2f6b0_point const *position, s_2f6b0_point const *grid,
 		inner->v2 -= 4;
 }
 
-__declspec(noinline) void function_016a30(real scale, short y, short x);
+__declspec(noinline) void function_016a30(real scale, long y, long x);
 // @retail 0x16a30
-void function_016a30(real scale, short y, short x)
+void function_016a30(real scale, long y, long x)
 {
 	g_485a8a.a.v1 = 0;
 	g_485a8a.a.v0 = 0;

@@ -1076,6 +1076,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // also through `collection` 271 (1063 B); `&watcher->players` at each use (no local) re-measured by rank only (the sum
 // splits into two-term adds). The (collection, player, update, other) swap order re-measured 32 (left: the key sum, then
 // the key/destination ECX/EDX pairing and the last record's two reads). All restored.
+// M3 lane 2 r156 (h2m fast with 0x84e90/0x84c90/0x83c90, all MATCH each time; control 28): the occupied key's sum in the
+// compiler's second reassociation pass sorts its terms by rank, the inverse start and the stepped configuration cursor
+// (both created by strength reduction) above `collection` (an early named symbol), then the constant. Forms: the
+// occupied record's index stored before its type 30; `collection` as `s_type_c67652 *const` 28; the occupied key copied
+// from `&collection->players[i]` (the element, key first) 28; the machine fill bounded by a `member_count` local 28 (the
+// three 28s the same code); the last record's machine stored ahead of its key copy 45. All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

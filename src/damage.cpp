@@ -2879,6 +2879,19 @@ struct s_unit_event
 // into a named two-use local in each 0xb58c0 block 420 (same code); the permutation pointer in one expression 558 (1852
 // B); the reference read moved to the 0xa8360 argument 420 (same code); the state update as `x = x | bit` 420 and OR-ing
 // `(word)(1 << permutation_index)` 420 (same code each). Body unchanged.
+// M3 lane 5 r250 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd9d60; control 420): the permutation pointer defined after the
+// mode block 573 (first +0x3); the permutation pointer in one expression without the region pointer re-measured 558; the
+// two ejection tests in the other order 420 (same code); the mode block's attachment reads through `object` 559; the
+// marker flag passed as an expression instead of a named bool 420 (same code). Body unchanged.
+// M3 lane 6 r249 (fast with 0xdaaa0, 0xdae60, 0xdb760 MATCH unless said; control 420). Allocator ledger re-read: the
+// region index 58 = entry block +34 (one reference among 17 values, the owner and accumulator parameters and the
+// constants 0, NONE, 0xffff and 4 among them), the 0xa8360 block +16 (8 values), the state update +16 (8 values), -8;
+// the permutation pointer 66 = entry +136 (four references), +16 at the update, -308 over 83 blocks. The index passes
+// it (the tie goes to the index) with three more values referenced in the 0xa8360 block, or two fewer in the entry
+// block; the update block adds to both alike. Forms: the state update as pointer arithmetic (`+ region_index` then
+// `->`) 420; the region and permutation pointers as `+` arithmetic 420; the permutation pointer to const 420; the
+// update through the existing word_flags_set 420 (same code each); the parameter read directly for the region (no
+// pointer to it) 510 at 1868 B, with 0xdaaa0 49, 0xdae60 48, 0xdb760 9 (the convention changes). Body unchanged.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5818,6 +5831,19 @@ struct s_damage_object_creation
 // a pointer to its header element 167 (same code); the section stores as `field = field | (word)(1 << i)` 167 (same
 // code); the counter declared ahead of the `for` 167 (same code); the piece search's result declared at its
 // computation with no NONE initialiser 167 (same code). Body unchanged.
+// M3 lane 5 r250 (fast with 0xdb810/0xdbb40; control 167): the one-use first-mask local re-measured 112 (first +0x5d: its
+// zero-extension still ahead of the count guard, and the creation block's +0x28/+0x2c reads then swap order); a two-use
+// first-mask local at function scope serving the section loop and the detach test 169; the piece search as a NONE-start
+// for/break on main's body 223 and on the one-use mask local 247 (both frame 0x13dc: the detached mask takes ESI, where
+// retail keeps it in memory and reloads it at the loop head); one function-scope counter for the section and node loops
+// 167 (same code); the section count read from the record at each test 179. Body unchanged.
+// M3 lane 6 r249 (fast with 0xdb810/0xdbb40, both MATCH; control 167). Allocator ledger re-read: the bit 50 (loop
+// head +48 at weight 2 with four values, one of them the constant 1), info 48 (entry block +40 with ten values: the
+// constants 0xffff, 0 and 1 and the first mask's parameter value among them; count read +8 with four); NONE is not
+// among the entry block's values, and the second mask (one read) is no value at all. Forms: the lookup's result kept
+// as the `long` it returns and cast at the count read 167 (same code); the bit narrowed to a word in both tests 225
+// (779 B); the piece search's test as `(... & (1 << i)) == 0` 167; the piece's node mask as a `long` 167 (same code
+// each); the node-index test through a fresh object lookup 237 (827 B, a second path). Body unchanged.
 // @retail 0xdbc80
 void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

@@ -1470,40 +1470,7 @@ dword function_1cb70(long tag, long index)
 	return result;
 }
 
-struct s_shader_binding
-{
-	long field_00;
-	long tag;
-	long index;
-	long field_0c;
-};
-
-struct s_shader_stream
-{
-	long field_00;
-	long field_04;
-	long field_08;
-};
-
-struct s_shader_cache
-{
-	s_shader_binding bindings[8];
-	long active;
-	long field_84;
-	bool field_88;
-	byte field_89[3];
-	byte const *wanted[16];
-	byte const *current[16];
-	byte field_10c[0x100];
-	bool descriptors_changed;
-	byte field_20d[3];
-	s_shader_stream streams[16];
-	long stream_count;
-	bool streams_changed;
-	byte field_2d5[3];
-
-	s_shader_cache();
-};
+#include "shader_cache.h"
 
 // @retail 0x1c710
 void __stdcall function_1c710(void *memory)
@@ -1840,10 +1807,8 @@ PRIVATE inline real render_bounds_midpoint(real const *pair)
 }
 
 // @retail 0x1cdd0
-void function_1cdd0(real const *bounds, byte flags)
+void function_1cdd0(real const *bounds, long flags)
 {
-	/* The reference retains the flag argument's retail stack placement. */
-	byte const *flags_reference = &flags;
 	real constants[12];
 	constants[0] = 1.0f;
 	constants[1] = 1.0f;
@@ -1858,10 +1823,10 @@ void function_1cdd0(real const *bounds, byte flags)
 	constants[10] = 0.0f;
 	constants[11] = 0.0f;
 	bool active = false;
-	if ((*flags_reference & 3) && bounds)
+	if ((flags & 3) && bounds)
 	{
 		active = true;
-		if (*flags_reference & 1)
+		if (flags & 1)
 		{
 			constants[0] = (bounds[1] - bounds[0]) * 0.5f;
 			constants[1] = (bounds[3] - bounds[2]) * 0.5f;
@@ -1872,7 +1837,7 @@ void function_1cdd0(real const *bounds, byte flags)
 			constants[6] = (bounds[4] + bounds[5]) * 0.5f;
 			constants[7] = 0.0f;
 		}
-		if (*flags_reference & 2)
+		if (flags & 2)
 		{
 			constants[8] = (bounds[7] - bounds[6]) * 0.5f;
 			constants[9] = (bounds[9] - bounds[8]) * 0.5f;
@@ -3024,17 +2989,6 @@ void function_25ca0(bool enabled)
 // @retail 0x1cd90
 void function_1cd90(void)
 {
-	function_1c710(g_51f0f0);
-}
-
-PRIVATE __forceinline void select_immediate_descriptor(long format)
-{
-	byte const *descriptor = g_43f408[format];
-	function_1c6b0(g_51f0f0);
-	s_shader_cache *state = (s_shader_cache *)g_51f0f0;
-	state->wanted[0] = descriptor;
-	if (state->current[0] != descriptor)
-		state->descriptors_changed = true;
 	function_1c710(g_51f0f0);
 }
 
@@ -7454,8 +7408,8 @@ extern dword g_4e6494;
 // call out of the pass loop (retail's evaluation order, not a behaviour fix; 221 -> 193). (3) The volatile
 // on geometry is gone (193 -> 184); the length is retail's 877 and the frame retail's 0xac. (4) The (byte)
 // cast on the word at section + 0x1a is gone: retail pushes the zero-extended word (0x4c929) where ours
-// still loads a byte, because function_1cdd0 declares `byte flags`; its callee reads only the low byte
-// (0x1cdde), so no behaviour differs, and the score is the same. Still differs: ours creates the zero in
+// loaded a byte while function_1cdd0 declared `byte flags`; function_1cdd0 now takes `long flags` and reads only
+// the low byte (0x1cdde), so no behaviour differs. Still differs: ours creates the zero in
 // ebx before the test of function_3e320's result where retail makes it in edi after it (0x4c6fe), the
 // loop counter is in edi (copied to esi before function_151e0) where retail keeps it in esi, the section
 // is in esi where retail uses ebx, and ours tests the table handle once (jl) where retail tests NONE
@@ -9428,16 +9382,16 @@ void function_52d40(long bitmap_index, byte *shader, long tag, dword flags)
     }
     bool extra_combiners = (shader[0x28] & 2) != 0;
     function_143c0(tag, (short)bitmap_index, 0, 0.0f);
-    D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSU, (shader[0x2e] & 2) | 1);
-    D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSV, ((shader[0x2e] & 4) | 2) >> 1);
-    D3DDevice_SetTextureStageState(0, D3DTSS_MAGFILTER, shader[0x2e] & 1 ? 1 : 2);
-    D3DDevice_SetTextureStageState(0, D3DTSS_MINFILTER, shader[0x2e] & 1 ? 1 : 2);
-    D3DDevice_SetTextureStageState(0, D3DTSS_MAXANISOTROPY, 0);
-    D3DDevice_SetTextureStageState(0, D3DTSS_MAXMIPLEVEL, 0);
-    D3DDevice_SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, 0);
-    D3DDevice_SetTextureStageState(0, D3DTSS_COLORSIGN, 0);
-    D3DDevice_SetTextureStageState(0, D3DTSS_ALPHAKILL, 0);
-    D3DDevice_SetTextureStageState(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
+    sampler_state_write(0, D3DTSS_ADDRESSU, (shader[0x2e] & 2) | 1);
+    sampler_state_write(0, D3DTSS_ADDRESSV, ((shader[0x2e] & 4) | 2) >> 1);
+    sampler_state_write(0, D3DTSS_MAGFILTER, shader[0x2e] & 1 ? 1 : 2);
+    sampler_state_write(0, D3DTSS_MINFILTER, shader[0x2e] & 1 ? 1 : 2);
+    sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
+    sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
+    sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
+    sampler_state_write(0, D3DTSS_COLORSIGN, 0);
+    sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
+    sampler_state_write(0, D3DTSS_MIPFILTER, shader[0x2e] & 1 ? 1 : 2);
     function_0222d0(D3DRS_CULLMODE, 0);
     function_0222d0(D3DRS_COLORWRITEENABLE, 0x10101);
     function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
@@ -9512,10 +9466,13 @@ void function_52d40(long bitmap_index, byte *shader, long tag, dword flags)
             g_484f68.PSRGBInputs[count] = 0x0c14a034;
             g_484f68.PSRGBOutputs[count] = 0xc00;
             break;
+        case 3: case 4: case 6:
+            g_484f68.PSRGBInputs[count] = 0x0c140000;
+            g_484f68.PSRGBOutputs[count] = 0xc00;
+            break;
         case 7:
             g_484f68.PSAlphaInputs[count] = 0x1c140000;
             g_484f68.PSAlphaOutputs[count] = 0xc00;
-        case 3: case 4: case 6:
             g_484f68.PSRGBInputs[count] = 0x0c140000;
             g_484f68.PSRGBOutputs[count] = 0xc00;
             break;
@@ -10642,7 +10599,7 @@ void __stdcall function_1f490(long unused, long font, long character, long color
 #include "allocator_storage.h"
 #include "crc.h"
 void function_0169f0();
-void function_016a30(real scale, short y, short x);
+void function_016a30(real scale, long y, long x);
 void function_01d660();
 bool function_1d770();
 void function_01fbb0();
@@ -10657,7 +10614,7 @@ point3f g_4b72b4;
 
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
-__declspec(noinline) void function_016a30(real scale, short y, short x);
+__declspec(noinline) void function_016a30(real scale, long y, long x);
 // MiniMax I (11-16): no new form, no lower score (171): the palette's result is still written through a local out-parameter here, where retail hands the palette global itself to the callee, and the palette's home sits in another slot; the callee's declaration lives in src/unknown_0167a0.cpp.
 // MiniMax S (11-15): no new form, no lower score (171).
 // MiniMax C (11-14): no new form, no lower score (171): the only form that puts the two offsets in retail's order measures 167, under the keep bar, and the widths they are handed over in are the callee's own declaration's, which is in another file.
@@ -10733,8 +10690,8 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // so passing &g_484dbc changes no behaviour and drops the NULL local. (4) the volatile on success is gone: retail
 // stores 0 only on the failure path (0x125d5). (5) the position copy is one struct assignment (dword moves,
 // 0x12809-0x1281a). Callers/callees: 0x1d3f0 (62), 0x2ca00 (3) unchanged, 0x2c8a0 and 0x16a30 still MATCH.
-// Still differs: retail sign-extends both offsets (0x125a7, 0x125aa) because its callee took ints (declared short in
-// src/unknown_0167a0.cpp, not edited); 0x3f6e10 takes 0x11 in eax (0x12670) where the XDK lib here takes it on the stack.
+// Retail sign-extends both offsets (0x125a7, 0x125aa) because its callee takes longs, as function_016a30 is now
+// declared. Still differs: 0x3f6e10 takes 0x11 in eax (0x12670) where the XDK lib here takes it on the stack.
 // @retail 0x12560
 void function_12560()
 {

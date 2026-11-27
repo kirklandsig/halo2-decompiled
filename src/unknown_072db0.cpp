@@ -1628,7 +1628,7 @@ static __forceinline void query_restore_pending()
 
 bool function_1900a5(long index);
 
-// score 643 (was 643): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
+// score 633 (was 643): The aligned 0xc0 frame and retail's 2862 bytes agree. The logon compare, properties-based user cursor, slot selection and request-loop scratch homes still differ.
 // Earlier at 663 (was 703): the same differences at 2878 bytes.
 // Earlier at 703 (was 703). The 0xc0 frame agrees. The logon branch, user cursor and slot selection still differ.
 // The 0xc0 frame agrees. The status branch, validity-based user cursor and slot selection still differ.
@@ -2444,6 +2444,12 @@ bool function_1900a5(long index);
 // request properties pointer with literal 6 and += 6 after fill 696 (2910 B); users loop direct g_509454[group] 753; completion
 // property->type == 0 ? 0 : ... 643; two-use last_write local 664, nested 665; nested last_read local 643; both nested 665,
 // with in-loop variant->type 667. Blockers stand: 0x1900a5 cmovne needs /arch:SSE (file flag), users cursor needs inlined 0x647d0.
+// M3 lane GA r21 (14 fast trials + plain check across all 51 file/caller/callee VAs, 50/50 peers MATCH; baseline 643 at 2878/2862 B -> kept 633 at exact 2862/2862 B):
+// Kept (both retail-verified and strictly additive, -7 and -3 -> -10): three-use `s_cache_property *properties = &g_509450.read_properties[properties_used];` in main's
+// store order (recovers retail's rolled property fill without `record->properties` reloads and restores 2862 B; 636 alone) plus `read_failures > 3 ? 300000 : 2000`
+// (matches retail's exact `setle` / `and 0x48c10` / `add 0x7d0` at lines 141-147 verbatim; 640 alone, 633 together). Also tried on the 636 base: existing_record pointer 636,
+// completion values pointer 636, typed query_restore_pending pointer 636, fill element pointer 636, users player pointer 638, records_used++ after fill 639, dup continue 684;
+// with `/arch:SSE` on this file (0 peer regressions): SSE alone 751 (2862 B), + properties pointer 759, + online_logon_connected() 692, + both 687, + space 757, + dup+space 769.
 // M3 lane GB r21 (25 fast trials with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x80940, 0x80aa0, 0x80bf0, 0x80d70 all MATCH; control 643 at 2878/2862 B, aligned 361 / masked 272; body unchanged):
 // three-use s_cache_property *properties pointer in main's store order with j < record->count and properties_used += record->count 636 at retail's 2862 B (rolled property fill, -7 pts, one short of keep bar, not kept);
 // on that 636 form: + record_space/property_space 643 (aligned 403 / masked 311), + two-use last_read 639, + two-use last_write 640, + both 643, + space + last_read/last_write/both 645/642/644,
@@ -2451,6 +2457,28 @@ bool function_1900a5(long index);
 // on 643 base: real XUID/word fields on s_cache_property_record/s_cache_property (+ XUID team_owner, or + dword count) 643/643/643 (+ space 643 at 2862 B, aligned 359 / masked 261);
 // properties pointer with properties_used += 6 736 (2926 B, unrolled; + space 704, + XUID/word + space 704, + dup continue + space 730);
 // nested if (variant) + space 643 (2862 B, aligned 358 / masked 260); while duplicate scan 643; read_record_count > 0 guard + space 642; if (variant) ... else state=1 + guard 736 (2942 B).
+// M3 lane GA r24 (15 fast trials on the 633 base with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x80940,
+// 0x80aa0, 0x80bf0, 0x80d70 all MATCH; control 633 at 2862/2862 B, 768/772 insns, al=376, mk=253; body unchanged):
+// two-use last_write local 637 (mk=252); two-use last_read local 636; both nested under !state 637 (al=373, mk=249);
+// completion per-arm `else if (state == 2) { state = 1; failed = true; } else if (state == 5) { state = 4; failed = true; }`
+// 658 (2846 B, al=362, mk=240), with `if (variant) { ... } else player->state = 1;` and `property->type == 0 ? 0 : ...` 658
+// (2878 B, al=368, mk=245), plus `if (read_record_count > 0)` around variant_type 680 (2910 B, al=357, mk=235);
+// fill `long count = 6` for record->count, loop bound and properties_used += count 696 (2910 B, al=343, mk=233);
+// `properties_used += 6` ahead of `j < record->count` loop 681 (2910 B, al=357, mk=227); carried `next_property` cursor
+// 673 (2874 B, al=363); named record_space/property_space 640 (2862 B, al=363), + per-arm failed 674 (2830 B, al=348, mk=235),
+// + last_write 674; polls as `state != 0 && state != 1` / `state == 0 || state == 1` 633 (al=374, mk=251); `pstate` local in
+// request loop 633; `buffers` declared first 633. All retail-aligned structural forms shift positional rows up behind the
+// three cross-file/flag blockers (0x1900a5 cmovne /arch:SSE, 0x647a0/0x647d0 and 0x75890 /Ob1).
+// M3 lane 12 r194 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x641a0, 0x8df50, 0x72700, 0x75890, 0x6c7e0, all MATCH;
+// control 633): the opening test through the existing logon helper 0x6c7e0 itself 763 (its /Ob1 file keeps it a call); the
+// request gate through the existing elapsed-time function 0x75890 itself 646 (a call, same file reason); the delay as one
+// conditional expression 633 (same code); the property value as `= 0` then `if (type)` 642; the team flag declared ahead of
+// the valid flag 633 (same code).
+// M3 lane 11 r174 (h2m fast with 0x749b0, 0x75790, 0x192e60 and 0x1900a5, all MATCH; control 633): the opening test as
+// the file's own logon switch (a `connected` flag set in `case 1`, as 0x73ae0 and 0x73040 write it) 759 (2878 B: retail's
+// `dec eax`, but the users loop then loses its entry jump and pad); that with a request `due` flag 759; the request
+// test as a `due` flag set for state 1 and else-if for an elapsed state 4, 633 (same code); `bool due = state == 1`
+// then the elapsed test 634; the fill gate as `80 - records_used > 0 && 480 - properties_used > 0` 641.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
@@ -2498,7 +2526,7 @@ void function_074aa0(void)
         if (g_4e6948 && g_4e6948->flag1120 && g_4e6948->state != 3)
             delay = 300000;
         else
-            delay = g_509450.read_failures <= 3 ? 2000 : 300000;
+            delay = g_509450.read_failures > 3 ? 300000 : 2000;
         if (!g_509450.read_state && g_47d8f4.count && (g_47d8f4.flags & 2) &&
             (!g_509450.read_time || query_time_now() - g_509450.read_time > delay))
         {
@@ -2536,13 +2564,14 @@ void function_074aa0(void)
                             s_cache_property_record *record = &g_509450.read_records[records_used];
                             memcpy(record->identity, &identity, 12);
                             record->type = variant->field_8;
+                            s_cache_property *properties = &g_509450.read_properties[properties_used];
                             record->count = 6;
-                            record->properties = &g_509450.read_properties[properties_used];
+                            record->properties = properties;
                             records_used++;
                             for (long j = 0; j < record->count; j++)
                             {
-                                *(word *)&record->properties[j].unknown00 = (word)(j + 1);
-                                record->properties[j].type = 1;
+                                *(word *)&properties[j].unknown00 = (word)(j + 1);
+                                properties[j].type = 1;
                             }
                             properties_used += record->count;
                             added++;

@@ -1094,6 +1094,22 @@ static inline bool teams_enabled_19e1c0()
 // negative result as `result = remaining;` like the other format arms 431 (1398 B: its tail then joins theirs); the local
 // team as a `long` (retail sign-extends it into EDI and jumps into the cause-team score arm's tail) 393; the fallback
 // clamp as one ternary 395; both 398; the event teams read at each use 394 (re-measured). Body unchanged.
+// M3 lane 1 r173 (fast with 0x19e0f0, 0x19ea60, 0x19eae0; control 390): with the plain result our build also merges the
+// two player-name arms' calls (arm 2 jumps into arm 1 with its index in EAX); retail keeps every arm whole, sharing only
+// the final wcsncpy call, and its arms differ in scratch choice (arm 1 stores text[0] from SI before `lea esi`, arm 2
+// stores an immediate after it). Forms: the clamps as `if (remaining < result)` 390 (same code), on the plain result 691;
+// the thirteen token compares through one file-local inline helper 390, on the plain result 691; the plain result with
+// the name arms' length in a named local and a one-ternary clamp 692.
+// M3 lane 16 r196 (fast with 0x19e0f0, 0x19df10, 0x19de80, 0x19ea60 and 0x19eae0, all MATCH; control 390, plain
+// result 691). Reading from the register allocator on the plain result: `remaining` totals -45 (references +36, live but
+// unread in 37 blocks -81) against the token's 52, so the token keeps the fourth callee-saved register; a forced-ranking
+// search over 14 single decisions finds nothing under 685, so retail's shape needs two moves at once (the token out of
+// the race and `remaining` above the zero constant). Forms on the plain result: every formatted arm returning
+// `remaining` on failure (the side-switch arm's form) 696 (1167 B); each name and team arm returning its result after
+// the copy 691; the text buffer declared ahead of the result 691; the teams test as a direct `return a && b` 736
+// (1128 B: retail's stored teams byte goes); the opponent arm's teams test and the engine-text arm through the
+// existing header helper and engine getter in place of the file-local copy 390 (same code; plain result 691), but
+// including that header here lost two matched functions elsewhere in the full check, so it is not kept. Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

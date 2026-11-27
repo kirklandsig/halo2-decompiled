@@ -1461,6 +1461,11 @@ __forceinline long vehicle_round(real value)
 // forward.j * up.i), declared at the top beside the definition 4 (+0x131); S with the tick length bound as `real const &`
 // for the rate 2 (the same product left); S with both 6; S with the axis copied from the forward first and the cross
 // overwriting it under the mode test 173.
+// M3 lane 14 r160 (fast screen; S = cross3f_staged at the first cross, D = the projection's dot named, B = a `real const *`
+// to the two rate bounds, T = the tick length bound by `real const &`), at 4: S+D re-measured 2; S+D+B 6; S+D+T 6;
+// S+D+B+T 8; D+B 6; D+T 6. Reading of the operand ranking: in the side cross the twelve loads take weights of one step
+// each, forward.i 6, forward.j 0, forward.k 5, up.i 2, up.j 0, up.k 1 (the higher loaded first); retail needs up.k above
+// forward.i and forward.j above up.i, which no uniform shift of these weights gives.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2111,6 +2116,14 @@ long function_10f5f0(long object_index);
 // indexed with direct/reused mask index 561/561, with bitfield admission
 // 571/571. A cursor to the array end gives 593/599 or 604/604 with bitfield
 // admission. NOT kept: the frame stays 0x1990 and the changed scores rise.
+// M3 lane 13 r163 (h2m fast with 0xef4f0, 0xf06c0, 0x10f5f0, 0x113e40 and 0xf6d10's callees, all MATCH; base 561 at
+// 2264 B; sequence-aligned [slots masked, registers masked] 234/113): the six stored-bit tests through a file-local
+// two-definition helper (`result = false; if (bit < 32) result = (flags >> bit) & 1;`) re-measured 574 (2312 B) [238,
+// 111]; that with the point sum as `i != count` 545 (2228 B) [218, 94], with the sum as a guarded do-while countdown 542
+// (2232 B) [217, 93]; `i != count` alone 648 (2180 B); the one-definition helper (`TEST_FIELD_BIT`) with `i != count` 631,
+// with the do-while 615. So the rolled sum costs 84 bytes less than the unrolled one and retail is 36 bytes longer still
+// than the helper + rolled form; the stores and the rolled loop each need a steering form (a two-definition result, a
+// changed loop guard or a hand-inverted loop), none kept.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2716,6 +2729,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // basis_dot_xzy (forward, velocity) 11 and (velocity, forward) 11; `left` declared at the arm's top with the channel
 // and the counter 9 (same code); the state test on the first lookup's pointer 530 (2011 B); arm 3 velocity-first with
 // `(k + j) + i` grouped 11.
+// M3 lane 14 r160 (fast screen), at 9. Reading of the operand ranking: the velocity components are numbered by their first
+// reference in overlay 1's dot (left.k, vel.k, vel.j, left.j, left.i, vel.i) and arm 3's products rank by the forward
+// field address plus twice the velocity's number, so arm 3 runs (i + j) + k; retail's (k + j) + i needs vel.k numbered
+// above vel.j while overlay 1's own (i + j) + k needs its j product above its k product. Forms: overlay 1 through the
+// header's dot3f (left, velocity) / (velocity, left) 376 / 376 (2007 B); both dots through dot3f in the four argument
+// orders 365 each (2011 B).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -5058,6 +5077,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // MiniMax C (11-19): no new form, no lower score (117): the projection's i-product loads the other input, three cross products take the facing side into the register, and the flip block's forward rotation adds the cosine term first and keeps the sine and cosine in the opposite stack homes.
 // MiniMax D (11-19): no new form, no lower score (118): the projection's i-product still loads the other input at +0x99 (the shared dot3f's argument order does not change it), and the in-place projection, which makes that product retail's, loses the forward's j and k preloads and measures 143; after it the three cross products take the facing side into the register and the sine and cosine keep the opposite stack homes.
 // score 118 (was 118): the projection i-product loads the other input at +0x99, followed by cross-product register order and the sine/cosine stack homes.
+// M3 lane 12 r195 (fast): the dot's i-term loads rank forward.i 0x16008 above up.i 0x12008 (j and k go through
+// up's address expression and already sort retail's way). The up pointer declared before both copies with the copy
+// and dot through it 170 (780 B); declared first only 117 (same code); the copies swapped 135; the dot named ahead of
+// the scale 117 (same code); the up pointer first and the dot through it 127.
 // projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
@@ -6593,6 +6616,14 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 767/819/786; steering and speed 827, steering and turn 777, speed and turn
 // 844, all 853, all with a separate entry definition 786. NOT kept: the
 // handle lookups enlarge the body and change the prologue. The zero and result registers still differ.
+// M3 lane 13 r163 (h2m fast with 0xefde0's neighbours and 0xf78e0, 0xf78b0, 0xf8070, 0x24590, all MATCH; base 759,
+// sequence-aligned [slots masked, registers masked] 182/79): `result` declared ahead of `forced` 759 (same code); the
+// `tags` local dropped, the global read at each use 835 (3065 B: it is re-read after every call); the two steering-angle
+// cases (0x900000e, 0xa00000f) through the existing 0xf78e0 with limits 6 and 7, 773 (2942 B, called, not expanded);
+// `*active = forced || result > 0.0f` 759 [184, 82]; the unknown-name default as a single exit through a `known` flag 760
+// (2977 B) [171, 79]. Retail loads the definition into EBP at entry but re-derives it at each expanded 0xf78e0 site and
+// passes each expanded limit through a stack temporary (`fstp [esp+0x2c]; mov reg, [esp+0x2c]; push reg`), the shape of an
+// expanded call returning a float; still the file's inlining setting (see the held lead above).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -7069,6 +7100,13 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
 // score 959 (was 978): earlier 1052, 1087, 1095; frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
+// M3 lane 12 r195 (fast; a frame trace of the stack packing): ours has four 36-byte slots (desired alone,
+// current+rotation copy, inertia+facing, flipped alone), retail three; desired is live from entry because its address
+// comes back from 0x142eb0 and goes on to 0x141f60. The first product into its own matrix 1031 (desired/inertia and
+// facing/current/rotation copy then share as retail), the tail's matrices in a block as well 1031; the product and
+// the quaternion conversion as two statements (the product matrix passed to 0x141f60 directly) 1125 at frame 0xdc
+// with retail's three matrix slots (flipped and the product share), one 4-byte cell over; that matrix declared with
+// the others or in its own block 1125. Lead: the two-statement form, then one 4-byte cell.
 // M3 lane 15 r138 (H2M_FAST; frame map of retail by slot: 0x60 holds the flip output's facing, then the current
 // orientation, then the copied rotation; 0x2c the desired orientation, then the inertia product; 0xb4 the flipped
 // orientation, then the first 0x142eb0 product, whose third argument is not the desired matrix as ours passes; the

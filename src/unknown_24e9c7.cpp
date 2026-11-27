@@ -813,6 +813,16 @@ struct s_24e9c7_points
 // negates forward_j first); that with `size * (0.0f - forward_j)` 139 (742 B); the half width converted once into a local
 // for both scalings 154 (756 B); side j scaled before side i 123 (743 B; a statement order under the bar, and side j's
 // product is then formed late with no spill, where retail stores it at [ebp-8]); that with `0.0f -` 141 (740 B). Body unchanged.
+// M3 lane 1 r173 (fast with 0x22a664 and 0x24e59f; control 125): across i written `-forward_j * size` 125, the across
+// pair declared after the height 125, the scale read before the size 125, across j declared first 125, across j bound by a
+// const reference 125 (all the same code: one-use locals are substituted into the side products). Both across products
+// bound by const references keep them computed right after the size, as retail does, 144 (746 B; formed as
+// `0 - forward_j * size` and `forward_i * size`); that with `size * (0.0f - forward_j)` 139 (742 B; the negation comes
+// first, but the product lands in the negation's register, not in size's copy); across i alone bound, with `0.0f -`, 140.
+// M3 lane 1 r175 (fast with 0x22a664 and 0x24e59f, both MATCH; control 125; body unchanged): the size summed
+// `1.0f + placement->size` 125, the scale read into a `real const` 125, the across pair declared j first and written
+// forward first 125, the size computed ahead of the bitmap pointer 125 (all the same code); the side point computed ahead
+// of the up point 139 (738 B).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

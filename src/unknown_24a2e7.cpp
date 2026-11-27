@@ -560,6 +560,16 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // retail's i in EBX. Forms on the lead: the plain arm first as an early `break` 72 (192 B); the buffer formed indexed 49
 // (208 B); the copy source indexed 50 (208 B); only the name test through the entry pointer 64 (207 B); the plain result
 // stored ahead of the append test 47 (190 B); the suffix declared ahead of the name test 63 (209 B). Body unchanged.
+// M3 lane 14 r161 (H2M_FAST with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67): the tag test written
+// `!= 0` 67; the suffix initialiser written with a wide-character zero 67 (both the same code); the indexed terminator
+// with `buffer` a `word *const` 84 (197 B); the terminator through `(entries + i)->` 84 (the indexed-terminator code).
+// M3 lane 16 r196 (fast with 0x24a64d/0x24a763/0x24a52b/0x24a7bf, all MATCH; control 67). Reading: the found
+// block's entry address and the terminator's are one shared value in every plain-locals form (retail forms it three
+// times, with the base reloaded from its home after the calls), so `i` dies at the arm and takes ECX. Forms: `i`
+// declared ahead of the items call with the terminator indexed 80 (197 B); round 101's per-iteration entry pointer with
+// the terminator and plain name indexed re-measured 75 (196 B), with `i` declared ahead 77; the plain name stored
+// ahead of the append test (the arm overwriting it) with the indexed terminator 66 (191 B; a redundant store, one
+// point), on the per-iteration pointer form 97 (183 B). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

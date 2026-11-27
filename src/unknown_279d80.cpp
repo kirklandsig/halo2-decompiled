@@ -2270,6 +2270,15 @@ void function_27dd10(void)
 // `(local_2 & 1) == 1` 2 (0x288570 3, 0x289580 78). quaternion_multiply's sign mask as a float array (a float
 // constant in the intermediate code) 2 here, 0x281b60 245, 37 matched samplers lost; the mask as `{ 0 }` with its
 // last element stored after 2 here, 0x281b60 297, 37 lost. All restored.
+// M3 lane 13 r162 (H2M_FAST with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): the walk's
+// count as `long const &` with pass 0 given the settings global's node count 292 (1742 B; every sibling regresses); the
+// group end computed at the outer body's top, ahead of the empty-group test, 303; node_destination_get's map entry as a
+// short 382 (1753 B; 0x288570 and 0x289580 keep); the bit-flag pointer selected ahead of the output target 2 (0x288570
+// 3, 0x289580 78); the blend-1 rotation's destination as the cursor cast to the rotation type 2 (same code). All restored.
+// M3 lane 11 r174 (h2m fast; control 2): in function_288573's blend-1 arm, which only this function reaches: the rotation
+// destination as the output cast to the quaternion type 2; the rotation source as the decode target cast likewise 2;
+// the translation blend's three rows written out 2; the scale blend's row written out 2; the blend-1 arm ending in
+// `return` with the later methods' chain unnested 2 (all the same code).
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2589,6 +2598,13 @@ void function_2818e0(void)
 // parameter as `long const` 2, as `long const &` 2 (same code); the group end as `arg_5 + 8 < arg_7 ? arg_5 + 8 : arg_7`
 // 53 (every sampler moves); the outer loop test as `arg_7 > arg_5` 8 (0x285750, 0x288570, 0x289580, 0x28aaa0 6 each);
 // the inner loop test as `local_3 > arg_5` 10 (0x288570 124). All restored.
+// M3 lane 2 r156 (h2m fast with 0x27dff0 2 and the matched 0x285750/0x288570/0x289580/0x28aaa0; control 2): in the
+// pass-0 join block the count reload and the bit-flags reload both have height 2+1 and no use in the block, so they go
+// out in code-generation order, count first (both symbols are named local_2, but round 140's renames showed the order is
+// not a name tie). Forms: the bit taken into a bool and the flags shifted at the iteration's top 382 (1658 B, every walk
+// user regresses); function_288572's output cursor declared ahead of the in-place flag 2 (0x288570 3, 0x289580 78); the
+// non-interpolated arm's apply index as `arg_1 != 0 ? local_4 : arg_5` 2, the interpolated arm's so 2, the root-offset
+// test as `!(arg_3 || local_0)` 2 (the three the same code, every user matched). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

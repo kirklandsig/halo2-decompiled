@@ -487,6 +487,22 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // with the same two levers: best aligned 44 (masked 32, 86 at 1388 B) at six locals. With six locals the orthogonality
 // dot reuses up.k's register as retail does, but its other two terms stay exchanged, and no cell gives retail's cross
 // section schedule or first normalize. Body unchanged.
+// M3 lane 11 r172 (reduced image with 0x16fe90 and 0x170d70, control 64). Frame reading: the frame is under 0x80 bytes, so
+// the slots keep packing order (size, then references, then whichever reached its count first); the group counter and
+// the compiler's time-step pointer both have four references and the counter reaches its fourth first (its latch update
+// precedes the pointer's), so it takes the lower cell; retail packs the pointer first. The explicit read-only time cursor
+// stepped last re-measured 125 (1413 B; the loop exact, aligned 35, all left in the tail); 1..8 unused locals between the
+// loop and the tail on it 121/121/123/125/127/91/92/125 (the same period-8 states as at the function top). Retail's
+// tail loads every product operand in this source's spelling order; only the numbering that picks the loaded operand
+// differs. The corrected up computed k, j, i and stored j, k, i 119 (1388 B), with up.i stored directly 120; on the
+// explicit cursor 128 and 118 (1413 B, aligned 40 and 32).
+// M3 lane 14 r162 (fast with 0x16fe90 and 0x170d70, MATCH; control 64, aligned 65). Retail inlines the existing
+// orthonormal-pair check 0xa74c0 here: `if (!function_a74c0(forward, up))` is inlined by our link too, but 0xa0200
+// stays a call (its separate noinline declaration on main) and the dot keeps our k, j, i order: 182 (1352 B); with the
+// explicit read-only time cursor stepped last 140 (1374 B; the cursor alone re-measured 125 at 1413 B). The
+// orthogonality term through dot3f(forward, up) or dot3f(up, forward) 64 (same code); the forward and up pointers
+// declared at the function's top 112 (1396 B, aligned 48: the dot's i term gets retail's operand order, but the j
+// term still comes before it).
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1286,6 +1302,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // references 105; __stdcall with a const cameras pointer, non-const lists and unsigned scalars, on the offset lead, 11;
 // function_163db0 declared with the rectangle after the identifier (0x163db0, 0x1733e0 and 0x441b0 stay matched) 105,
 // and 13 on the offset lead. The portal index test as a switch on NONE: 117 (423 B).
+// M3 lane 11 r172 (reduced image with 0x1730a0 and 0x163db0, both MATCH each run; control 105, the one-use offset local
+// re-measured 11): the entry bound by reference (`s_pool_entry &entry = pool->entries[entry_index];`) 105, with the offset
+// local 11; on that, the volume address ahead of the count store as the matched 0x1733e0 writes it 84; that order alone
+// on this body 115. A forced-ranking search on the offset lead (30 decisions) gives at best 13 (the key in EDX): the
+// table load placed at the top of the admitted block is a scheduling choice, not an allocator decision.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1722,6 +1743,14 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // vector stored k, j, i 361 (1438 B); the clamp as a ternary 337 (same code); the deviation's squares accumulated into
 // a double local 341 (1448 B); the scaled original through vector3f_scale before the differences 354 (1448 B). The
 // allocator's first-rotation block has about forty XMM candidates in one ranking (a tracer run), not a single tie.
+// M3 lane 11 r173 (H2M_FAST with 0x171830/0x1726d0/0x170fd0/0x172c70/0x173910/0x171d00/0x1701f0, all MATCH but 0x171830;
+// reduced control 337 with a builds-differently caveat, so the best forms were re-measured plain; plain control 334).
+// Forms: the forward copy taken right before the first rotation (after both angles) 336 fast, 333 plain; the ratio
+// computed and stored ahead of the forward copy 336 fast, 333 plain; both together 336 fast; the copy declared const 337
+// (same code); the deviation terms written `dz * (double)dz` 337 fast, 334 plain (same code). Re-measured listed forms:
+// the ratio stored after the vertical field 337, the shared tangent named 385 (1428 B), the second axis declared beside
+// the matrix 337, the squares accumulated into a double 341 (1448 B). Retail's tail squares each difference as
+// `fld [d]; fmul [d]` right after storing it; ours loads all three and squares register copies.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2781,6 +2810,20 @@ struct s_camera_reference_171830
 // counter as `long` 130 positional at 1223 B but aligned 65 (retail keeps the 16-bit counter, `cmp bx, 4`, beside a
 // long index: not a gain); the radius computed ahead of the 0x171d00 call 281 (1235 B); the first offset copied
 // member by member 272 (1207 B, 0x170fd0 220).
+// M3 lane 11 r173 (H2M_FAST with 0x170fd0/0x171d00/0x171d90/0x1726d0, the matched ones MATCH each run; control 155, aligned
+// 36). Round 154's lead rebuilt from its description (the flagged arm first with the plane distance named through the
+// existing helper, the three sample-row products grouped): 9 at 1219 B, aligned 4, only the centre's i product and the loop
+// pad it shifts left. Rank reading (the reassociation sort, level then weight): depth is a level-1 leaf of 0x200 and
+// forward.i a load of 0x8008 (its parameter place), forward.j 0xc008 and forward.k 0x0008 (two address temporaries on
+// the 0x2000 grid, modulo eight); retail's sides need depth above 0x8008 and at most 0xc008. Measured on the lead: the
+// depth sum written in each row becomes a compiler temporary of 0x7d80 (0x7d40 on the control's body), 22 ordinals short,
+// unmoved by 1, 2, 4 or 8 dead locals at the top, but it renumbers the other temporaries: 118 at 1222 B (aligned 30); on
+// the control's body 183 (1222 B); in the i row only 277 (1238 B); the sum as `(offset + *distance)` the same 0x7d80; a
+// file-local inline returning the sum 9 (same code: depth stays 0x200); the depth through an inlined helper with the
+// scale at its fifth place and the vector at its fourth 9 (same code: inlined parameters take the caller's weights);
+// forward through a pointer local, declared at the rows or at the top, 154 (the pointer is propagated, the address
+// temporaries move); `real const &depth` bound to the sum 263 (1223 B, depth 0x220); the offset parameter accumulated 9
+// (same code, its value weighs 0x20). Not kept: the lead's forms still need the byte match.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

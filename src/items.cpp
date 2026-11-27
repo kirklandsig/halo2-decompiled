@@ -1329,11 +1329,11 @@ void function_10ca80(long object_index, long owner_index)
 void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward, vector3f const *up);
 void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f const *new_parent);
 
+// score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
+// depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // MiniMax E (11-20): no new form, no lower score (130): our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the alignment dot as its own statement gives retail's j, i, k order (175) and writing the cross out in place also gives retail's frame and 848 bytes but scores 173.
 // MiniMax E (11-20): no new form, no lower score: our frame is 0xc0 against retail's 0xb4, the dot product associates as i, k, j where retail has j, i, k, and retail keeps the cross product in a register where ours has a stack home; the inverted threshold test with a split dot scores 199.
 // MiniMax B (11-20): no new form, no lower score (130): the cross result keeps a 12-byte stack home because its address is passed to the scale helper, which makes our frame 0xc0 against retail's 0xb4 and our locals sit 12 bytes higher; retail multiplies the dot as j, i, k and keeps the cross in registers, and a dot written as a separate statement reaches that product order but moves the old vector's components into other registers. Writing the cross out in place gives retail's frame and 848 bytes but scores 159.
-// score 130 (was 130): frame 0xc0 versus 0xb4 and initial product ranks differ. Shared scale 130; inline
-// depth one 130; size preference 277; complete rotated vector 207; fallback vector initializer 130.
 // The axis as three real locals (no cross3f address) gives retail's frame 0xb4 and 848 bytes but 159.
 // The square's products come out i, k, j whatever their source order; retail's j, i, k come only
 // from a separate statement for the dot product, which then folds facing loads into mulss: 173-175.
@@ -1485,6 +1485,11 @@ void function_b92d0(long index, s_object_marker const *old_parent, transform4x3f
 // or full diagonal before the cross 141/189, or between cross and scale 184/190.
 // With a shared cross weight 182/188/128, early diagonal and reciprocal 218.
 // NOT kept: the 128 form gains two and leaves the extra axis frame space.
+// AO r6 (fast with 0x10b850; control 130): the address-free axis (cross written out, scaled by a named reciprocal)
+// re-measured 159 at 848 B; with the reciprocal first in each row 159; with the alignment dot's operands swapped 159;
+// on this body the alignment dot's operands swapped 130, through dot3f 130 (same code: the products stay i, k, j); the
+// marker vectors read through the marker at each use (no up/forward pointer locals) 180 (856 B); the transform declared
+// ahead of up 130; the marker declared at the top of the function 130.
 // @retail 0x10d710
 void function_10d710(vector3f const *facing, long object_index, point3f const *origin, point3f *position)
 {
@@ -1612,7 +1617,7 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
-// score 813 (was 824): Frame 0x154 versus 0x12c, entry Boolean byte stores and settle/bounce order still differ. GA16 (18 fast trials, control 813 at 4096/4096 B, al=807, mk=589, body unchanged): settle-first `((surface && floor && slow) || (slow && item->value_13a >= 4)) && !(collision.value_58 & 0x20)` reproduces retail's exact 0x10bb6f..0x10bc2f split bounce-header/settle CFG (alone 929, +if/else correction 913 mk=530, +single-store value_13a 919 mk=524, +cross3f & SSE ternary abs 882 fr=0x13c); rotate_direction-shape `item_spin_vector` (dot3f + unhoisted 1-cos) 841 (al=763, mk=552; direct ijk 883; by-val axis/sin/cos 821 al=752 mk=553, +cross3f_staged 823 mk=527; +settle_cond 897 al=683, +cross3f_staged 884 ins=877/877 al=644, +ifelse 912 mk=498); full clean combo (settle_cond + ifelse_corr + single_13a + spin_rot_dir + cross3f_staged + cross3f/SSE-abs + early settled/collision.unknown24 + TEST_FIELD_BIT flag4 + vector3f_add_scaled/vector3d_from_points3d) 888 (4061 B, fr=0x13c, al=567, mk=399), +word_flags_set+surface_early+bit14 877 (4073 B, mk=378; no vecray 871; no sse_flow 894 fr=0x14c; by-val spin 881 mk=364); diagnostic match-only fr=0x12c combo (1-caller 2-def flag helper + scoped ray) 814/808 (exact 4096/4096 B, +0x3e, fr=0x12c, al=469, mk=343, all 24 call sites within 0-1 insn of retail, NOT kept: blocked on 0x16a040 noinline and multi-caller flag helper). GB20 (24 fast trials, 8 peers MATCH, 0x10b4d0 140, body unchanged at 813): typed s_collision_result_1697c0 dropping byte* hit/normal/point refs 877 (fr=0x144, exact retail slow-dot registers); + cross3f/SSE ternary abs 955 (fr=0x13c, mk 430; + dot3f 955); + settle-first/if-else count/if-else correction 887 (mk 374); + word_flags_set/early settled+unknown24+surface/TEST_FIELD_BIT bit14+flag4 875 (mk 384; + vector3f_add_scaled/vector3d_from_points3d/vector3f_scale 875 mk 378); + by-val spin + cross3f_staged 843 (4096/4096 B, mk 308); + unhoisted item spin + cross3f_staged 869 (mk 362; + existing function_16a040 931 fr=0x130 al=761 mk=340); + existing include/axis_rotation.h function_x84d9e8 + cross3f_staged 879 (fr=0x13c, 870/877 insns, mk 276 vs baseline 513 — only the 5 entry dead-byte-store and 2 gravity-reload insns remain; + function_16a040 928 fr=0x130 al=653 mk=283); on 813 base: normalize3d.h vector3f_scale angular 822 (inline dot 822), cross3f orient 813, s_item_definition + TEST_FIELD_BIT 842, spin jki unhoist 823, spin cross3f+dot3f 1047, unhoist spin 829 (+ cross3f_staged 826), function_x84d9e8 + cross3f_staged 846, single-exit outer if 813, no-ternary single_13a 891, typed+SSE+wflags+spin+cstage without settle-first 906.
+// score 813 (was 824): Frame 0x154 versus 0x12c, entry Boolean byte stores and settle/bounce order still differ. GA16 (18 fast trials, control 813 at 4096/4096 B, al=807, mk=589, body unchanged): settle-first `((surface && floor && slow) || (slow && item->value_13a >= 4)) && !(collision.value_58 & 0x20)` reproduces retail's exact 0x10bb6f..0x10bc2f split bounce-header/settle CFG (alone 929, +if/else correction 913 mk=530, +single-store value_13a 919 mk=524, +cross3f & SSE ternary abs 882 fr=0x13c); rotate_direction-shape `item_spin_vector` (dot3f + unhoisted 1-cos) 841 (al=763, mk=552; direct ijk 883; by-val axis/sin/cos 821 al=752 mk=553, +cross3f_staged 823 mk=527; +settle_cond 897 al=683, +cross3f_staged 884 ins=877/877 al=644, +ifelse 912 mk=498); full clean combo (settle_cond + ifelse_corr + single_13a + spin_rot_dir + cross3f_staged + cross3f/SSE-abs + early settled/collision.unknown24 + TEST_FIELD_BIT flag4 + vector3f_add_scaled/vector3d_from_points3d) 888 (4061 B, fr=0x13c, al=567, mk=399), +word_flags_set+surface_early+bit14 877 (4073 B, mk=378; no vecray 871; no sse_flow 894 fr=0x14c; by-val spin 881 mk=364); diagnostic match-only fr=0x12c combo (1-caller 2-def flag helper + scoped ray) 814/808 (exact 4096/4096 B, +0x3e, fr=0x12c, al=469, mk=343, all 24 call sites within 0-1 insn of retail, NOT kept: blocked on 0x16a040 noinline and multi-caller flag helper). GB20 (24 fast trials, 8 peers MATCH, 0x10b4d0 140, body unchanged at 813): typed s_collision_result_1697c0 dropping byte* hit/normal/point refs 877 (fr=0x144, exact retail slow-dot registers); + cross3f/SSE ternary abs 955 (fr=0x13c, mk 430; + dot3f 955); + settle-first/if-else count/if-else correction 887 (mk 374); + word_flags_set/early settled+unknown24+surface/TEST_FIELD_BIT bit14+flag4 875 (mk 384; + vector3f_add_scaled/vector3d_from_points3d/vector3f_scale 875 mk 378); + by-val spin + cross3f_staged 843 (4096/4096 B, mk 308); + unhoisted item spin + cross3f_staged 869 (mk 362; + existing function_16a040 931 fr=0x130 al=761 mk=340); + existing include/axis_rotation.h function_x84d9e8 + cross3f_staged 879 (fr=0x13c, 870/877 insns, mk 276 vs baseline 513 — only the 5 entry dead-byte-store and 2 gravity-reload insns remain; + function_16a040 928 fr=0x130 al=653 mk=283); on 813 base: normalize3d.h vector3f_scale angular 822 (inline dot 822), cross3f orient 813, s_item_definition + TEST_FIELD_BIT 842, spin jki unhoist 823, spin cross3f+dot3f 1047, unhoist spin 829 (+ cross3f_staged 826), function_x84d9e8 + cross3f_staged 846, single-exit outer if 813, no-ternary single_13a 891, typed+SSE+wflags+spin+cstage without settle-first 906. GB22 (15 fast trials, 7 peers MATCH, 0x10b4d0 140, body unchanged at 813): on 813 base, 1-def field_bit_test 898 (+ typed s_collision_result_1697c0 859 at 4096 B), physics_gravity_get swapped 865, vector3f_add carrier 813, 1-bit s_item/s_item_definition bitfields + TEST_FIELD_BIT 813, separate update_position + vector3f_add 858; on GB20 clean stack (874, fr=0x13c), 1-def field_bit_test 856, separate update_position 878, vector3f_add 874, item_apply_gravity 878 (still folds gravity); match-pursuit probe combining typed collision + GB20 clean stack + 2-def flag helper + scoped ray reaches 771 (4101 B, +0x3e, fr=0x12c, al 807->361, mk 589->367, marker spin/tail byte-exact; + vector3f_add 771, + item_apply_gravity 773, without settle-first 836; NOT kept: 1-caller flag helper and scoped ray duplicating noinline 0x16a040).
 // GA10 (17 fast trials, baseline 813 at 4096/4096 B, body unchanged): byte_flags_set 871 (fr=0x148); spin no-hoist / direct-mem +
 // cross3f_staged 858/880 (mk 763->718/697); item_dot i+j+k 813; vector3f_add_scaled + vector3d_from_points3d 890 (fr=0x148, exact
 // [edi]/[edi+4]/[edi+8] integration/ray); SSE >=0 flow abs 907 (fr=0x13c); TEST_FIELD_BIT flag14/flag4 + tail cross3f_staged 841;
@@ -1701,7 +1706,6 @@ struct s_item_flags_view_10b850
 // carrier_delta/collision with the 0x12c form 940 each.
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
-
 // MiniMax I (11-19): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still extracts the two flag bits into a byte in the frame (mov byte ptr [esp+8], al) where this build tests them in place.
 // MiniMax I (11-16): no new form, no lower score (824): retail extracts the two flag bits into a byte in the frame (mov byte ptr
 // [esp+8], al) where this build tests them in place, and this build's frame is forty bytes larger (0x154
@@ -2085,6 +2089,33 @@ struct s_item_flags_view_10b850
 // impact threshold, lift, both flow steps, lateral magnitude, complete flow, shared ray with complete flow,
 // and shared ray with all subtractions: 855/842/813/813/878/878/891/871. NOT kept: the overlap forms shorten the frame to 0x144
 // but expand the body and raise the score.
+// GA22 (29 fast trials, control 813 at 4096/4096 B, al=773, mk=513, 15 peers MATCH, 0x10b4d0 140, body unchanged):
+// on 813 base: default: case 4: settle 813 (with word_flags_set 859 fr=0x148), bit_vector_test entry/gravity/bit14 860,
+// c_type_47f957 default ctor on s_collision_result_1697c0::unknown24 with early collision/settled 813 (ins 868, mk 496; + default: case 4: 813),
+// vector3f_add_scaled/vector3f_add 813, typed s_item fields + s_item_definition 813, swapped gravity with physics_gravity_get() 865 (fr=0x148).
+// On clean retail stack (c_type_47f957 + typed collision + settle-first + word_flags_set + cross3f/SSE abs + vector3f_add_scaled/vector3d_from_points3d +
+// function_x84d9e8 + cross3f_staged): base 871 (4075 B, fr=0x138, al=567, mk=380), + bit_vector_test 880 (4074 B, fr=0x138, al=530, mk=222: locks
+// collision [esp+0x58], flow [esp+0xb4], angular [esp+0x4c], velocity [esp+0x14], position [esp+0x28], matrix [esp+0x58]), + ternary value_13a 861
+// (4097 B, fr=0x140, mk=273; if/else 866 fr=0x138 al=515; item_spin_vector 860 at 4096 B; no settle-first 909; typed s_item fields 861; case 4: only 868;
+// s_item union bitfields 862; outer-cast / <=254 ternary 883); + scoped ray block: on base 876 (4073 B, +0x3e, fr=0x12c, al=514, mk=374, no flag helper),
+// on bit_vector_test + ternary value_13a 861 (exact 4096/4096 B, fr=0x134, ins=876/877, al=461, mk=210, ray/flow shared at [esp+0xb8]; renaming ray/flow 861;
+// item_spin_vector 860; outer-cast / <=254 ternary 885; + case 4: only 876; no ctor 894 fr=0x12c +0x3e; entry local bools diag 891 fr=0x12c +0x3e);
+// calling noinline function_16a040 on clean stack 938 (4013 B, fr=0x12c, +0x3e). Still blocked on entry dead-byte stores (carrier slot reuse) and noinline 0x16a040.
+// AO r6 (fast with 0x10d710; control 813): one `flag_set` bool for both entry tests 813; the flags_c1 bit and the
+// carrier result in one bool 813; both 813 (same code: the tests stay in registers); the entry tests through the existing
+// bit_vector_test 897 (4132 B); a two-assignment (if/else) flag for each entry test 858; the carrier add through
+// vector3f_add with the carrier first 813; the second gravity product as `dt * gravity` 813 (still one product); the
+// incoming velocity copy renamed `incoming` 813, carrier_delta renamed to sort last 813.
+// GB26 (21 fast trials, control 813 at 4096 B, fr=0x154, al=985, mk=569; body unchanged): TEST_FIELD_BIT on bit 14 + flag4
+// 842 (4126 B, mk=554); separate update_position 813; early settled + collision 813 (al=983, mk=568); 1-bit struct bitfields
+// on s_item/s_item_definition 813; member flag-test methods 898 (fr=0x148); pointer-taking flag helpers 898 (fr=0x148);
+// ternary `? true : false` flag tests 813; c_flag_bits_test<T> template 886 (4137 B, out of line); unswapped gravity getter
+// 865 (fr=0x148); unswapped vector-pointer gravity helper 814 (al=970, mk=554, still folds gravity); explicit subtraction 813;
+// typed s_collision_result_1697c0 on 813 base 860 (4096 B, fr=0x148, + settle-first + bit14/flag4 860 at 4104 B); dot3f 813;
+// vector3f_add_scaled for velocity updates 813, for 0.05f offsets 813, with vector3d_from_points3d 890 (4065 B, fr=0x148,
+// mk=547); cross3f for flow/orient 924 (4029 B, fr=0x13c); direct item->flag5/flag6 891 (4136 B); if/else bounce correction
+// 867 (4144 B, fr=0x158); SSE ternary abs alone 851 (4096 B, fr=0x150, al=916, mk=539). Still blocked on entry dead-byte
+// stores, double gravity reload, and noinline 0x16a040.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

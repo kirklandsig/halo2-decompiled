@@ -401,6 +401,13 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // `!(local_17 || local_18)` 12; local_5 declared first at the top 187; local_13 and local_14 declared ahead of the entry
 // aggregate 12; local_22 declared ahead of the not-equal arm's two stores 12; the 0x261280 result declared bare and
 // assigned on the next line 12 (same code but the 187); re-measured: the 0x265c30 flag ahead of the 0x1e1f20 call 24.
+// M3 lane 4 r267 (fast screen with 0x1e1f20, MATCH; control 12). Main's equal-arm clear block is retail's byte for byte, so
+// the frame ties are decided elsewhere in the IL; replaying a stable density sort with the middle-pivot tie scramble on
+// this cell list, no single cell added, removed or re-weighted gives retail's whole layout, only the reverse creation
+// order inside both ties. Forms: round 164's post-if clear lead (31) with the clear through a named actor pointer from a
+// fresh lookup 31, storing the false result flag into the field 31 (both the same code); the bool output copied into a
+// named local at the not-equal arm's top 12 (forwarded); the clear through the entry actor pointer (diagnostic, not
+// retail's code) 257 (954 B).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

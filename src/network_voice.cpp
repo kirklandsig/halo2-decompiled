@@ -1497,6 +1497,16 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // flag is not inlined (182/287); do/while `++i < 16` 287. Outside piece voice_get_unknown00 (ternary / early-return
 // body) 96 each, not kept. Lead: the unbiased IV and one 0x5c0 step in retail need the flag made while channels is
 // still in ebx; every order that does that makes the allocator move channels to ebp or edi instead of the flag.
+// M3 lane 6 r249 (fast with 0x54990, MATCH unless said; control 94). Allocator ledger: the flag ranks 18 (+88 from
+// its definition and four product-block reads, -70 over ten blocks where it is live and unread: the four mask tests
+// and the four cursor steps); each mask test's bool result ranks 40 and takes EAX first, so the flag gets the BL left
+// over. With the flag above 40 it would take EAX and the results ECX, as in retail. Retail's product blocks also hold
+// the channel value in its own register (EBP) and add 2 before the total, one or two more values per block than ours
+// (`imul ecx, [mem]` and one `lea`); a forced-ranking search over 128 decisions finds no single one that matches.
+// Forms: a separate result variable with the total local to the block 94 (same code); the cursor declared ahead of the
+// total (cursor, total, flag: the last of the six orders) 99 (350 B); the element pointer from the index each pass
+// 109 (fixed offsets as retail but biased +0x17c, channels on the stack; 0x54990 1), as `channels->channels + i`
+// 109 (1), declared ahead of the loop and assigned at its top 109 (1). Body unchanged.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -4129,6 +4139,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // bit-test and clear blocks and loses 4, 6, 2 and 8 in the kind test, members load, talker and delivery blocks). On the
 // cursor form: the cursor stepped first 167; the size test as `packet_size > size` 164; the counter declared outside the
 // loop 164. On main: `size -= consumed` after `consumed = 2` 139 (same code); the route brace-initialised 139 (same code).
+// M3 lane 3 r314 (H2M_FAST with 0x564c0, MATCH each run; control 139, masked-aligned 50; cursor form re-measured 164 at
+// 478 B, masked 39, with the same ranking: channel 14 against member 20). The cursor declared ahead of `consumed` 139
+// (folds back to this body's code); the cursor form with `member` declared once outside the loop 164 (same code); the
+// cursor form with the non-relay arm first 157 (488 B); the non-relay arm first on this body 162 (490 B); the cursor
+// form with the kind test ahead of the member call and the NONE test alone after it 145 (478 B, member still in EBP).
+// Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

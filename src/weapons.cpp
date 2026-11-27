@@ -2101,6 +2101,14 @@ static inline bool unit_dual_wielding(long unit_index)
 // as a `long` with the slot field read at each use 26; the barrel loop on its own `short` counter passed straight 110
 // (535 B). BLOCKED-BY 0x101f20 and 0xcd660 (retail expands both inside its copy of 0x1058b0 here; their files are
 // built /Ob1, so the call form keeps them as calls).
+// M3 lane 14 r160 (fast screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17), on main's body: the trigger
+// reset through the outer `weapon` pointer 156 (521 B); the trigger index without its `(short)` cast 46 (535 B); the
+// ticks store through a fresh lookup 148 (539 B), through `current` 150 (542 B); the gate's state read through a fresh
+// lookup 206 (581 B); the barrel call's index without its cast 17 (same code).
+// M3 lane 3 r316 (fast screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17), on main's body: the
+// trigger reset through the file's existing weapon_clear_trigger (its definition moved ahead of this function) 129,
+// with its own `short` counter 131; the `volatile` block as the 0xc9d00 call 27 (listed, re-measured), with the
+// helper 137 (533 B); the animation pointer formed from the first `weapon` pointer as 0x1058b0 does 188 (578 B).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -3720,6 +3728,14 @@ struct s_ammo_conversion_entry
 // scratch rotation from the 0xa88a0 setup on, one register late): the sound as an if/else, the last lookup's index not
 // named, `!(other_has_rounds || retained)`, the sound call braced 14 each; `retained` as main's if 102; the last lookup
 // through `other` 232.
+// M3 lane 8 r243 (H2M_FAST with 0xa88a0; round 157's 51 lead rebuilt, 51). Reading on the lead (allocator priorities):
+// the magazine offset 166 = 128 from the loop head (eight candidates referenced there: the counter, the offset, the
+// weapon definition, the magazine definition, the weapon, the magazine address, `available` and the zero) + 48 from the
+// same-definition arm - 10; `source` 156 = 252 referenced (144 of it from the debit block, six candidates) - 96 live
+// across the conversion scan unreferenced; so one more candidate in the debit block (+24) or one fewer in the loop head
+// (-16) puts `source` first. Forms on the lead: `loaded` as a short 74; `unloaded` as a long 53; the 0xa88a0 count read
+// into a named local 51 (same code); the other weapon's type-2 test held in one bool for the sound and the tail 145;
+// the debit's destination store through `weapon->magazines[i]` 214 (737 B). Body unchanged.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -4209,6 +4225,18 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // definition read twice through `updated` 2, `updated` const 2, the weapon definition named before the barrel's 2;
 // diagnostics (reverted at once) with 1-8 dead initialised locals at the top 2 each (neither address flips). Main's
 // body restored.
+// M3 lane 8 r243 (H2M_FAST with 0x101db0, 0x159dd0, 0x101b10 and 0x101b80, MATCH each time; control 593): GA round 9's
+// held lead rebuilt on this base reads 2 (the two post-0x105fa0 addresses index-first). Operand ranks read per form:
+// each address is one sum sorted by descending rank after the global optimiser; the weapon-index offset and the barrel
+// offset shared with the entry are optimizer temporaries numbered by the distinct intermediate-code expressions met
+// before the re-lookup (here 0x361 and 0x36a), and retail's two orders both need that number about 150 higher.
+// Diagnostic, not source: N initialised dead locals on the lead, at the top, before 0xb7360, before the effect block,
+// before 0x105fa0 or right before the re-lookup: N = 8, 128, 144 give 2, N = 160, 176, 192, 208, 224, 240, 256, 320,
+// 384 MATCH (2533 B); 256 after the fired block 1. Natural forms on the lead: the random draws with file and line
+// arguments 2; the existing weapon_get_102e10 at both weapon lookups 2, at the re-lookup alone 2; the 0x105fa0 state
+// named as a local 2. So retail's body holds about 150 or more further distinct expressions ahead of the re-lookup that
+// fold away (inlined helpers whose code is removed are the likely source; 0x100130 above needs the same kind of
+// surplus). Body unchanged.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4791,6 +4819,11 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // straight to 0xd1490 (no local) 1412; the player default declared after the flag-27 select 1437; the owner's player
 // index tested and copied in one `&&` test 1412; the flag-27 select as an if/else 1412; the unit index declared ahead
 // of `dual` and assigned after it 1412 (the 1412s the same code).
+// M3 lane 8 r243 (H2M_FAST alone reproduces 1412): the complement computed once just ahead of the barrel loop 1440
+// (5688 B); the player default declared first 1422; the owner's player index read through WEAPON_UNIT_GET's typed field
+// 1412 (same code), tested and copied at each use 1412; the magazine loop as `if (function_fdd50(weapon_index, i))
+// result = true;` 1407 (a branch where retail ORs the byte result in BL: `or bl, al`, home stored after the loop; under
+// the bar, not kept). Body unchanged.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

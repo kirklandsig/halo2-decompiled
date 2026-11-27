@@ -1793,6 +1793,21 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 812; the entry pointer declared ahead of the iterator and the outputs 812; the lookup pointer declared in the `if`
 // condition 812 (same code each); the three output stores after 0x1dd9d0 and both requests 1037 (2846 B). A
 // forced-ranking search (diagnostic, 16 decisions) found no single decision below 812. Body unchanged.
+// AO r5 (fast, both twins with 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x2963f0, all MATCH): the result
+// value-initialised 812; the per-pass candidate value-initialised 812 or copy-initialised from the result 987; the iterator
+// stored graph/step/entries then keys on the do-while 812; the outputs declared after the entry pointer 812; the iterator
+// declared after the outputs 812; the entry pointer declared at its iterate call 812 (same code each); one `return result;`
+// after the block 1040 (2857 B).
+// M3 lane 4 r266 (H2M_FAST, both twins with 0x1dc790, 0x1dc8c0, 0x1dd9d0 and 0x2963f0, MATCH unless noted; control 812
+// each). Read from the frame packer: iterator_mode has 11 references (the two inlined requests read it at each use), so it
+// is packed first and takes found_mode's dead argument home; the candidate (5) gets a frame cell. Retail's layout (mode,
+// class, type outputs at F+0/+4/+8, result F+0xc, candidate in found_mode's home) needs the mode output lighter than the
+// candidate. Lane 7 r146's capture of found_mode inside the iterate callee (its ANY_NAME store through the pointer's own
+// address, a match-only form in that matched callee) re-measured 804 on both twins (2825 B): iterator_mode then has 4
+// references, a copy of it carries the request's uses, but EBP takes found_weapon_class (retail: found_mode) and the
+// candidate shares found_weapon_class's dead home; the outputs pack class, type, result, mode. The same capture of
+// mode+class 830 (2853 B; 0x1dc8c0 56), mode+type 1009 (2806 B; 0x2963f0 106, 0x1dc790 93), all three 1043 (2854 B);
+// the mode capture with the outputs declared type, class, mode 804, that order alone 812 (same code each). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2498,6 +2513,21 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 812; the entry pointer declared ahead of the iterator and the outputs 812; the lookup pointer declared in the `if`
 // condition 812 (same code each); the three output stores after 0x1dd9d0 and both requests 1037 (2846 B). A
 // forced-ranking search (diagnostic, 16 decisions) found no single decision below 812. Body unchanged.
+// AO r5 (fast, both twins with 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x2963f0, all MATCH): the result
+// value-initialised 812; the per-pass candidate value-initialised 812 or copy-initialised from the result 987; the iterator
+// stored graph/step/entries then keys on the do-while 812; the outputs declared after the entry pointer 812; the iterator
+// declared after the outputs 812; the entry pointer declared at its iterate call 812 (same code each); one `return result;`
+// after the block 1040 (2857 B).
+// M3 lane 4 r266 (H2M_FAST, both twins with 0x1dc790, 0x1dc8c0, 0x1dd9d0 and 0x2963f0, MATCH unless noted; control 812
+// each). Read from the frame packer: iterator_mode has 11 references (the two inlined requests read it at each use), so it
+// is packed first and takes found_mode's dead argument home; the candidate (5) gets a frame cell. Retail's layout (mode,
+// class, type outputs at F+0/+4/+8, result F+0xc, candidate in found_mode's home) needs the mode output lighter than the
+// candidate. Lane 7 r146's capture of found_mode inside the iterate callee (its ANY_NAME store through the pointer's own
+// address, a match-only form in that matched callee) re-measured 804 on both twins (2825 B): iterator_mode then has 4
+// references, a copy of it carries the request's uses, but EBP takes found_weapon_class (retail: found_mode) and the
+// candidate shares found_weapon_class's dead home; the outputs pack class, type, result, mode. The same capture of
+// mode+class 830 (2853 B; 0x1dc8c0 56), mode+type 1009 (2806 B; 0x2963f0 106, 0x1dc790 93), all three 1043 (2854 B);
+// the mode capture with the outputs declared type, class, mode 804, that order alone 812 (same code each). Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

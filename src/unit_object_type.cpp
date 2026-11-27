@@ -9227,6 +9227,12 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // 62/62/62, and both with a typed input block and projectile link 62. The four corresponding object-first
 // forms score 58 and reach +0x14b. NOT kept: the tag types do not change the emitted loads, and the owner
 // order alone gains four.
+// M3 lane 6 r250 (fast screen with 0xca700 and 0x15cbf0, both MATCH; control 62). Retail's shake block tests the range
+// through the spilled definition in EDX and then reads every field again through a copy in EAX, as an inlined helper
+// taking the definition would. Forms: the shake through a new file-local inline helper taking the definition and the
+// distance (fields read at each use), the range read in the test, 383 (1610 B), the same helper forceinline 383, the
+// whole expression written into the call 383, the helper with the range named for the test 383 (1614 B): without the
+// named shake fields the definition takes a register again; the minimum named ahead of the range test 62 (same code).
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9706,7 +9712,13 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 397 (was 447): the frame is now 0x17c as retail's, the body 2214 bytes against 2229; the prologue still differs
+// score 397: GB24's 314 form is not kept (declaration and statement order are kept only on a byte match): declaring
+// damage_index before weapon_index and definition after read-only function_cbd50 (exact
+// 2229/2229 B, fixes collision point/normal copies and removes or esi,-1 in tail), using the existing seat bitfield
+// flags.bit11, initializing collision.material_type before ray, and symmetric (j*up + i*across + aim*range) ray rows
+// drops 397 -> 314 (al 265 -> 164, lines 63-93, 105-119, 134-142, 148-277 verbatim). Left: prologue pool/tag-table
+// registers, seat bit11 shift-test vs byte test, and inline 0xcfc90 placement after 0xa9260. Earlier (447 -> 397): the
+// frame is now 0x17c as retail's, the body 2214 bytes against 2229; the prologue still differs
 // (retail loads the unit index first and keeps the tag table in ESI and the pool in EDI, with NONE in EBP for the
 // weapon slot's compare; this build loads the pool first and materialises NONE in EAX).
 // Earlier detail: The frame is 0x180 against retail 0x17c. Unit and fan counter placement still differ.
@@ -9969,6 +9981,29 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // A forced-ranking search over 20 decisions found nothing below 390. Left: the prologue (retail holds the pool in EDI,
 // re-reads its data pointer at the weapon lookup and compares the weapon slot against NONE held in EBP), and the j/k
 // ray rows (retail sums the up product first and loads the aim component ahead of the range).
+// GB24 (32 fast trials across 2 batches with 0xcfc90/0xcf040/0x24f590/0x185be0 MATCH; 397 -> 314 not kept): flags.bit11 alone
+// 397; definition after weapon_index 376 (al=185); damage_index before weapon_index 469 (2229 B); both + flags.bit11 321
+// (2229 B, al=174; without bit11 321); + collision.material_type before ray 319 (al=172); + symmetric ray.i up-first 314
+// (2229 B, al=164). Also tried on 397: flip a76b0 411; split flags inner/outer 397/393; handled local 397; col before
+// ray/jk 395/395; fi/fj 511; mul swap 399; vector3f_negate_ab 397; mode==4 first 388; unit_at_masked_index 397; melee dmg
+// order 391; on 321: flip a76b0 335 (al=171, moves 0xcfc90 inline); mode==4 first 326/324; melee dmg order 328; dmg at top
+// 321; def after mat 321; dmg+self_dmg before wpn 321; queued bool 321; objects local 520; byte hit_seat + col 319.
+// M3 lane 13 r162 (h2m fast with 0xcfc90, 0xcf040 and 0x24f590 MATCH; control 397). Retail stores the collision's
+// material type before the j and k ray stores, keeps the 0xcfc90 arm inline after 0xa9260's jump (ours moves it to the
+// end, where the join reloads the unit index into EDI), and in the tail holds the unit index in ESI with NONE as
+// immediates (ours: unit index EDI, NONE in ESI). Forms: the material type set ahead of the ray rows 395 (retail's
+// store position; statement order, under the bar); the normal copied ahead of the point 397; the owner as a brace
+// initialiser `{ NONE, NONE, NONE, 0 }` 397 (same code); TEST_FIELD_BIT at both seat tests with the material type first
+// 388 (2219 B; both parts match-only); `up` declared ahead of `across` 397 (same code). Body unchanged.
+// M3 lane 6 r250 (plain checks with 0xcfc90 and 0xcf040 MATCH; control 397; the reduced fast image builds this function
+// at 2182 B, so only plain checks count here). TEST_FIELD_BIT at both seat tests alone 390 (2219 B: both tests become
+// retail's `shr edx, 0xb; test dl, 1`, aligned 183 -> 167); the i ray row spelled up-first like the j and k rows alone
+// 393, both 386 (2219 B). Not kept: the idiom alone is under the bar and the respelled i row is an operand order picked
+// by score. Reading: in this build the i row's spelling alone sets the product order of all three rows (across-first
+// spelled i row: all rows across-first; up-first: all up-first; the factor order inside each product and the j and k
+// spellings change nothing), where retail's i row is across-first and its j and k rows up-first, as main spells them.
+// The tail's NONE register (ESI) and the unit index in EDI are the allocator's; retail reloads the unit index into ESI
+// before 0xceee0 and uses immediates.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

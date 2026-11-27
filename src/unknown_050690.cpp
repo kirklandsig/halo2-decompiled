@@ -721,6 +721,27 @@ void __stdcall function_508d0(void *payload_data)
 // match-only piece put back to its plain form: a named half-stride 699 (2271 B), no window fill 344, the fraction
 // ahead of the complement 388, named remap coefficients 73; with all four 663 (2311 B), so nothing of the lead stands
 // without them.
+// M3 lane 8 r242 (fast screen with 0x508d0 and 0x13bb90 listed; lane 11's 62 lead re-applied, 62, held as a patch). The
+// four integer homes that differ are equal-density 4-byte slots whose order is the back end's sort tie order: the
+// lead joins the y pointer to the cursor's slot and the x pointer to another and leaves the level count alone, where
+// retail's layout needs the cursor, y pointer, level count and x pointer in each other's places. On the 62 lead: the
+// phase bound by const reference (the square reads the field twice) 605 (2400 B); the weights in order middle, end,
+// start 381 or end, middle, start 400 (2368 B); the level count written into the loop test 579 (2385 B); the level
+// count declared ahead of the count 63 (two entry stores swap). Body unchanged.
+// M3 lane 1 r174 (fast screen with 0x508d0 and 0x13bb90 listed; main 626, unchanged). LEAD, not kept (lane 11's 62
+// lead plus two more statement/operand orders picked by score), held as a patch: 47 at retail's 2384 B, first
+// difference +0x77. On the 62 lead: the right index computed at the top of the interpolation loop, ahead of the
+// window shift, 49 (the cursor and the y pointer then take retail's homes: the frame packer joins each strength-reduced
+// temporary to a slot in the order it reaches its reference count, so the cursor now joins the first loop's slot and
+// the y pointer the second); the right index after the shift and before the centre 49; with `MIN(i + stride / 2,
+// count - 1)` 47 (retail's `cmp eax, edx; cmovg`); `MIN(stride / 2 + i, count - 1)` 47 (same code); the centre ahead
+// of the right index (three orders) 64 / 64 / 47; level count renamed (three names) 62 each (same code); the seed sum
+// written out at each seeding 557 (2385 B: the level offset folds into a memory operand); the start weight as
+// `(1.0f - fraction) * (1.0f - fraction)` 374; the square from the phase field read twice 604 (2400 B). Left on 47:
+// the level count and the x pointer in each other's 4-byte homes (+0x38/+0x40: on the packer's quicksort this needs
+// the level count's slot created ahead of the x pointer's, i.e. another reference count), the level seed's sum and the
+// two squares (`mulss b, a` for retail's `mulss b, b`) at the level-loop entry and in the weights, the cursor and index
+// loads in the other order, and the final loop's left-vector product pair.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

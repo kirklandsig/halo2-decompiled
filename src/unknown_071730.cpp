@@ -560,6 +560,13 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // 83). On 376 base: nested `goto local_29` removal 425 (1599 B), + inline live 447, + 6-field kind-4 434; kind-4 store
 // before 6-field clear 409 (1589 B, al 166); `function_75870` alone 473 (1555 B, fr 0x3e0), with `function_75890` 489
 // (1535 B); `function_058d70` 376 (same code). 0x5b080 stays expanded in every trial (BLOCKED-BY link inline calibration).
+// M3 lane 5 r251 (fast with 0x5b080, plus 0x6d380/0x6e720/0x7e210 for the getter trials, all unchanged; control 376).
+// Retail's other callers of the data getter call it at depth 0 (0x6d380, 0x7e210) and depth 2 (0x6e720), so a larger
+// getter could explain this site alone being a call; but the getter's own size does not move the site: its live test
+// through the existing session_state_is_live 376 (0x5b080 still MATCH), a diagnostic body with three extra named
+// locals and the tests split 376 (same code here; 0x7e210 882). Here: the gather-exit live test written flag first 406;
+// the host-id test as `!live || !flag` 376 (same code); the transition flag declared ahead of local_12 376 (same code);
+// the owner's +0x3c read ahead of the first elapsed time 419. Body unchanged; still BLOCKED-BY 0x5b080's call-site depth.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

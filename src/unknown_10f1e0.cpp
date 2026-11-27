@@ -264,6 +264,13 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // (0x112fd1) but j and k in place (0x112fd5, 0x112fd9); ours copies for j. No spelling of the three products moves it
 // (i = inverse * i, j * inverse, *=, every order), nor `real const inverse`, an initialised inverse or an inline
 // pointer helper (all 64). Calling function_142700 instead of the body: 329 (not inlined in the fast build).
+// GA22 (34 fast + 8 plain trials; exact byte MATCH 0 at 627/627 B held as a patch, body unchanged):
+// accessing direction only by pointer across all four boundaries (inline inverse-point transform matching
+// function_142700's body, normalize_particle_direction_2b(&direction) from reciprocal_normalize.h dropping
+// function_112e21, and matched function_11df30((vector2f *)&angles, &direction)) matches 627/627 bytes (0 diffs;
+// plain check verified all 44 file peers including caller 0x1132f0 and all 5 callees MATCH, 298 targets verified,
+// 0 differ). Held because any net function addition (+1..+4) to this TU flips whole-image LTCG watch functions
+// (0x24cf66:2 and either 0x1c4590:5 at +1/+2 fns or 0x185be0:2 at +3/+4 fns); 0-new-function forms score 91 (624 B).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -415,6 +422,7 @@ bool function_1d9320(s_1d9240 *slot);
 
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
+void bit_vector_fill(dword *vector, long count, byte value);
 
 // score 2 (was 2): only the back edge's two reloads differ (retail reloads the state, then the tag table; ours the
 // other way round). The entry's node count and the arms' graph now come from the existing state members (same
@@ -696,6 +704,20 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // the NONE and 0xffff constants and so lands above the table's. Forms (all the same code): `found` declared once beside
 // the markers; the break braced; `graph` in the loop body (re-measured); the visited words ahead of the markers; the model
 // lookup after the markers and the visited words.
+// M3 lane 3 r313 (fast, plain for the kept call; control 2): the clear through the existing bit_vector_fill (the memset
+// here was its body written out) 2, same code in the fast and plain checks: kept. Reading of the back edge: its two
+// reloads come out in piece-number order; the table is a temporary numbered 25, and the state's piece, made when the
+// iterator takes EBP, takes the free number 26 because the NONE and 0xffff constants' pieces are made first in that split
+// and take the free numbers 10 and 3. One piece fewer ahead of it, or one more number freed by the first split (it frees
+// the alternate flag's and a constant's), would number the state's piece below the table's (retail's order). Forms: both
+// arms' graphs passed in the calls 107 (526 B, listed); the plain truth tests as `!= 0` 2; the definition read through the
+// typed object definition header 2; the memset size as `sizeof(dword) * words` 2; the markers and visited words declared
+// in reverse 2. Diagnostics (semantics changed, reverted): the entry's target NONE test dropped 151 (no back-edge block);
+// the loop's target-name NONE test dropped 76 (the pair stays table first).
+// M3 lane 14 r162 (fast with 0x113ba0, 0x113c60, which stay matched), at 2, all the same code: both markers and the
+// visited words declared at the function's top 2; the node-count test joined to the entry condition as a fourth term 2;
+// the target name declared bare beside the visited words and assigned in the loop 2; `graph` declared at the function's
+// top 2; `bool found = false;` declared once ahead of the loop 2.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -711,7 +733,7 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 			s_object_marker marker;
 			s_object_marker target;
 			dword visited[8];
-			memset(visited, 0, ((state->node_count() + 31) >> 5) * sizeof(dword));
+			bit_vector_fill(visited, state->node_count(), 0);
 			for (;;)
 			{
 				bool found;
@@ -2268,6 +2290,18 @@ bool __stdcall function_110ab0(long unit_index)
 // the interruptible test as `if (... & 0x10) interruptible = true;` 463 (1805 B), with `bool result = true;` and no
 // state-switch default 491 (1837 B), with depleted typed bool 472 (1777 B); the helper in the && form for both
 // functions 484 (1817 B; 0x110ab0 164, same code).
+// GA22 (19 fast trials with 0x10ff40/0x111650/0x110ab0 + 6 matched peers, control 445 at 1793/1793 B, +0x2, fr=8, al=347, mk=394, body unchanged):
+// bool depleted + bool overlay_interruptible 475 (1777 B); + 0x600008d if/else 532 (1729 B; ternary 532; + if-interruptible 539);
+// second seat object_get 445 (same code). With bool depleted + bool overlay_interruptible + bool result = true + no state default +
+// `if (requested != 0x600008c) result = interruptible;` + `if (requested == 0x400000c) result = allow;` + 0x600008d if/else:
+// 497 (1761 B, +0x3, exact fr=0xc, al=195, mk=156, callers unchanged: 0x10ff40 12, 0x111650 557, 0x110ab0 164 -- no unit_ref/volatile needed).
+// On that fr=0xc base (all keeping fr=0xc, +0x3 and callers unchanged): original 0x600008d || 459 (exact 1793/1793 B, ins=473/475, al=209, mk=170);
+// `if (requested != 0xc000043 && requested != 0xd000042) result = interruptible;` 460 (1793/1793 B, ins=472/475);
+// ternary 0x400076c/0x700005c arms 475 (1785 B, al=201, mk=139); byte depleted 489; byte overlay_interruptible 498;
+// headers reload2 515; headers in if 522; decl reorder + inline overlay_interruptible 534.
+// Changing interruptible to `if (... & 0x10) interruptible = true;` drops back to fr=8 and regresses 0x10ff40 to 217 (567; unit_ref/volatile
+// diag forms keep callers unchanged at 563/524/550/550, fr=8). Still blocked by requested taking EDI instead of staying in [esp+0x24]
+// (pushing result from DL into [esp+0x20]) and the overlay switch staying at the end instead of joining mid-switch at 0x11053a.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -3170,6 +3204,16 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // stored 16 (folded); the sound index stored first after the clear 24; the request priority declared first with the
 // default object index stored ahead of the marker 16; the lookup un-nested (`entry_index` reassigned, then `entry_index !=
 // NONE && 0x114520`, the index declared in the request block) 22.
+// M3 lane 11 r173 (H2M_FAST; control 16). The allocator's ledger costs a reference to the NONE constant at half a
+// variable's (its stores 1, its compares 0) where the index's and the request priority's cost 2, so with retail's
+// references it cannot pass the index (14 against 48); costed as a variable (its load and compares at 2 as well) it
+// would reach about 66 and colour first, the one decision the forced-ranking search's match needs. No local spelling
+// keeps it a variable: a `long` local holding NONE 16, bound through a `long const &` 16, assigned through a `long &`
+// 16, read through a pointer 16, given a second NONE definition in the fallback block 16 (each propagated, same
+// code). Forms: the sound index store written in both extra arms 16 (same code: merged after allocation; NONE then
+// has seven references but falls to 9, the arms' blocks being light), at the end of both arms 71 (223 B); the out
+// value's NONE store written in both arms of the fallback test 16 (same code), with the sound index in both extra
+// arms as well 90 (260 B); the definition and sound index stores in both extra arms 69 (254 B).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

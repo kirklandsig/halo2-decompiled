@@ -216,6 +216,16 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
 // reference, or the +0x34 statement after the scale or after the add. Without it: delta.i as wind.i * amount 46;
 // `time += properties_values[1] * scale` before the call 56 (652 B), with the ticks getter 56; the converted ticks
 // bound by reference (`real &seconds = ticks; seconds *= rate;`) 43.
+// Round 233 (on round 171's clock, each product's operand order read from its operands' ranks: retail needs wind.i
+// ranked below the scale and wind.j, wind.k above it; ours numbers all three wind values after the scale): manual
+// rows + vector3f_add 7; vector3f_scale of `amount * properties_values[0]` + vector3f_add 7, + the three += 11 at
+// 664 B (the j row then flips instead), the += in the five other orders 17-20; a linear local + scale + += 10, +
+// vector3f_add 29; vector3f_add of vector3f_scale(...) 7; the matched 0x2b98b0's array-loop add after the scale 7,
+// after the scale expression 7, after the manual rows 7, the rows as a loop as well 34.
+// AO r6 (fast with 0x2b8da0 MATCH; control 46): the wind lookup through the existing 0x211b30 (location at +0x1c) 112
+// (611 B: called, not inlined); the amount as `scale * (phase - 0.5f)` 46; no phase local 59 (647 B); a velocity
+// pointer for the three adds 47; no time local (the product inside the call) 46; the ticks getter converted and then
+// `time *= rate` 46; a named curve input 56 (652 B); the +0x34 product as `properties_values[2] * amount` 46.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {

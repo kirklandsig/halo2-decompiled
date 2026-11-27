@@ -1100,7 +1100,7 @@ real function_30bf0(vector3f *vector);
 // order (facing maxima below scale, range above the motion/side cell) needs the facing maxima denser and the range
 // thinner than here. Tried: the delta as a brace initialiser 84; `real const` scaled range 84; `long const` vehicle
 // index 84; `short const` seat count 84; `real const` range alone, re-measured, 84 (an earlier round listed 81) and with
-// the scaled range const 84 (all the same code). A forced-decision search ran 10 of 45 decisions in 20 minutes on this
+// the scaled range const 84 (all the same code). A forced-ranking search ran 10 of 45 decisions in 20 minutes on this
 // loaded machine before it was stopped (none matched; the closest, the first delta row's register moved, 102). Body unchanged.
 // M3 lane 6 r240 (H2M_FAST with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84, aligned 55). Reading of the
 // operand ranks: in the second seat cross retail multiplies the stored side members by forward.k from memory, so there the
@@ -1187,6 +1187,25 @@ real function_30bf0(vector3f *vector);
 // sharing one `posture == 0 ? 0.3f : 0.7f` assignment 214 (1312 B); the posture tested by an `if` with that conditional
 // 181 (1311 B); the whole scale as one nested conditional at its declaration 219 (1308 B); an explicit `default: break;`
 // 84 (same code); the clip clamp as a conditional assignment 84 (same code). Body unchanged.
+// M3 lane 12 r193 (H2M_FAST with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84). Frame packer reading:
+// cells are packed by size, then references, and a joining value tries the newest cells first, so the clip amount (2
+// references) meets the seat loop's two compiler temporaries (3 references each, packed before it) and joins the newer
+// one; retail's pairing with the squared distance needs those temporaries to interfere with it or to pack after it.
+// Forms (all 84, the same code): the seat buffer declared at the top of the facing block; `side` and `up` declared
+// apart, up first; the occupant pointer to const; the two facing maxima declared ahead of the crosses; the facing flag
+// set by an `if`. Body unchanged.
+// GB22 (26 fast trials with 0x263740/0x26d370/0x25c9d0/0x263d70 MATCH, control 84 at 1310/1308 B; body unchanged):
+// nested 0x26d370/amount if 84 (on PIN+split with extra guard 247); inline pin_real helper 97 (1308 B, range->xmm0);
+// !(distance_squared >= limit) compares 89; parameter address reads (like file peers) actor_ref 152 (143 on PIN+split),
+// mode_ref 164, origin_ref 170 (breaks peer); while (i < count) seat=&seats[i++] 182 (1308 B; 174 on PIN+split);
+// on PIN+split (76): inline posture_scale helper 76 (+ seat ptr 70, al 12, mk 19), plane.d z+y+x 76; direct &secondary/&primary
+// with MAX ternary, real* pointers, reversed if, or real limits[2] array all cleanly pair amount+distance_squared (+0x1c/+0x18)
+// with result=+8 and range=xmm0 but keep seat-loop xmm1/xmm2 reloads (190/190/190/195 at 1331-1334 B).
+// M3 lane 6 r250 (fast screen with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84): the first delta
+// through the existing vector3d_from_points3d 142 (1308 B, retail's length, but the squared length's rows and the seat
+// crosses reorder); `forward` as a non-const pointer 84 (same code); the seat count as a long 193 (1318 B); `result`
+// renamed so it sorts after the other cells 84 and the seat maxima a and b given longer names 84 (same code: names do
+// not move these homes). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -3256,6 +3275,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // (2880 B, masked 20); the first form with the reset arm first (`if (slot == NONE) {...} else {...}`) 159; `if
 // (established) {bonus; positive = ...} else if (!(far && slow)) positive = ...` 219 (2880 B). Re-measured the note's
 // joined form, `if ((visible || established) && (established || !(far && slow)))`, 224 (masked 20). Body unchanged.
+// M3 lane 3 r315 (H2M_FAST with 0x26be00, 0x26be30, 0x25d690, 0x25d740, 0x25d810, all MATCH; control 158): the node loop's
+// `if (!view) continue;` folded into the state test (`node->state >= 1 && view`) 158, with the 0x25d690 test joined as
+// well 158; the iterator's index read at both uses (no `index` local) 158 (same code each); the second 0x25d690 call
+// replaced by the `state` local 425 (retail calls it twice); the players loop's unit index read ahead of the player test
+// 162. The two player searches stay this body's code because their own definitions (0x1c8150, 0x1c8180) sit in an /Ob1
+// file whose seven other retail callers keep them as calls. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

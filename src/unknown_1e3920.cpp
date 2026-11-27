@@ -1390,6 +1390,11 @@ void function_1e3b60(long actor_index);
 // flag tested first 429; the tail reading a fresh actor lookup after the walk 421 (1632 B). The actor index stays a stack
 // argument in each. Still BLOCKED-BY 0x262ba0 (and through it 0x2641c0's noinline declaration, in another lane's file
 // this round).
+// M3 lane 4 r267 (fast screen with 0x262ba0, 0x263210, 0x264330, 0x265680; 25 here in every form). In 0x262ba0, more
+// actor-index references by fetching the actor again: the loop's three tracked-prop reads 476 there (1652 B), every
+// actor read in the loop 473 (1648 B), every actor read in the tail 501 (1696 B), both 530 (1708 B), both with the
+// update flag at function scope cleared after its use 531. The actor index stays a stack argument in each. Still
+// BLOCKED-BY 0x262ba0 (and through it 0x2641c0's noinline declaration, in another lane's file this round).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
@@ -2183,6 +2188,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // minimum with 0xcbd50 and the short index 275. Retail's scheduler moves the third lookup's loads above the first
 // weapon's store, so that store is not what ends the cached lookup; diagnostic (reverted at once): each block's unit
 // assigned through a pointer to the local 298 on the 298 form (same code, the pointer is propagated away).
+// M3 lane 7 r234 (fast screen with 0x1e53e0, 0x2758b0, 0x1e04a0, 0x1e5380, 0x1e5240, 0x1e5280 and 0x1e3b60, all MATCH;
+// control 251). Allocator reading unchanged: options 82 ahead of the actor 68, the pool never a candidate. Forms: one
+// `bool halved` for both halving tests, read ahead of the weapon loop, 278 (1197 B); block 1's first slot query
+// through the `unit` already looked up (the second through its own lookup) 340 (1191 B), the second only 337 (1191
+// B); the per-pass weapon read into `long weapon` 251 and the grenade reset test as nested ifs 251 (listed forms,
+// re-measured: same code); the fraction tests written `0.0f < x` 251 (same code).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

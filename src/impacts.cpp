@@ -1515,6 +1515,27 @@ PRIVATE __forceinline byte *function_2284c1(long arg_0)
 // named once for the first lookup and the else arm 86; only the component_b lookup through
 // component_tag_index_get_2285d0 56 (268 B: entry and first lookup retail's; lead, parallel tests spelled differently),
 // only the component_a lookup through it 74.
+// HELD (needs the owner's OK; held as a patch), m3 lane 11 r172: 0x2285d0's parameters in the order retail's call sets
+// them up (component_index, unknownd, then normal, the one register argument, set up between the pushes of unknownb and
+// unknownd) take this function to 50 at 267 B with 0x2285d0 still matching: the impact then arrives in ECX and every
+// register is retail's. Left is retail's store of material_b back into its own home in the use-b arm (`mov word ptr
+// [esp + 0x1c], ax`), which this build drops (a forced-ranking search finds no decision for it). On the reorder: the
+// use-b arm's two material stores swapped 6 (plain; the materials then trade homes), the other arm's swapped 7, both 52;
+// the material names, their declaration order, component_index first in each arm, the condition negated with the arms
+// exchanged, member-wise copies, a constructed copy for the self-store: 50 each; short locals 112 (241 B); initialisers
+// at the declarations with a single if 96 (279 B).
+// GA23 (15 fast trials, 0x2285d0 untouched/MATCH, 0x2294a0=586): retail 0x2294a0 sets up `mov ecx, ebx` last after all
+// 10 stack pushes (confirming `impact` is param 1). On HEAD without touching 0x2285d0: macro 2284c1 / swap decl order /
+// helper plain locals / symmetric bool helper / direct no-helper / non-const impact / swap both material assigns /
+// `inline_depth(1)` diag all 81 (same code); `component_index` first in both arms 83 (270 B); both `component_a` and
+// `component_b` locals 91 (272 B, al 111->65, `impact` moves to EDX, confirming `lea eax,[..+0x5c]` setup order follows
+// 0x2285d0's parameter order); dead object header in helper 93; default-init single if 96; in-place material swap 100
+// (253 B); call-args locals at top diag 122; plain inline helper 125 (226 B, 0x2294a0->754). Body unchanged.
+// M3 lane 14 r162 (fast with 0x2285d0 MATCH and 0x2294a0 586 unchanged): still BLOCKED-BY 0x2285d0's parameter order
+// (contributor code; the reorder is held). Tried: component_b read once into a long used for the test, the use-b arm
+// and the call's flag 81 (same code); the condition negated with the arms exchanged 81 (same code); the use-a values
+// assigned first with a single overriding if 96 (277 B); the normal's address taken into a pointer at the top 91
+// (277 B); component_index initialised to NONE 81 (same code). Body unchanged.
 // @retail 0x2284c0
 void impact_material_effects_get(
 	s_impact const *impact,
@@ -2328,6 +2349,22 @@ s_impact_component_iterator g_5021bc;
 // match-only; lead: a forced ranking of component_b above the component gives 69 on it, and of impact_index above the
 // constraint 42, both register permutations of the same allocation); the pointer form alone 164; component_b set by
 // an if/else on that lead 164.
+// M3 lane 11 r172 (reduced image with 0x226a60 and 0x226f80, control 162): the allocator ranks the component 208 to
+// 210 over component_b 180 (component_b loses 36 for living across the first find's 9-candidate block), so the
+// component takes ESI and needs no copy for 0x1d1c10, where retail keeps it in EBP. The matched twin 0x226a60's loop
+// form (the element tested by index, its pointer formed inside the test, the impact pointer ahead of the store indexed
+// by i) 199 (677 B), without the indexed store 194, either with the count ternary 201/194; the impact pointer alone
+// 164, with the count ternary 164; the count ternary alone 162 (retail's movsx test); the constraint loop as a
+// file-local forced-inline helper taking the component 162 (same code; the parameter does not split the component's
+// candidate), with the count ternary 162, with that and the impact pointer 164. A forced-ranking search on this body
+// (50 decisions, many timing out) finds nothing under 151.
+// M3 lane 14 r162 (fast with 0x226a60 and 0x226f80, MATCH). Ledger: the component (the inlined iterator's result) sums
+// 324 over eleven blocks less 114 live-but-unused = 210; component_b sums 216 (160 of it in its lookup block: cost 8 x
+// weight 4 x five candidates) less 36 across the first find's nine-candidate block = 180. One more candidate in the
+// lookup block (n 6) would give it 212 and retail's ESI/EBP pair. Tried (all the same code unless given): the iterator's
+// result stored straight into the global's component field, tested there and then read into the local 162, with the
+// count ternary 162; component_b started NULL and set by an if 168 (674 B); component_b's index named for the test, the
+// lookup and the data's second index 162; the data and impact index declared ahead of component_b 162.
 // @retail 0x226ce0
 void function_226ce0(void)
 {

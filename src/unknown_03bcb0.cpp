@@ -893,6 +893,27 @@ struct s_41490_record
 // volatile `delta.i/j` non-folded `mulss` remain). Also tried on HEAD (call expanded): word+aggpos 73, plain v3d+dot3f 131,
 // word bitfield / nested if / neg dot / dword flags 70, scalar volatile deltas 127, `depth = delta.k; depth *=` 75; with 0x40e10
 // moved here: main body 127 (breaks callers), word+aggpos+staged depth 17 (kij/kji/ijk/neg/bitfield 17, flat kij 13, sym ijk 12).
+// M3 GB r23 (44 fast trials with 0x41040, 0x40e10, 0x40e30, 0xd4cf0, 0x244630, 0x2be670, 0x44ac0, 0x44c90, 0x402b0, 0x1bf50,
+// 0x1e2d0; control 72, 0x41040 189): on inline `0x40e10` in a `/O2 /Ob0 /Gr` file (no XMM summary; non-inline `/Ob0` stays 146/189),
+// plain non-volatile `vector3f delta` + `*(word *)(definition + 0x16)` + `record->position = *position` + staged `k,i,j` depth
+// drops `0x41490` 72 -> 8 (`426/426 B`, `+0x13e`) with NO `position_reference` and NO `volatile` AND simultaneously drops `0x41040`
+// 189 -> 156 (`1089/1089 B`, `+0x47`), keeping all 10 peers/callers (incl. `0x40e10`) MATCH (NOT kept: moving `0x40e10` to a
+// different-flags file is match-only). On that score-8 base: all operand orders of staged `k,i,j` / unary `-depth` / `forward` ptr
+// / `vector3d_from_points3d` / plain struct / `depth = delta.k; depth *=` / `basis_dot_xzy` / staged `i,k,j` / `type` local /
+// renamed `delta` / plain global camera diag / parenthesized `(k+i)+j` / `/O2 /arch:SSE /Ob0` / `delta` ptr / top/mid `delta` /
+// `real delta[3]` / `.n[]` all stay 8 (`movss xmm0, [forward.k]; mulss xmm0, [esp+0x18]`); flat sums / `dot3f` / 3 term locals 9;
+// depth before callback/flags 11-12; `delta.k` after tag 15; 3 scalar reals 120 (`sub esp, 0`); `/O1 /Ob0` 54 (breaks `0x40e10`);
+// diag volatile read on `delta.k` only 7 (`+0x16d`, matches lines 94-101 verbatim but flips `addss xmm1, xmm0`). Restored at 72.
+// M3 lane 11 r174 (h2m fast with 0x40e10, 0x41040, 0x40e30 and the callers 0xd4cf0/0x244630/0x2be670; control 72),
+// all with 0x40e10 moved into this file (its retail neighbour 0x40e30 is here, and retail calls it from both callers):
+// the main body 127 (415 B, ret 0x1c, the three callers lost); without the volatile 156 (387 B, callers lost); round
+// GB r17's word-read flag bits, aggregate position copy and flat negated dot with the volatile delta re-measured 12
+// (426 B, callers kept), without it 146 (396 B); the staged k, i, j depth on that form 17 / 146; the delta through the
+// existing vector3d_from_points3d 146, with the depth through dot3f 146, with the staged depth 146; 0x40e10 defined at the
+// end of this file instead of ahead of its callers 146 / 12 (same code). Without the volatile every form keeps the delta
+// in xmm0-2 across the call (the call carries a register summary). BLOCKED-BY 0x40e10: retail's callers neither inline
+// it nor trust its register summary; the only form known to give both (an `inline` 0x40e10 in a file without inlining)
+// adds `inline` to an existing function, which waits for the user's decision.
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
@@ -1238,6 +1259,11 @@ s_3c9a0_matrix g_4c1b68;
 // as one ternary 306 (1321 B); the near angle through the float tan overload 291; the tangent without casts with the view
 // tangent folded into `tan(half_angle) * aspect / tangent` 291; the field of view (+0x7c) named for its five reads 333;
 // the tangent scale (+0x80) named for its two reads 313.
+// M3 lane 13 r164 (H2M_FAST; control 291): the held reused corner pair re-measured 239 (1387 B), with the two-multiply
+// near angle 229; on the pair form the corner transform written out as 12 statements 239 (same code as the loop), the
+// position stored z, x, y, then the scale 238. Frame reading: retail's seven float cells are reused in turn (height, then
+// the tangent, then corner_x; the distance cell, then the aspect, then corner_y; offset, then the half angle, then the view
+// tangent), so its tangent is stored as a float right after its multiply, ahead of the aspect test's branches.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1362,6 +1388,18 @@ long function_40de0(long index, bool first, bool second);
 // retail's form. Forms: the kind word read through `part` at every use, no local 272 (1077 B); the depth through the
 // existing dot3f 189 (same code); the values copy tested on record->active 192 (1062 B), with the dot3f depth 192;
 // delta declared at function scope 189 (same code).
+// M3 lane 13 r164 (H2M_FAST with 0x44ac0, 0x44c90, 0x402b0 MATCH; control 189). Lead, held as a patch (it needs 0x40e10's
+// build options changed): 0x40e10 moved to an existing file built without link-time code generation, its parameters
+// declared (second, first), matches itself and takes this function to 156 at 1089 B (delta in stack cells); then `long
+// index` in every declaration 266, the kind word read through part at each use 140, a long kind local for the 0/5 test only
+// 122, 0x40e30's kind parameter long (retail's movzx at both calls; 0x174420 and 0x41640 then need NONE for their constant
+// kind) 52, `if (record->active)` 12, delta through the existing vector3d_from_points3d and the depth through the existing
+// dot3f 2 (either helper alone 18/12). Left: the two 0x40e10 argument masks in the other order, a scheduler priority tie
+// broken by creation order: the fastcall to a function built without link-time code generation evaluates the EDX argument
+// first; under link-time code generation the masks come out in retail's order but the delta stays in xmm registers (126),
+// also with 0x40e10 in an /Ob1 or explicit /arch:SSE file (126); an /O1 file breaks 0x40e10 (21). On main's build: the kind
+// through part 272, both existing helpers 201, the points helper alone 189 (same code), all three 282. BLOCKED-BY 0x40e10
+// (retail's callers neither inline it nor trust its register summary).
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -1459,6 +1497,30 @@ void function_41040(short index, long part_index, long group, byte weight,
 // shared override ptr/ref helpers 305; primitive init-before 356, signed char/long 305; result in else 364; stage/tag
 // locals 305/328; g_4ba138[index] in 15d70 args 376; out->value08 in 4cbb0 304/334. Left: splitting `tag` at switch
 // without an extra stack slot so stage takes EDI and pass stays on stack.
+// M3 lane GB r23, NOT kept at review (305 -> 96 needs the one-use `material_offset` local and the `(byte)` cast on
+// 0x4cbb0's long result, both match-only; the allowed parts alone, `out->value10` reads and no `instance` local, give 340):
+// naming `dword material_offset = (byte)mode * 0x132;` ahead of `record_material`, dropping the
+// `material` local to read `*(long *)((byte *)out->value10 + 0x100)` for 0x1cb20/0x4cbb0 (as siblings 0x4dfa0/0x4de20
+// do), testing `(byte)function_4cbb0(...) != 0`, and dropping the `bool instance` local in favour of
+// `(bool)((source->unknown00 >> 12) & 1)` at both uses frees `ebx`/`edi` after `switch (stage)`, recovering retail's
+// exact register split (`ebp=tag->out`, `edi=stage->material`, `ebx=mode->g_4e3b44`, `pass` in `[esp+0x24]`), retail's
+// `mov byte [esp+0x34], al; push eax` CSE across 0x44940, the 2-block primitive switch, the `out->value10` reload after
+// 0x1cb20, and `test al, al; setne al` (305 -> 96, 1200/1204 B, al 205 -> 41, mk 112 -> 36, all 10 peers MATCH).
+// Still differs: `+0x1b` `add esi` vs retail `mov [esi+g_4ba138]; lea esi` (4 B, from retail inlining 0x449e0),
+// `imul edi, 0x132` scheduled before `record_format_groups` finishes instead of after, `out->value0c` operand order
+// (`source->tag` before `source->flags`), and the 2-block primitive switch order (`0x11` before `0x10`).
+// M3 GB r23 (77 real + 1 diag fast trials across 7 batches; plain confirmed 305 -> 96, 1200/1204 B, +0x1b, all 10 peers
+// MATCH and 0x41040 unchanged at 189):
+// Match-pursuit lead (not kept without a byte match: one-use `dword material_index = out->unknown04` + local `entry`
+// lookup for inlined 0x449e0): reaches 20 at exact 1204/1204 B, `+0x244` (`al=12, mk=8`, matching 580+ bytes verbatim
+// and leaving ONLY `out->value0c` load order and the 2-block primitive switch order); `material_offset` + `entry` block
+// reaches 38 (with `bool instance` after 44940) or 140 (without `(bool)` CSE); `out->unknown04` index without `entry`
+// block reaches 80 (1200 B). Also tried on the 20/96 base (all stayed 20 or worse): primitive switch case orders
+// (default top/middle/sep breaks/54-321/signed char/inline return helper/1cb20 in cases/init-before-switch/long primitive)
+// 20-359; `out->value0c` spellings (`(flags & 0x3fe00)>>9`, `* 2048`, `% 512`, `(word)tag`, bitfield view, temp locals,
+// zero-or-or, inline pack helper, byte-offset ptrs, `if/else if`) 20-202; `visible_entry_geometry(index)` 182; `union`
+// 4cbb0 215 (1180 B, `sub esp, 0xc`); `out->unknown04` inline 344; `bool instance` kept 182-207; `tag`/`pass` overrides
+// (`material_tag`, `original_tag`, `&tag` diag, shared 18/19, `(void)&`, `key` long, case reorder) 305-390.
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
@@ -1828,7 +1890,7 @@ void function_151c0(real const *constants);
 struct s_stream_description;
 void function_1cda0(s_stream_description const *stream);
 void function_1bd50(void *state);
-void function_1cdd0(real const *bounds, byte flags);
+void function_1cdd0(real const *bounds, long flags);
 void function_1bbf0(long tag, long first, long second, long third, long fourth, real scale);
 bool __stdcall function_1c8a0(D3DPRIMITIVETYPE type, word const *indices, long count);
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
@@ -1957,7 +2019,10 @@ void function_4d720(short, long);
 extern long g_485a60;
 
 
-// score 380 (was 499): size equals retail (1418); what still differs is register allocation and frame layout.
+// score 370 (was 380): the two flags passed to 0x4daa0 were swapped (behaviour fix from lane GB r23, checked against
+// retail at review): retail 0x4daa0 tests AL as `filtered` (the mask path) and CL as `strip`, and retail 0x4d0b0 puts the
+// 0x40 && mask && subparts test in AL and the 0x200 test in CL.
+// Before (380, was 499): size equals retail (1418); what still differs is register allocation and frame layout.
 // Retail keeps mode in edi and the unextended packed >> 8 in esi, tag in edx and g_4e3b44 in ebx through the prologue,
 // loads tag before packed, and puts value at [esp+0x13], compound at [esp+0x24], part_index at [esp+0x34].
 // Section/primitive are re-read from entry->flags at every use (no locals): that took the score from 489 to 406.
@@ -1970,7 +2035,7 @@ extern long g_485a60;
 // Walk r719 (b2O), statement by statement against retail 4d0b0-4d637: no logic or behaviour difference found (decode, the
 // mode 18/19 tag/second override with the global store of the ORIGINAL tag, 0x4000 early return, the three geometry
 // sources, 1c0d0/4d830/4d7c0/44940 order, mode 5 extra, mode 3 mask/stream/bitmap/texture paths incl. the >>29 == 2 and
-// 0x7ff cases, prefetch order, compound walk, 1caa0 stack order, 4d9c0/4d640/4daa0/4d720 arguments all agree). Retail facts:
+// 0x7ff cases, prefetch order, compound walk, 1caa0 stack order, 4d9c0/4d640/4daa0/4d720 arguments all agree, but the 0x4daa0 flags were swapped, see above). Retail facts:
 // [esp+0x58] is packed's own incoming slot (a byte 0, then 1 after 15c90, is stored there and never read; the compound
 // walk then reuses it as the bitmap offset), so the omitted `setup` is behaviourally a no-op; 4d640 reads its flag as a
 // byte while retail pushes the 4-byte slot of compound (ours does too); part_index is read back with movsx word (the
@@ -1996,6 +2061,34 @@ extern long g_485a60;
 // match) and masked 86; long index without extra local 407-429.
 // Review: prepare_mask_stream is a new helper used only by this function (two sites), match-only; without it the
 // short part_index and visible_entry_geometry(index) give 420, so the body stays at 380.
+// M3 lane GB r23 (53 fast trials, control 380; plain confirmed 291, all 13 peers + file peers MATCH):
+// Tried 380 -> 291 (-89); at review only (1) is kept (380 -> 370): the 291 needs (2), a statement order, and (5), new
+// locals (both match-only), and the allowed parts (1), (3), (4), (6), (7) together give 421.
+// (1) fixed swapped arguments to function_4daa0 (retail 0x4daa0 tests al for filtered and cl for strip;
+// retail 0x4d0b0 computes strip into cl first and filtered into al second; fixing HEAD alone drops 380 -> 370),
+// (2) definition loaded before packed decode (matching retail lines 14-21 before line 22; without it 307),
+// (3) short part_index = (short)(packed & 0xff) (without it 426), (4) existing visible_entry_geometry(index) (without it 413),
+// (5) typed long *stream_mask = NULL before if (buffer[0] & 1) then mask = stream_mask in both mode==3 arms (matching retail's
+// xor/test/unconditional mask store without a 1-function helper; mask = NULL 377, omitted 393, ternary 402, else NULL 384),
+// (6) (bool)((*(dword *)(*(byte **)(record + 0x10) + 0x118) >> 20) & 1) (same idiom as 0x3c3c0; emits retail's shr 0x14/test dl,1; without it 345),
+// (7) inlined shader argument *(long *)(*(byte **)(record + 0x10) + 0x100) into function_1caa0 (without it 328).
+// What still differs: tag/g_4e3b44 still swap ebx/ecx and value takes [esp+0x58] instead of [esp+0x13], shifting part..compound down 4 bytes
+// and spilling bitmap to [esp+0x24] instead of keeping bitmap in ebx (rematerializing mov ebx, -1 after 0x4dc60); compound loop swaps ebx/edi.
+// Also tried on 291 base: size before buffer + arm2 texture before bitmap (291, aligned 122/masked 122, same score),
+// s_sort_record *record (291), ref ptr (291), texture decl before bitmap (291), tag store first (291),
+// stream/mask decl swap (290), bool 44940 arg (291), mode==3 cond reorder (295), byte compound (302),
+// hoisted data (389), compound moved after entry/guard (415/414), index/value/part decode order (417),
+// entry_index local (386, +0x47, duplicates g_4ba138[index] lookup; without visible_entry_geometry 398, masked 104),
+// entry_index + byte compound (390, +0x7d first 125 B exact; without visible_entry_geometry 392),
+// redundant bitmap = NONE after arm1 0x4dc60 (379, keeps bitmap in ebx + fixes compound loop ebx/edi, aligned 95, shifted by 1 insn at 0x15c90).
+// M3 lane 13 r164 (H2M_FAST; control 370): a long copy of the index (`long entry_index = index;`) for the entry lookup
+// and the three closing calls 444 (1390 B; the prologue registers turn retail's: mode EDI, index ESI, tag EDX, the
+// extended index stored at [esp+0x3c]), declared at the lookup 430; `byte compound` 393 (1420 B); the definition first +
+// short part_index + that long copy 413, with the existing visible_entry_geometry(index) 375 (1403 B, first difference
+// +0x47), with the early test read through the table and the caller's entry formed after the geometry 377 (the helper's
+// entry pointer is never merged with the caller's). Reading: retail keeps an unread byte (0 at the entry test, 1 after
+// 0x15c90) in packed's incoming slot, so value gets its own byte cell [esp+0x13]; without such a local, value takes
+// packed's home, the whole frame sits one cell lower and the compound walk's bitmap offset loses that home.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)
@@ -2125,8 +2218,8 @@ void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     {
         function_4d9c0(part, mode, value, index, tag, second, fourth, record[4]);
         function_4d640(index, mode, compound);
-        bool filtered = TEST_FIELD_BIT((entry->unknown00 >> 9) & 1) && !(part[2] & 8);
-        bool strip = (entry->unknown00 & 0x40) && *(long *)(entry->unknown10 + 4) && *(long *)(geometry + 8);
+        bool strip = TEST_FIELD_BIT((entry->unknown00 >> 9) & 1) && !(part[2] & 8);
+        bool filtered = (entry->unknown00 & 0x40) && *(long *)(entry->unknown10 + 4) && *(long *)(geometry + 8);
         function_4daa0(filtered, strip, (s_4daa0_geometry *)geometry,
             (s_4daa0_part *)part, *(dword **)(entry->unknown10 + 4));
         function_4d720(index, mode);

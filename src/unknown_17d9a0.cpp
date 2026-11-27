@@ -251,24 +251,14 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon);
 
-PRIVATE __forceinline void decal_project_17dd80(real const *point, short axis, bool side, point2f *out)
-{
-	short const *axes = g_440b94[axis * 2 + side];
-	out->x = point[axes[0]];
-	out->y = point[axes[1]];
-}
-
 PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *mesh, s_decal_mesh_edge const *edge,
-	bool reverse, s_decal_quad_17d9a0 const *quad, real radius, short mode, long *adjacent, short *count)
+	bool reverse, point3f const *start, s_decal_quad_17d9a0 const *quad, real radius, short mode, long *adjacent, short *count)
 {
 	if (*count < 1024)
 	{
-		point3f const *start = &mesh->vertices[edge->vertices[!reverse]].position;
 		point3f const *end = &mesh->vertices[edge->vertices[reverse]].position;
 		vector3f direction;
-		direction.i = end->x - start->x;
-		direction.j = end->y - start->y;
-		direction.k = end->z - start->z;
+		vector3d_from_points3d(start, end, &direction);
 		if (function_11e5e0(start, &direction, &quad->matrix.position, g_444a38[mode].radius_scale * radius))
 		{
 			long face = edge->faces[!reverse];
@@ -285,10 +275,38 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 	}
 }
 
-// score 423 (was 453) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
+// score 387 (was 400) in a full build with stand-in SDK headers: retail computes the projection table index (axis *
 // 2 + positive) at each projection, with the side as a by-value bool (0x143-0x161 for the first vertex, 0x180-0x199
 // for the current one); the projection is an inline helper called for both. Left: frame 0x58 against retail's 0x5c,
 // face_index in edi (retail esi), mesh in esi (retail ebx).
+// M3 lane 13 r163 (h2m fast with 0x17e670, 0x17fd20 and the callees; plain check 400): kept, 423 -> 400 and frame 0x5c as
+// retail's: the file's existing decal_project_point_17d9a0 at both projections in place of a second copy of it, the
+// first vertex passed without its one-use pointer, and 0x11cf50 given the face plane first (retail's call passes the
+// quad normal in EAX and the plane in ECX; 0x11cf50 is symmetric); the edge direction through the existing
+// vector3d_from_points3d (same code). Steps: the 0x11cf50 order alone 433 (1821 B), with the 0x17d900 call ahead of
+// `radius * 0.05f` 433; the helper alone 435 (1805 B), with both 449; the helper and no `first` pointer 408. On the kept
+// body: the call-first comparison 400 (same count; retail's order there); the vertex's one-use pointer dropped too 438
+// (frame back to 0x58); the normal offset through vector3f_add_scaled 400 (same code); `face_index == edge->faces[1]` 400
+// (same code). Left: the quad normal's address in EBX (retail EDI), face_index EDI and mesh ESI (retail ESI and EBX);
+// in the loop the vertex pointer ranks 254 and takes ECX ahead of the first projection's temporaries, so `reverse` gets
+// EBX where retail has vertex ESI, edge EDI, polygon_points EBX and `reverse` in DL with its home in the dead `mode`
+// slot; the output loop keeps the plane normal and the 1/256 constant in registers across 0x120790 where retail reloads
+// them after each call (a callee register-set question). A forced-ranking search found no single decision below 400
+// (the adjacent block's start pointer in ESI 428, the vertex in ESI 405).
+// M3 lane 7 r235 (plain checks; the reduced image builds this function at 403-409 and 1783 B, so it is not used):
+// kept, 400 -> 387 at retail's 1799 B: the adjacent-face helper takes the edge's start vertex from its caller (the
+// clipping loop passes its `vertex`, the gather loop the same element address): retail reads the start through the
+// clipping loop's vertex register after the clip call, with no new vertex-table load, and the gather loop forms it
+// ahead of the count test. That gives retail's homes (face_index ESI, mesh EBX, the quad normal's address EDI) and
+// frame. Lead (an evaluation-order swap, kept only with a match): the 0x17d900 call first in the comparison
+// (`function_17d900(...) < radius * 0.05f`, retail's order: the call, then the radius load) 381. Left: the loop's
+// iteration count stays in EDX from the latch into the loop top (retail re-reads it from its slot, and its slot sorts
+// third where ours sorts sixth), the head's edge/faces loads in another order, and the output loop keeping the plane
+// normal and 1/256 in XMM3-6 across 0x120790 (retail reloads them after each call). Tried on the 381 lead: the
+// increment last in the body 382; the previous-point copy ahead of the increment 381; the copy written per field 425
+// (1778 B); the gather loop's start named like the clipping loop's `vertex` 381 (same code). Also kept: the clip
+// edge's normalisation through the existing normalize2d_fast in place of its body written out (same code, 381 on the
+// lead).
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,
@@ -305,7 +323,7 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 	}
 	plane3f plane;
 	bsp3d_get_plane((s_bsp3d const *)mesh, face->plane_index, &plane);
-	real angle = function_11cf50(&quad->plane.n, &plane.n);
+	real angle = function_11cf50(&plane.n, &quad->plane.n);
 	if (g_444a38[mode].maximum_angle * 0.017453292f >= angle &&
 		radius * 0.05f > function_17d900(mesh, face_index, &quad->plane))
 	{
@@ -324,30 +342,22 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 			polygon_points = g_55ec10[iteration & 1];
 			if (iteration == 0)
 			{
-				point3f const *first = &mesh->vertices[edge->vertices[reverse]].position;
-				decal_project_17dd80((real const *)first, quad->axis, quad->positive, &previous);
+				decal_project_point_17d9a0((real const *)&mesh->vertices[edge->vertices[reverse]].position,
+					quad->axis, quad->positive, &previous);
 			}
 			point2f current;
-			decal_project_17dd80((real const *)vertex, quad->axis, quad->positive, &current);
+			decal_project_point_17d9a0((real const *)vertex, quad->axis, quad->positive, &current);
 			plane2f clip;
 			clip.n.i = previous.y - current.y;
 			clip.n.j = current.x - previous.x;
-			real length = (real)sqrt(clip.n.i * clip.n.i + clip.n.j * clip.n.j);
-			if (!(fabs(length) < 0.0001f))
-			{
-				real inverse = 1.0f / length;
-				clip.n.i *= inverse;
-				clip.n.j *= inverse;
-			}
-			else
-				length = 0.0f;
+			real length = normalize2d_fast(&clip.n);
 			if (length != 0.0f)
 			{
 				clip.d = clip.n.j * current.y + clip.n.i * current.x;
 				bool clipped;
 				point_count = function_23a6f0(polygon_points, point_count, points, &clip, 12, &point_mask, &clipped, 0.0f);
 				if (gather && clipped)
-					decal_add_adjacent_17dd80(mesh, edge, reverse, quad, radius, mode, adjacent, &count);
+					decal_add_adjacent_17dd80(mesh, edge, reverse, vertex, quad, radius, mode, adjacent, &count);
 			}
 			else
 			{
@@ -392,7 +402,8 @@ void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a
 		{
 			s_decal_mesh_edge const *edge = &mesh->edges[edge_index];
 			bool reverse = edge->faces[1] == face_index;
-			decal_add_adjacent_17dd80(mesh, edge, reverse, quad, radius, mode, adjacent, &count);
+			decal_add_adjacent_17dd80(mesh, edge, reverse, &mesh->vertices[edge->vertices[!reverse]].position, quad, radius,
+				mode, adjacent, &count);
 			edge_index = edge->next_edges[reverse];
 		} while (edge_index != face->first_edge);
 		if (g_444a38[mode].adjacent_angle * 0.017453292f >= angle && other_count < 1024)
@@ -826,24 +837,45 @@ PRIVATE __forceinline void decal_normalize_17ef10(vector3f *v)
 PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
     vector3f const *v, vector3f *out)
 {
-    real x = v->i, y = v->j, z = v->k;
+    vector3f scaled;
     if (m->scale != 1.0f)
-    {
-        x *= m->scale;
-        y *= m->scale;
-        z *= m->scale;
-    }
-    out->i = m->up.i * z + m->left.i * y + m->forward.i * x;
-    out->j = m->up.j * z + m->left.j * y + m->forward.j * x;
-    out->k = m->up.k * z + m->left.k * y + m->forward.k * x;
+        v = vector3f_scale(v, m->scale, &scaled);
+    decal_rotate_vector_17fd20(m, v, out);
 }
 
-// score 967 (was 988 at r914): retail keeps a bool result set true at entry in a dead argument home (0x17ef59) and returns it at the
-// success exit (0x17fcc6) while both failures return 0, so the texture failure clears `result` and the projection is built only
-// when it holds. Earlier: a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
-// Score 966 in a full build with stand-in SDK headers (was 987): the result is a bool set true at entry (retail stores
-// 1 into a dead argument home at 0x17ef59 and reads it back at the success exit), the texture failure clears it, and
-// the 0x17d9a0 call and the orientation stores run under if (result).
+// score 859 (was 966; earlier 967, 988 at r914, 987): retail keeps a bool result set true at entry in a dead argument home
+// (0x17ef59) and returns it at the success exit (0x17fcc6) while both failures return 0, so the texture failure clears
+// `result` and the projection is built only when it holds. Earlier: a mask test read as a field bit (TEST_FIELD_BIT) gives
+// retail's load-and-shift; the rest still differs. (966 was the full build with stand-in SDK headers, 967 the reduced
+// image: the result is a bool set true at entry, retail storing 1 into a dead argument home at 0x17ef59 and reading it
+// back at the success exit, the texture failure clears it, and the 0x17d9a0 call and the orientation stores run under
+// if (result).)
+// Round 160 (m3 lane 14, fast and plain): kept, the scale-and-rotate helper as the existing vector3f_scale (into a local
+// only when the scale is not 1) followed by the file's existing rotate helper (0x17fd20's, same row order): 966 -> 899
+// (3551 B; aligned with esp offsets masked 1075 -> 1058 unaligned, exact aligned 226 -> 248); then the recent-decal
+// array read from the decal globals at each use (no cached `recent` pointer; retail re-reads the global for the chosen
+// entry): 899 -> 888 (3562 B, masked unaligned 1013, exact aligned 268); then the direction's inverse scale in the
+// basis block through the existing vector3f_scale: 888 -> 859 (3578 B). On that block: the copy member by member with
+// `*=` 893, with `inverse *` 893, with vector3f_scale 893; the copy kept and `inverse *` 889; vector3f_scale of the
+// direction into the local or the plain copy in an else arm 858 (fast, -2 against the kept 860). decal_time_17ef10 as
+// if/return 889 (same code), with a result local 900. On 860 (fast): the tangent and perpendicular crosses through
+// cross3f in either arm or both 866 (same code each); the facing test through dot3f 897; the eight-direction loop's
+// normalization through normalize2d_fast (dot y-first or x-first) 869. Its transform block is not
+// retail's shape (retail keeps the scaled x, y, z in XMM0-2, scale in XMM3, each row then + the position): the copy goes
+// through memory here. Tried: the transform reading placement->position directly with the position added in place 963
+// (closest transform block: exact aligned 257); that with the output into a local first 972; the helper's rows as staged
+// sums 972 (with the direct read 969); a whole copy of the input scaled member by member then rotated 902 (with the
+// direct read 929), copied member by member with the direct read 1051 (frame 0x84), scaled through vector3f_scale 926. Left: frame 0x90
+// (retail 0x60: retail keeps `count` in unknown2's home and `result` in preparation's), the recent-decal loops (retail's
+// pointer walks the entry at +0x24 and keeps the loop index in EDI, the squared gaps sum x, z, y with the radius squared
+// last; the test written sum-first 899 before the global change, 889 fast after it), the oldest-slot loop (retail duplicates the entry fill
+// for the break path on the loop's own pointer) and every later block.
+// M3 lane 12 r195 (fast): retail inlines existing transform helpers here, which our link keeps as calls (their
+// file is /Ob1): the transform block through transform4x3f_apply_point 1163 (3288 B), the basis block's vector
+// transforms through 0x142640 1295, plus the direction through 0x1427f0 1433, the texture fetch through 0x12360 964.
+// The file's local vector-transform helper scaling x, y, z in registers (0x142640's shape) in place of the scaled
+// copy: 975 (3476 B) with the frame down from 0x90 to 0x68 (retail 0x60); with the position read from the placement
+// directly 965. Lead: that helper shape takes 0x28 off the frame.
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,
@@ -869,12 +901,10 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
         real now = decal_time_17ef10();
         if (scale == 0.0f)
             scale = 1.0f;
-        s_decal_recent_17ef10 *recent =
-            (s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c);
         long count = 0;
         for (long i = 0; i < 24; ++i)
         {
-            s_decal_recent_17ef10 const *entry = &recent[i];
+            s_decal_recent_17ef10 const *entry = &((s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c))[i];
             if (entry->tag_index && (entry->expires == 0.0f || entry->expires > now)
                 && entry->tag_index == tag_index && entry->radius > 0.0f)
             {
@@ -893,7 +923,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
         dword oldest = 0;
         for (long j = 0; j < 24; ++j)
         {
-            s_decal_recent_17ef10 const *entry = &recent[j];
+            s_decal_recent_17ef10 const *entry = &((s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c))[j];
             if (!entry->tag_index || (entry->expires > 0.0f && now > entry->expires))
             {
                 chosen = j;
@@ -907,7 +937,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
         }
         if (chosen != -1)
         {
-            s_decal_recent_17ef10 *entry = &recent[chosen];
+            s_decal_recent_17ef10 *entry = &((s_decal_recent_17ef10 *)((byte *)g_4ea94c + 0x380c))[chosen];
             entry->tag_index = tag_index;
             entry->position = position;
             entry->radius = definition->maximum_radius * scale;
@@ -934,12 +964,7 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
             function_142390(&placement->plane, &basis);
             vector3f local = *direction;
             if (basis.scale != 1.0f)
-            {
-                real inverse = 1.0f / basis.scale;
-                local.i *= inverse;
-                local.j *= inverse;
-                local.k *= inverse;
-            }
+                vector3f_scale(&local, 1.0f / basis.scale, &local);
             real x = basis.forward.k * local.k + basis.forward.j * local.j + basis.forward.i * local.i;
             real y = basis.left.k * local.k + basis.left.j * local.j + basis.left.i * local.i;
             long selected = 4;
@@ -1120,6 +1145,29 @@ plane3f *function_1428b0(transform4x3f const *matrix, plane3f const *plane, plan
 int __stdcall function_1429d0(transform4x3f const *matrix, long count,
     point3f const *source, point3f *destination);
 
+// score 363 (was 430): kept in M3 lane 13 r163 (h2m fast with both matched callers 0x17a8a0 and 0x23aad0, plain check
+// 363, callers MATCH): the deterministic restore and the neighbour search as one exit (search under `!deterministic &&
+// radius test && (world hit || excluded bound)`, then `if (deterministic)` restore), 430 -> 368 at retail's 1787 B;
+// `cluster` as a `long` (retail stores it as a sign-extended dword) 363 (428 on the old body). Left: frame 0x1178
+// against 0x1170; retail keeps the vector in EBP, the source in ESI, the point in EDI and the sixth argument in BL with
+// `excluded` in memory, where this build keeps `excluded` in EDI, the point in ESI and the source in EBX; the search
+// radius is x87 with a float 0.25 in retail (a double constant here; `0.25f` in the double expression folds to the same
+// double constant, 363). Leads, not kept: the sixth parameter as a `bool` (retail tests it as BL, pushes the register
+// whole to 0x17ee20's bool argument and re-reads the argument byte at the end; the callers' declarations follow, both
+// callers still match) 429 on the old body, 421 with the long cluster, 385 on the kept body; the restore test after the
+// radius test (retail's test order) 390; the collision query only for a missing or type-4 source and that test repeated
+// to pick the collision record, as retail does with no found flag, 414; the old body's returns with the three
+// constant-initialised locals declared above the seed block 443; `deterministic` declared first 417; the placement
+// pointer declared first 387.
+// M3 lane 7 r235 (plain checks: the reduced image builds this function at 415 even with the whole file listed or the
+// full ballast link): kept, the search radius as plain float math (`radius * definition->maximum_radius * 0.25f`,
+// retail's x87 sequence and float constant, the double casts gone) 363. A frame trace explains the 8 extra bytes: the
+// `deterministic` local takes a 4-byte slot and the case-3 mesh pointer is spilled, where retail keeps the sixth
+// argument (a bool) in EBX and later the mesh there. Tried: the axes loop bounded by NUMBEROF(axes) 363 (retail's
+// unsigned `jb`); the neighbour placement renamed to sort after the collision record 363 (its slot does not move);
+// the sixth parameter as bool on this body 385 (frame 0x1174; the argument is read from memory and `excluded` keeps
+// EDI), with the constant-initialised locals above the seed block 412, with the float radius 385; the radius with a
+// double `0.25` and no casts 398 (1773 B).
 // @retail 0x17e670
 void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
@@ -1136,7 +1184,7 @@ void function_17e670(point3f const *point, s_effect_source *source, long tag_ind
         g_4e7408->seed = bits[0] ^ bits[1] ^ bits[2] ^ 0xdeadc0de;
     }
     long excluded = -1;
-    short cluster = -1;
+    long cluster = -1;
     bool world_hit = false;
     point3f center;
     vector3f direction = *vector;
@@ -1189,75 +1237,73 @@ void function_17e670(point3f const *point, s_effect_source *source, long tag_ind
                 function_1429d0(matrix, 4, (point3f const *)unknown2, (point3f *)unknown2);
         }
     }
-    if (deterministic)
+    if (!deterministic && definition->maximum_radius * 2.0f > 0.2f && (world_hit || excluded != -1))
     {
-        g_4e7408->seed = saved_seed;
-        return;
-    }
-    if (!(definition->maximum_radius * 2.0f > 0.2f) || (!world_hit && excluded == -1))
-        return;
-    real search_radius = (real)((double)radius * (double)definition->maximum_radius * 0.25);
-    s_decal_bound_17e490 *nearby[1024];
-    long count = function_17e490(excluded, cluster, &center, search_radius, 1024, nearby);
-    for (long i = 0; i < count; ++i)
-    {
-        s_decal_bound_17e490 *bound = nearby[i];
-        short mesh_index = *(short *)((byte *)bound + 0x34);
-        byte *meshes = *(byte **)((byte *)g_4e0348 + 0x13c);
-        s_decal_mesh_view const *mesh = (s_decal_mesh_view const *)(meshes + mesh_index * 0xc8 + 0x70);
-        s_decal_placement adjacent;
-        adjacent.unknown24 = -1;
-        direction.i = bound->center.x - center.x;
-        direction.j = bound->center.y - center.y;
-        direction.k = bound->center.z - center.z;
-        if (function_30bf0(&direction) >= 0.0001f)
+        real search_radius = radius * definition->maximum_radius * 0.25f;
+        s_decal_bound_17e490 *nearby[1024];
+        long count = function_17e490(excluded, cluster, &center, search_radius, 1024, nearby);
+        for (long i = 0; i < count; ++i)
         {
-            point3f origin;
-            origin.x = direction.i * 0.01f + center.x;
-            origin.y = direction.j * 0.01f + center.y;
-            origin.z = direction.k * 0.01f + center.z;
+            s_decal_bound_17e490 *bound = nearby[i];
+            short mesh_index = *(short *)((byte *)bound + 0x34);
+            byte *meshes = *(byte **)((byte *)g_4e0348 + 0x13c);
+            s_decal_mesh_view const *mesh = (s_decal_mesh_view const *)(meshes + mesh_index * 0xc8 + 0x70);
+            s_decal_placement adjacent;
+            adjacent.unknown24 = -1;
+            direction.i = bound->center.x - center.x;
+            direction.j = bound->center.y - center.y;
+            direction.k = bound->center.z - center.z;
+            if (function_30bf0(&direction) >= 0.0001f)
+            {
+                point3f origin;
+                origin.x = direction.i * 0.01f + center.x;
+                origin.y = direction.j * 0.01f + center.y;
+                origin.z = direction.k * 0.01f + center.z;
+                real length = search_radius * 2.0f;
+                direction.i *= length;
+                direction.j *= length;
+                direction.k *= length;
+                if (function_1697c0(0x800005, &origin, &direction, -1, -1,
+                    (s_collision_result_1697c0 *)&adjacent) && adjacent.unknown00 == 3
+                    && &((s_decal_bsp_17e490 *)g_4e0348)->bounds[adjacent.unknown3c] == bound)
+                {
+                    transform4x3f const *matrix = (transform4x3f const *)bound;
+                    function_142700(matrix, &adjacent.position, &adjacent.position);
+                    function_1428b0(matrix, &adjacent.plane, &adjacent.plane);
+                    function_1427f0(matrix, &direction, &direction);
+                    g_46dd4c = 2;
+                    function_17ee20(mesh, matrix, tag_index, &adjacent, &direction,
+                        radius, false, unknown1, 0);
+                }
+            }
+        }
+        if (!world_hit)
+        {
+            vector3f axes[6] = {{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1}};
             real length = search_radius * 2.0f;
-            direction.i *= length;
-            direction.j *= length;
-            direction.k *= length;
-            if (function_1697c0(0x800005, &origin, &direction, -1, -1,
-                (s_collision_result_1697c0 *)&adjacent) && adjacent.unknown00 == 3
-                && &((s_decal_bsp_17e490 *)g_4e0348)->bounds[adjacent.unknown3c] == bound)
+            for (long j = 0; j < 6; ++j)
             {
-                transform4x3f const *matrix = (transform4x3f const *)bound;
-                function_142700(matrix, &adjacent.position, &adjacent.position);
-                function_1428b0(matrix, &adjacent.plane, &adjacent.plane);
-                function_1427f0(matrix, &direction, &direction);
-                g_46dd4c = 2;
-                function_17ee20(mesh, matrix, tag_index, &adjacent, &direction,
-                    radius, false, unknown1, 0);
+                point3f origin;
+                origin.x = axes[j].i * 0.01f + center.x;
+                origin.y = axes[j].j * 0.01f + center.y;
+                origin.z = axes[j].k * 0.01f + center.z;
+                vector3f ray;
+                ray.i = axes[j].i * length;
+                ray.j = axes[j].j * length;
+                ray.k = axes[j].k * length;
+                s_decal_placement world;
+                world.unknown24 = -1;
+                if (function_1697c0(0x20800007, &origin, &ray, -1, -1,
+                    (s_collision_result_1697c0 *)&world) && world.unknown00 == 1)
+                {
+                    g_46dd4c = 3;
+                    if (function_17ee20((s_decal_mesh_view const *)g_4e0340, 0, tag_index,
+                        &world, &ray, radius, false, unknown1, 0))
+                        break;
+                }
             }
         }
     }
-    if (!world_hit)
-    {
-        vector3f axes[6] = {{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1}};
-        real length = search_radius * 2.0f;
-        for (long j = 0; j < 6; ++j)
-        {
-            point3f origin;
-            origin.x = axes[j].i * 0.01f + center.x;
-            origin.y = axes[j].j * 0.01f + center.y;
-            origin.z = axes[j].k * 0.01f + center.z;
-            vector3f ray;
-            ray.i = axes[j].i * length;
-            ray.j = axes[j].j * length;
-            ray.k = axes[j].k * length;
-            s_decal_placement world;
-            world.unknown24 = -1;
-            if (function_1697c0(0x20800007, &origin, &ray, -1, -1,
-                (s_collision_result_1697c0 *)&world) && world.unknown00 == 1)
-            {
-                g_46dd4c = 3;
-                if (function_17ee20((s_decal_mesh_view const *)g_4e0340, 0, tag_index,
-                    &world, &ray, radius, false, unknown1, 0))
-                    break;
-            }
-        }
-    }
+    if (deterministic)
+        g_4e7408->seed = saved_seed;
 }
