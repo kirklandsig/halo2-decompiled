@@ -5493,6 +5493,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 	return moved;
 }
 
+static void unit_direction_from_angles(vector3f *direction, real yaw, real pitch);
+static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, vector3f const *v);
+
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
@@ -5759,6 +5762,13 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // vector3f* return, swapped params, HEAD/angles, kij/cb_kji/cb_kij) 156 at 768/767 B (delays up.i to retail's line after
 // left.i, matching lines 37-56 and the second cross, still 1 extra movaps for up.j*fwd.i; NOT kept: new one-caller helper);
 // helper with cross3f first or ijk/ikj staged 169, jki/jik 184 (774 B), reversed stores 181, by-value cross 358. Body unchanged.
+// M3 lane 11 r177 (H2M_FAST with 0xc8290, 0xde190, 0x1fe120, 0xc60c0 and 0xc7840; control 169): the clamped direction
+// rebuilt through this file's unit_direction_from_angles and unit_vector_from_frame (the helpers 0xc7840 uses; their
+// bodies were written out here) 169, the same code, kept; on it cross3f_staged first, second or both 169 each. The first
+// cross in 0x1420f0's two-step spelling (`left.k = f.j * u.i; left.k -= f.i * u.j;` ... k, j, i) 185 (776 B). Reading:
+// matched 0xc60c0's look-limit branch (cross3f_staged for both, through a frame aggregate) compiles in retail to this
+// build's schedule here (all three up components loaded first, the k row through a copy of forward.j), so retail's
+// later up.i load is particular to this function.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -5831,14 +5841,10 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
 		}
 		if (clamped)
 		{
-			real cosine = (real)cos(pitch);
-			real forward_scale = (real)cos(yaw) * cosine;
-			real left_scale = (real)sin(yaw) * cosine;
-			real up_scale = (real)sin(pitch);
+			vector3f clamped_direction;
 
-			direction->i = matrix.up.i * up_scale + left_scale * matrix.left.i + matrix.forward.i * forward_scale;
-			direction->j = matrix.up.j * up_scale + left_scale * matrix.left.j + matrix.forward.j * forward_scale;
-			direction->k = matrix.up.k * up_scale + left_scale * matrix.left.k + matrix.forward.k * forward_scale;
+			unit_direction_from_angles(&clamped_direction, yaw, pitch);
+			unit_vector_from_frame(direction, &matrix, &clamped_direction);
 		}
 	}
 	return clamped;
