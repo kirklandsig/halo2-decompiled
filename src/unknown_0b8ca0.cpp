@@ -787,6 +787,14 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // call, the transform and the secondary block 202 (709 B: EDI formed once, retail forms it on each path); the centres
 // addressed from the object at each use 17 (the copy's load order becomes retail's, the adds unchanged; casts, under the
 // bar); the secondary adds spelled offset first 19 (same code); the radius at both uses with a const primary pointer 30.
+// GB27 (48 fast trials across 4 batches with 5 peers MATCH; control 17 at 736/736 B, body unchanged): calling out-of-line
+// `function_b8bd0` 167, `transform4x3f_apply_point` 358-400; inlining `transform4x3f_apply_point` + `point3f_add` + direct
+// `dynamic_light_sphere_radius` reproduces all 202 instructions at 736/736 B with only `EBX<->EBP` swapped (`28`, `mk=2`;
+// same `28` with the node matrix lookup written inline, `offset` first, `if/else`, `flag8` bitfield, nested physics, plain `inline`,
+// non-const `definition`, `OBJECT_GET` at type/def, `__forceinline` physics/moved helpers); `C01` (`output_center` after
+// scale) + `point3f_add` fixes `EBX/EBP` and line 109-110 (`29`, `737 B`, only `lea edi,[esi+0x30]` at line 84 vs 62;
+// with `real_point3d_set` `45` at `736 B`, `+0xb7`); `TAG_DATA` on secondary radius fixes `EBX/EBP` (`120`, `757 B`,
+// `+0x19f`); `output_center` before matrix / `definition_index` local / `node_obj` / `__forceinline` default helper 176.
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {
