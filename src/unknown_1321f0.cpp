@@ -1040,6 +1040,18 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // better than 20, and that only by moving the duplicate branch's list register. Diagnostic: dead initialised longs at
 // the function top on the late store, K = 0..11, give 70/69/109/109/111/110/109/109/70/70/110/110 (the tie does not
 // move with the symbol count). Body unchanged (11).
+// M3 lane 6 r254 (H2M_FAST with 0x163c80 and 0x163d20, MATCH throughout; control 11; the late store plus the named index
+// rebuilt 70). Allocator reading on that form: the zero-extended instance index 216 (loop head +128 at 8 candidates, call
+// block +56, duplicate search +96, minus 64) against the centre pointer 204 (call block +112 at 7, plane test +120 at 5,
+// minus 8 and 20 over the flag test and the plane-flag block, which holds the NONE store). Forced decisions: the centre
+// pointer anywhere from 217 to 260, or the index at 203 or 204 (the equal priority goes to the centre, the later one),
+// each give a byte match; the index at 190 or lower gives 64. So one more candidate in the plane test (+24), one fewer in the
+// loop head (-16 on the index) or one fewer in the duplicate search (-16) would do. Forms on the late store: a
+// `short section = (short)i;` named ahead of the instance loop for its three uses 109; the bsp global read at both
+// uses (no local) 70 (same code); the visible test in a named bool with the flags through 0x132b10 and the NONE
+// declared just ahead of its conditional assignment (0x133050's shape) 255 (1341 B), the same with the NONE at the
+// top of the visible block 111; the duplicate search assigning `index` first and comparing through it 129 (1361 B),
+// on this body 81 (1361 B).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
