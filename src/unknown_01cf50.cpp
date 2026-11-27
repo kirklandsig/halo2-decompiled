@@ -5869,16 +5869,11 @@ void function_18a90(byte *state, word const *descriptor)
     }
 }
 
-extern long g_485a64, g_485a68;
-extern real g_485a6c, g_485a70;
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale);
 
-// score 5 (was 6): the 0x48 float store is written before the 0x44 one, which
-// moves the 0x48 load into retail's order. The last difference is retail's
-// early g_485a64 store. A form at 4 needed
-// `*(volatile long *)&g_485a64 = 0`, a volatile store to a global, so it was
-// not kept.
+// The four values at 0x485a64..0x485a70 are members of the reset storage aggregate (include/reset_storage.h), whose
+// address goes to 0x16b90 below, so they are stored in source order.
 // @retail 0x1bbf0
 void function_1bbf0(long tag, long first, long second, long third, long fourth, real scale)
 {
@@ -5910,8 +5905,8 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
         byte *definition = g_4e3b44[tag & 0xffff].bytes;
         g_485a64 = *(word *)(definition + 0x3e);
         g_485a68 = *(word *)(definition + 0x40);
-        g_485a70 = *(real *)(definition + 0x48);
         g_485a6c = *(real *)(definition + 0x44);
+        g_485a70 = *(real *)(definition + 0x48);
     }
     else
     {

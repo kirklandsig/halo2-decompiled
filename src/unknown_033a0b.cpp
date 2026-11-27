@@ -9,6 +9,7 @@
 #include "unknown_033a0b.h"
 #include "globals.h"
 #include "normalize3d.h"
+#include "reset_storage.h"
 
 struct s_33a0b_default
 {
@@ -31,8 +32,6 @@ vector3f g_4859dc;
 vector3f g_4859ec;
 s_33a0b_view *g_485a58;
 s_33a0b_default *g_4686d4;
-real g_485a6c;
-real g_485a70;
 
 inline PRIVATE real pin_unit(real value)
 {
@@ -149,30 +148,30 @@ void function_33980(long selector, vector3f *out)
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector30;
 		*out = *vector;
-		/* retail re-reads the scale from memory after every store through out */
-		out->i = pin_unit(out->i * *(real const *)&g_485a6c);
-		out->j = pin_unit(out->j * *(real const *)&g_485a6c);
-		out->k = pin_unit(out->k * *(real const *)&g_485a6c);
+		/* the scale is a member of the reset storage aggregate: it is read again after every store through out */
+		out->i = pin_unit(out->i * g_485a6c);
+		out->j = pin_unit(out->j * g_485a6c);
+		out->k = pin_unit(out->k * g_485a6c);
 		break;
 	}
 	case 35:
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector30;
 		*out = *vector;
-		/* retail re-reads the scale from memory after every store through out */
-		out->i = pin_unit(out->i * *(real const *)&g_485a6c * 0.5f);
-		out->j = pin_unit(out->j * *(real const *)&g_485a6c * 0.5f);
-		out->k = pin_unit(out->k * *(real const *)&g_485a6c * 0.5f);
+		/* the scale is a member of the reset storage aggregate: it is read again after every store through out */
+		out->i = pin_unit(out->i * g_485a6c * 0.5f);
+		out->j = pin_unit(out->j * g_485a6c * 0.5f);
+		out->k = pin_unit(out->k * g_485a6c * 0.5f);
 		break;
 	}
 	case 24:
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector10;
 		*out = *vector;
-		/* retail re-reads the scale from memory after every store through out */
-		out->i = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->i);
-		out->j = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->j);
-		out->k = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->k);
+		/* the scale is a member of the reset storage aggregate: it is read again after every store through out */
+		out->i = pin_unit((g_485a70 + 1.0f) * out->i);
+		out->j = pin_unit((g_485a70 + 1.0f) * out->j);
+		out->k = pin_unit((g_485a70 + 1.0f) * out->k);
 		break;
 	}
 	case 25:

@@ -495,7 +495,7 @@ void __stdcall function_44040(long cell, short mask)
 }
 #pragma inline_depth()
 
-long g_485a2c, g_485a64, g_485a68;
+long g_485a2c;
 
 // @retail 0x34060
 long function_34060(long mode, dword flags)

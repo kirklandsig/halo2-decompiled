@@ -1634,7 +1634,6 @@ void function_4b3d0(s_vector_perturbation *state)
 	state->step = state->step_scale * g_509418;
 }
 
-extern real g_485a6c;
 real g_485a30;
 real g_4e69c0[4];
 real g_4c19b0, g_4c19b4;
