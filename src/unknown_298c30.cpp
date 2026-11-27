@@ -892,6 +892,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // rows 305 and each quarter turn's cosine call bound to its own `real const &` 305 (both the same code: the references fold);
 // the staged y declared double 378 (1697 B); the angle store ahead of the cosine 305 (same code); each `y * cos` bound to a
 // `real const &` temporary, the y row then `x * sin + that`, 305 (only the staged product's home moves; it stays x87).
+// M3 lane 11 r176 (fast screen with 0x29a190 and 0x298c30, both MATCH; control 305): the facing y read into a local just
+// ahead of the first quarter turn's cosine and used for that entry's y product 349 (1741 B), but the entry then is
+// retail's (unity in XMM2, first difference +0x57 -> +0x147; lead only, a one-use local); the same copy after the
+// cosine 358 (1740 B); the facing y copy at every near-arm y read 392 (1756 B), with the candidate count as a short
+// 377 (1714 B, 0x29a190 still MATCH here), the facing x and y both copied 387; the candidate count as a long 376
+// (1698 B); the outer counter as a long 367; the negated radius written at each use 418 (1708 B). Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
