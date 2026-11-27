@@ -8,15 +8,24 @@
 #include "unknown_059ad0.h"
 #include "unknown_0820f0.h"
 
+/* the message handler (src/unknown_075800.cpp): only the member this file needs */
 struct s_network_session_list;
+class c_class_938e0
+{
+public:
+	void handle_session_disband(const s_session_id *message, const s_type_99af70 *address);
+
+	byte unknown00[0x14];
+	s_network_session_list *session_manager;
+};
+
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *session_id);
 bool network_session_handle_session_disband(c_class_58d20 *session, const s_type_99af70 *address);
 
 // @retail 0x94310
-void __stdcall function_094310(c_class_938e0 *handler, s_session_id const *message, s_type_99af70 const *address)
+void c_class_938e0::handle_session_disband(const s_session_id *message, const s_type_99af70 *address)
 {
-	s_network_session_list *manager = *(s_network_session_list *const *)((byte const *)handler + 0x14);
-	c_class_58d20 *session = network_session_manager_find_session(manager, message);
+	c_class_58d20 *session = network_session_manager_find_session(session_manager, message);
 	if (session)
 		network_session_handle_session_disband(session, address);
 }

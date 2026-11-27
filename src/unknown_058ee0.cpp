@@ -46,11 +46,9 @@ bool __stdcall function_594a0(long a, long b, long c)
 	return result;
 }
 
-/* the session being tracked for debugging: when it changes, the flags are set */
-long g_510518;
-bool g_51051c;
-bool g_51051d;
-s_session_id g_510528;
+/* the online round (0x510514..0x510547): the session being tracked is its session id; when that session changes,
+   the flags are set */
+#include "online_round_state.h"
 
 /* src/unknown_058cb0.cpp, src/unknown_059670.cpp, src/unknown_0592d0.cpp */
 /* the current and the other session, when they exist: retail inlines these
@@ -286,24 +284,11 @@ void function_6dec0(s_session_owner_view *owner);
 void function_737b0(c_helper_a *helper);
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, s_session_id const *id);
 
-// score 20 (was 20): after the call to 0x75800, retail rereads g_510518 and
-// stores an immediate 0 into g_51051d; ours drops the repeated check, since
-// the callee does not write g_510518 (a separate global here), and stores al,
-// the call's zero result. A _ReadWriteBarrier before the check brings the
-// reread back with other registers (23, also with nested ifs); an inner-block
-// barrier and a session local stay at 20. The 600 s permutation run found no
-// improvement.
-// b13N (11-17) walk against retail, fast build on r846: logic equals retail (flag test 0x59972, call 0x59988 with the
-// session list in ebx and &g_510528 pushed, result test 0x5998d, stores 0x5999b and 0x599a2). Only the reread at
-// 0x59992 differs (the 11 missing bytes: mov eax, test, je, plus an immediate 0 store instead of al). Retail reads
-// g_510518 a second time after the call. A volatile qualifier on the definition makes 0x59940 MATCH but turns matched
-// 0x598f0 into 18 (74 bytes vs 65), so retail reads it plainly there; reading only the second check through
-// `*(volatile long *)&g_510518` also MATCHES with the other 31 functions of this file unchanged, but is a volatile
-// cast on a global (not kept). No score change from: g_510518..g_510528 merged into one struct (20), its address
-// stored in another global (20), a session_tracking_changed(bool) helper for the inner block (20).
-// Roasted-Codes (#1527 comment, 2026-11-26; fast reduced-image scores): the four tracking globals defined in
-// src/unknown_072db0.cpp with externs here 20 (the reread stays folded); a `const bool &` on the first test 19 (106 B,
-// the state still cached in ESI).
+/* retail reads g_510518 again after the session lookup and before it sets the flags: the round state is one object
+   (online_round_state.h) whose session id member the lookup receives, and the lookup (0x75800) fills its copy of a
+   session's id through network_session_get_key's pointer, so the call may have changed the state. */
+// Roasted-Codes (#1527 comment, 2026-11-26; fast reduced-image scores): the tracking globals defined in
+// src/unknown_072db0.cpp with externs here 20 (the reread stays folded); a `const bool &` on the first test 19.
 // @retail 0x59940
 void function_59940(void)
 {
