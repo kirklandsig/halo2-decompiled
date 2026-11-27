@@ -134,7 +134,6 @@ s_depth_parameters_13450 g_depth_parameters_storage;
 real g_5234c8;
 dword g_4b81fc[0xa6];
 D3DPIXELSHADERDEF g_484f68;
-extern long g_485898;
 short g_467010 = NONE;
 
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
