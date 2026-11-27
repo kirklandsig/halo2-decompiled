@@ -2,6 +2,16 @@
 
 The newest entry comes first.
 
+## 2026-11-27: 10977 functions match
+
+```
+matched 10977 of 11326 game functions (2294621 of 2786206 bytes, 82.36%)
+matched 1434 of 1436 Havok functions (282112 of 290362 bytes, 97.16%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1582, #1580, #1581: `0x4b2d0` match.
+
 ## 2026-11-27: 10976 functions match
 
 ```
