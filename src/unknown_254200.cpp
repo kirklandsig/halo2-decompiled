@@ -966,6 +966,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // there 4 (its spill moves ahead of the compare, pair unchanged), both named there 305, both named ahead of the call
 // 346. Diagnostic: the first vertex's w as another constant 25 (the depth is then no value shared across the
 // reservations and the pair does not arise).
+// M3 lane 8 r247 (fast reduced-image screen with 0x254490 4 and 0x254200 MATCH; control 2; aimed at the two missing
+// float candidates): the first quad's half product named once (`real half_scale = arg_1 * 0.5f;`, used in all eight
+// coordinates) ahead of the color getter 412 (2268 B, first +0x83: it lives across the calls), the same with the alpha
+// named as a real before its conversion 412, declared just after the color call 386 (2272 B); the scale copied into a
+// `real const` at the top with the alpha named as a real 2 (same code); the half product from that copy 412, also with
+// the named alpha 412.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

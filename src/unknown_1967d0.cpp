@@ -529,6 +529,12 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // M3 lane 13 r165 (h2m fast with 0x198540 MATCH; control 3): the apply helper as a plain function 1062 (1148 B: it
 // stays out of line); as `inline`, `__forceinline` and `static __forceinline` 3
 // each (same code); the entries call's index as `j * 8 + 78` 3.
+// M3 lane 8 r247 (fast reduced-image screen with 0x198540 MATCH; control 3): the device, entry and address loops each
+// as one flat loop over 16 (`&update->devices[0][i]`, as 0x198540 walks its addresses) 3/3/3, device and entry both 3
+// (the same code each: the flat loop is unrolled by four like the nested one); every loop declaring its own `long`
+// index 4 (the second group loop's sum then flips to `[eax + edi]`, the first stays). Reading: one loop-scoped index
+// alone, in any of the twelve loops, gives 3; the first six loops scoped flip the second group loop and five do not, so
+// its two temporaries sit one used symbol either side of a wrap; the first group loop's pair needs a far larger shift.
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {
