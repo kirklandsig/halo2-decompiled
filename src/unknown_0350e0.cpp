@@ -598,6 +598,17 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // (1804 B); both matrices as one two-element array 348 (1792 B); the squares and sine products as brace-initialised
 // vector3f locals 341 (1779 B, the frame moves); the cross terms as one brace-initialised vector3f 351 (1763 B).
 // Body unchanged.
+// M3 lane 12 r199 (fast screen with 0x137ed0, MATCH throughout; control 334). Frame reading: retail's 0x90 holds two
+// transform4x3f locals (+0x28 and +0x5c) above ten scalar cells (four trig values, three sine products, three squares),
+// and its rotation pass is an in-place accumulating transform (x and y copied, z read per row, each partial sum stored),
+// the shape of 0x17fd20's existing forced-inline vector transform. Forms: both builders through 0x17fd20's existing
+// transform-rotation builder and the six rotations through its in-place vector transform 333 (1779 B: the rotation pass
+// takes retail's shape; frame 0x8c, the cosine computed first); that with each angle's sine and cosine named ahead of
+// its builder 332 (one-use names); with all four named ahead of both builders 333 (1786 B, frame 0x90 and retail's x87
+// trig order; the first builder loads the axis j, k, i against retail's i, j, k and spills the squares); the existing
+// builder with this file's returned-vector rotation 335; this file's builder on the transforms' rotation with the
+// existing in-place transform 379 (1821 B). A forced-ranking search on the four-name form: best 327, the first
+// difference in the scheduler's first region. Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5100,6 +5111,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // with a brace initialiser 486, `a` and `b` bound as const references to the returned values 486, `point2f a, b;`
 // declared at the top of the loop body 486, the projection helper taking the point by const reference 486, the moved
 // point as a brace-initialised point3f 486 (same code each). Body unchanged.
+// M3 lane 12 r199 (fast screen with 0x36b50; control 486). Reading: retail's two projections end in registers, and the
+// second scales a memory copy of the element position field by field in place. Forms: the element loop as
+// `for (long i = 0; i < 3; i++)` 485 (2035 B, retail's length; one point, not kept); on that, the moved point as a copy
+// of `old` with three `+=` 517 (2001 B), `old` read through the element's position pointer declared ahead of it 485
+// (same code), the size store as an if/else 504 (2018 B), the phase read once ahead of the cycle test 503 (2018 B).
+// Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6248,6 +6265,12 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // corner for the three vertices that use it 405 (1798 B); the offset brace-initialised 231; a const pointer to the
 // collision point passed to the four corners 231; the bias as `corner->z = corner->z + 0.001f` 231 (same code each but
 // the first). Body unchanged.
+// M3 lane 12 r199 (fast screen with 0x141710 and 0x1697c0, MATCH; control 231). Reading: retail's alpha at +0x78 sits
+// right above corner 3 as the first member of an alpha-first colour (+0x78..+0x87, below the collision result at
+// +0x88), which is the frame's extra 0x10. Forms: the colour copied from a file-scope const white color4f with the alpha
+// set after 446 (1884 B: the copy is not folded); the four corners as four named point3f locals 410 (1796 B); the corner
+// helper returning the corner by value 701 (2086 B); the radius computed after the matrix call 386 (1819 B); the opacity
+// and collision tests as two early returns 231 (same code). Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

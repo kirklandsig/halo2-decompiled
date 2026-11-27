@@ -996,6 +996,17 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // PIN_126660 + shared limit / yaw empty-then-arm / local_3 = *arg_2 before local_9 += / fallback-first if/else 130 each (same code);
 // local_3 = *arg_2 before pitch clamp 432 (fr=0x28, 0x29b990 DIFF); planar-first + local_1->tag_index + early copy 128 (+0x179);
 // direct pools + planar-first + early copy 129; pitch clamp before yaw 253 (1719 B); inline clamp_turn_rate_29b2e0 230 (1706 B).
+// M3 lane 12 r199 (fast screen with 0x29b990 and 0x170d70, both MATCH; control 130). Rank reading of the first rotation
+// on the planar-pair-first form (re-measured 128, +0x179): the dot sorts the k term (axis k level 4), the j term (axis j
+// level 2), then the i term (axis i level 0: the up-axis global is the first global the body names), giving (k + j) + i
+// against retail's (i + k) + j, so retail needs axis i at level 4 or more with axis k at 4 or 5 and axis j at 2 or less.
+// On that form: the up axis read into a pointer local right before the first rotation 126 (axis i rises to level 4 and
+// the dot becomes (i + j) + k, but axis k falls to level 2; a pointer that only renames a global, so match-only); the
+// same pointer ahead of the rotation input copy 149, ahead of the yaw subtract 190, ahead of the half-range 221, ahead
+// of the yaw ratio call, after the angle declarations, at the top or ahead of the definition lookup 442/442/438/442
+// (1726-1730 B). Diagnostic (reverted): 0-7 unused initialised locals at the top x 0-3 parenthesis pairs on the pitch
+// difference, with the pointer local: best 121 (5 locals, no pairs, 1710 B); 1-3 locals move the frame (211 to 334).
+// Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
