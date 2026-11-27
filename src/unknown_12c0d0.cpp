@@ -1282,6 +1282,12 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // 191; with one-use `fallback` 185 at 658 B but mk 57 vs 55, not kept; nested `g_4e6470` 217 `pri=ECX`). On GA25's 91
 // mixed-read lead: `block` ptr / `waited = false` / `do ... while (++i < 3)` tie 91, nested `g_4e6470` / uninit `priority`
 // 223, `for (p = ...)` 214, `for (i = 0; i < 3; i++)` 317 (unrolled). Body restored.
+// M3 lane 7 r238 (fast, with 0x12c960, 0x12ccf0 and 0x12c990 MATCH): the block's time store ahead of the entry lookup
+// 193 (643 B); with the getter setting its result ahead of the build call 194; that store order with the priority's
+// `if (restricted) priority = 2;` arm 197; with the fallback switch setting `failed` for the single exit 189 (661 B);
+// getter order + switch 214 (663 B); getter order + store order + switch 185 (655 B); all four 179 (655 B: the getter
+// block and the zero tests closer, the result still in EBP and the bitmap in ESI; a store reorder and a repeated
+// priority arm, held as a patch as a lead, not kept); getter order + priority arm + switch re-measured 220 (669 B).
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

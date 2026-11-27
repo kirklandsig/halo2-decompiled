@@ -15,7 +15,8 @@ struct s_reset_storage
        another member (0x3a550 after 0x1bd50, which writes input_masks) */
     byte *unknown_4858c4;
     short unknown_4858c8;
-    byte unknown_4858ca[0x485a64 - 0x4858ca];
+    byte unknown_4858ca[0x485a60 - 0x4858ca];
+    long unknown_485a60;
     long unknown_485a64;
     long unknown_485a68;
     real unknown_485a6c;
@@ -39,6 +40,7 @@ extern s_reset_storage g_reset_storage;
 #define g_485b48 (g_reset_storage.field_0.value)
 #define g_4858c4 (g_reset_storage.unknown_4858c4)
 #define g_4858c8 (g_reset_storage.unknown_4858c8)
+#define g_485a60 (g_reset_storage.unknown_485a60)
 #define g_485a64 (g_reset_storage.unknown_485a64)
 #define g_485a68 (g_reset_storage.unknown_485a68)
 #define g_485a6c (g_reset_storage.unknown_485a6c)

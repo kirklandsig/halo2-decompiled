@@ -848,6 +848,17 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // globals 564 (2701 B), with the span's else value on the globals too 545 (2717 B: the else value then shares the
 // step's subtraction, the test keeps its own, two where retail has three); the previous transform read through the
 // record at each use (no pointer local) 677.
+// M3 lane 4 r270 (fast with 0x25a10, 0x28580, 0x17d9a0 and 0x22bbca: without 0x17d9a0's file the pair setter stays
+// out of line and the fast count is 614 at 2782 B). Retail subtracts far - near three times (the quarter step, the
+// clamp's test and its else value, recomputed even though the test's difference is still in XMM0), so none of it is
+// shared; ours computes it once. Forms: the quarter step ahead of the range test 524, the step and the inverse span
+// both ahead of it 525 (statement order only, under 8: not kept); the step as `/ 4.0f` 529 (same code); the clamped
+// span named before the reciprocal 529; `0.25f * (far - near)` 529; the inverse span ahead of the step 530; a
+// float-consistency pragma as a diagnostic 782 (2898 B; still one subtraction). Re-measured on 529: the angle updated
+// in place, `*angle -= (real)-(atan2(...) * scale)` with cos and sin of `*angle`, 559, with the named delta kept 559.
+// Lead from the listing: retail's first crossing arm stores through `[ebp + index*8 + 0x48/0x4c]` with the wrapped index
+// in EAX (no pointer formed) while the second forms `lea eax, [ebp + ring*8 + 0x48]` after the draws, so the two arms
+// differ before any tail could merge. Body unchanged.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
