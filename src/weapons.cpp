@@ -3736,6 +3736,14 @@ struct s_ammo_conversion_entry
 // (-16) puts `source` first. Forms on the lead: `loaded` as a short 74; `unloaded` as a long 53; the 0xa88a0 count read
 // into a named local 51 (same code); the other weapon's type-2 test held in one bool for the sound and the tail 145;
 // the debit's destination store through `weapon->magazines[i]` 214 (737 B). Body unchanged.
+// M3 lane 7 r236 (H2M_FAST with 0xa88a0 and 0x1896c0; round 157's 51 lead rebuilt, 51). Per-block ledger on the lead:
+// the offset = loop head +128 (eight candidates: the counter chain, the offset, the definition, the magazine-definition
+// copy, the weapon, the magazine pointer, `available` and the zero of `available > 0`) + 48 in the same-definition arm
+// - 10 = 166; `source` = 252 referenced (144 in the debit block, six candidates) - 96 live across the conversion scan =
+// 156. Forms on the lead: no magazine-definition local (`definition->magazines[i]` at its three uses) 208 (713 B);
+// `source` uninitialised and set NULL at the start of the conversion arm 173 (732 B); in the debit, `remaining` as its
+// own local with `loaded` its clamp 162 (733 B), `short loaded` 74, `remaining` copied into `loaded` then clamped 51
+// (same code), the clamp as `loaded >= source->rounds_loaded` 53.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3843,14 +3851,7 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 
 #define WEAPON_WORD_AT_102FB0(base, offset) (*(word *)((byte *)(base) + (offset)))
 
-PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
-{
-    s_weapon_unit *unit = (s_weapon_unit *)function_badc0(unit_index, 3);
-    long result = NONE;
-    if (unit)
-        result = unit->player_index;
-    return result;
-}
+long unit_get_player_index(long unit_index);
 
 // GA r9 lead, held as a patch (not kept: the forms are kept only with a byte match): 2 against 593: Only two commuted SIB base/index encodings differ at +0x5cd (`[eax + edx + 8]` vs `[edx + eax + 8]`)
 // and +0x616 (`[edx + ecx + 0x1b8]` vs `[ecx + edx + 0x1b8]`) in the post-0x105fa0 recoil lookup; all 634 instructions,
@@ -4237,6 +4238,16 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // named as a local 2. So retail's body holds about 150 or more further distinct expressions ahead of the re-lookup that
 // fold away (inlined helpers whose code is removed are the likely source; 0x100130 above needs the same kind of
 // surplus). Body unchanged.
+// M3 lane 7 r236 (H2M_FAST with the same four callees, MATCH each time; control 593). The one-caller hand copy of the
+// player-index lookup replaced by the existing unit_get_player_index (0x14de90): 593, identical code (kept). Operand
+// ranks on GA round 9's 2 form: index temporary 0x1d840 against the pool data's 0x18008 (the data load only takes even
+// levels, at most 0x1c008), barrel temporary 0x1da80 against `updated` 0x10380, so both need the temporaries' numbers to
+// wrap past 0x400: 159 to 163 more distinct expressions ahead of the re-lookup with no new own locals (each own local
+// declared ahead of `updated` widens the top by half). Measured on the lead: the existing weapon_get_102e10 at the first
+// lookup +3 (and the data load drops to level 0), file and line arguments in the random draws +0, `updated` renamed
+// (three names) +0. On main's body: the unit-index volatile dropped 649 (2503 B); the +0x16c status bits as a word
+// bitfield 594; the owner's player through WEAPON_UNIT_GET 593; one `if (fired)` call after the magazine if/else 593;
+// the four allowed forms together 656 (2495 B).
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -4389,9 +4400,9 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
         if (definition->reload_style == 3 && barrel_index == 1) WEAPON_BYTE_AT(weapon, 0x16c) |= 8;
         if (unit_index != NONE)
         {
-            if (unit_player_index_102fb0(unit_index) != NONE)
+            if (unit_get_player_index(unit_index) != NONE)
             {
-                long player_slot = *(short *)(g_4e8c24->data + (unit_player_index_102fb0(unit_index) & 0xffff) * 0x21c + 0x28);
+                long player_slot = *(short *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c + 0x28);
                 if (player_slot != NONE)
                 {
                     real value = function_17ca10(WEAPON_REAL_AT(barrel, 0x20), WEAPON_SHORT_AT(barrel_definition, 0xc0));
@@ -4824,6 +4835,14 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // 1412 (same code), tested and copied at each use 1412; the magazine loop as `if (function_fdd50(weapon_index, i))
 // result = true;` 1407 (a branch where retail ORs the byte result in BL: `or bl, al`, home stored after the loop; under
 // the bar, not kept). Body unchanged.
+// M3 lane 7 r236 (H2M_FAST alone; control 1412): the existing weapon_get_102e10 for the first lookup, for `updated`,
+// for both, or for the animation-state test 1412 each (same code); `scale = (real)dual` for the flag-27 select 1442
+// (5668 B). Frame reading (stack packer): ours packs seven one-byte slots (down, up, blocked, target entry with
+// finished, press, hold, release with stopped and dual), the two input arrays at -0x2c/-0x28 (retail's offsets too)
+// and ten dword slots including `result` and `complement`; retail has nine one-byte slots ([esp+0x13] the bool result
+// homed from BL, [esp+0x14..0x16], [esp+0x17], press/hold/release at [esp+0x18..0x1a], the target entry at [esp+0x1b],
+// which also holds the behaviour-4 secondary-select bit), so the missing four bytes are the byte result plus one more
+// byte slot. A forced-ranking search over ten single decisions finds nothing below 1411.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

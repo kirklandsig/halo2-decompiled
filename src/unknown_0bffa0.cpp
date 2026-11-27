@@ -1395,6 +1395,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // sphere arm without its two false flag stores 670 (2766 B: retail stores them after the clear); the reference held as a
 // pointer to the chosen table vector 685 (2757 B); the copy through a conditional pointer 654 (2785 B). Re-measured
 // (listed): the tail flags in member order 290; the corner loop 528. Body unchanged.
+// M3 lane 13 r165 (h2m fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all MATCH; control 290, aligned 396
+// unpaired). Retail stores the cone plane's distance through the plane's own base (`[ecx + 0xc]` after the normal copy
+// through ECX), ours through the entry (`[esi + 0x80]`). Forms: a `plane3f *` to the entry's plane for the normal copy
+// and the distance 543 (2810 B, aligned 602 unpaired), with the dot's arguments normal-first 543; the plane built in a
+// local and assigned 594 (2826 B); the orthogonal test on `(short)shape->kind` 599 (2778 B); the count's conditional
+// written `!= 0 ? 1 : 6` 290 (same code). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
