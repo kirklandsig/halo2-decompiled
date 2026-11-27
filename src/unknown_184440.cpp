@@ -632,6 +632,15 @@ __forceinline bool function_184448(long arg_0)
 // existing vector3f_add_scaled 1009 (4553 B), with the distance helper as well 1009; the two sample offsets through it
 // 964 (4591 B; one lower at another length, not kept); the two force sums through it 986 (4563 B). Still BLOCKED-BY
 // 0x48e70 for the reloads after its calls.
+// M3 lane 8 r246 (fast screen with the callers 0x9cca0/0x184060/0x184250, all MATCH each run; control 965). Reading:
+// 0x48e70 is integer-only code (it reads its argument's bits from the stack and touches no XMM register), so retail's
+// XMM reloads after both calls can only come from callers that could not see its register use, which keeps the held
+// lead (an inline-declared definition kept out of line) as the one explanation. Forms: the material record's effect
+// index named once for its NONE test, the table index and the 0x173fd0 argument 981; the two force arms through one
+// file-local inline helper (distance, radius, exponent, scale) 1054 (4669 B); the spacing default as one conditional
+// expression 972; the worklist append as a store and a separate increment 965 (the same code); the start face's
+// plane offset written `d - (dot)` 959 (4592 B; six lower at another length, not kept). Body unchanged; still
+// BLOCKED-BY 0x48e70.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

@@ -279,6 +279,18 @@ static __inline point3f *point3f_scale(point3f const *p, real s, point3f *result
 // point3f_scale 4 (0x11dbb0 16; that helper moved above the rotate). Without moving w2: square and dot named 50,
 // square named 86 (433 B), point3f_scale in 0x11dbb0 alone 48 (0x11dbb0 63), dot named 39 (0x11dbb0 21; a one-use
 // name). The w2 move is a statement order change, kept only with a byte match; the tail's 4 are left.
+// M3 lane GA r29 (33 compiled fast trials + plain check; body unchanged): SOLVED TO EXACT BYTE MATCH (0, 429/429 B),
+// held as a patch because updating shared quaternion_rotate_point raises untouched non-queue sibling 0x11dbb0 35 -> 40
+// (positional shift at 452/452 B; pairing with existing point3f_scale in 0x11dbb0 gives plain-confirmed 0x11dd80 MATCH
+// and 0x11dbb0 35 -> 8 with all 15 matched peers/callers MATCH). The last 4 tail diffs are fixed by storing
+// `out->scale = inv;` before direct `out->position.{x,y,z} *= -1.f;` (direct *= -1.f or -1.f * after point3f_scale
+// alone gives 2 at +0x1a5, moving out->scale between gives 0 MATCH; direct unary - 34, both direct 49, loop 14,
+// loop helper 8, void/1-arg/2-arg negate helpers 4, dot3f 29/53, out->scale read-back 18, double scale 25). Also tried:
+// 141590 no-dot rotate + tail 15 (0x11dbb0 33, not kept: one-use square + statement order without match); main rotate
+// + tail 44; dot jik / 2.f lhs / row orders / cy-cx-cz / dot+dot / dot kji all 0 MATCH (0x11dbb0 40); inline rotation
+// inside 0x11dd80 without touching quaternion_rotate_point 75-81 (433-434 B).
+// Machine 3 review: the held match with the negation through point3f_scale (`out->scale = inv;` first) 9 (0x11dbb0 8),
+// so the match rests on that helper's body written out by hand; it stays held as a lead.
 // @retail 0x11dd80
 void function_11dd80(
 	real_quaternion_transform const *in,

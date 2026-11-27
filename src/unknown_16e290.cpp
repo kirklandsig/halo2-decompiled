@@ -1802,6 +1802,20 @@ struct s_camera_clip_reference_16ebf0
 // top of the function 49 (its rank does not move); `point.x *= amount;` then `point.x += original->x * remainder;` per
 // row 49; the original read through a `point3f const &` 49; every product spelled remainder-first and amount-first 49.
 // Body unchanged.
+// M3 lane 14 r164 (H2M_FAST with 0x11bed0, 0x142a60 and 0x171d00, all MATCH; control 49). Reassociation ranks read
+// from the back end's sort (pass 2): `amount` 0x1c00 and `remainder` 0x1c20 are numbered after every named symbol,
+// point.x/z/y weigh 0x320/0x360/0x3a0 (their plane-test reads), the offset-0 read through `original` 0xc008 and the
+// +4/+8 reads are address nodes that outrank every leaf. Retail's x row (remainder copied, point loaded, the remainder
+// product as the sum's destination) needs the amount below the point components while the remainder stays above the
+// offset-0 read and its product above the point product, which only an amount numbered before the plane test gives.
+// Forms: dead initialised longs right before the clip call (K 0..12), after `amount` (K 0..8) and after `remainder`
+// (K 1, 4, 7) 49 each; an inline blend taking the amount by value (the call passing `fraction * 0.9f`) 49 (the amount is
+// still a late temporary, 0x11c40); with two dead longs at the top the x row's remainder product sorts remainder-first
+// but its sum then puts the point product first (49, as lane 4 r265's scan); the point stored back through
+// `state + 0xb8` 49 (same code); forward and up read and stored through named slot pointers 203 (943 B); the forward
+// store ahead of the point store-back 49 (the stores then follow the new source order exactly, so ours keeps them in
+// source order where retail stores forward.x between point.y and point.z); the matrix's own position used throughout in
+// place of the `point` copy 270 (933 B). Body unchanged.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

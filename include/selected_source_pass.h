@@ -6,9 +6,10 @@
 
 #include "unknown_11c920.h"
 #include "render_source_storage.h"
+#include "timed_effect.h"
 
 extern byte g_485a75, g_485a76;
-extern long g_485898, g_467130, g_4858b4;
+extern long g_467130, g_4858b4;
 extern void *g_467134;
 extern s_record_sources *g_467138;
 extern bool g_4ba022, g_4ba023;

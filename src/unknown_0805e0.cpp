@@ -988,6 +988,12 @@ void function_1537f0(s_profile_record *record);
 // on E, the two counters as one chained zero 46, the heads stored in the aggregate's field order 46; the record's source
 // typed as the source view (no byte array) 27 on main (the view's 8-byte member pads the record by 4: every frame slot
 // moves) and 51 on E; the identity and the source as two separate locals 81 (236 B) on main and on E.
+// M3 lane 6 r252 (fast screen with 0x7f8b0 and 0x1537f0, MATCH each run; control 18; E re-measured 46). Ledger on E
+// re-read: the -1 is 102 (four head stores 12 in the entry block of three values, -6 through the preheader, four link
+// stores 96) and the record word 96 with the later tie, so a tie at 96 would already hand the record word EBP: the
+// head stores must count 6 or less. Forms: a `short` loop index 80 (275 B) on main, 83 (270 B) on E; on E the builder
+// given the element itself 46, the identity cleared through the record's own address 46; on main the links as two
+// chained pairs through the link pointer in retail's store order 18 (same code). All restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

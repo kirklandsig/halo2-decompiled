@@ -291,6 +291,14 @@ PRIVATE __forceinline byte *transition_statistics(s_mp_globals *globals)
 	return result;
 }
 
+// Roasted-Codes (draft #1579, released 2026-11-27; fast reduced-image checks unless stated, from the unchanged 53 at
+// 796 of 796 bytes): the first mode read into `bool flag = g_4e6948->flag1128` and passed as `flag != 0` 123 at 796 B
+// (the player path agrees through 0x15c83b apart from branch displacements, despite the worse score); on that base a
+// `char` team local for the NONE guard and shift 114 at 796 B (it recovers CL but emits `movsx ecx, cl` where retail
+// reloads `[ebp+0xc0]` after the globals lookup; scoped team-result locals, a direct statistics lookup and an
+// output-reference accessor leave that difference). The permuter's best over 589 tries from the stock body is 48, and
+// over 465 from the bool-local base 55 (reduced and full image); both rest on volatile accesses, and the second also
+// changes load widths and call arguments, so neither is kept.
 // @retail 0x15c6f0
 void function_15c6f0()
 {
