@@ -1776,7 +1776,6 @@ bool function_1caa0(long, byte const *, word const *, byte const *,
 void function_4d9c0(byte const *, long, byte, short, long, long, long, long);
 void __stdcall function_4d640(short, long, bool);
 void function_4d720(short, long);
-extern long g_485a60;
 
 // Retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
@@ -2054,7 +2053,6 @@ bool function_1caa0(long, byte const *, word const *, byte const *,
 void function_4d9c0(byte const *, long, byte, short, long, long, long, long);
 void __stdcall function_4d640(short, long, bool);
 void function_4d720(short, long);
-extern long g_485a60;
 
 
 // score 370 (was 380): the two flags passed to 0x4daa0 were swapped (behaviour fix from lane GB r23, checked against
