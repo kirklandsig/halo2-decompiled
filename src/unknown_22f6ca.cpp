@@ -398,6 +398,13 @@ void function_22fba9(c_class_1473c9 *screen)
 // local for all five starts 134 (410 B); `long i = 0;` above the pane lookup with pointer-plus-index definitions 25; the
 // block-18 element as `pane->blocks_18 + i` 23 (same code); every later loop's reset as `i = 0;` ahead of `for (;`,
 // all four together, 23 (same code).
+// M3 lane 15 r156 (h2m fast with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23). Allocator reading: the model
+// loop's screen pieces are never coloured, so the push base is a scratch copy of the call's ESI argument. Forms: `long i =
+// 0;` above the pane lookup with the model's value0a store ahead of its start 13 (414 B); the store ahead with the model
+// test written `pane->model_count > i` 13; the model loop on its own counter with the store ahead 11 (414 B: the store then
+// sits before the start where retail stores after the call, so this family cannot match); `bool animating;` declared
+// bare at function scope and assigned in the pane block 23 (same code); that with `long i = 0;` and the flag above the
+// pane lookup 25. Body unchanged.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

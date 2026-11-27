@@ -1085,6 +1085,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // there is retail's dword load of the word slot, but present takes EDI and is the OR's destination). Reading: retail's
 // present stays in memory, so its OR can only be the source and the saved mask's post-loop piece (reload, zero
 // extension, OR, store) is coloured ECX; the playing teams' EDX and the early engine-index load follow from that.
+// M3 lane 15 r156 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23). Allocator reading on main: after the loop the
+// old mask's pieces are never coloured (no gain), and the playing teams take EAX behind the old playing teams' EBX. Forms,
+// all on the in-place word OR (`old_team_mask |= present_teams; *team_mask = old_team_mask;`): with the second change
+// compare written `old_team_mask != present_teams` 77; stored through `globals->team_mask` with no field pointer 129
+// (375 B); the OR and its store ahead of the playing store 129 (375 B); the added teams computed after the stores 77; both
+// change compares written saved value first with the mask widened 78. Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {
