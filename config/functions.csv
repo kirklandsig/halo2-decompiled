@@ -3850,7 +3850,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0011d950,181,game,speed,a16 pad,,,0011d610,src/unknown_11cb00.cpp,matched
 0011da10,406,game,speed,a16 pad,,,00322bd8,src/unknown_11cb00.cpp,matched
 0011dbb0,452,game,speed,a16 pad,,,0011d820,src/unknown_11cb00.cpp,todo
-0011dd80,429,game,speed,a16 pad,,,,src/unknown_11cb00.cpp,todo
+0011dd80,429,game,speed,a16 pad,,,,src/unknown_11cb00.cpp,matched
 0011df30,45,game,speed,a16 pad,,,,src/unknown_11cb00.cpp,matched
 0011df60,69,game,speed,a16 pad,,,00141ce0,src/euler_vector_conversion.cpp,matched
 0011dfb0,67,game,speed,a16 pad,,,00141ce0,src/euler_vector_conversion.cpp,matched
