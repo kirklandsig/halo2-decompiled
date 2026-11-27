@@ -1129,6 +1129,22 @@ void __stdcall function_25eea0(
 // one conditional expression 266. Readings: the cover loop's EBX goes to the moving counter (-38) over the line index
 // (-44); a forced-ranking search lowering the counter gives only 252, so that contest is not the main cause; retail
 // keeps the unrounded root on the x87 stack for the inner compare (`fstp st(3)` ... `fst`), ours stores and reloads.
+// GA r26 (45 valid fast trials, 6 callees MATCH): two-use `real pos_dist = position->unknown18;` in loop 1 snaps
+// weight to XMM2 and matches all 47 instructions of the weight block verbatim (`250`, al 72 vs 94, but anchors loop 1
+// at +0x54 and hoists the load before `comiss`); `zone` ternary fixes zone-table base to ESI (`251`); nesting the
+// leader guard with a one-use `leader_unit` local matches `0x1df560` arg load order SI-before-CX (`247`, with zone
+// ternary `245`, without the local `253`/`251`); exact `0x1e4a50` post-loop `if (cover && ...)` shape ties `253`
+// alone (al 91, mk 39); Loop 3 direct `positions[i]` without `position` (keeping `point` in place) `251` (`1320 B`,
+// `add ecx, 0x54`, 2-insn `addss`; all 3 loops direct `252`), combined with zone ternary + `0x1e4a50` post-if `235`
+// (`1306 B`, +`pos_dist` `232`, al 58; NOT kept because `0x1e4a50` ties alone at `253` and the 14 B drop is loop-pad
+// alignment). Also tried: weight clamp inside `else if` 350, `* 12.f` 253, scaled temp 276, `weight <= 4.f` 267,
+// `max_dist` local 255, loop-1 nested `if` / direct / ternary / `ratio` all 253, scalar dx/dy/dz 253, cover `if`
+// instead of `continue` 253, separate `move_result` 253, `if/else` bonuses 253, own loop counter `k` 253, counters
+// after guard 371, no `position`/`point` + post-if 339. Diagnostics: `#pragma inline_depth(0)` also suppresses
+// `__forceinline` (`calls=7`, 268-295); removing it or `#pragma auto_inline(off)`/`inline_depth(1)` inlines `0x1e5240`
+// even when all other helpers are called (`366`), while `distance3d` confirms retail's `add eax, 0x14` + `fst` (though
+// retail sums i/j/k rather than k/j/i); match-only probe (`pos_dist` + zone ternary + `leader_unit` + `double d` +
+// post-if + GB25 cover layout) reaches `186` (`1308/1306 B`, al 42, mk 28). Body unchanged.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,
