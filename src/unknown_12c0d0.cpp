@@ -1288,6 +1288,12 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // getter order + switch 214 (663 B); getter order + store order + switch 185 (655 B); all four 179 (655 B: the getter
 // block and the zero tests closer, the result still in EBP and the bitmap in ESI; a store reorder and a repeated
 // priority arm, held as a patch as a lead, not kept); getter order + priority arm + switch re-measured 220 (669 B).
+// M3 lane 14 r166 (h2m fast with 0x12c960, 0x12ccf0, 0x12c990, 0x12c450, 0x12c820, 0x12cb10 and 0x12ccb0, all MATCH;
+// control 193). Reading: the bitmap is coloured last, after a cost recount, with only ESI free; retail clears EBX after
+// the build call and tests every byte flag, the loaded and candidate pointers and the switch against it. Forms: the block
+// loop counting an index up (`view->block_indices[index]`, `while (++index < 3)`) 193; `loaded != NULL` 193;
+// `result == NULL` in the fallback test 193; the resident test and the candidate in one condition 193; braces on the
+// failed tail 193 (all the same code). Restored.
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

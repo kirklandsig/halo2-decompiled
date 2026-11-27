@@ -1721,6 +1721,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `planar_scale` into `desired` 567 (`3047 B`, al=109, mk=53, matching 167 consecutive high/low-normal lines), backup
 // `delta = limited` in Arm 2/3/both 247/508/453 (base both 579), `magnitude3d` input/both on `t09` 571/358, Arm 2
 // 2-use `rate` local 566-576, `vector2f_normalize.h` on `198` `vector3f_assign` base 554/462, typed speed-bands 465.
+// M3 lane 14 r166 (h2m fast with 0x1f0450, 0x24590, 0x1f03e0, 0x30bf0 and 0xa75d0, all MATCH; control 198). Reading: retail's
+// first arm ends `mov byte [esp+0xa], 0; jmp` into the general arm's last store `movss [edi+0x14], xmm0`; ours keeps
+// that store in the first arm because the general arm computes its output k, j, i and stores i, j, k from XMM1-XMM3
+// (retail computes and stores each row in turn, the last through XMM0). Forms: the direct arm's speed read at each use
+// 393; gravity declared first of the four flags 210 (first +0x5); the first arm's output through a `vector3f *` local
+// 588 (3027 B); the direct arm's k as `current->k + (0.0f - gravity * rate)` 569 (3027 B); the damping flag as a bool
+// cast 592 (3025 B). Restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
