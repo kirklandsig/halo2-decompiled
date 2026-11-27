@@ -820,6 +820,14 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // vector4f_set used only by this function (a new one-caller helper, chosen for its argument evaluation order) and on
 // filter_random_pair taking (state, index) in place of the point (a helper parameter shape picked by score); both are
 // kept only with a byte match. main's form (530) stays.
+// M3 lane 11 r175 (h2m fast with 0x25a10, 0x22bbca, 0x17d9a0, 0x28580). Lead, not kept: filter_random_pair drawing its
+// two values through the header's existing random real (x82e52f) in place of the written-out seed step with its
+// volatile store: 530 at 2702 B, the opening block's four pairs still exact (the y value still comes from the stored
+// seed's high word), only the crossing arms' registers move; but the whole-image link then loses matched 0x1c4590
+// and 0x24cf66 (both match again with the old body). Tried: the span's else value re-reading the two globals (as
+// matched 0x27520 does) 527 (2717 B), with the x82e52f pair 526 (2718 B; a local/global mix, kept only with a match);
+// the pairs as direct point2f_set calls with the pointer evaluated after the draws, at all six sites 546 (2686 B), at
+// the two crossing arms only 546.
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -1033,6 +1041,13 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // plus-or-minus-one draws (3503 B, masked 431); the jitter field read into `varied` before the draw is added (retail
 // loads it ahead of the seed step) with the helper 869 (block exact, 3507 B); those with the per-arm vertex 908 (3532 B,
 // masked 381). The maximum speed read from the state at both uses 832 (same code). Body unchanged.
+// M3 lane 11 r175 (h2m fast with 0x36b50, 0x38390, 0x27aa0, 0x22bbca): retail's draws are x87 float with the random value
+// complete first (scale by 1/65535, then `fadd st0, st0` or `fld high; fsub low; fmulp; fadd low` on float memory
+// operands, low read twice); ours folds the scale into the following product. The draws in float (the fraction helper
+// returning real, 2.0f, no double casts) 854 (3506 B; the doubling still folds), the helper returning the header's
+// random real 854 (same code); the double helper returning the header's random real 852 (3504 B); the float draws with
+// the vertex pointer declared in each arm 849 (3498 B, 0x36b50 258 -> 286), plus the clamp into a long divisor 832
+// (3514 B, 0x36b50 286). Re-measured: the long divisor alone 857. Body unchanged.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
@@ -1372,6 +1387,23 @@ bool function_143c0(long, short, short, real);
 // the same code); the geometry test as an early `return true` with `result` declared at the 0x39780 call 352 (1406 B).
 // On the 175 form: the player count as a short 190; the point arm first on `!lines` 195; the loop bound named
 // `last` 175, a const records pointer 175, the clamp's inner ternary parenthesised 175 (all three the same code).
+// M3 lane 11 r175 (h2m fast with 0x36b50 and 0x1cbe0). Lead (held as a patch; each piece is kept only with a match):
+// `result` declared ahead of `lines`, the shader slot through the existing 0x1cbe0(0, 0, 22) (as matched callers in
+// two other files do), point-scale A and B from a by-value float-bits helper (retail stores XMM0 straight to both), the
+// begin arms on a fresh `!= 2` compare with the point arm first, and the player count a short: 348, where only the
+// constant 2 misses EDI; with the point-scale call test on a fresh compare as well 72, every other row byte-exact (that
+// test is retail's bool). Allocator reading on the 348 form: the constant 2 ranks -7 against the second alpha's -6 (it
+// pays 9 for the 9-candidate block after the geometry test and 5 for the point arm's two blocks); a forced-ranking
+// search gives a byte match with the constant raised by 2 (to -5 or 1) or the second alpha lowered by 2 (to -8; -14
+// misses). The point-scale test sits in the alphas' block: there the bool makes 13 candidates (the second alpha +78)
+// where the fresh compare makes 12 (+72, and +12 for the constant). Tried without moving it: the line arm reading the
+// global at each use 348, the state factor named once 286, the rgb named once 345 (frame 0x44), a named loop end 348,
+// a named geometry pointer 348, the line width and point-scale C through the float-bits helper 348 each, the
+// parameter typed `byte *` 348; a redundant `if (count > 0)` around the loop
+// puts 2 in EDI but emits its test (198, 1432 B), the loop's own `first < first + count` folds (348). Earlier steps: a
+// short mode local compared at each use 335 (the word takes EDI); the begin-only fresh compare 173, with the short count
+// 285, with the point arm first too 265; the mode word named for the entry bool and the begin compare 167, with the point
+// arm first 142, plus 0x1cbe0 145, plus the float-bits A and B 244, plus the short count 223 (aligned to the loop pad).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
