@@ -550,6 +550,11 @@ extern real g_4c9798[36];
 // twice, no address taken) and reloads the size and the aspect after each call, while this build keeps both in XMM
 // registers across the calls because the link sees 0x48e70's integer-only body; retail's link did not, as if 0x48e70
 // were built outside the link-time code generation (a lead for 0x48e70's own file). Body unchanged.
+// M3 lane 14 r163 (H2M_FAST with 0x48e70, 0x1cf50 and 0x1ddd0, all MATCH; control 174): 0x48e70's marker given the
+// standard word (it matches either way) 174, 0x184440 965 (same code: an escaped address leaves the callers' register
+// assumption as it was); 0x48e70's file without /arch:SSE (diagnostic) 174; the rounded width and height aligned in a
+// second statement each 174; the size clamp as one conditional expression 174; the inverse as an if/else 174 (all the
+// same code); the small-target test named once for its three sites 333 (1489 B). Still BLOCKED-BY 0x48e70.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

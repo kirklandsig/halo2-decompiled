@@ -713,6 +713,10 @@ struct s_visibility_bound_record
 // the source into the copy, with a plain copy in the else arm, 440 (1760 B); the plane stored as an aggregate assignment
 // and its distance negated after 431 (1767 B); the four counts cleared by four statements 430 (same code); the
 // containment flag declared ahead of the part loop and cleared in it 430 (same code). Body unchanged.
+// M3 lane 2 r158 (fast screens with 0x458d0 and 0x45a80, both MATCH; control 430): the geometry looked up ahead of the entry
+// pointer 430; the views pointer read first 458; the view-range pointer formed inside the geometry test 451; the parts test
+// as `count * 2` 430; the bottom arm's object index read ahead of the tag 430; the entry index widened once into a long
+// for the entry pointer 430. Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

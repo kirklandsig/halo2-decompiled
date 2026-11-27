@@ -490,6 +490,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, s_havok_c
 // copied from the velocity just cleared 345 (1168 B); the mode payload `state + 0x10` named once for the five calls 317
 // (retail's 1164 B, but the add is hoisted ahead of the jump table where retail adds in each case); the velocity
 // reference bound only in the flag block 325 (1180 B). Body unchanged.
+// M3 lane 3 r317 (H2M_FAST with 0xb77d0, 0x1c4b00, 0x1ed340, 0x2901e0 and 0x1c4a80, all MATCH; control 319 at 1176 B).
+// Forms: the mode read into a byte local for the switch 319, the shape local declared `*const` 319, the shape match
+// tested directly with no bool 319, the countdown as `state[1] = state[1] - 1` 319 (the same code each); the capsule
+// helper as plain `static inline` 530 (968 B: it then stays out of line and the entry changes). Still BLOCKED-BY
+// 0x1ec690 (its stub's convention) and the placement of 0xdc370. Body unchanged.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

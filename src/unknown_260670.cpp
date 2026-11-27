@@ -428,6 +428,13 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // as `owner == actor_index ? NONE : owner` 440; the range read ahead of the squared distance 440; the score test spelled
 // `position->score + context->unknown680 <= best_score` 440 (same code each); `best_score` declared ahead of `selected` 441;
 // the squared range named once (`range_squared`) 578. Body unchanged; still BLOCKED-BY 0x262a30.
+// M3 lane 15 r153 (H2M_FAST with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30 and 0x13e2d0, all MATCH; control 422, frame
+// 0x8a8): the path state's count read through the typed `unknownae` member 422 (same code); the finite flag tested
+// before it is set (diagnostic of the packing lever) 544 (frame 0x8a4), with the sort scratch in its own block 524
+// (frame 0x8a0: the two flags then share one cell at +2/+3 where retail has +6/+7 above the inlined owner lookup's
+// four-byte temporary, which this build lacks); the within-limit flag tested before it is set 475 (3113 B), with the
+// scoped scratch 475 (frame 0x8a4). Retail keeps `count` in EBX across the main loop where this build keeps `scratch`
+// there. Body unchanged; still BLOCKED-BY 0x262a30.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

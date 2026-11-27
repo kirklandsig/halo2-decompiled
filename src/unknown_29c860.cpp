@@ -396,6 +396,15 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // the left vector's k left to the initializer (`{left_i, local_8.i}`) 388 (2825 B, first +0xab: frame 0x5b4 as retail,
 // the side test reads the vector, the two vectors still exchanged and k an integer store); the tail's flag test written
 // flag first 378 (same code), with the 393 form 393.
+// M3 lane 12 r196 (fast screen with 0x29c860 and 0x29cb10, MATCH each run; control 378). Frame reading: the extra word is a
+// slot of its own for the side test's `local_9.i * local_13.i`: with local_13.i forwarded from left_i, that product is
+// one value with the 0.9 block's `local_9.i * left_i` and is kept across 0x299460 beside local_25, where retail reads the
+// vector's home in the test, keeps only local_25 (in local_22's slot) and multiplies again after the call. With the
+// k-less initialiser (re-measured 388) local_25 shares local_22's slot as retail does, and the left vector and local_14
+// then tie at five references each and pack in the other order. Forms: that initialiser with `local_13.k = 0.0f;` after
+// it 434 (first +0x53); `= {0}` then the i and j stores 420 (2837 B); memset then the i and j stores 559 (2832 B); the
+// vector built from `{-local_8.j, local_8.i}` with `left_i` read from its i 571 (2811 B), with k given 573 (2809 B).
+// Still BLOCKED-BY 0x299460 (unmatched; whether the vector's address escapes decides the forwarding). Body unchanged.
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
