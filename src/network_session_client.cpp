@@ -1112,6 +1112,14 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // promoted: the pair's code and ranking), on main's body 46/46; the member count read from the session at both uses (no
 // local) 132 (495 B: reread in the copy loop), on the 8 form 138; the player loop's two tests as `continue`s 36; the
 // opening test written `!(flag && &first && &second)` 22, on the 8 form 8 (same code each).
+// M3 lane 11 r178 (fast screens with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the 8 and 36 forms
+// rebuilt). On the 36 form: the pair with no NULL presets, set under the flag and tested `!flag || !machines ||
+// !players` 153 (499 B: the two flag tests are not merged), with the flag read once into a named bool 153 (495 B); the
+// pair typed as the setter's const pointers 36; the addresses pointer declared ahead of the clears 36; one index
+// shared by both loops 36. Allocator reading with the callers in the image: the 36 form ranks the session 99 above the
+// index 90, and a forced-ranking search gives a byte match with the session at 89 or the index at 100; the player
+// loop's latch is the only block that references the index and not the session (six candidates, three of them
+// constants), so one more candidate there would move the index 8 and the session 2. Body unchanged.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

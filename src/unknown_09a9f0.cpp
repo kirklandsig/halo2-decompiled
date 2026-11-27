@@ -1190,6 +1190,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // `result = true` as the valid block's first statement 76 (182 B); the header test on `entity->object_index` 8 (same
 // code), that with the object read on the plain index 42 (the field read is forwarded before the lookups are merged).
 // Body unchanged.
+// M3 lane 11 r178 (fast screen with 0xbb780 and 0x108e10, MATCH throughout; control 8): the object read indexed
+// `(dword)object_index % 0x10000` 42 (folded to the mask before the lookups are merged), that without the second store
+// 77 (160 B); the header flag test positive with the clearing arm first 33; `char result` 23 (180 B); the header test
+// through a named header pointer 8 (same code). On retail's plain shape (77) the whole header address is one shared
+// value (`lea ecx, [ecx + edx*4]`, then `[ecx + 2]` and `[ecx + 8]`) and f takes EBP for the body. Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
