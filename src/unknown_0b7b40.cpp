@@ -10,6 +10,7 @@
 #include "unknown_1cafc0.h"
 #include "effects.h"
 #include "unknown_16d180.h"
+#include "bit_vector.h"
 #include <string.h>
 
 struct s_object_list;
@@ -32,8 +33,6 @@ void __stdcall function_b8600(long object_index, long location);
 void function_b7360(long object_index);
 void __stdcall function_bd020(long object_index);
 bool function_bf510(long object_index, s_location *location);
-bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags);
 void __stdcall function_b8540(long object_index);
 void function_146bf0();
 void function_108a40(long *placement);
@@ -41,14 +40,12 @@ long __stdcall function_bc280(short size);
 void __stdcall function_bc300(long index);
 bool function_bc380(long index, long field, short size, long alignment);
 bool function_bf9a0(long index, long *render_model, long *second_index);
-void function_b8b70(long index);
 bool object_dispatch_create(long index, long placement, long failed);
 void object_dispatch_finish_creation(long index);
 void object_dispatch_remove(long index);
 void function_ba540(long index, string_handle name);
 void __stdcall function_ba590(long index, dword mask);
 void __stdcall function_be240(long index, dword colors, color3f const *values);
-long function_d5b60(long index);
 bool __stdcall function_be8e0(long index);
 void function_ba3d0(long index);
 void function_be1d0(long index);
@@ -61,20 +58,16 @@ bool havok_object_type_can_have_component(long tag);
 void function_b9c60(long object_index, bool flag);
 void function_d5c90(long object_index, real *body_vitality, real *shield_vitality);
 
-#define FLAG(bit) (1 << (bit))
 #define TEST_FLAG(flags, bit) ((bool)(((flags) >> (bit)) & 1))
 
-/* sets or clears one bit of a field of flags */
-static __forceinline void flag_set_b7b40(dword *flags, long bit, bool value)
+/* sets or clears one bit of a flags word (as in scenery.cpp and unknown_0b9fc0.cpp; the word one is word_flags_set of
+   bit_vector.h) */
+static inline void flags_set_bit(dword *flags, long bit, bool value)
 {
-	if (value) *flags |= FLAG(bit);
-	else *flags &= ~FLAG(bit);
-}
-
-static __forceinline void flag_set_b7b40(word *flags, long bit, bool value)
-{
-	if (value) *flags |= FLAG(bit);
-	else *flags &= ~FLAG(bit);
+	if (value)
+		*flags |= 1 << bit;
+	else
+		*flags &= ~(1 << bit);
 }
 
 // Not matched yet (2150 of 2150 bytes). Retail inlines function_b9c60 and function_d5c90 here. Left: retail goes
@@ -129,10 +122,10 @@ long __stdcall function_b7b40(void *creation)
             *(vector3f *)(object + 0x88) = *(vector3f *)(placement + 0x40);
             *(vector3f *)(object + 0x94) = *(vector3f *)(placement + 0x4c);
             *(real *)(object + 0xa0) = *(real *)(placement + 0x58);
-            flag_set_b7b40((dword *)(object + 4), 10, TEST_FLAG(*(dword *)(placement + 0x18), 0));
-            flag_set_b7b40((dword *)(object + 4), 9, model && *(long *)(model + 0xc) != NONE);
+            flags_set_bit((dword *)(object + 4), 10, TEST_FLAG(*(dword *)(placement + 0x18), 0));
+            flags_set_bit((dword *)(object + 4), 9, model && *(long *)(model + 0xc) != NONE);
             long render_index, animation_index;
-            flag_set_b7b40((dword *)(object + 4), 31, function_bf9a0(result, &render_index, &animation_index));
+            flags_set_bit((dword *)(object + 4), 31, function_bf9a0(result, &render_index, &animation_index));
             header->unknown04 = NONE;
             *(long *)(object + 0x28) = NONE;
             *(short *)(object + 0x2c) = NONE;
@@ -155,7 +148,7 @@ long __stdcall function_b7b40(void *creation)
             *(long *)(object + 0xcc) = NONE;
             *(short *)(object + 0xd0) = NONE;
             *(word *)(object + 0xc0) = 0;
-            flag_set_b7b40((word *)(object + 0xc0), 8, TEST_FLAG(*(dword *)(placement + 0x18), 3));
+            word_flags_set((word *)(object + 0xc0), 8, TEST_FLAG(*(dword *)(placement + 0x18), 3));
             *(long *)(object + 0xb4) = NONE;
             *(long *)(object + 0xd4) = NONE;
             object[0xd8] = 0;
@@ -199,7 +192,7 @@ long __stdcall function_b7b40(void *creation)
                 {
                     s_animation_state *state = (s_animation_state *)(object + *(short *)(object + 0x12a));
                     state->reset();
-                    flag_set_b7b40((dword *)(object + 4), 11, state->initialize(*(long *)(model + 0x14), *(long *)(definition + 0x38), true));
+                    flags_set_bit((dword *)(object + 4), 11, state->initialize(*(long *)(model + 0x14), *(long *)(definition + 0x38), true));
                 }
                 else object[0xb3] = 0;
                 if (*(long *)(definition + 0x94) > 0)
@@ -209,7 +202,7 @@ long __stdcall function_b7b40(void *creation)
                 if (created)
                 {
                     bool hidden = TEST_FLAG(*(dword *)(object + 4), 17);
-                    if ((*(dword *)(placement + 0x18) & 2) || (*(dword *)(placement + 0x18) & 4)) flag_set_b7b40((dword *)(object + 4), 17, false);
+                    if ((*(dword *)(placement + 0x18) & 2) || (*(dword *)(placement + 0x18) & 4)) flags_set_bit((dword *)(object + 4), 17, false);
                     function_ba540(result, *(string_handle *)(placement + 0xc));
                     function_ba590(result, *(dword *)(placement + 0xac));
                     function_be240(result, *(dword *)(placement + 0x74), (color3f const *)(placement + 0x78));
@@ -225,14 +218,14 @@ long __stdcall function_b7b40(void *creation)
                     }
                     function_be1d0(result);
                     function_b7360(result);
-                    flag_set_b7b40((word *)(object + 0xc0), 1, TEST_FLAG(*(dword *)(placement + 0x18), 5));
+                    word_flags_set((word *)(object + 0xc0), 1, TEST_FLAG(*(dword *)(placement + 0x18), 5));
                     function_b8890(result);
                     function_be690(result);
                     object_dispatch_finish_creation(result);
                     long effect = *(long *)(definition + 0x50);
                     if (effect != NONE) function_176780(effect, (s_effect_owner const *)(placement + 0x68), result, 0.0f, 0.0f, 0, 0);
                     function_2e1e0(result);
-                    flag_set_b7b40((dword *)(object + 4), 17, hidden);
+                    flags_set_bit((dword *)(object + 4), 17, hidden);
                     object_list_insert(result);
                     if (TEST_FLAG(*(dword *)(object + 4), 17) && !(header->flags & 1) && (byte)function_b8820() &&
                         !(*(dword *)(placement + 0x18) & 2) &&
