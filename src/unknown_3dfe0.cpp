@@ -347,6 +347,13 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // test nested under `if (cache->valid)` with no early return 21; the whole body nested under `if (elapsed)` (one exit)
 // 21; the stationary compare written constant first 21 (all but the force form the same code); re-measured the not-force arm
 // first in braces 25. All restored.
+// M3 lane 11 r178 (fast screen with 0xd1850 and 0x3d2c0, both MATCH; control 21). Allocator reading of main: the
+// object's first-pass candidate earns 22 at its lookup block and loses 2 for each block of the sample chain it lives
+// through, ending at -1, so it is never coloured whole. A forced-ranking search on `bool update = false;` right after
+// the zero-elapsed return (216, 30 builds): best 208, nothing near a match. Forms: that update-first order with the
+// object looked up ahead of update elapsed 187, with update elapsed moved after force as well 232; the kept order with
+// update elapsed computed after force, right above `update`, 171; both elapsed subtractions on `(long)` operands 21; the
+// cache and object pointers `*const` 21 (same code each). Body unchanged.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
