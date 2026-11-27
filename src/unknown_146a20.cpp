@@ -491,6 +491,14 @@ bool g_47f05b;
 // the abstract allocator's dropped vtable store (6 bytes). On it: a virtual destructor in the derived type 35; the block
 // read from g_479888 directly (no local) 35; the derived type novtable 35; the fixed base novtable in the shared header 35.
 // Not kept (one point above 34 without the store). Body unchanged.
+// M3 lane 15 r154 (H2M_FAST with 0x146b80, 0x22c3e0, 0x146e30 and 0x146ac0; 0x146b80, 0x22c3e0 and 0x146ac0 MATCH
+// throughout; control 34). Retail 0x146b80 builds the same object with the abstract allocator's vtable store dropped and
+// its field stores scheduled (the count first), where 0x146a20 keeps the store and the fields in order. Diagnostic, not
+// a form: a derived type whose constructor body stores the buffer from g_479888 (an address-taken global) keeps the
+// buffer store ahead of that read (33, 149 B), so a read that may alias the object between the two vtable stores is
+// what keeps the first one. Forms: the buffer as `(void *)((dword)block + 0x30)` 34, `&((byte *)block)[0x30]` 34,
+// `block + sizeof(c_havok_fixed_memory_base)` 34 (same code each); the pool address named before its construction 34;
+// the storage-holding derived type with the pool placed through `block` 40 (135 B). Body unchanged.
 // @retail 0x146a20
 void function_146a20(void)
 {

@@ -2420,6 +2420,11 @@ struct s_actor_looking_structure_view
 // retail's i, k, j needs j numbered ahead of k. Forms: forward built member by member (i, j, then the k clear) 199
 // (927 B); forward from a three-value initialiser list 199 (927 B); forward through the existing three-value setter
 // 199 (926 B); the score's terms written i, j, k 25; the candidate copied through that setter 87 (930 B).
+// M3 lane 13 r165 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the in-place
+// helper's parameters as (axis, vector, sine, cosine), (vector, axis, cosine, sine) or (sine, cosine, vector, axis) 23
+// each (same code: an inline helper's parameter positions do not reach these ranks); the in-place helper
+// `__forceinline` 23; the angle wrapper without its forceinline declaration 468 (670 B: it stays out of line); the
+// pathfinding pointer as a conditional initialiser 207. Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

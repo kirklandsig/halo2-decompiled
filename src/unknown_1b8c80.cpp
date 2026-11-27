@@ -1129,6 +1129,14 @@ extern "C" void _ReadWriteBarrier(void);
 // then the state, then the actor from the pool's data 44 (208 B); no barrier, the flags test written `!= 0` 44; no
 // barrier, the flags byte bound to a `byte const &` after the actor and state 44; the actor as the pool's data plus a
 // `(word)` index, no barrier 10 (205 B: `movzx` index load, register compare of 0x26c), with the barrier 48.
+// M3 lane 2 r159 (H2M_FAST with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the masked index named first (`long
+// absolute_index = actor_index & 0xffff;`) and the lookup written out on it, no barrier 44 (208 B), with the barrier 6
+// (same code); the NONE block's reads and stores through an `s_actor_view &` bound at its head, no barrier 44; the 0x86
+// and 0x50c tests nested in an else block, no barrier 44; the actor set to the pool's data and then advanced by the
+// masked index (two definitions), no barrier 44. Scheduler view (diagnostic): without the barrier the 0x26c load is
+// formed from the index and the data base and scheduled ahead of the add, so it is not folded into the compare; the
+// barrier keeps it after the add, where the compare folds it, but the slot stays a candidate of the NONE block and its
+// flags arm only, so its load is placed in the NONE block.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
