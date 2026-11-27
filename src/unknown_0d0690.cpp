@@ -1845,6 +1845,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // minus 1 insn, 72-159, 320-569 verbatim) with 0xd4080 239 at 1870 B and 0x3db00 MATCH (held as a match-only lead;
 // with inline k/j/i rotation + lightmap-first blend 282 at +0x2b, al 87, mk 58, 0xd4080 289; ordered first normalize
 // + d0 scale order 481, mk 59).
+// M3 lane 12 r197 (fast screen with 0xd4080, 0x3db00, 0x3dfe0 and 0xd1e10; control 529, 0xd4080 378, 0x3db00 and 0xd1e10
+// MATCH, 0x3dfe0 21; body unchanged). Retail's call in 0xd4080 sets the block (EAX, at the tag lookup), then the query
+// (EDX), then the type (ECX); the all-stack first pass of this body loads the block and later the query into EAX, the
+// count into EDX and the type into ECX. Forms: constant exits 568 (2168 B, first +0xc); with (type, query, block) 568 (same
+// code; 0xd4080 455); with the scan bounded by `block->count` and no count local 568 (same code); `bool result = false;`
+// with `result = true;` closing the found block 590 (2157 B; 0x3db00 lost, 8; 0x3dfe0 35; 0xd4080 508); that with
+// (type, query, block) 590 (0xd4080 495).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

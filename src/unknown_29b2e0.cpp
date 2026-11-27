@@ -985,6 +985,11 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // on retail's side, axis.j still above v.j), 3/4-arg angle 198/199, (i+k)+j 232, cross3f 225, vi/vj locals 150,
 // new i/j/k locals or axis-first products 221; existing function_x84d9e8 151 (1696 B) / 258 on direct+planar;
 // `0.0f - limit` 129 (same code); approach_126660 311; `cur + PIN` 293; direct up cast 190; yaw if/else 284. Restored.
+// M3 lane 4 r269 (H2M_FAST with 0x29b990, 0x170d70, 0x11cc90, 0x11ce20 and 0x1e5450, all MATCH; control 130; the shared
+// rotation helper's file was not open this round): the planar copy ahead of the 3-D copy re-measured 128 (+0x179); on it
+// the second axis computed ahead of the first rotation 200 (1737 B), the up pointer declared right after the object
+// lookup 237 (1710 B), a named forward pointer beside the up pointer for the cross terms 149 (1696 B); on this body the
+// second axis ahead of the first rotation 202 (1737 B) and the named forward pointer 151 (1696 B). Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

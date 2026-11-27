@@ -1768,6 +1768,14 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // and the normal declared at the top of the loop body 217; the normal declared ahead of the points 217; the points
 // declared separately, second first 217 (all the same code); `vertex[0].u = outer->u = u;` 226; the half width as
 // `0.5f * width` 217. A forced-ranking search of 16 decisions found none that moves the frame.
+// M3 lane 12 r197 (fast screen with 0x42c50, 0x42b20, 0x43720 and 0x43740, all MATCH each run; control 217; body unchanged).
+// Allocator reading of the float class: the negated u step and the V end are two candidates of one in-loop use each
+// (-191 and -193 in the first pass, -8 and -16 in the third) and are never coloured, so they keep 4-byte homes;
+// retail colours both and spills them around the loop's calls into its 8-byte slots. Code up to the loop head is
+// retail's apart from those homes. Forms: the state index clamped through PIN 222; the state's blend scale, the
+// state width and the next width each as a ternary select 503 (2600 B) / 518 / 509 (2588 B); the u advance moved up
+// to just after the vertex u stores 605 (2604 B). A forced-ranking search over those float candidates' costs and ranks
+// found no single decision that moves the count.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

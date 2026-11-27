@@ -1942,6 +1942,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // three NONE extrema stores chained 871; those two with the no-rated reset chained too 871; the machine id copy as a
 // 12-byte memcpy 871; the machine id array declared at the top of the body 871 (same code each). Body unchanged; still
 // BLOCKED on the link's inline choice for the opening 0x192e60 call.
+// M3 lane 11 r176 (fast screen with 0x73530; control 871): the opening test's capacity pair in the other order 871 and
+// with `!variant` tested first 871 (same code each); the player loop bounded by the summary's player count 883
+// (0x73530 8); the group loop bounded by the summary's machine count 878; the output clear ahead of the capacity
+// read 854 (2796 B, 0x73530 8: not kept). Body unchanged; still BLOCKED on the link's inline choice for the opening
+// 0x192e60 call.
 // M3 lane GA r28 (16 fast trials with 0x73530/0x63220/0x192e60/0x193300/0x1932c0/0x1931a0/0x193250/0x631f0/0x91e30 all
 // MATCH, 0x91f00 34 throughout; control 871 at 2780/2828 B, fr 0xd0, al 1304, mk 1024): cache two-use `spread_limit`
 // 982 (2656 B, fr 0xd4); cache two-use `allowed` imbalance 975 (2648 B, fr 0xd4); `add_mask` minimum via 3-way `if`

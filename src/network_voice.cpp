@@ -4161,6 +4161,14 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor form with the non-relay arm first 157 (488 B); the non-relay arm first on this body 162 (490 B); the cursor
 // form with the kind test ahead of the member call and the NONE test alone after it 145 (478 B, member still in EBP).
 // Body unchanged.
+// M3 lane 4 r269 (H2M_FAST with 0x564c0, MATCH each run; control 139; packet-cursor form re-measured 164 at 478 B with
+// the member 20 against the channel 14, the channel's relay talker-check block counting one referenced candidate and its
+// setup block costing it 10). Setup work moved into the entry block, on the cursor form: the stride ahead of the clamp
+// 144 (479 B); `size -= 2` ahead of the clamp 140 (480 B, size takes ESI at entry); both 152 (488 B); with the plain arm
+// first 153 (488 B, the member still ranks 20). On this body `size -= 2` ahead of the clamp 143. With the guarded
+// two-return loop: `size -= 2` ahead of the clamp 134 (489 B), plus the plain arm first 155 (492 B), `consumed = 2; size
+// -= consumed;` ahead of the clamp 131 (489 B; member still in EBP, the gain positional) and the same without the guard
+// 162 (479 B). Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

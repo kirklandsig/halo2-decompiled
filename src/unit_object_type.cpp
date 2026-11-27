@@ -2646,6 +2646,12 @@ void function_cfec0(long unit_index)
 // MiniMax H (11-20): no new form, no lower score (1): the entry branch is still jle where retail has je.
 // return at the end, so the NONE exit holds a merged value instead of the parameter copy, merges the four
 // lazy-push epilogues into one and moves the pushes into the prologue (97).
+// M3 lane 2 r160 (fast screen with callers 0x1a4900 and 0x1a4c00, both MATCH unless noted; control 1): range tests that
+// are an equality only for this sentinel are not narrowed to one: `(dword)unit_index < 0xffffffff` 1 (`jae` in place
+// of `jle`), `(dword)unit_index <= 0xfffffffe` 2 (`cmp ebx, -2` / `ja`), `unit_index < NONE || unit_index > NONE` 92
+// (253 B, two branches). The `!=` test with the NONE exit returning the parameter read through a pointer to it 104
+// (264 B), the test itself read through that pointer 104, the pointer declared first 104 (all three the same code: the
+// parameter then arrives on the stack, and the callers go to 180 and 293).
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {

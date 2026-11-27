@@ -1077,6 +1077,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // decisions on it gives 21 at best); the copy and the named engine pointer without the carrier 24; the field pointer
 // dropped (entry copy and store through globals) 131 (374 B, the field is read again after the loop); the saved playing
 // teams as a word 60; the added teams as `playing & ~old_playing` 23 (same code).
+// M3 lane 3 r319 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23): the mask stored through `globals->team_mask`
+// (the field pointer then only read) 23 (same code), that with the uncast OR 24, with the engine read as
+// `g_55e4d0[globals->engine_index]` 37; no added-teams local (the counter loop testing `~old_playing_teams &
+// playing_teams & (1 << team)`) 94 (396 B); one function-scope `team` for both loops 23 (same code). Re-measured: the
+// uncast OR into the dword local 24, stored in one expression 77, with a plain present 63 (384 B: the saved mask's reload
+// there is retail's dword load of the word slot, but present takes EDI and is the OR's destination). Reading: retail's
+// present stays in memory, so its OR can only be the source and the saved mask's post-loop piece (reload, zero
+// extension, OR, store) is coloured ECX; the playing teams' EDX and the early engine-index load follow from that.
 // @retail 0x158140
 void function_158140(void)
 {
