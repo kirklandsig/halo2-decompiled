@@ -1673,6 +1673,19 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // declared ahead of the input pointer 511 (the first cross keeps its two up.k products on the other side in all three);
 // the first arm's speed read into a one-use local 197 (one point, a one-use local: not kept); `scaled` declared ahead of
 // `left` 198 (same code).
+// M3 lane GA r27 (34 fast trials across 2 batches with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0 all MATCH; control
+// 198, al=142, mk=95; body unchanged): `magnitude` via existing `shape_dot(*input, *input)` or `(k^2+j^2)+i^2` /
+// `(j^2+k^2)+i^2` / `i^2+(j^2+k^2)` hits 190 (`3047/3047 B`, `al=135, mk=88`, matching retail's `fld k,j,i` and
+// `fstp st(3)` pops; NOT kept: changes float sum grouping from retail's `(i^2+j^2)+k^2` to `(j^2+k^2)+i^2`);
+// `(i^2+k^2)+j^2` 197; `dot3f(input, input)` or any bare 3-term chain (`kji`/`kij`/`jki`/`jik`/`ikj`) 297 (`3036 B`,
+// still sums `(j^2+k^2)+i^2`); `k^2+(i^2+j^2)` 198; `basis_dot_xzy` 562; low-normal `shape_dot(left, *normal)` /
+// `shape_dot(forward, *normal)` / both / commuted `projected`/`side` adds all 198 (same code), + `side` j,i,k 200
+// (`al=141`), `dot3f(&left, normal)` 206; flying cross #4 `function_1f087b`/`cross3f_staged`/`cross3f` 370/370/198,
+// cross #2/#3/#234 `cross3f_staged` 490/490/477 (`al=134, mk=92`), low-normal cross `cross3f_staged` 370, flying
+// `normal` ptr 496 (`al=134`); history `offset` before `maximum` 198, `maximum` via `shape_dot` 505; Arm 2 `drop` +
+// Arm 3 rows + early Arm 1 gravity clear 542 (`al=127, mk=72`: Arm 3 k still commutes into `xmm2`); Arm 2 `vz` +
+// `vector3f_assign` + Arm 3 rows 558; Arm 3 `delta` inline scale / `vector3f_add_scaled` / split `limited` assign
+// 499/482/198.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

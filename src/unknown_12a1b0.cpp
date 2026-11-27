@@ -508,6 +508,14 @@ void function_11bed0(s_location *location, point3f const *point);
 // the pool global used directly (no pool local) 80 (same code each); the latch through the called 0x16bc00 123 (170 B).
 // The site is expanded one test level deeper than retail (the inliner's calibration, as for 0x25d740 at 0x261510): the
 // spellings above leave its enclosing tests unchanged, and the forms that add tests are implied ones. Body unchanged.
+// M3 lane 16 r197 (H2M_FAST with 0x11bed0, 0x11be90, 0x14a280, 0x1d48f0, 0x125920, 0x1e1500, 0x1697c0, 0x17c0e0,
+// 0x16bc00, 0x16bbc0, 0x219d90 and 0x219cc0; control 80): retail passes 0x11bed0 its point in EDX and its location in
+// ESI, a link-time register convention, so that function was generated at link time and only declined by the inliner.
+// 0x219cc0's walk 161 (listed); a `for` through record_pool_next_used at both sites 139 (listed); diagnostics, reverted at
+// once (a held form): that with `inline` on 0x16bbc0's definition 98 (236 B: 0x16bbc0 expands, 0x11bed0 still expanded),
+// with `inline` on 0x16bc00 as well 161 (281 B); so retail's expansion of the next-datum function is not what keeps
+// 0x11bed0 a call. The walk with each sound through datum_get_inlined 191 (300 B); the `for` with datum_get_inlined 100
+// (194 B). Body unchanged. Still BLOCKED-BY 0x11bed0's inline decision.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -3167,6 +3175,14 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // the two guards joined with && 782 (2489 B, 0x18a7b0 lost); `created` declared above `combine_sources` 632;
 // `result = true` ahead of the lookup call 600; the start block's arms swapped (fade arm first) 646; `alternate`
 // inside the definition guard with `result = true` ahead of the lookup 620 (2500 B). Body unchanged.
+// M3 lane 16 r197 (H2M_FAST with 0x21aeb0, 0x127d00, 0x21b940, 0x21be20, 0x126df0, 0x21bd00, 0x21cf80, 0x21d060,
+// 0x192d70, 0x12abe0 and 0x21b070: control 597; without them the reduced image builds 694). Allocator reading: the flags
+// parameter takes EBX at the lowest priority and no constant-one candidate is formed; a forced-ranking search over 24
+// single decisions found none that lowers the count. Forms: `result` declared ahead of `alternate` 597 (same code); the
+// source copy through memcpy 597 (same code); `alternate` inside the definition guard 615 (2500 B, listed; aligned 328
+// against 342, retail's entry with EBX = 1), with memcpy as well 615; the listener-gain clear as four zero stores 705
+// (2518 B), as a plain zeroing loop 705, the four stores with `alternate` in the guard 643 (2518 B; retail's clear is four
+// stores relative to the sound, with no lea). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

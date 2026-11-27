@@ -1917,6 +1917,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // ahead of the turning test 536; the walking speed in 0xe4770's spelling (the +0x134 block in a named pointer, the call's
 // result first, then `(1.0f - *(real *)(globals + 0x78) * biped->unknown2e4) * speed_scale`) 137 (aligned 76; 0xe4770
 // still MATCH; the same lead as r141's, a one-use pointer read ahead of a call, so match-only). Body unchanged.
+// M3 lane 16 r197 (H2M_FAST, control 158): material's pill/sphere choice as one ternary 158 (same code: still four
+// references when the frame is packed); no initialiser with `else material = 0;` 659 (2796 B: material leaves the frame;
+// lane 4 r254's form re-measured), as one conditional initialiser 659 (same code); case 1's rate quotient through an
+// inline holding the tick length in a local (`return rate / seconds;`) 158, the same inline without the local 158 (same
+// code each). Body unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4762,6 +4767,14 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // `function_x84d9e8` wall turn 579 (2725 B); `cross3f`+`dot3f` triple products 627 (2740 B); `field_bit_test` all 4 568 (2716 B, al 422,
 // mk 255); `field_bit_test` bit 0 + `unit_get_current_weapon` + inline `rate`/`limit` 576 (mk 252); direct `bool special` +
 // `unit_get_current_weapon` 602 (2718 B, first diff +0x52, changed +0x11 / special +0x12 match retail, mk 246). Body unchanged.
+// M3 lane 16 r197 (plain checks with 0xdd360, 0xe1c40, 0xe0c70, 0xe3910; 0xdd360 and 0xe1c40 MATCH throughout). LEAD
+// 527 at 2725 B (aligned 437 -> 408 at 650/650 rows; match-only, a one-use local in a new inline): the turn angle and the
+// mode-6 limit through a file-local per-tick inline holding the tick length in a local (`real rate = g_510c54->rate;
+// return rate * per_second;`, the same inline as 0xe3910's 15 lead); the turn angle is then retail's `fld [rate]; fmul
+// [definition + 0x1ec]`. On that lead: the wall turn through the existing rotate_direction 540 (2719 B, aligned 405); the
+// four wall crosses through cross3f 571 (2712 B, aligned 392); the clamp-arm crosses only 567 (2712 B, aligned 387); the
+// pitch rows on the field (no heading pointer) 540 (2737 B); the heading pointer named at the top of the mode-6 block 527
+// (aligned 403). Body unchanged.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -6605,6 +6618,25 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the rotated up at its producer 79, one up-field pointer 97, and header rotation on up 89.
 // NOT kept: the longer matching prefix still scores 79 and shortens past retail to 877 bytes.
 // The second rotation product schedule and final cross memory operands remain.
+// M3 lane 16 r197 (H2M_FAST with 0x1ecf50/0x1e5bb0/0x30bf0, the two matched ones MATCH throughout; plain checks agree).
+// Reading of the operand order: a commutative product's operands are sorted by rank; a component read through a pointer
+// ranks by that pointer's symbol number mod 8, the caller's locals are numbered by first reference (arg 1, biped 2,
+// axis 3, angle 4, cosine 5, sine 6, the forward pointer 7) and the inlined helpers' symbols come after all of them;
+// retail's first rotation needs forward.i ranked between axis.i and axis.j (residue 1). LEAD 15 at 887 B (first +0x2ee,
+// match-only: a one-use local): the field at every use (no forward pointer) with the angle through a file-local
+// per-tick inline `real rate = g_510c54->rate; return rate * per_second;` (also 527 on 0xe01d0, below); everything but
+// two products of the final staged cross is then retail's (retail reads forward.i ahead of side.j and side.k, ours ranks
+// forward.i with forward.j). Without the local 154, with the result in a local 71, forced inline 15. Forms on the
+// present body: the pointer declared after biped or after axis 130/130; the per-tick inline 79, forced inline 79, with
+// the local 79 (same code each); diagnostics (one-use locals or dead locals, not kept): the tick length and the length
+// named ahead of the angle 208 (the first rotation then exact), dead longs ahead of the pointer best 77. On the 15 lead:
+// any caller local added (an up or forward pointer before the crosses) 29, both 211; the pointer for the rotation or
+// the crosses only 89/91; the second rotation through axis_rotation.h 25, the first 100, both 102; the first cross
+// staged 15 (same code); the last cross plain 69, staged into the up copy then stored 78, plain into the copy 172; up,
+// side, angle or the trig declared at first use, side in a block, cosine declared first, axis assigned after its
+// declaration, the `!` zero test, the inline's product operands swapped 15 each (same code); a file-local copy of the
+// staged cross (diagnostic) with its statements in the six orders 15/15/53/53/15/53 and its product operands in all 16
+// spellings 15 each. Body unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

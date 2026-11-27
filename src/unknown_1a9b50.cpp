@@ -1021,6 +1021,17 @@ extern point2f *g_468778;
 // braces 280 (same code); the index declared above the prop pointer 417 (1576 B); the field_12 arm reading the field and
 // the facing arm declaring the index ahead of the view calls for all four of its uses 378 (1565 B), declared after the
 // view calls 407 (1572 B); the clock read at its one compare instead of a named local 356 (1555 B).
+// M3 lane 15 r153 (H2M_FAST with 0x265d30, MATCH each run; control 280, aligned 166 / stack-masked 68 / register-masked
+// 23). Allocator reading on main: the slot (161) takes ESI, the facing pointer (152) EDI and the actor (128) EBP as in
+// retail, but the view is a candidate of its own that overlaps the facing pointer, takes EBX and so splits the prop
+// pointer; a forced-ranking search (12 links) found no single decision that lowers the count. Forms: the unit index read
+// at both 0x110ab0 calls (no local) with the -0.4 dot through the facing pointer 410 (1549 B, frame 0x44); with the facing
+// pointer straight from the 0x25d740 call 384 (retail's `xor ebx, ebx` prop and threaded field_12 test, but the facing
+// pointer then ranks 182 over the slot's 158 and takes ESI); with the prop's NULL in the absent arm 370 (1563 B); pointer
+// dot plus absent-arm NULL 383; the facing pointer from the call plus both planar copies member by member 298 (1559 B:
+// prop, threading and the slot / facing / actor registers all retail's; left the in-place add right after the call, the
+// dot summed k, i, j, and float copies where retail moves integers), with only the 0.866 copy member by member 390;
+// pointer dot with both / first / second copy member by member 314 / 407 / 407. Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1663,6 +1674,13 @@ static __forceinline long real_to_long(real value);
 // bare and cleared at the top of the far arm 383; the object velocity pointer declared just ahead of the facing test
 // that first uses it 446 (1908 B); the result declared ahead of the slot pointer 382 and the near-limit flag ahead of
 // the limit 382 (same code each). Body unchanged; the false exit still lands last (first difference +0xf, its jump).
+// M3 lane 15 r154 (H2M_FAST with 0x25d740, 0x25d690, 0x1a9d80 and 0x1a9e00, all MATCH; control 382 at 1904 B): the
+// computed entry result puts the 0x25d740 site under three tests (the result, the else of the field_12 test, the
+// field_18 test), where this build's link expands the getter and retail's calls it, so the threaded false exit and the
+// call do not come together here (BLOCKED-BY the link's inlining limit, not a source form). Forms on this body: the
+// three direction rows written i, j, k 382; the alignment dot written i first 382; the first dot written i first 382
+// (same code each); the first dot named before its divide 381, with the 1 added after the quotient 381 (a gain of 1,
+// not kept); the actor lookup ahead of the entry tests 489 (1909 B). Body unchanged.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
