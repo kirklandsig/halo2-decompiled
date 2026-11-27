@@ -226,7 +226,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
-// score 195 (was 195): one note (the stacked score lines merged, r184, r116 and again r289); r155, r116, r286 unchanged; r289 found the cause (symbol-count state) and a HELD lead that matches, see the end of this note.
+// score 187 (was 195): declared (d, a, camera, ...) and returning bool (`d` is set up after `a` at both calls and both
+// callers test the result as a byte; 0x4ff50 then matches). Earlier at 195: one note (the stacked score lines merged, r184, r116 and again r289); r155, r116, r286 unchanged; r289 found the cause (symbol-count state) and a HELD lead that matches, see the end of this note.
 // one note (the stacked score lines merged, r184, again r116 and r143); r155, r116, r286, r143 unchanged.
 // MiniMax E (11-20): no new form, no lower score (195): the frame is still 0x30 against retail's 0x2c, both inverse
 // defaults still sit at +0xc and in an argument slot where retail keeps them at +4 and +8, and the transformed points
@@ -780,9 +781,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 230, z, x, y 225 (974 B), x, z, y 227 (982 B) (the y, x, z order was measured before only on the held reorder); the
 // helper returning the point by value 308 (875 B); the point passed by const reference 195 (same code).
 // M3 lane 3 r313: declared (d, a, camera, ...) and returning bool with no placeholder locals, 195 -> 187 (fast and plain);
-// with 0x4ff50's double local removed that caller matches (HELD there: the call line in contributor 0x4f7e0).
+// with 0x4ff50's double local removed that caller matches (kept since: see the score line above).
 // @retail 0x30830
-long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
+bool function_30830(vector3f const *d, point3f const *a, s_camera const *camera, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
 	real inv_a = 0.f;
 	real inv_b = 0.f;

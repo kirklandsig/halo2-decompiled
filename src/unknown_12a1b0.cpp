@@ -1457,6 +1457,12 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // globals, in that order. Forms: the curve in a `byte` local 2; `bool const curve` 2; the promotion index passed without
 // its `(short)` cast 2 (same code each); the iterator built ahead of the guard 77; diagnostic: the lookup chain in an
 // inline helper returning the curve 161 (191 B). All restored.
+// M3 lane 12 r198 (h2m fast with 0x21be20, 0x21b870, 0x126df0 and 0x12a810, MATCH each run; control 2): an unread
+// trailing `long` parameter passed 0 at both calls 2 (0x21a250 597 unchanged), the same parameter leading 2; the promotion byte as a typed `char`
+// field at +2 of the playback definition (0x21c400 MATCH) 2, the same field passed straight to the class lookup 43;
+// the curve as `!TEST_FIELD_BIT((flags >> 10) & 1)` 2 and `!TEST_FIELD_BIT(flags & 0x400)` 2. The split list read
+// again: free numbers 4, 19, 15, 14, 21, 12, 22, pieces for NONE, zero, 0xffff, then the first index (14) and the
+// count (21); one free number or one split constant ahead of them more or fewer gives retail's order. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {

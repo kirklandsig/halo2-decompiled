@@ -990,6 +990,12 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // the second axis computed ahead of the first rotation 200 (1737 B), the up pointer declared right after the object
 // lookup 237 (1710 B), a named forward pointer beside the up pointer for the cross terms 149 (1696 B); on this body the
 // second axis ahead of the first rotation 202 (1737 B) and the named forward pointer 151 (1696 B). Body unchanged.
+// M3 lane GA r33 (14 fast trials, 0x29b990/0x170d70/0x11cc90/0x11ce20/0x1e5450 MATCH unless noted; control 130 at 1707/1706 B,
+// body unchanged): 0x29c860-style if/else-if clamps all four 212 (1709 B), + shared limit local 239 (1711 B), yaw-only 239,
+// planar-first + shared 237 (+0x179), direct pools + planar-first + shared 221 (1709 B; none hoists movaps xmm5, xmm1 above ja);
+// PIN_126660 + shared limit / yaw empty-then-arm / local_3 = *arg_2 before local_9 += / fallback-first if/else 130 each (same code);
+// local_3 = *arg_2 before pitch clamp 432 (fr=0x28, 0x29b990 DIFF); planar-first + local_1->tag_index + early copy 128 (+0x179);
+// direct pools + planar-first + early copy 129; pitch clamp before yaw 253 (1719 B); inline clamp_turn_rate_29b2e0 230 (1706 B).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
