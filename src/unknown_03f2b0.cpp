@@ -1121,7 +1121,7 @@ struct s_camera;
 struct s_tag_data;
 real function_50650(real cosine);
 real function_13bb90(s_tag_data const *function, real input, real range);
-long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
+bool function_30830(vector3f const *d, point3f const *a, s_camera const *camera,
     point2f const *scale, bool perspective, bool negate, point2f *out);
 
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time, real cosine, real *strength, real *horizontal, real *vertical, real *out);

@@ -424,6 +424,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // reached through the typed player-slot array and viewed as the voice record 4 (same code); the selector's kind arm seeded
 // `setting = 1` with only the available arm assigning 12; the request's kind field typed `word` 4 (same code).
 // Re-measured: the index read after the selector 23; the notify call re-reading the request's index 27 (99 B).
+// M3 lane 1 r178 (fast screen with 0x8c5b0/0x8c660, both MATCH each run; control 4; allocator view re-read: request and
+// kind both 20 from the entry block alone, request ahead on its stamp, 8 against 6), all with the existing kind read: the
+// selector's unavailable arm as `setting = kind` (equal to 1 there) 4 (same code: the known value is substituted); the
+// availability helper taking the header by const pointer 4 (same code); the selector seeded 1 with the kind arm calling a
+// new inline that stores the payload setting through an out pointer when available 15; the selector's kind test negated
+// first (`if (kind != 1) setting = 1; else if (available) ...`) 4 (same code); `changed` set in both arms of an if/else
+// 25 (91 B). All restored.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

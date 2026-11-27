@@ -419,6 +419,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // removed: an unreachable address-taker on the bool output (no code) 9 (+0x50, both pairs rotate further). Forms: the
 // saved-reference compare with its operands swapped 13; the saved reference `const` 12 (same code); the actor's +0x4ae
 // store ahead of the output's +4 clear 14; the 0x265c30 flag declared ahead of the 0x1e1f20 test 22.
+// M3 lane 15 r156 (h2m fast with 0x1e1f20, MATCH; control 12; the same two swapped home pairs): the three 0x261280
+// outputs declared in reverse order 12; the 0x1e4be0 flags test written `local_4 != NULL && (*local_4 & 1) != 0` 12; the
+// not-equal arm's flags declared local_18 first, both ahead of the 0x262b40 call 12; the five output clears written as
+// `false` stores 12; the result flag declared ahead of the five clears 12 (all the same code).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

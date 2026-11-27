@@ -387,6 +387,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // 2)`, null first, 83 (same code); the copy after the slots with `return NULL` from the arm 90 (277 B); the index stepped
 // inside the call's element argument (`&arguments[argument_index++]`), null first, 80 (277 B, the frame load still folded);
 // the frame reference and the result copy after the three slots, null first, 79 (282 B). All restored.
+// M3 lane 2 r161 (h2m fast with 0x2099f0, which stays matched; volatile-free forms on the result copied in the init block
+// and in an else arm, re-measured 87 at 278 B): the frame reference after the three allocations 86 (281 B); the init
+// block's copy at its end 89; `result = NULL` first in the arm 95 (288 B); the element passed straight 87; the
+// argument-index slot as a plain pointer bound to the reference after the allocations 87. A forced-ranking search on
+// the volatile-free control (40 decisions) gives nothing below 94. Reading: retail's result is a load of the pointer's
+// stack home that is forwarded from the store after registers are chosen (`mov eax, ebx`), so retail's pointer is a
+// memory variable in the IL; the volatile home gives the memory variable but forbids the forwarding.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

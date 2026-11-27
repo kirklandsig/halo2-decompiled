@@ -780,6 +780,10 @@
 // after the first scaled add 643 (2603 B); the first cross taken the other way round (`cross3f(&v2, &v4, &c)`, the same
 // value negated) with the plain sine's scale negated 676 (2563 B: the second cross is then shared whole); the second
 // cross written as the first one negated 675 (2569 B). Body unchanged.
+// M3 lane 2 r162 (fast screen with 0x4a1e0, unchanged at 323, and 0x42c50/0x42b20/0x43720/0x43740 MATCH; control 536 at
+// 2622 B): the inverse's mode switch as `if (w8e == 1) ... else ...` 574; the perspective arm's two reciprocals ahead
+// of its two crosses 639 (2603 B); the second mode switch with case 1 ahead of the default 536 (same code); `*mode` set
+// first in each range arm 577; the plain sine's argument summed in float (no double cast) 538. Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

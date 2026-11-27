@@ -1407,6 +1407,23 @@ void function_143250(
 // band 2 and reused by band 3, 1994 (10500 B; retail forms them again in band 3); only r3_r3 and r3_r0 1780 (10689 B);
 // only the six squares 1901; only the four mixed products r3_r0, r4_r1, r6_r3, r6_r0 1831; the matrix declared after the
 // nine rotation scalars 939 (same code). Body unchanged.
+// M3 lane 4 r271 (fast screen with 0x143250 MATCH, 0x22850 195 and 0x23690 354 each run; control 939, 212 rows differ
+// with stack offsets masked). A value map of the frame cells (each store with its loads on both sides, the values named
+// by a symbolic walk of the listing): both sides hold 215 stored values; they differ in two reference counts (the
+// sqrt(21) home is read five times in retail and four here; the s35 * r2 product twice in retail, three times here)
+// and, from those, in which values share a cell. Leads, none kept (declaration moves, match-only; held as a patch):
+// lane 15 r111's five moves with lane 6 r245's s35_r2_r3_r3 move 793 (10773 B, frame 0x300, first difference +0x3b);
+// that with 0x143250 as (n, matrix, coefficients, out) 788; the 793 form with `s7_s105` declared after `s105_s2_s21`
+// 717 (masked 186: sqrt(21) is then read five times and every value has retail's reference count; left in the packing:
+// one three-reference product shares a cell with two earlier values where retail pairs it with one, so `s105_r1_r1`
+// sits alone in retail and two other values sit alone here); that with the helper order 712; that with `r7_r7_r0`
+// after `r3_r1_r4` 710 (715 without the helper order). On the 793 form: `r3_r0_r5` ahead of `s35_r2` 799, `s21_s2` right
+// after `s105_s2_s21` 882 (10768 B), `s7_s105` after `r5_r1` 793, `s7_s105` as `s105 * s7` 793, `s105_s2_s21` as
+// `s21 * s105_s2` 793 (the same code each). On main: `s7_s105` after `r5_r1` 939 (same code), after `s105_s2_s21` 871
+// (10779 B). On the 717 form: without the s35_r2_r3_r3 move 785 (10778 B), with only the r6_r5 move 871, with r6_r5
+// and s35_r2_r3_r3 842 (frame 0x2fc each), `r6_r4` after `r4_r2` 1446, `r5_r1` ahead of `s105_s2` 717 (same code),
+// `s7_s105` after `r6_r4` 712. A search on the 712 form over the products whose first definition comes in another
+// order than retail's (each moved next to its retail neighbour, 28 forms) found only the 710. Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -1041,6 +1041,16 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // pass tag 59, after the pass definition's chain 23, ahead of the pass tag 38, after the stage index 136, at the top 171
 // (552 B), so after the material definition (the chain's place) stays best; the pass definition bound to a
 // `void const *const &` from the tag accessor 36; the material definition so bound 92 (552 B); both 86 (545 B, 0x224d90 36).
+// M3 lane 4 r271 (fast screen with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH each run; control 117; the reference chain
+// rebuilt 8, first +0x9e, the same eight lines: the pass definition in EDX for retail's EAX, the material tag in ECX for
+// EDX, the material definition in EDX for the dying table's EDI, the zero after the shift). On the chain, 8 each (the
+// same code): the pass definition through the by-value tag accessor; the material definition through that accessor fed
+// by the record-tag accessor; both; the pass tag as a `dword`; the pass tag through a named pointer to the element's
+// +4 field; the pass definition's +0x20 read named ahead of the definition; the material definition's table read named
+// ahead of its +8 read; the pass tag through a by-value accessor taking the bound element; the masked table index
+// through a by-value accessor for the pass lookup, for both lookups; the pass lookup through a named pointer to its
+// table entry. The pass tag bound as a `long const &` to an accessor's result 59 (first +0x50: arg_3 then loads into
+// EBP); the pass lookup's masked index so bound 59 (the same code). Body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
