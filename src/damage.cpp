@@ -4017,6 +4017,12 @@ enum
 // + i > NONE 329. Dropping `current` (DAMAGE_OBJECT at owner stores) 466 (1902 B, naturally recovers retail's `lea eax,
 // [reg - 1]; test eax, eax; jl` loop head), + consistent accumulator.field_4_2-> 462. `kill` after owner stores 396
 // (1888 B, al 221); `(bool)` cast on kill 309; named `damage_tag` local 309; `if/do-while` parent walk 309 (all same code).
+// GB28 (fast with 0xd9b60/0xdb210/0xd8cb0, 0xdb210/0xd8cb0 MATCH; control 309 at 1885/1880 B, +0x21; 13 trials, body unchanged):
+// accumulator.field_4_2-> in pre-damage block only 309, + reported shield_material 297 (1882 B, al 179, mk 22; mixed read, match-only),
+// + retail orders 283 (1880 B, +0x32, mk 15: lines after kill block through tail exact, leaving only def lea, count EDI/lea, d5b60/obj_def
+// scratch, event AX/BX and kill EBX/ESI); const member-address definition 309; inline tag_get 309; 2-use owner_player local 312 (nested 309);
+// direct DAMAGE_OBJECT owner stores 466 (1902 B); forceinline set_owner 309; while reverse pass 309; prefix --i 309; short region_index 444;
+// event type via s_damage_object_datum 498.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
