@@ -2517,6 +2517,11 @@ bool function_1900a5(long index);
 // properties cursor; + `record_space`/`property_space` 704 at 2910 B, al=343, mk=533; + `last_write` 706, al=337; + `if (variant)`
 // per-arm `failed = true` 711, al=337, mk=492; + `dup continue` 742, al=345, mk=486; with `j < 6` 696; carried `next_properties`
 // 736 / + space 704). Positional score remains gated by `/arch:SSE` (`0x1900a5` `cmovne`) and `/Ob1` helper inlining blockers.
+// M3 lane 1 r179 (h2m fast with 0x749b0, 0x75790, 0x192e60, 0x1900a5, 0x75890, all MATCH; control 633): retail keeps
+// two running insertion pointers across the request loop (EBX = the next record, EBP = the next property block, both set
+// up from the used counts ahead of it); a carried record pointer (`record = next_record++`) 653 (2894 B); with a carried
+// property pointer too 679 (2874 B); both also passed to the fill call 674 (2862 B); the users loop's owner copied from
+// the local identity 741; the logged-out time reset as one chained assignment 633 (same code). Body unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

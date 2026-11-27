@@ -898,6 +898,16 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // cosine 358 (1740 B); the facing y copy at every near-arm y read 392 (1756 B), with the candidate count as a short
 // 377 (1714 B, 0x29a190 still MATCH here), the facing x and y both copied 387; the candidate count as a long 376
 // (1698 B); the outer counter as a long 367; the negated radius written at each use 418 (1708 B). Body unchanged.
+// M3 lane 1 r179 (h2m fast with 0x29a190 and 0x298c30, both MATCH unless noted; control 305). Ranking read: unity's 38 is
+// +8 for the normalisation block, +8 for each near-arm scale store (two blocks), +8 for the far arm's `local_13 = 1.0f`,
+// +8 and +4 for the arccosine clamp's compare and store, less 6 for two live-only blocks; the first normalisation's
+// product copy has 24 and would win a tie (it is the later candidate). A forced-ranking search putting unity at 23 gives
+// 293 with the entry exact to +0x147 (only a priority change on unity moves it; no range cut on it does). Retail's near
+// arm stores each cosine to a float cell at once and forms `y * cos` in SSE ahead of the sine's branch (facing y and x
+// loaded before it), ours keeps the cosine on the x87 stack. Forms: both quarter turns through one forceinline helper
+// (two call sites) 364 (1745 B: the y row moves as in the 365 forms above), as a static inline 364; the cosines and sines
+// through float-returning wrappers 336 (frame 0x68, the near arm unchanged; 0x29a190 45), near and far arms alike 336, as
+// plain inline 336, the cosines alone 305 (same code). Body unchanged.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

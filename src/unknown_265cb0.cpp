@@ -1212,6 +1212,14 @@ real function_30bf0(vector3f *vector);
 // at the top of the endpoint block, of the settings block or of the motion-length block 84 each, the squared
 // distance declared at the top of the settings block 84 (same code each: scope does not move the join); the clip
 // amount initialised to zero 263 (1312 B). Body unchanged.
+// M3 lane 1 r179 (h2m fast with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84). Besides the homes, the
+// first seat cross differs in one product only: ours reads the forward k (already loaded for the first product, so a
+// shared load) first and multiplies the world-up i from memory, retail the other way round. Diagnostic unused locals at
+// the top (removed): 1 84, 2 86, 3 and 4 138 (1308 B), 5 to 7 82 (the second cross's j*i product then turns, the
+// homes and the first cross do not); redundant parentheses on the first delta row 150-166 (they reorder that row).
+// Forms: the motion vector zero-initialised 262; the clip amount also pinned at zero from below 155 (1312 B); the seat
+// element pointer non-const 90 (1308 B, as the listed const one); the close-band result as a conditional expression 84
+// (same code); the range read after the delta rows 87. Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
