@@ -1663,6 +1663,21 @@ struct s_133f70;
 // the plain build; aligned 130 / 48 / 19): the header lookup declared right after the 0x4bcc0 call 357; declared ahead
 // of the count store (retail loads the header global first) 94; the initial level declared ahead of the failure count
 // 95; `short entries` 366; the count store after the type store 94. Body unchanged.
+// M3 lane 14 r164 (H2M_FAST with 0x133790, 0x133ab0 and 0x133f70; control 93, difflib-aligned 58). Cause of the head:
+// 0x133790 and 0x133ab0 call this function through a cast to a function-pointer type, which takes its address, so the
+// link keeps the plain register convention for it; called directly, its whole head is retail's (the distance loaded
+// into EAX ahead of the force push, the count in ECX, aligned 44) but the link then drops the unread `unused` parameter
+// (project_nodes read at +0x341c for retail's +0x3420; the two callers push five arguments, 63 and 47). Retail reads no
+// `unused` either and still pushes six, so its convention keeps the parameter without the address being taken. Forms on
+// the direct calls: `(void)unused;` or `if (!unused) {}` 344 (dropped); a `point3f const *volatile` copy 397 (1326 B,
+// callers 51/33); the parameter's address bound to a `point3f const *const *` (with or without one read through it)
+// 344 positional, aligned 44, 0x133ab0 MATCH, 0x133790 13 (the copy into the aggregate it passes as `unused` is no longer
+// pipelined: the address captures the argument); on that, the entry pointer named in the nested test 344, through a
+// one-line inline getter 344, through NULL-returning getters 371/371/379 (1325 B), and lane 4 r259's lockstep lead (both
+// inline getters, `success` first, the drawn object as `long const &`, a signed-char previous level) 72 (1311 B, aligned
+// 38). With the casts kept, the address form gives 93 here and 13 in 0x133790, so the head follows the address-taken
+// status alone. Lead: retail's callers call this function directly and its unread parameter survives the link without a
+// captured address. Body unchanged.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
