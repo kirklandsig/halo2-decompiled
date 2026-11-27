@@ -846,6 +846,14 @@ struct s_227af0
 // M3 lane 3 r320 (h2m fast; control 4): the threshold test as `!(length >= 0.001f)` 313 (1692 B); with the constant
 // on the left 4; `normal` as a const pointer 4; the else-if test as `(!impact->unknowne || !unknown)` 4; the two unused
 // normalize results cast to void 4 (all four the same code).
+// M3 lane 7 r240 (fast screen; control 4). Rank reading: the first operand's offset-0 reads rank at the `normal`
+// symbol's level (2) in all three calls and the axis loads at 0, 1 and 7 (forward); the second call needs its axis read
+// at or under the normal's offset read, the third needs `forward->j` (level 4) at or under `normal->i`. Diagnostic grids
+// (unused locals in the cross block ahead of `normal` 0..7 x after it 0, 1, 2, 6, 7; float paren pairs round the first
+// length test or in the last arm's centre sum, 1..7; one pair x both local counts): best 4, and every 4 cell leaves the
+// same two products wrong; file-local cross copies with a returned pointer, one or two unused locals, or the i component
+// stored without its local, 4 each. Forms: `normal` pointing at the impact's own normal 325 (1714 B), with `up` in the
+// third call 327; the cross block in its own braces 4.
 // @retail 0x227af0
 void impact_orientation_get(
 	s_impact const *impact,

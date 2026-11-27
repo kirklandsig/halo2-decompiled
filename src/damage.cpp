@@ -3363,6 +3363,12 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // the enemy arm then sits out of line and the not-enemy return falls through); `enemy = !(team >= 0 && team < 16 &&
 // 0xbfe60(...))` 74 (487 B); the enemy arm storing the flag first and returning the product 10; the team read into a
 // long 155 (492 B); explicit else arms for both damage returns 5; the range test held in a named bool 5.
+// M3 lane 7 r240 (fast screen; control 5). Retail's engine-path `jp` lands in the epilogue of the last exit block (the
+// not-enemy stack reload in retail, the no-team xmm1 copy here), so the question is which return block falls into that
+// shared epilogue. Forms: the engine test negated with the team logic in its arm and the engine scaling last 51 (the
+// team code then comes first, its exits still not-enemy first); the zero-scale store arm with its own return 5; the
+// state read into a `long mode` local (0x20f040's spelling) 5; a positive ally flag tested false 74 (487 B); the team
+// logic in an explicit else of the engine test 5.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
