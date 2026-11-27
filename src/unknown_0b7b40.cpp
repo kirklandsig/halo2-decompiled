@@ -71,7 +71,8 @@ static inline void flags_set_bit(dword *flags, long bit, bool value)
 }
 
 // Not matched yet (2150 of 2150 bytes). Retail inlines function_b9c60 and function_d5c90 here. Left: retail goes
-// straight to the exit when the placement has no definition, and it does not load NONE again after function_b9c60.
+// straight to the exit when the placement has no definition, and it loads NONE two instructions later in the
+// new-identifier arm.
 // @retail 0xb7b40
 long __stdcall function_b7b40(void *creation)
 {
@@ -136,7 +137,7 @@ long __stdcall function_b7b40(void *creation)
             *(long *)(object + 0xc) = NONE;
             *(long *)(object + 0x10) = NONE;
             *(short *)(object + 0xac) = NONE;
-            object[0xaf] = 0xff;
+            *(char *)(object + 0xaf) = NONE; /* 0xaf and 0xb1 are signed bytes, as their readers have them */
             object[0x108] = 0xff;
             object[0x109] = 0xff;
             if (definition[2] & 1) *(dword *)(object + 4) |= 0x10000;
@@ -144,7 +145,7 @@ long __stdcall function_b7b40(void *creation)
             *(short *)(object + 0xc2) = *(short *)(placement + 0x70);
             *(long *)(object + 0xc4) = *(long *)(placement + 0x68);
             *(long *)(object + 0xc8) = *(long *)(placement + 0x6c);
-            object[0xb1] = 0xff;
+            *(char *)(object + 0xb1) = NONE;
             *(long *)(object + 0xcc) = NONE;
             *(short *)(object + 0xd0) = NONE;
             *(word *)(object + 0xc0) = 0;
