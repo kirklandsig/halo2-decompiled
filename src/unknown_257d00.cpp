@@ -3018,6 +3018,23 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // (exchange), and a forced-ranking search with the actor first then gives 457 at best. Forms: that aggregate copy 608
 // (2404 B), without the turn_facing pointer 608; case 4's facing read straight from the state 611 (2400 B); both 623
 // (2384 B); case 1's range argument formed from the state view's +8 member 429 (same code), with the aggregate copy 608.
+// M3 lane 3 r318 (fast screens with 0x110ab0, 0x258a00, 0x258cf0 and 0x25a130; control 429; body unchanged). On main:
+// case 20's two squared distances through the existing out-of-line distance_sq3f (the link inlines it) 431; through a
+// file-local `dz * dz + dy * dy + dx * dx` helper of the point and the actor's position (the shape of other files'
+// squared-distance helpers) 431 at 2416 B, with case 20's arithmetic then exactly retail's (aligned 165 -> 149); that
+// with the iterator set up data, index, datum_index 431. On lane 5 r233's 249 lead (its match-only forms and the
+// parameter re-read, as listed): + that helper 399 (case 4's dot flips, a symbol-count state; with 1 or 2 unused
+// initialised longs 254); + case 20's main arm returning through `{ local_30 = 1; goto local_31; }` 229 (2404 B,
+// retail's epilogue copy there); + case 6's four fields and the 0x29 flags through a file-local fill helper, the 0x48 OR
+// through the global, 228 (case 6's two ORs then split as retail's); + case 20's else arm as `else local_3 = b0 == NONE
+// || d1;` 216 at 2396 B (aligned 35; its `mov al, [d1]; jmp` into the test is then retail's); the two request globals
+// typed as pointers 229; the two facing publishes through one helper 643 (actor/state exchange). The 216 state holds
+// for 1, 2, 9, 10, 17, 25-27, 33 and 34 unused longs; at 4, 5, 12, 13, 20, 28-30, 36 and 37 (293) case 2's x-term
+// order is right but cases 4 and 20 are not. Left on 216: the tail's scratch rotation (the second publish, the 0x110ab0
+// argument, the 0x290 pair, the 0x470 pair and the timer conversion are one register step off; on main they are
+// retail's), case 2's x-term order, case 6's first flag store and result-pointer load, case 18's selector load. On 216:
+// the fill helper's stores in other orders 215 to 216 (two orders exchange actor and state, 506 to 508); case 18's
+// selector stored before the 0x20 field 218. Held as a patch (match-only forms).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
