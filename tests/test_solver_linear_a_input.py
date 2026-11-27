@@ -13,7 +13,7 @@ from test_solver_dispatch import (
 
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
-@pytest.mark.parametrize('kind', [6, 13])
+@pytest.mark.parametrize('kind', [6, 11, 13])
 @pytest.mark.parametrize('initial_w', [
     0x40a00000, 0xc0400000, 0x7f800000, 0x7fc12345,
 ])
@@ -36,6 +36,8 @@ def test_linear_a_observes_rounded_input(solver_images, precision, kind, initial
             put(data, OPS + 24, 'I', kind | (size << 8) | (row_kind << 16))
             if kind == 6:
                 put(data, OPS + 28, 'f', 100)
+            elif kind == 11:
+                put(data, OPS + 28, '2f', 0, 0)
             put(data, OPS + 24 + size, 'I', 0x400)
             put(data, TERMS, '12f',
                 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0)
