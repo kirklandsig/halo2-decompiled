@@ -529,6 +529,12 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // M3 lane 13 r165 (h2m fast with 0x198540 MATCH; control 3): the apply helper as a plain function 1062 (1148 B: it
 // stays out of line); as `inline`, `__forceinline` and `static __forceinline` 3
 // each (same code); the entries call's index as `j * 8 + 78` 3.
+// M3 lane 8 r247 (fast reduced-image screen with 0x198540 MATCH; control 3): the device, entry and address loops each
+// as one flat loop over 16 (`&update->devices[0][i]`, as 0x198540 walks its addresses) 3/3/3, device and entry both 3
+// (the same code each: the flat loop is unrolled by four like the nested one); every loop declaring its own `long`
+// index 4 (the second group loop's sum then flips to `[eax + edi]`, the first stays). Reading: one loop-scoped index
+// alone, in any of the twelve loops, gives 3; the first six loops scoped flip the second group loop and five do not, so
+// its two temporaries sit one used symbol either side of a wrap; the first group loop's pair needs a far larger shift.
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {
@@ -1186,6 +1192,10 @@ static inline long team_score_195ed0(long team)
 // > rank` 100 (same code: the entry test still folds to `movsx; test`); in the player loop the copied team read ahead of
 // the flag test 281; re-measured the address index stored ahead of the copy 150 (1210 B); the player loop's team entry
 // written through the table at each use (no entry pointer) 246 (1243 B). Body unchanged.
+// M3 lane 11 r176 (fast screen with 0x196470, 0x1587f0, 0x161e60, 0x162030 and 0x199310, all MATCH; control 100): the
+// rank loop's team entry bound by reference 100, the clamped score cast to `word` 100 and the player loop's flag test
+// as `!= 0` 100 (same code each); the copied team index as a `char` 299; the rank loop's team as a `short` 227
+// (1259 B). Body unchanged.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

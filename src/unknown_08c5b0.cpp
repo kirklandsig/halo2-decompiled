@@ -417,6 +417,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // seeded `setting = 1` 49 (111 B); `long const old_setting` 4 (same code); both handlers through one shared plain-inline
 // store helper (index, setting) holding the old-setting test and the notify call, the reset still MATCH, 5; an
 // `__assume(request != NULL)` at the top (diagnostic) 4 (same code).
+// M3 lane 1 r177 (fast screen with 0x8c5b0/0x8c660, both MATCH each run; control 4; the allocator view re-read: request and
+// kind both priority 20 in the entry block, request ahead on its definition stamp, 8 against 6), all with the existing
+// kind read: the handler's parameter as `void *` with a typed request local (the table entry cast to the handler type) 4;
+// the controller index declared ahead of the kind read and assigned after it 4 (same code); the controller record
+// reached through the typed player-slot array and viewed as the voice record 4 (same code); the selector's kind arm seeded
+// `setting = 1` with only the available arm assigning 12; the request's kind field typed `word` 4 (same code).
+// Re-measured: the index read after the selector 23; the notify call re-reading the request's index 27 (99 B).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

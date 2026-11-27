@@ -1325,7 +1325,7 @@ bool function_25ab50(long reference)
 	return result;
 }
 
-real function_210b60(s_type_c3b527 const *arg_0, point3f const *arg_1);
+inline real function_210b60(s_type_c3b527 const *arg_0, point3f const *arg_1);
 real normalize2d(point2f *v);
 bool function_1f50e0(long actor_index);
 bool function_1f57f0(long actor_index, long animation, long const *target);

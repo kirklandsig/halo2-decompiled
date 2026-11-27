@@ -1077,6 +1077,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // decisions on it gives 21 at best); the copy and the named engine pointer without the carrier 24; the field pointer
 // dropped (entry copy and store through globals) 131 (374 B, the field is read again after the loop); the saved playing
 // teams as a word 60; the added teams as `playing & ~old_playing` 23 (same code).
+// M3 lane 3 r319 (h2m fast with 0xb58c0/0x196780, both MATCH; control 23): the mask stored through `globals->team_mask`
+// (the field pointer then only read) 23 (same code), that with the uncast OR 24, with the engine read as
+// `g_55e4d0[globals->engine_index]` 37; no added-teams local (the counter loop testing `~old_playing_teams &
+// playing_teams & (1 << team)`) 94 (396 B); one function-scope `team` for both loops 23 (same code). Re-measured: the
+// uncast OR into the dword local 24, stored in one expression 77, with a plain present 63 (384 B: the saved mask's reload
+// there is retail's dword load of the word slot, but present takes EDI and is the OR's destination). Reading: retail's
+// present stays in memory, so its OR can only be the source and the saved mask's post-loop piece (reload, zero
+// extension, OR, store) is coloured ECX; the playing teams' EDX and the early engine-index load follow from that.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -6225,6 +6233,12 @@ void __stdcall function_d6bc0(long object_index);
 // reading on the field-test helper form: `entries` is again coloured late at 8 (+132 over eight referencing blocks, -124
 // over 37 live unreferenced ones) and takes EDI; a forced-ranking search over 16 single decisions found 43 at best.
 // Body unchanged.
+// M3 lane 8 r247 (fast reduced-image screen; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B;
+// on the latter `entries` again ranks 8 in the fourth pass, +28 of it from the 0x15aad0 call block, which counts seven
+// candidates). On the field-test flag form: the countdown block's index test on the loop-top local (0x158ff0 and
+// 0xd6bc0 still on the field) 207 (878 B); the reset counter as one store `value06 = reset ? 0 : value06 + 1` 182 (851
+// B). On main's body: the same countdown test on the local 254 (891 B); the same one-store reset counter 156 (861 B);
+// the switch's `default: continue;` written first 29 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

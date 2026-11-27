@@ -1686,6 +1686,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // Arm 3 rows + early Arm 1 gravity clear 542 (`al=127, mk=72`: Arm 3 k still commutes into `xmm2`); Arm 2 `vz` +
 // `vector3f_assign` + Arm 3 rows 558; Arm 3 `delta` inline scale / `vector3f_add_scaled` / split `limited` assign
 // 499/482/198.
+// M3 lane 6 r252 (fast screen with 0x1f0450, 0x24590, 0x1f03e0, 0x30bf0 and 0xa75d0, all MATCH; control 198). Reading
+// of the first cross by operand age (younger operand loaded first): retail needs the facing i and j fields older than
+// the up vector's k, which no order inside the cross gives, since the i row reads up.k before any use of facing.i.
+// Forms: the first arm's cross after the facing scale 232, between the input scale and the facing scale 216; the
+// magnitude read through `state->input` instead of the input pointer 550 (3040 B), the first arm's input scale through
+// `&state->input` 485 (3055 B), both 316 (3051 B). All restored.
 // M3 lane GB r29 (38 fast trials across 3 batches with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0 all MATCH; control
 // 198, al=155, mk=203; body unchanged): low-normal `cross3f` / all `cross3f` 198; high-normal direct `state->facing`
 // 494; low-normal `d1/d2*normal` + `side` j,i,k (both `d2` orders) 200; early `delta` (before `if (flying)` or before
@@ -1700,6 +1706,21 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `step <` 198/471; Arm 2 `step` after `limited` 210/471; Arm 3 `step` before `limited` 208/481; Arm 3 `vector3f_scale`
 // on `limited` 198/471; Arm 3 `vector3d_from_points3d` for `delta` 484/476; Arm 3 `real length` on `t06` 469 (al=146);
 // `magnitude3d` (both/change) on `t06` 580/568.
+// M3 lane GB r32 (76 fast trials + 7 diag across 4 batches with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0 MATCH unless
+// noted; control 198, al=155, mk=203; body unchanged): existing `planar_scale` from vector2f_normalize.h on Arm 2
+// `rotated` + `limited`, `step` after `limited = delta`, `real length = normalize2d(&limited)`, direct `state->normal`
+// in low-normal arm, `vector3f_scale(&limited, step, &limited)`, and direct member output stores in Arms 2 and 3
+// reaches 348 (`626/626` insns, `3049/3047 B`, al=87, mk=43; + `direct` before `damping` 344, `+0x31`, al=83, mk=43):
+// matches all 59 Arm 2 insns/regs (save delta/limited slot swap), 120/124 flying lines, 112/116 ground lines, and 89/91
+// history lines; only Arm 3 `out.k` commuting to `addss xmm2,[eax+8]` blocks Arm 1 `jmp 0x1f0f58` tail-share (shifting
+// lines 74-360 by 1). Isolated cause: binding `state->speed` into a `real` local/param (including `planar_scale`'s
+// by-value `scale`) always commutes Arm 3 `out.k` (confirmed across `K=1..7` dead-long phases 390-571, `point2f` vs
+// `vector2f`, `vector3f_add`, `drop`, no `fraction`, `result` ptr, `velocity` copies 573/586, `limited+=`/`result`
+// locals 668 breaking 0x1f0450), whereas reading `state->speed` directly (no local/helper) always keeps retail's
+// `movss xmm0,[eax+8]; addss xmm0,xmm2` + Arm 1 tail-share (351-547, loading speed twice in Arm 2). Also tried:
+// `planar_scale` into `desired` 567 (`3047 B`, al=109, mk=53, matching 167 consecutive high/low-normal lines), backup
+// `delta = limited` in Arm 2/3/both 247/508/453 (base both 579), `magnitude3d` input/both on `t09` 571/358, Arm 2
+// 2-use `rate` local 566-576, `vector2f_normalize.h` on `198` `vector3f_assign` base 554/462, typed speed-bands 465.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

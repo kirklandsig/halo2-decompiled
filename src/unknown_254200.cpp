@@ -415,6 +415,14 @@ void function_254200(void)
 // `2.f * arg_2` 4; the point copy split from its declaration 4; the bitmap choice made ahead of the readiness tests 52;
 // the dimension reads width first (stores unchanged) 4; the texture and dimension block through a `long slot = 0` index
 // as 0x14390's body has it 4.
+// M3 lane 1 r177 (fast screen with 0x254200 MATCH and 0x2548f0 2 each run; control 4). Split reading: in the slow-path block
+// after the second reservation the three reloads go out in ascending piece number, the point's x (piece 66), y + size
+// (piece 70) and the depth constant (piece 72); the float split numbers its pieces in parent order (y + size is parent
+// 62, the constant 64) from a free list of three holes, so the constant's piece follows. Forms: the depth as a
+// file-scope `static real const` 4 (folded, same code); the size product written at each of its eight uses 221 (1118 B);
+// the colour helper's products written scale first 4 (same code); the size product named after the primitive start call 46; the quad
+// drawing (size through End) in a one-caller forceinline helper taking the point, scale, size and colour 4 (same code).
+// All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -958,6 +966,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // there 4 (its spill moves ahead of the compare, pair unchanged), both named there 305, both named ahead of the call
 // 346. Diagnostic: the first vertex's w as another constant 25 (the depth is then no value shared across the
 // reservations and the pair does not arise).
+// M3 lane 8 r247 (fast reduced-image screen with 0x254490 4 and 0x254200 MATCH; control 2; aimed at the two missing
+// float candidates): the first quad's half product named once (`real half_scale = arg_1 * 0.5f;`, used in all eight
+// coordinates) ahead of the color getter 412 (2268 B, first +0x83: it lives across the calls), the same with the alpha
+// named as a real before its conversion 412, declared just after the color call 386 (2272 B); the scale copied into a
+// `real const` at the top with the alpha named as a real 2 (same code); the half product from that copy 412, also with
+// the named alpha 412.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

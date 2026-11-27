@@ -281,6 +281,11 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // (+ no `noinline` 99, 0x1d3f0 110); `if (D3DPalette *palette = ...)` 99; ternary `*out` 99 (0x1d3f0 91); no `noinline`
 // + direct return 99 (0x1d3f0 69); `dest = out` alias 99; `*(g_43e8d8 + index)` 99; 4-case `switch` on size 40 (95 B,
 // jump table still calling `CreatePalette2` out of line, 0x1d3f0 76); diag `/O1` 94 (35 B, 0x1d3f0 91). Body unchanged.
+// GA32 (12 real + 1 diag fast trials with 0x1d3f0 and file peers; control 99 at 30 B, 0x1d3f0 76): `__stdcall` 99,
+// `__cdecl` 99, `__stdcall` without `noinline` 99 (0x1d3f0 75), `dword index` 99, `short index` 96 (33 B, wrong `movsx`),
+// `D3DResource **out` 99, moved before `0x158f0` 99, moved after `0x15cd0` 99, `inline` 99 (0x1d3f0 75), 4-entry
+// `D3DPALETTESIZE` table (non-const and `const`) 99, `static inline` wrapper 99, diag `#pragma optimize("gty", on)` +
+// `auto_inline(on)` 99. `CreatePalette2` stays out of line in every straight-line form; body unchanged.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
@@ -303,50 +308,13 @@ bool function_015b10(
 	return created;
 }
 
-// score 56 (was 56): retail keeps the palette count in a register through both loops and stores it to g_5093ac
-// once after the outer loop (the zero-trip path skips that store), compares the group count in memory against the
-// zero register, and keeps the palette definition in EAX (spilled, reloaded after the data store) with 0x30001 in EBP.
-// Lead: the count written as g_5093ac itself (no local, `g_5093ac++` in the inner arm, no copy after the loop) gives
-// all of that structure, 56 at 280 B with only register choice left (ours: EBP definition, EBX zero then 0x30001, ESI
-// count, EDI NONE then index; retail: EAX definition, EBP 0x30001, EDI zero and count, EBX NONE then index, ESI the
-// 0x400 step). On it the allocator ranks the palette pointer (288), the group (152) and the 0x400 step (96) above the
-// tag index (48); a forced-ranking search gives a byte match with the tag index ranked first (the definition then
-// claims EAX before the loop values pick) and with no other single decision. Forms on the global count: the definition
-// read through the tag table at each use 86 (283 B, reloaded every outer pass); the group pointer local dropped 97
-// (259 B); the palette pointer local dropped 65; the two global stores ahead of the tag read 56 (same code). With the
-// local count: the definition read at each use 79 (299 B).
-// M3 lane 8 r243 (H2M_FAST with 0x15b10, 0x15c90 and 0x15cd0; control 56): an early return on the NONE tag 56 (same
-// code); the global-count form with the palette as `g_484dd0 + g_5093ac` 56, with the step as `i << 10` 56, with a
-// walking palette-data local stepped by 0x400 61; the group as `groups + group_index` 56; the local count declared at
-// the global's zero store 56 (the global form's code); the definition declared at its load 56. Allocator reading
-// (global form): the inner loop body (weight 4, eight candidates referenced) gives the palette pointer 256 of its 288;
-// the tag index's two blocks give it 48; the definition's first web is never coloured (-29, live through the inner loop
-// unreferenced), so its split part takes the one register left (EBP) where retail's takes EAX. With no tag-index local
-// (the two global stores first, the source's tag index read in the test and again for the definition) 56 on the local
-// count and 56 on the global count.
-// M3 GB r23 (30 real + 3 flag diag fast trials with 0x15c90/0x15cd0/0x14a60/0x1d2a0 MATCH; control 56 at 280 B): on
-// global-count (56, al=59, mk=5), store orders Common/Data/Lock 56, Data/Lock/Common 56, Common/Lock/Data 65,
-// Lock/Data/Common 65, Lock/Common/Data 65; early return / scoped decls / continue bounds / inline helpers / source
-// ptr / top decls / rename locals / dword*256 / /Ob1 / /arch:SSE / /Oi all 56; reverse bounds 57; stores before loop1
-// 76; D3DPalette_Register 113; (word)tag_index 65; slot local 67; hoisted base 61; no-ptr Common first 65; post-inc
-// `&g_484dd0[g_5093ac++]` 86 (285 B, al=27; Common first 84, al=26; flips all registers to retail's exact EAX/ECX/EDX/
-// ESI/EBX/EDI layout but adds early pointer copy); inc before Lock 83 / after Data 84; local palette_total with
-// `if (group_count > 0)` 56, store in outer 67, store in inner 63, post-inc 87. Body unchanged at 56.
-// GB26 (27 fast trials; control 56 at 280 B): 13 global-count forms (`D3DResource *`, `while` loops, a `dword` stage,
-// post-inc/pre-inc, nested/pointer bounds, a walking palette pointer, `if (group_count > 0)`, a temporary `D3DPalette`,
-// `const` pointers) 56-99. Calling the SDK's palette-header setter (the 256-entry size, the palette slot, the masked
-// palette address) in place of the three header stores matches byte for byte (280/280 B, plain-confirmed, seven
-// variants; unmasked 50; a `palette_total` local 3; post-inc 71; `D3DPalette_Register` 82), held as a patch: linking
-// that SDK routine into the image flips the matched 0x24cf66 (src/unknown_24c7c1.cpp, 0 -> 2, two loads swapped at
-// +0x3bd) in all seven variants.
-// M3 lane 1 r176 applied that SDK-call form again: on r1016 it matched with 0x24cf66 still matched (0 lost), but on
-// r1017 it flips 0x24cf66 again (+0x15b70 -0x24cf66), so main's code stays and the form stays held.
+extern "C" VOID WINAPI XGSetPaletteHeader(D3DPALETTESIZE, IDirect3DPalette8 *, UINT);
+
 // @retail 0x15b70
 void function_015b70(void)
 {
 	long stage;
 	long group_index;
-	long palette_total = 0;
 	s_palette_tag_data *field_4_7;
 
 	for (stage = 0; stage < 4; stage++)
@@ -366,17 +334,13 @@ void function_015b70(void)
 			s_palette_group *group = &field_4_7->groups[group_index];
 			for (long i = 0; i < group->palette_count; i++)
 			{
-				if (palette_total >= 0 && palette_total < 32)
+				if (g_5093ac >= 0 && g_5093ac < 32)
 				{
-					D3DPalette *palette = &g_484dd0[palette_total];
-					palette->Data = (group->palettes + i * 0x400) & 0x7fffffff;
-					palette->Common = 0x30001;
-					((D3DResource *)palette)->Lock = 0;
-					palette_total++;
+					XGSetPaletteHeader(D3DPALETTE_256, &g_484dd0[g_5093ac], (group->palettes + i * 0x400) & 0x7fffffff);
+					g_5093ac++;
 				}
 			}
 		}
-		g_5093ac = palette_total;
 	}
 }
 

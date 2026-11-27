@@ -401,6 +401,26 @@ PRIVATE inline bool score_team_present(long team)
 // addr criteria diag 4; const ctx 4; ctx ptr reversed store order 8 (still loads fallback first);
 // both ctx at top 4; decl-then-assign criteria 4; local fallback 188; /Ob1 diag 41; rename a/z or z/a 4;
 // criteria after counts 27; ctx via ptr 4.
+// M3 lane 16 r198 (H2M_FAST): the load order follows whether `fallback` is captured: with its address passed to the
+// sorters its load is placed ahead of the criteria reload whatever the statement order (both context stores
+// reversed: 8, the loads still fallback first, the stores follow the source); with any other scratch the loads are
+// retail's. An unused `bool scratch;` passed to both sorters 2 (only the scratch's address differs: retail passes
+// fallback's own argument slot, ours a free frame byte; the packer refuses the argument slot because the scratch
+// interferes with fallback), `long scratch;` at function scope 14 (frame 0x1c), one `long` scratch per sort 14;
+// criteria address-taken 4, with the stores reversed 8. Diagnostics: &mode for both sorters gives retail's load order
+// (171, frame changes); the sorters with `(void)unused;` drop the argument (200) and with a const reference to it
+// keep their match and 4 here, so the capture comes from the sorters keeping their first argument.
+// HELD (needs another lane's file): the two sorters passing their unused first argument on to their partition sorters
+// (an unread first parameter there) instead of the dead `void **unused_reference = &unused;` local make this a byte
+// MATCH with &fallback unchanged (fast, and a full check: nothing lost, both sorters and both partition sorters still
+// match, 0x18dc90 295 -> 280, 0x260670 422 -> 421), but 0x19c7e0 rises 108 -> 149 (375 B: its stack parameter moves
+// into a register once &flagged_count is no longer captured; a separate scratch there, as retail passes, is also 149).
+// Held as a patch until 0x19c7e0's file is free.
+// M3 lane 4 r270: the same change re-measured on a later main is a MATCH with 0x19c7e0 unchanged at 65 (fast and
+// plain checks over the sorters and their callers agree; 0x18dc90 295 -> 280, 0x260670 422 -> 421), but it is HELD at
+// review: retail's calls into the partition sorters (0x13de6c, 0x13dfbb) push three arguments and pass the low end in
+// EAX, so nothing in retail shows a forwarded first argument; the unread parameter would be there only for its effect
+// on this caller. A form without a new parameter is still open.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {

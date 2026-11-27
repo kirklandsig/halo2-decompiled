@@ -1311,6 +1311,12 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // forced-inline accessors (no code of their own): the camera record as an accessor of (table, key) 105, the count store
 // through a setter 105, the key read through an accessor for the product 105 and for both uses 105 (all the same code);
 // the plane lookup spelled index first 105, through a portal byte pointer 105 (same code). Body unchanged.
+// M3 lane 11 r177 (H2M_FAST with 0x1730a0 and 0x163db0, both MATCH each run; control 105): the key bound by `long const &`
+// for both uses 105; the camera address as `&cameras[entry->key * 0x1bc]` 105 (same code each); the camera address
+// local re-measured 22; on it the address in two steps (`camera = cameras; camera += entry->key * 0x1bc;`) 22, and with
+// the second step through a `byte const *&` 22. Allocator reading on the 22 lead: the key is a ranked candidate
+// (priority 84) coloured while ECX is still free, and the camera table is a one-reference scratch temporary given its
+// register only afterwards (EDX); retail's table in ECX ahead of the key needs the table ranked above 84.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1755,6 +1761,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // the ratio stored after the vertical field 337, the shared tangent named 385 (1428 B), the second axis declared beside
 // the matrix 337, the squares accumulated into a double 341 (1448 B). Retail's tail squares each difference as
 // `fld [d]; fmul [d]` right after storing it; ours loads all three and squares register copies.
+// M3 lane 13 r166 (reduced-image screens, control 337): the rotation matrix declared ahead of the forward copy 337 (same
+// code); the builder's (1 - c) * k shared by its two products, tik and tjk written at each use, 356 (aligned distance
+// 377 -> 323, unity then in XMM2); the clamp as `dot <= limit` 337; the forward copy taken after the vertical field of
+// view 337 (same code); the transform's sums unparenthesised 368. Body unchanged.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -2828,6 +2838,15 @@ struct s_camera_reference_171830
 // forward through a pointer local, declared at the rows or at the top, 154 (the pointer is propagated, the address
 // temporaries move); `real const &depth` bound to the sum 263 (1223 B, depth 0x220); the offset parameter accumulated 9
 // (same code, its value weighs 0x20). Not kept: the lead's forms still need the byte match.
+// M3 lane 13 r166 (reduced-image screens; round 154's lead rebuilt, 9). Reading the operand ranks: forward.i is an
+// offset-0 load through the second parameter (0x8008) and depth a local (0x200); retail needs depth between forward.i
+// and forward.j (0xc008). On the lead: the depth sum written in each row (one shared temporary at ordinal 0x3ec, rank
+// 0x7d80) 118; with the plane distance in the compare in one to eight paren pairs (diagnostic) 118 each (a leaf's
+// parens are not numbered); with the i row's sum in 1/3/7/11 paren pairs (diagnostic) 267/9/9/9 (numbered after the
+// sum: the temporary stays at 0x7d80, only the later field levels move). The temporary needs about eleven more
+// expression nodes between the plane test and the centre (ordinal 0x402) with the later levels shifted back by two;
+// no natural statement lives there. Main with only the grouped sample products 264; the lead with the helper call in
+// the test 288; the lead's rear vector through vector3f_scale and vector3f_negate_ab in place 159. Body unchanged.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

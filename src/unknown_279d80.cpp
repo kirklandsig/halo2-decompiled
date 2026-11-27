@@ -2279,6 +2279,11 @@ void function_27dd10(void)
 // destination as the output cast to the quaternion type 2; the rotation source as the decode target cast likewise 2;
 // the translation blend's three rows written out 2; the scale blend's row written out 2; the blend-1 arm ending in
 // `return` with the later methods' chain unnested 2 (all the same code).
+// M3 lane 13 r167 (fast screen over all 78 functions of the file; control 76 of 78, this function and 0x281b60 2): the
+// blend's asm as two blocks (the final store in its own) 2; the blend's asm as one `__asm` statement per instruction 2;
+// component_decompress as one call through the selected decoder pointer 2 (0x288570 120, 0x288bd0 71, 0x288f80 63,
+// 0x289580 78); node_destination_get with the identity case last (`if (node_kind != 0) { ... } *index = node_index;`)
+// 2; the scale blend's product with the fraction first 2 (the pair and 0x281b60 unchanged throughout). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2605,6 +2610,13 @@ void function_2818e0(void)
 // user regresses); function_288572's output cursor declared ahead of the in-place flag 2 (0x288570 3, 0x289580 78); the
 // non-interpolated arm's apply index as `arg_1 != 0 ? local_4 : arg_5` 2, the interpolated arm's so 2, the root-offset
 // test as `!(arg_3 || local_0)` 2 (the three the same code, every user matched). All restored.
+// M3 lane 1 r177 (fast screen with 0x27dff0 and the six matched walk users; control 2): in function_288572 the in-place
+// test written at each of its uses (no flag local) 4 (0x27dff0 4, 0x285750 2, 0x288570 120, 0x28aaa0 2); in
+// node_destination_get the map entry read at each use (no index local) 368 (1691 B, every walk user but 0x288570 and
+// 0x289580 regresses); the group end as the file's `MIN(arg_7, arg_5 + 8)` 50 (every walk user 9-50); in function_288573's
+// arms this function never runs: blend 3's rotation reading the blend weight at each use (no fraction local) 2 (0x285750
+// 17), blend 4's rotation through the same `g_5044c0` pointer local as its translation and scale arms 2 (0x288570 280,
+// 0x289580 176, 0x28aaa0 207). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

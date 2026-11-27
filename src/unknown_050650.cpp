@@ -1146,6 +1146,37 @@ struct s_collision_result_buffer_1697c0
 // M3 lane 2 r158: the r157 form (sine and cosine passed straight in, the pitch axis through vector3f_assign), 239, lost
 // 0x1c4590 (5) and 0x24cf66 (2) in the full check of the tree merged with main (as lane 12 r193 had seen); restored to
 // main's 270 form, held as a patch.
+// M3 lane 6 r253 (reduced-image screen with 0x297660, 0x297a50, 0x2980d0 and 0x24590 MATCH, 0x297d30 23; control 270;
+// whole-image checks listing 0x1c4590, 0x24cf66, 0xc2d00, 0x185be0 and 0x41640). The r157 form re-measured on today's
+// tree: 239, still losing 0x1c4590 (5) and 0x24cf66 (2). 270 -> 239, HELD at review: the same form with the pitch axis set through
+// the shared point setter, `real_point3d_set((point3f *)&pitch_axis, ...)` (the spelling src/unknown_1f03e0.cpp and
+// src/unknown_205be0.cpp already use for vector storage): the same code for this function (1427 B, the normalizer's
+// j * scale and the pitch rotation's operand order as retail), and 0x1c4590, 0x24cf66, 0xc2d00, 0x185be0 and 0x41640
+// all stay matched, since that setter is not a new per-file inline. Held because the typed vector setter gives the same
+// code and differs only in the count of per-file inline instances, so the point setter on a vector (through a cast) was
+// chosen for the link layout, not for the code; main's body is back. On the held form: the setter alone (trig locals
+// kept) 296 (1440 B); the fallback axis through the setter as well 345 (1456 B); the candidate through the setter 290
+// (1423 B, frame 0xb0); the collision index stored ahead of the ray scale 239 (same code). Rank reading on the held
+// form: the pitch axis i and j live in registers from the normalizer into the loop (442 and 458) and are coloured
+// after ten of the loop's own temporaries (476 to 1196), so j finds only XMM6 and XMM7 free; retail has j in XMM1.
+// M3 lane GA r30 (24 fast trials across 2 batches with 0x297660/0x24590/0x2980d0/0x297a50 MATCH, 0x297d30 23 unless
+// noted, 0x2967b0 336; control 270 at 1431/1423 B, +0x31, al=132, mk=71; body unchanged): zero-new-symbol `pitch_axis.n[0..2]`
+// union-array init with direct `(sin, cos)` 332 (fr=0xb0; k,j,i 274 at 1427 B; `0.f -` 332; + early norm 334; + best/NONE
+// 331; alone 333; frac-after 329); direct `(sin, cos)` + early norm + best/NONE 272 (mk=36); merging `actor_looking_rotate_in_place`
+// into `actor_looking_rotate` (net-0 symbols with `vector3f_assign`) 277/284/283 (breaks 0x297d30 23 -> 146; with named dot
+// 295, 0x297d30 23). On GB15's 244 lead (1428/1423 B, fr=0xa8, al=77, mk=16: only 16 masked diffs remain, caused by swapped
+// sine/cosine transfer slots `[esp+0x30]`/`[esp+0x10]` vs retail `[esp+0x10]`/`[esp+0x40]` and one 5-byte `movss xmm6, [esp+0x30]`):
+// scaling crosses after all 3 (`cross_i *= sine; ...`) 297 (199 on main, breaks 0x297d30 -> 153), via `vector3f_scale` 269/361
+// (343 on main, 0x297d30 -> 152-155), named `scale = 1.f / magnitude` 269, named `sine` + direct `cos` 244 (239 on 239 lead,
+// 0x297d30 23), named `cosine` + direct `sin` or swapped `(cosine, sine)` params 256 (0x297d30 41).
+// GB30 (27 valid fast trials + 1 plain ripple check; control 270 at 1431/1423 B, 0x297d30 23, 7/7 matched peers MATCH):
+// axis_rotation.h function_x84d9e8 339/334/294/292 (0x297d30 245); direct (sin, cos) + vector3f_assign 239 plain (1427 B,
+// 0x297d30 23, + best_dir/NONE 236, + early-return norm 244; NOT kept: still loses 0x1c4590 (5) and 0x24cf66 (2) in plain
+// check); real_point3d_set 239/236/244 (same code, NOT kept: pointer cast); negated cross (+ cross * sine) 192 (1423 B) on
+// 244 / 269 on 239 (NOT kept: raises 0x297d30 23 -> 48 and emits addss for retail subss); on 239: vector_i/vector_j locals
+// 285/295 (7d30 158/245), dot kji += 291 (7d30 146), cross3f order 239, (cos-sin)+proj 310 (7d30 146), vassign out 330
+// (7d30 142), header normalize3d / single-exit magnitude3d / pitch normalize3d 265, fabs>= 332, !(norm>0) 239; on HEAD +
+// direct (sin, cos), ER 272 / SE 281. Body unchanged at 270.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
