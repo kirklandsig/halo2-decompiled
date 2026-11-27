@@ -87,7 +87,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00018d70,267,game,unknown,a16,,,003faae0,src/unknown_01cf50.cpp,matched
 00018e80,92,game,speed,a16 pad,,,003f7230,src/unknown_01cf50.cpp,matched
 00018ee0,1605,game,speed,a16 pad,,,003f52f0 003f5330 003f5370 003f53d0 003f5450 003f54a0 003f54f0 003f5590 003f5640 003f56c0 003f5730 003f57a0 003f5830 003f5870 003f58e0 003f5950 003f5970 003f5990 003f59b0 003f5a60 003f5a90 003f5ac0 003f5b00 003f5b20 003f5b40 003f5ba0 003f5c10 003f5c70 003f5cf0,src/unknown_0167a0.cpp,matched
-00019530,1700,game,speed,a16 pad,,,00014390 000143c0 000144f0 00014f60 0001dd60 00025960 00137550,src/unknown_01cf50.cpp,todo
+00019530,1700,game,speed,a16 pad,,,00014390 000143c0 000144f0 00014f60 0001dd60 00025960 00137550,src/unknown_01cf50.cpp,matched
 00019be0,191,game,speed,a16 pad,,,0001b2c0,src/unknown_0167a0.cpp,matched
 00019ca0,1225,game,speed,a16 pad,,,0001b2c0 00131e50,src/unknown_0167a0.cpp,matched
 0001a170,2527,game,speed,a16 pad,,,00131ed0 003f52f0 003f5330 003f5370 003f53d0 003f5450 003f54a0 003f54f0 003f5590 003f5640 003f56c0 003f5730 003f57a0 003f5830 003f5870 003f58e0 003f5950 003f5970 003f5990 003f59b0 003f5a60 003f5a90 003f5ac0 003f5b00 003f5b20 003f5b40 003f5ba0 003f5bf0 003f5c10 003f5c70 003f5cf0,src/unknown_0167a0.cpp,matched
@@ -12855,7 +12855,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00318a90,255,third:havok,speed,a16 pad ebp,,,00315d20 00318320,src/unknown_318a90.cpp,matched
 00318b90,24,third:havok,speed,a16 pad,,,,src/unknown_318b90.cpp,matched
 00318bb0,88,third:havok,speed,a16 pad,,,,src/unknown_318b90.cpp,matched
-00318c10,581,third:havok,speed,a16 pad ebp,,,0030d2b0 00315d20 00318320 0031be80,src/unknown_318c10.cpp,todo
+00318c10,581,third:havok,speed,a16 pad ebp,,,0030d2b0 00315d20 00318320 0031be80,src/unknown_318c10.cpp,matched
 00318e60,166,third:havok,speed,a16 pad,,,0030ca30 00315d90 003183b0 0031bc90,src/unknown_318b90.cpp,matched
 00318f10,23,third:havok,speed,a16 pad,,,,src/unknown_318f10.cpp,matched
 00318f30,26,third:havok,speed,a16 pad,,,,src/unknown_318f10.cpp,matched
