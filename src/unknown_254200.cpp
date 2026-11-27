@@ -410,6 +410,11 @@ void function_254200(void)
 // The four edges named once (left, right, top, bottom) for the position calls 165 (1114 B); the point copy bound as a
 // const reference to the parameter's point 341 (1162 B); the size and the point copy const 4; the size as
 // `arg_2 + arg_2` 4; the point copied with memcpy 4 (same code each).
+// M3 lane 3 r316 (fast, control 4): the slow-path blocks after the second and third reservations are emitted in
+// code-generation order (no scheduler reordering there), so the swap is fixed before scheduling. The size written
+// `2.f * arg_2` 4; the point copy split from its declaration 4; the bitmap choice made ahead of the readiness tests 52;
+// the dimension reads width first (stores unchanged) 4; the texture and dimension block through a `long slot = 0` index
+// as 0x14390's body has it 4.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

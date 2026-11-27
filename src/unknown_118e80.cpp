@@ -1357,6 +1357,11 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // +0x88 copy 34; a `dword` force passed as `(long)` 38; the copy by memcpy with the member store after it 11 (round 133's
 // statement-order lead, the same code; a gain of 3, not kept); the member passed as the force (re-measured) 43 (1035 B).
 // Still BLOCKED-BY 0x1c4b00 (its bool formal: four of its declaration files are other lanes' this round) and 0xb7740.
+// M3 lane 4 r267 (fast screen with 0x119bc0, 0x1c4b00, 0x119020 and 0x119c10, all MATCH each run; control 14): the force
+// flag `bool const` 14; the +0x88 copy by memcpy with the member store before it 14; the copy and the call through a named
+// const pointer to the move output's velocity 14; the re-fetched object pointer declared bare before the 0x119bc0 call
+// 14 (all four the same code); the force passed as `force ? 1 : 0` 95 (1038 B). Still BLOCKED-BY 0x1c4b00 (its bool
+// formal; one of its declarations is in another lane's file this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

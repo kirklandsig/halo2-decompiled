@@ -4176,6 +4176,13 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // `((sound->flags >> 4) & 1)` 98 (both fold into `test byte ptr`, one constant fewer, registers then retail's); the
 // object index named for the callback 78, the start time named for the loop-top test 78, the marker address named 78
 // (all three forward-substituted, ranks unchanged). On main's body: the same two bit tests 117/100.
+// M3 lane 7 r235 (fast screen, control 8): the pool's reload points on this body are the callback block, the stop-7
+// block, case 0's stop block and two empty joins ahead of the latch; the no-default form adds three blocks (a
+// one-candidate block after the dispatch, a reload block there and a third reload join), which cost the index 2 + 4 +
+// 4 = 10 (69 -> 59). One of the two reload blocks alone would give cost 0 with the index at 63 or 65, above the
+// voice's 60. Tried on main's body: case 0's 0xe stop after the switch 8 (same code); the not-ready arm first ending
+// in `continue` 115; the voice failure first ending in `continue` 94; `if (mode == 1) continue;` with case 0's work
+// unindented 92; `case 0: break; case 1: default: continue;` with the work after the switch 49 (`test ax, ax`).
 // @retail 0x1282d0
 void function_1282d0(void)
 {

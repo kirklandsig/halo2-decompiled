@@ -1436,6 +1436,14 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // draws none. Forms: const-qualified parameters 2; the curve as a `short` from `? 0 : 1` 28; the promotion index named
 // `class_index` 2; the ring index named `sound_index` 2; the curve as `(~flags & 0x400) != 0` 4. Diagnostic: five, six or
 // seven dead longs 2 each (no symbol-count phase).
+// M3 lane 3 r316 (fast screen with 0x21be20, 0x21b870 and 0x126df0, MATCH each time; control 2). The split pass draws
+// pieces in candidate order (NONE, zero, 0xffff, the 0x80 constant drawing none, the first index, the count) from a free
+// list topped by the dropped AND-1 constant and the two float loads, then the last two numbers freed before allocation
+// (14, then 21); the reloads follow the pieces, so retail's order needs the fourth entry above the fifth. Forms: `short
+// curve` 28 and the curve passed straight 28 (both listed, re-measured); a const playing element 2; the iterator as an
+// aggregate initialiser `{ first, first, 0 }` 2 (first index 15, count 21); the walk on the step's result with
+// `iterator.index` at both uses 2 (15/21); the duration copied to a local at the call 2; 0x126df0's parameters named
+// `new_sound`/`old_sound` 2; the playing element named `sound` 2. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {

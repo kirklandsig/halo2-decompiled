@@ -2106,6 +2106,16 @@ struct s_item_flags_view_10b850
 // bit_vector_test 897 (4132 B); a two-assignment (if/else) flag for each entry test 858; the carrier add through
 // vector3f_add with the carrier first 813; the second gravity product as `dt * gravity` 813 (still one product); the
 // incoming velocity copy renamed `incoming` 813, carrier_delta renamed to sort last 813.
+// GB26 (21 fast trials, control 813 at 4096 B, fr=0x154, al=985, mk=569; body unchanged): TEST_FIELD_BIT on bit 14 + flag4
+// 842 (4126 B, mk=554); separate update_position 813; early settled + collision 813 (al=983, mk=568); 1-bit struct bitfields
+// on s_item/s_item_definition 813; member flag-test methods 898 (fr=0x148); pointer-taking flag helpers 898 (fr=0x148);
+// ternary `? true : false` flag tests 813; c_flag_bits_test<T> template 886 (4137 B, out of line); unswapped gravity getter
+// 865 (fr=0x148); unswapped vector-pointer gravity helper 814 (al=970, mk=554, still folds gravity); explicit subtraction 813;
+// typed s_collision_result_1697c0 on 813 base 860 (4096 B, fr=0x148, + settle-first + bit14/flag4 860 at 4104 B); dot3f 813;
+// vector3f_add_scaled for velocity updates 813, for 0.05f offsets 813, with vector3d_from_points3d 890 (4065 B, fr=0x148,
+// mk=547); cross3f for flow/orient 924 (4029 B, fr=0x13c); direct item->flag5/flag6 891 (4136 B); if/else bounce correction
+// 867 (4144 B, fr=0x158); SSE ternary abs alone 851 (4096 B, fr=0x150, al=916, mk=539). Still blocked on entry dead-byte
+// stores, double gravity reload, and noinline 0x16a040.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
