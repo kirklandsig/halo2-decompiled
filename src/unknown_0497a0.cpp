@@ -775,6 +775,11 @@
 // the first cross and the adds reorder. Forms: sin x and the two cosines as named doubles 578 (2629 B), the same
 // declared ahead of the plain sine 578, with the fast sine named too 576; the two scales named ahead of the adds 650
 // (2594 B); the point2f form with the first cross staged into w 649 or into its own vector 634. Body unchanged.
+// M3 lane 14 r165 (fast screen; control 536 at 2622 B, masked aligned rows 183). The special test as one combined mask
+// compare `(flags & 0x40020) == 0x40020` 624; the mixed wave's 0.5 written first 536 (same code); the first cross moved
+// after the first scaled add 643 (2603 B); the first cross taken the other way round (`cross3f(&v2, &v4, &c)`, the same
+// value negated) with the plain sine's scale negated 676 (2563 B: the second cross is then shared whole); the second
+// cross written as the first one negated 675 (2569 B). Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
