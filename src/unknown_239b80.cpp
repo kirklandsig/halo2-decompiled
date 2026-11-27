@@ -1092,6 +1092,18 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // ESI); the classifier result named and tested through a const reference 144 (same code); the departure flag
 // declared after the lowest scan, just ahead of the pass loop, 240; the hull count set through a reference local 144
 // (same code); the three exits as `break` with the compaction under `if (pass == count)` 230.
+// M3 lane 8 r244 (fast screen with 0x239d50, which MATCHES in every form below unless noted), at 144. Frame reading:
+// objects are packed smallest first, then by falling reference count, trying the argument homes before new slots;
+// retail's byte departure flag is packed first and takes the indices home because count's home stays live (count
+// is re-read from it), so the hull count (12 references) gets a slot of its own; ours packs the dword hull count into
+// the indices home and gives the flag a sixth slot (frame 0x18). Forms: the flag as bool 264 (762 B; 0x239d50 80),
+// with memcpy for the compaction 256 (767 B); the pass loop as the hull count itself (`while ((short)hull_count <
+// count)`, `indices[(short)hull_count] = current; hull_count++;`, no pass counter) with the bool flag and memcpy 204 at
+// retail's 784 B and frame 0x14, every instruction through the classifier call as retail (lead: left are count kept
+// in EBX, where retail re-reads it from its home for `current` and gives EBX to the hull count at the loop head, and
+// the heading's zero store, which retail makes before the lowest scan); that with the heading declared before the
+// flag 260 (757 B), after `current` 262 (757 B); the one-counter loop with the bool flag and memmove 236 (759 B), with
+// the dword flag 236 (759 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
