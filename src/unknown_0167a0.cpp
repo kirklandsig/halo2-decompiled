@@ -354,8 +354,6 @@ byte function_016a90()
 
 long g_485898;
 
-inline __declspec(noinline) bool function_016ac0();
-
 // @retail 0x16ac0
 bool function_016ac0()
 {

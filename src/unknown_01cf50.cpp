@@ -10329,7 +10329,8 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
-// Retail calls 0x16ac0 out of line here (its only caller): it is declared noinline in src/unknown_0167a0.cpp.
+// Retail calls 0x16ac0 out of line here (its only caller); the inline_depth pair keeps it out of line.
+#pragma inline_depth(0)
 // @retail 0x13680
 void function_13680(bool skip_effects)
 {
@@ -10341,11 +10342,7 @@ void function_13680(bool skip_effects)
         return;
     }
     bool draw_ui = !skip_effects && g_485898 != 6;
-    bool world_effects;
-    if (!skip_effects && g_485898 != 7 && function_022710())
-        world_effects = true;
-    else
-        world_effects = false;
+    bool world_effects = !skip_effects && g_485898 != 7 && function_022710();
     if (!function_016ac0() && !skip_effects && effect && effect->unknown3c &&
         effect->unknown40 > 0.0f && function_022710() && function_01de20(18))
     {
@@ -10356,6 +10353,7 @@ void function_13680(bool skip_effects)
     }
     else function_2bcd0(1, 1, draw_ui, world_effects, 0, 0, 0.0f);
 }
+#pragma inline_depth(255)
 
 
 s_reset_storage g_reset_storage;
