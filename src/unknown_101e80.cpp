@@ -308,6 +308,12 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // top covering all 6 link uses 39 (`mk=10`, first form putting `g_4e3b44` in `EBP` and emitting `imul 0xec` before
 // `push edi; imul 0x34`, but `tag_off` still coalesces to `ECX` and keeps the `[ecx+eax+8]` SIB fold; after `object`
 // 87 at 707 B with both `EBP` and `ECX` for `g_4e0300->data`; after `tag` 87; after `headers` 42; + late bools 211).
+// M3 lane 13 r167 (fast screen with the six file peers, all MATCH; control 31). Allocator reading on main: the tag link
+// ranks first (243, ECX) with the 0xec product folded into it, and the links pointer is its own 160-point candidate in
+// EAX (one load, four uses), so the sum is formed after the three reads; retail forms the sum in EAX with the links
+// pointer as the add's memory operand and copies it to ECX. Forms: the not-blocked test as `rate <= timer + 1.0f` 31;
+// the minimum test as `minimum > time` 33; the duration test as `0.0001f < duration` 31; the accumulator test as
+// `rate < 1.0f && rate > 0.0001f` 31; the rate-scale test as `0.0f < tag->field_258` 31. All restored.
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {
