@@ -584,6 +584,10 @@ const dword g_455978[81] = {
 // (2107 B); the direction table typed `vector3f const [27]` with its float values (no casts at the two reads) 268 (same
 // code); the transform's unit scale stored after the rotation rows 268 (same code). Body unchanged; the keepable
 // route for the first release (0x1d01c0's release helper moved into a shared header) needs an edit in 0x1d01c0's file.
+// M3 lane 14 r163 (H2M_FAST with 0x11bed0, 0x14a280 and 0x279740, all MATCH; control 268): the per-axis bound read
+// once into a named two-use local 341; the result flag declared at the top beside the two query locals 370; the
+// direction count as `arg_8 ? 27 : 18` 412 (2073 B); the query flag cleared ahead of the translation set 268 (same
+// code); the bounds offset computed ahead of the bounds info 482 (2101 B). Body unchanged.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
