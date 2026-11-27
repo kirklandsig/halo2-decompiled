@@ -89,8 +89,25 @@ struct s_timed_effect_globals
 	real unknown3f8;
 };
 
+/* the per-frame parameter block function_12a50 copies in one piece (0x485898..0x4858b0) */
+struct s_frame_parameters_12a50
+{
+    long mode;
+    dword identifier;
+    double time;
+    dword unknown10, unknown14;
+};
+
+typedef char assert_frame_parameters_size[(sizeof(s_frame_parameters_12a50) == 0x18) ? 1 : -1];
+
+extern s_frame_parameters_12a50 g_frame_parameters;
+#define g_485898 (g_frame_parameters.mode)
+#define g_48589c (g_frame_parameters.identifier)
+#define g_4858a0 (g_frame_parameters.time)
+#define g_4858a8 (g_frame_parameters.unknown10)
+#define g_4858ac (g_frame_parameters.unknown14)
+
 extern s_timed_effect_globals *g_5093e0;
-extern double g_4858a0;
 extern long g_4ba04c;
 
 #endif

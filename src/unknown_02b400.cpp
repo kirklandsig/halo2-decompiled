@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "shader_storage.h"
+#include "timed_effect.h"
 #include "visibility_storage.h"
 /* UNKNOWN_02B400.CPP: vector math and rectangular grid placement */
 
@@ -719,7 +720,6 @@ void function_28580(long tag, real time, vector3f *out)
 }
 
 #include <string.h>
-extern double g_4858a0;
 extern transform4x3f *g_4687d0;
 
 void function_141590(transform4x3f const *in, transform4x3f *out);

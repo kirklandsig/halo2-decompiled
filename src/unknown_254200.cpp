@@ -942,6 +942,22 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // M3 lane 14 r161 (single-address H2M_FAST, control 2): the first quad's `arg_1 * 0.5f` written `arg_1 / 2.f` 2; the
 // scale copied into a named real at the function's top, or at the head of the success block, and used by the first
 // quad's texture calls 2 / 2; the lower value written `0.5f + -arg_1 * 0.5f` 2 (all the same code).
+// M3 lane 5 r254 (reduced-image screen, control 2). Back-end trace: the pair are the pieces of two split float
+// candidates, reloaded in ascending piece number. The float candidates split ahead of them are the three colour reads,
+// the offset size and the zero constant; the free numbers handed out are 69, 5, 12 and 48, so the constant (a constant
+// load of the blocks after the first vertex, candidate 73) and the lower coordinate (an expression temporary,
+// candidate 75) both get new numbers, 78 and 79, in candidate order. Constant loads are numbered ahead of the
+// expression temporaries, so the constant comes first; retail needs two more free numbers ahead of the pair or the
+// coordinate numbered first. Retail spills the lower coordinate into the scale parameter's own stack slot and the
+// upper one into a frame slot; its only call site (0x1a2823) pushes exactly the two arguments. Forms: the alpha in two
+// named steps (a real, then a long) 2 (same code); the offset quad's four edges as named reals 157, only the bottom
+// edge named for the last two vertices 107; the lower coordinate assigned to the scale parameter after the first
+// texture call with the upper one named there 305 (26 differing instructions at retail's length: as a user value it is
+// not kept in XMM0 across the first position call), both assigned ahead of the first call 346, the upper one through
+// `1.f - arg_1` after the assignment 311; the lower one named after the first texture call 305, the upper one named
+// there 4 (its spill moves ahead of the compare, pair unchanged), both named there 305, both named ahead of the call
+// 346. Diagnostic: the first vertex's w as another constant 25 (the depth is then no value shared across the
+// reservations and the pair does not arise).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
