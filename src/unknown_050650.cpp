@@ -1146,6 +1146,19 @@ struct s_collision_result_buffer_1697c0
 // M3 lane 2 r158: the r157 form (sine and cosine passed straight in, the pitch axis through vector3f_assign), 239, lost
 // 0x1c4590 (5) and 0x24cf66 (2) in the full check of the tree merged with main (as lane 12 r193 had seen); restored to
 // main's 270 form, held as a patch.
+// M3 lane 6 r253 (reduced-image screen with 0x297660, 0x297a50, 0x2980d0 and 0x24590 MATCH, 0x297d30 23; control 270;
+// whole-image checks listing 0x1c4590, 0x24cf66, 0xc2d00, 0x185be0 and 0x41640). The r157 form re-measured on today's
+// tree: 239, still losing 0x1c4590 (5) and 0x24cf66 (2). 270 -> 239, HELD at review: the same form with the pitch axis set through
+// the shared point setter, `real_point3d_set((point3f *)&pitch_axis, ...)` (the spelling src/unknown_1f03e0.cpp and
+// src/unknown_205be0.cpp already use for vector storage): the same code for this function (1427 B, the normalizer's
+// j * scale and the pitch rotation's operand order as retail), and 0x1c4590, 0x24cf66, 0xc2d00, 0x185be0 and 0x41640
+// all stay matched, since that setter is not a new per-file inline. Held because the typed vector setter gives the same
+// code and differs only in the count of per-file inline instances, so the point setter on a vector (through a cast) was
+// chosen for the link layout, not for the code; main's body is back. On the held form: the setter alone (trig locals
+// kept) 296 (1440 B); the fallback axis through the setter as well 345 (1456 B); the candidate through the setter 290
+// (1423 B, frame 0xb0); the collision index stored ahead of the ray scale 239 (same code). Rank reading on the held
+// form: the pitch axis i and j live in registers from the normalizer into the loop (442 and 458) and are coloured
+// after ten of the loop's own temporaries (476 to 1196), so j finds only XMM6 and XMM7 free; retail has j in XMM1.
 // M3 lane GA r30 (24 fast trials across 2 batches with 0x297660/0x24590/0x2980d0/0x297a50 MATCH, 0x297d30 23 unless
 // noted, 0x2967b0 336; control 270 at 1431/1423 B, +0x31, al=132, mk=71; body unchanged): zero-new-symbol `pitch_axis.n[0..2]`
 // union-array init with direct `(sin, cos)` 332 (fr=0xb0; k,j,i 274 at 1427 B; `0.f -` 332; + early norm 334; + best/NONE
@@ -2443,6 +2456,11 @@ struct s_actor_looking_structure_view
 // each (same code: an inline helper's parameter positions do not reach these ranks); the in-place helper
 // `__forceinline` 23; the angle wrapper without its forceinline declaration 468 (670 B: it stays out of line); the
 // pathfinding pointer as a conditional initialiser 207. Restored.
+// M3 lane 12 r198 (h2m fast with 0x296e60 at 270, 0x297660, 0x2980d0 and 0x24590 matched; control 23): the score's
+// forward members read through a `vector3f const &` bound to forward at the score 142 (928 B), through a `vector3f const *`
+// to forward declared ahead of the candidate array 142 (928 B); the clear as `forward.k = 0;` 23 (same code); the angle as
+// `(real)(i * 0.785398185)` (a double product) 150 (928 B); the angle wrapper passing `(real)sin(angle)` and
+// `(real)cos(angle)` straight to the in-place helper 23 (same code here; 0x296e60 269). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

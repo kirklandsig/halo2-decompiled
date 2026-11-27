@@ -1959,6 +1959,16 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // return) 965 (2644 B), + result-first party min/max/spread 983 (2639 B, al 829, mk 926), + scoped `machine_ids` and
 // `long histogram[16]` memset 1027 (2591 B, fr 0xb0, al 822, mk 888); `summary->machine_count` group loop 900. Body
 // unchanged at 871; still BLOCKED on the link-wide inlining split (`0x192e60` vs `0x193300`/`0x631f0`).
+// M3 lane GA r33 (16 valid fast trials + 1 diag with 0x73530/0x63220/0x192e60/0x193300/0x1932c0/0x1931a0/0x193250/0x631f0/0x91e30
+// all MATCH unless noted, 0x91f00 34; control 871 at 2780/2828 B, fr 0xd0; body unchanged): all 5 other register-arg orders on
+// `balance_teams_can_add` (0x91f00) 871 each (0x91f00 34/35: its body keeps player_count/extra_count in EDX/EAX); `if` min/max
+// in player loop 900 (2764 B); pre-read `group_rating` in group loop 906 (2752 B, fr 0xd4); 5-arm `else if` opening clearing
+// `result` + `if (!result) return result;` 1013 (2952 B, 0x73530 8); single-exit `goto done` on opening/type-5/excess 903
+// (2748 B, 0x73530 MATCH), + real 0x63220 call 1028 (2592 B, fr 0xc4, 0x73530 MATCH); split summary/variant then capacity
+// returns 871 (same code); 3-stage `result = false; return result;` opening 871 (same code); summary/variant return then
+// capacity `result = false; if (!result) return result;` 871; `if (summary) { ... } else return false;` 871; `spread = count -
+// first` 871; `available` after `out->player_count` 943 (2700 B, 0x73530 8); diag `#pragma inline_depth(2)` 871. Still BLOCKED
+// on the link-wide inlining split.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

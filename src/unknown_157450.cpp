@@ -6233,6 +6233,12 @@ void __stdcall function_d6bc0(long object_index);
 // reading on the field-test helper form: `entries` is again coloured late at 8 (+132 over eight referencing blocks, -124
 // over 37 live unreferenced ones) and takes EDI; a forced-ranking search over 16 single decisions found 43 at best.
 // Body unchanged.
+// M3 lane 8 r247 (fast reduced-image screen; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B;
+// on the latter `entries` again ranks 8 in the fourth pass, +28 of it from the 0x15aad0 call block, which counts seven
+// candidates). On the field-test flag form: the countdown block's index test on the loop-top local (0x158ff0 and
+// 0xd6bc0 still on the field) 207 (878 B); the reset counter as one store `value06 = reset ? 0 : value06 + 1` 182 (851
+// B). On main's body: the same countdown test on the local 254 (891 B); the same one-store reset counter 156 (861 B);
+// the switch's `default: continue;` written first 29 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -2480,6 +2480,18 @@ real function_17c900(short function_type, real input);
 // as now and copied to the output in each arm and a final else 390 (1489 B). Diagnostic: the three exits with no salt
 // local (the shift at both uses) 328 (1466 B, the entry then retail's: index from the stack, no EBX save; next the
 // inlined normaliser, where retail holds y and z in XMM2/XMM1), 0xf8eb0 1027 (4699 B).
+// M3 lane 14 r165 (fast screen with 0xf8eb0, 1013 throughout unless noted; aligned = difflib rows, masked = registers and
+// stack offsets masked; control 348, aligned 263 / 119). The three exits as direct component stores (`aim_point->x = ...`,
+// the plain copy in a final else) 377 (1477 B, the same code as the point setters); that with the salt named just ahead of
+// the wander clock 382 (1480 B); the wander range through the existing magnitude3d 348 (same code). Lead, a declaration
+// moved into a branch so kept only with a match: the three direct-store exits with the salt named as the first statement
+// of the wander arm 332 at 1468 B, aligned 174 / 105, 0xf8eb0 1027: retail's whole convention (index on the stack and read
+// again for the salt, output in EBX, first +0x4f), where the salt named just ahead of the clock keeps the index in a
+// register; the same salt placement with the single final copy 366 (1472 B). On that lead the lead field read at each
+// use (retail reads +0x198 again in the lead block) 380 (1478 B: the index goes back to a register). Diagnostic (a value
+// written at each use): the shift at both uses with the direct-store exits 328 (1466 B, aligned 162 / 99). Left on the
+// lead: retail's early SSE zero (xmm4), to_target's j and k kept in XMM2/XMM1 from their x87 transfer through the
+// normaliser to the drift cross, the lead field's second read, and the rotation's register homes. Body unchanged.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

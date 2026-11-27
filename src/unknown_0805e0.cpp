@@ -994,6 +994,17 @@ void function_1537f0(s_profile_record *record);
 // head stores must count 6 or less. Forms: a `short` loop index 80 (275 B) on main, 83 (270 B) on E; on E the builder
 // given the element itself 46, the identity cleared through the record's own address 46; on main the links as two
 // chained pairs through the link pointer in retail's store order 18 (same code). All restored.
+// M3 lane 13 r167 (fast screen with 0x7f8b0 and 0x1537f0, MATCH each run; control 18; E = round 169's element-only body,
+// re-measured 46). A forced-ranking search on E: the -1 from 102 down to 95 alone is retail's code. Ledger on E: -1 =
+// 4 x 3 (entry block) - 6 (preheader) + 8 x 12 (links) against the record word's 8 x 12, so the -1 must lose its head
+// part. Diagnostic (a steering cast, reverted): E with the links stored as `*(word *)&... = 0xffff` 5 at 260 B: the links'
+// constant is then its own candidate, the record word takes EBP, every store, the base +0x4c and the scratch rotation are
+// retail's, and the only difference left is `mov eax, 0xffff` for retail's `or eax, -1`. So retail's links do not share
+// the heads' -1 contest. Same-valued spellings unify: E with the links as `(short)0xffff` 46, `(char)NONE` 46, copied from
+// the record's NONE short (forwarded) 46, the heads through an inline helper 46. Forms: E with the links as four
+// statements in retail's store order 46; E with the builder's view in a named pointer passed to it 46; E with the record
+// filled before the identity clear 87 (277 B); main with a named view pointer passed to the builder 18; E with the four
+// heads by one memset 74 (260 B). All restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
