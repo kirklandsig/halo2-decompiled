@@ -526,6 +526,9 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // three together, and one added statement moves them by 4. Forms: the helper's element through a named pointer 419
 // (1791 B); the helper's test as `!= 0` 3; the full device copy as memcpy 3, the full entry copy as memcpy 3 (the same
 // code each); a record-side counters pointer for the group loop's three calls 435 (1775 B).
+// M3 lane 13 r165 (h2m fast with 0x198540 MATCH; control 3): the apply helper as a plain function 1062 (1148 B: it
+// stays out of line); as `inline`, `__forceinline` and `static __forceinline` 3
+// each (same code); the entries call's index as `j * 8 + 78` 3.
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {
