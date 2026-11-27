@@ -58,6 +58,7 @@ long g_485a78[2];
 extern byte g_485a76;
 #include "texture_stage_storage.h"
 #include "sampler_state.h"
+#include "floor_to_long.h"
 struct s_type_7ba8e9;
 s_type_7ba8e9 *function_137550(long tag, short bitmap);
 bool function_14390(short stage, s_type_7ba8e9 *bitmap, real priority);
@@ -5626,7 +5627,7 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 // block of modes 24 and 25 (retail jumps from 0x198d2 into 0x19a4d); their fallback is the same call as mode 2 and
 // retail jumps back to it (0x19a47 to 0x195a0). Modes 7 and 11 have no case (null table slots).
 // @retail 0x19530
-void function_19530(long mode, byte const *context, long stage, long *width, long *height)
+void function_19530(byte const *context, long stage, long mode, long *width, long *height)
 {
     long surface;
 again:
@@ -5769,33 +5770,13 @@ again:
     }
 }
 
-long g_485a60;
 
-// MiniMax C (11-14): no new form, no lower score (146): retail's inlined floor sequence is still a call to floor
-// here, the frame is still 0x8 against retail's 0xc and g_485a60 is still kept across the loop.
-// score 146 (was 353): retail inlines 0x16ae0's floor body (its asm; a 0xc frame with the value's slot) where ours
-// calls floor, so ours keeps g_485a60 in EDX across the loop where retail keeps the definition table. Round 126:
-// binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
-// the existing 0x16ae0 called 210; flag test before the source pointer and full-expression 0x19530 outputs 146.
-// Diagnostic only: 0x16ae0's body as a file-local forceinline copy gives 736 bytes and 150 (not kept: a twin).
-// Round 65 (m3 lane 1, on the 353 body before round 126 merged): the existing 0x16ae0 with per-use binding reads
-// and a counted loop 210; that with the original slot/destination/source locals 365 (0x16b90 back to 47); the
-// location tag in a local 214; a file-local forceinline asm copy 158 (a twin, not kept). Lead: exposing g_485a60's
-// address (diagnostic only) gave 42 at 736 bytes: retail reloads g_485a60 after the state stores and holds g_4e3b44
-// in EDX; 0x16ae0 is `inline __declspec(noinline)` in src/unknown_0167a0.cpp, which keeps it out of line here.
-// b8D (11-17) walk against retail, fast build on r836: every field, offset, loop bound, callee argument and constant
-// agrees (0x45dbd4 is 3.0, 0x45dbd8 is 0.0, 0x44a04c is the float 0x3f317218), and so does every branch sense, NaN
-// included: comiss/jbe at 0x18b31 and 0x18b38 skip the floor when count <= value or unordered, ucomiss/jnp at 0x18c73
-// and 0x18c7a skips the update only when the stored level is ordered-equal. Changed: the log factor is multiplied as
-// `(real)log(..) * 0.6931471824645996f` (as 0x167a0 does), where the old `(real)(log(..) * f)` promoted the float
-// constant to a qword operand; retail's is `fmul dword` at 0x18d00; same value, score unchanged (146). Not fixed:
-// retail's floor (0x18b3e..0x18b6e) is 0x16ae0's body inlined, ours calls the CRT floor on a double, so NaN and
-// huge values differ; a file-local forceinline asm copy gives 738 bytes and 155 (a twin, not kept). retail loads
-// g_485a60 at 0x18c43 and again at 0x18cc2 after the dword stores at 0x18cb7 and keeps g_4e3b44 in edx from 0x18abf;
-// ours defines g_485a60 in this file with no address taken and hoists it, an `extern` before and the definition after
-// the function is 146 too. Also measured: one named slot pointer for the stores 185 (705 bytes; retail redoes
-// movsx/shl for each store at 0x18b85 and 0x18b97), the maximum as `height > width`, `width <= height`,
-// `width < height` or `height >= width` ternaries 176, as if-assignments 147 to 172 (retail's cmovle is at 0x18ce5).
+// The level at 0x485a60 is a member of the reset storage aggregate (include/reset_storage.h), so it is read again after
+// the state stores (retail 0x18c43, 0x18cc2). The floor is the shared inline of include/floor_to_long.h, 0x16ae0's body,
+// which retail has inline at 0x18b3e..0x18b6e. The lightmap test is 0x226d0's body with the bsp pointer taken again
+// after it (retail reads its +0x1c again at 0x18c62). Every record field is addressed from the state at each use.
+// 0x19530 takes its mode third: retail loads it between the pushes of the width pointer and the stage (0x18be8).
+// The log factor is multiplied as a float, as 0x167a0 does (retail's `fmul dword` at 0x18d00).
 // @retail 0x18a90
 void function_18a90(byte *state, word const *descriptor)
 {
@@ -5807,13 +5788,12 @@ void function_18a90(byte *state, word const *descriptor)
             memcpy(state + 0x1320 + binding[2] * 0x40, state + 0x320 + (signed char)binding[0] * 0x40, 0x40);
             if (binding[3] & 2)
             {
-                byte *source = state + 0x320 + (signed char)binding[0] * 0x40;
-                if (*(long *)source != NONE)
+                if (*(long *)(state + 0x320 + (signed char)binding[0] * 0x40) != NONE)
                 {
-                    byte *definition = g_4e3b44[*(long *)source & 0xffff].bytes;
-                    if ((real)*(long *)(definition + 0x44) > *(real *)(source + 0x18))
+                    byte *definition = g_4e3b44[*(long *)(state + 0x320 + (signed char)binding[0] * 0x40) & 0xffff].bytes;
+                    if ((real)*(long *)(definition + 0x44) > *(real *)(state + 0x338 + (signed char)binding[0] * 0x40))
                     {
-                        byte *bitmap = *(byte **)(definition + 0x48) + (long)floor(*(real *)(source + 0x18)) * 0x74;
+                        byte *bitmap = *(byte **)(definition + 0x48) + floor_to_long_inline(*(real *)(state + 0x338 + (signed char)binding[0] * 0x40)) * 0x74;
                         if (bitmap[0xe] & 0x10)
                         {
                             *(long *)(state + 0x328 + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 4);
@@ -5829,23 +5809,23 @@ void function_18a90(byte *state, word const *descriptor)
             if (binding[1] != 11)
             {
                 *(long *)(state + 0x1320 + binding[2] * 0x40) = NONE;
-                function_19530((signed char)binding[1], state, (short)binding[2],
+                function_19530(state, (short)binding[2], (signed char)binding[1],
                     (long *)(state + 0x1328 + binding[2] * 0x40), (long *)(state + 0x132c + binding[2] * 0x40));
             }
             else
             {
-                byte *location = NULL;
+                bool available = false;
                 if (g_4e0344 && *(long *)((byte *)g_4e0344 + 0x80) > 0 && g_4e0348)
                 {
                     byte *first = *(byte **)((byte *)g_4e0344 + 0x84);
-                    if (*(long *)(first + 0x1c) != NONE &&
-                        *(long *)(first + 4) == *(long *)((byte *)g_4e0348 + 8) && g_485a60 != NONE)
-                        location = first;
+                    if (*(long *)(first + 0x1c) != NONE && *(long *)(first + 4) == *(long *)((byte *)g_4e0348 + 8))
+                        available = true;
                 }
-                if (location)
+                if (available && g_485a60 != NONE)
                 {
-                    byte *destination = state + 0x1320 + binding[2] * 0x40;
-                    if (*(long *)destination != *(long *)(location + 0x1c) || *(real *)(destination + 0x18) != (real)g_485a60)
+                    byte *location = *(byte **)((byte *)g_4e0344 + 0x84);
+                    if (*(long *)(state + 0x1320 + binding[2] * 0x40) != *(long *)(location + 0x1c)
+                        || *(real *)(state + 0x1338 + binding[2] * 0x40) != (real)g_485a60)
                     {
                         byte *definition = g_4e3b44[*(long *)(location + 0x1c) & 0xffff].bytes;
                         byte *bitmap = *(byte **)(definition + 0x48) + g_485a60 * 0x74;

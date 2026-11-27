@@ -3188,6 +3188,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // against 342, retail's entry with EBX = 1), with memcpy as well 615; the listener-gain clear as four zero stores 705
 // (2518 B), as a plain zeroing loop 705, the four stores with `alternate` in the guard 643 (2518 B; retail's clear is four
 // stores relative to the sound, with no lea). Body unchanged.
+// M3 lane 14 r165 (fast screen with 0x21aeb0, 0x127d00, 0x21b940, 0x21be20, 0x126df0, 0x21bd00, 0x21cf80, 0x21d060, 0x192d70,
+// 0x12abe0 and 0x21b070: control 597 at 2518 B, masked aligned rows 163). `alternate` inside the definition guard
+// re-measured 615 (2500 B, masked 148): its entry is retail's to +0x30 (the flags byte after the gate, EBX = 1); the
+// rest moves. Forms: `distance` declared ahead of `maximum` 597, `position` ahead of `gain` 597 (both the same code);
+// the minimum floor as an `if` 703 (2500 B); the track loop's index as `short` 623 (2503 B); `alternate` as the
+// `dword` `flags & 1` with `track_alternate = alternate != 0` 662 (2508 B, frame 0x44). Body unchanged.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
