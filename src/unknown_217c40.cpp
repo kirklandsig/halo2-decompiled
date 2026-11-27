@@ -271,6 +271,11 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // first). Link reading for the two entry loads: our 1.0 resolves to the graphics library's object and the scale to the first
 // LTCG object that uses it; with no data dependency between the two hoisted loads they keep the order their symbols
 // were created in, which source in this file cannot change.
+// M3 lane 1 r176 (fast with 0x12b450/0x12b690, both MATCH each run; on the kept 25 body): both quadrants as long
+// 352; the first absolute offset as `fabs((double)first_offset)` 25 (same code); that absolute declared at the top of
+// the snap block and assigned in place 25 (same code); both magnitudes summed x first 25 (same code); the first
+// absolute offset taken from `first_angle - table` with the offset local dropped and the second offset kept 334 (2016
+// B). The first offset is still forwarded into its one fabs behind the magnitudes.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

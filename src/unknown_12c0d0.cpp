@@ -1246,6 +1246,30 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // (priority ECX, mov ebx, ecx) at 220-230; outer-if single exit 190/216; shared local 193/220; all *block_indices clean
 // 220; physical_memory_touch 211; shared non-forceinline resident helper 327 (breaks 0x12c990). Left on 91 lead:
 // g_4e6470/g_4e6474 EAX/ECX swap, priority in ECX, zero register in EBX after 0x12c990, and clean 2xAND.
+// M3 lane GA r27 (24 fast trials, all 7 peers MATCH unless noted; body unchanged): on clean `for`-loop calling
+// 0x12c990, dropping `local_4` in 0x12c990's `else if` (reading `block_indices[arg_1]` at both uses, 0x12c990 stays
+// MATCH) 211 late / 120 early; `physical_block_get` helper in 0x12c990 116 early (0x12c990 MATCH); `(word)local_4` for
+// entry in 0x12c990 reaches 95 early (`660/658 B`, `223/223` insns, `al=53, mk=26`, breaks 0x12c990 24), for time 297
+// (0x12c990 34, 0x12c450 12), no-`local_4` + `(word)` time 216 (0x12c990 30), `resident` before time 232 (0x12c990 11);
+// `__forceinline` 2-caller resident helper 115 (`al=50, mk=22`, breaks 0x12c990 120); inline clean `(word)` time/entry
+// 218/217; nested `if (g_4e6470 > 0)` without duplicated `else if` (`if (!restricted && ...)`), `long throttle`,
+// `0x12de70`-shape `if (restricted) wait = ...`, `long *last_used`, `blocks`/`block` ptrs, and bit shifts all tie 91
+// on the mixed-read lead (116 on early `for`, 212 on late `for`); `switch (g_4e6474)` 222 (`pri=ECX`); `!loaded` first
+// 122; `((flags & 16) == 0) + 1` 217 (breaks 0x12c450 15); nested + uninit `else priority = 2` 223.
+// GB r29 (52 fast trials across 4 batches, all 7 peers MATCH unless noted; body unchanged): on E1 + `if (restricted)
+// priority = 2` + `failed = true` switch + `for`-loop calling 0x12c990(..., false, false, false, 0, &waited, &failed),
+// renaming `result`, top-declared uninit `restricted`/`failed` assigned after `g_468841`, dropping `bitmap_reference`,
+// `do`-loop, `restricted`/`failed` after `0x200`, `texture_cache_bitmap_scale` helper, shift flags, `if`-init `loaded`,
+// and `result = NULL` first all 220 (669 B, `bmp=ESI`, `result=MEM`); dropping `local_4` in 0x12c990 219; duplicated
+// nested `g_4e6470 > 0` 224 (`pri=ECX`); `D3DResource *fallback` 212 (663 B); `restricted`/`failed`/`result` all
+// initialized after `g_468841` 224 (218 with `fallback`, `pri=ECX`, `mk=87`, moves `result = NULL` past `g_468841`);
+// `scale = bias` before flags 212; 1-stmt scale ternary 224 (6/7 peers); outer-`if` single exit 215/216. On `HEAD`,
+// top-declared/C89 `restricted`/`failed` assigned after `g_468841` and renaming `result` tie 193 (220 with E1), so the
+// spilled `result`/`restricted` slots follow first-store/web order rather than declaration/name order; `else scale =
+// bias` 224 (6/7 peers). Early `restricted = false` before `result = NULL` and `g_468841` hits 118 (656/658 B, +0x35,
+// `bmp=EBP`, `result=ESI`; NOT kept: moves `restricted = false` ahead of retail's 0x12ce61 store); on that lead,
+// `fallback` breaks `bmp=EBP` (211; + `phys` ptr 211, 6/7 peers), `pri_else2` 223, uninit `priority` 223, `drop_local4`
+// 122, `!loaded` first 129, and `long mode` / non-dup nested / `if/else` wait / `touch_block` inline all tie 118.
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

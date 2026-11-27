@@ -967,6 +967,15 @@ inline void actor_274f30_update(long actor_index, bool flag)
 // (nested and early-return), mismatched padded 0x888 s_actor_274e70 pointer arithmetic (update-only and erase-only),
 // shift-mask in erase, and direct update with iterator.actor_index + erase with actor_index all tie 47 (product still
 // shared).
+// GB r29 (fast with 0x274f30 and 7 peers MATCH, 30 fresh trials + 8 diags): __forceinline both or update alone, swapped
+// (flag, actor_index) param order, `long flag` param, macro update/erase, parameterized `datum_get_fixed` (erase or
+// both), `static inline` both, commuted byte-offset mul in erase, all 9 signed-vs-unsigned `0x888` and pointer-arith
+// combinations, early `if (ai_index == NONE) return`, `word value084`, `actor_get` both, `for`-header iterator, and
+// `&actor_index` ref inside erase (keeping volatile) all tie 47 (product still shared); `&actor_index` ref inside update
+// or erase without volatile 59 (176 B, drops [esp+8]); direct returned `actor` for update + `iterator.actor_index` for
+// erase 81 (156 B); template `datum_get` 175 (67 B, breaks 0x274f30); diags: no `/Ob1` inline 47 / static no-volatile
+// 59, 4-byte handle struct by value no-volatile 59, `_ReadWriteBarrier` before erase 47 (breaks 0x274f30) / after flag
+// 47, no `/arch:SSE` / `/Ox` / `/G6` / `/G7` / `*(long const *)&actor_index` all 47.
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
@@ -1663,6 +1672,14 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // the append's distance products reorder); the count stepped in the busy store's index 32; the unit looked up before the
 // seat pointer 42; the slot's seat and vehicle stored ahead of the flags, either order, 41/41; `success` initialised false
 // 32. NOT kept: no gain.
+// GB27 (fast with 0x274a10, 0x274da0, 0x274470, 4 callers and 11 callees, all MATCH; control 32, 40 trials): matched
+// peer 0x274470's slot order (seat, extents, vehicle, flags) or shared init helper (preserving 0x274470 MATCH) 41
+// (38 with byte busy:8; matches all 15 interleaved instructions after rep stosd, only hoisting seat->seat_index into
+// dx above rep stosd); veh/ext/seat/flags and ext/seat/veh/flags 41/41; flags/seat/ext/veh and flags/ext/seat/veh
+// 32/32; flags/veh/ext/seat 34; flags split around seat/vehicle (5 forms) 51-63; shared submit helper 55; word slot
+// bitfields 47 (0x274470 lost); function_274a51 3-arg and 4-arg scalar param reorders and ordinary inline all 32 (29
+// with byte busy:8); request local inside function_274a51 190; inlined request + 0x274470 slot order 68 (fixes +0x9f
+// append, 2 B shorter without the leave-call mov ecx,eax; 0xe68c0 is contributor-owned). Restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
