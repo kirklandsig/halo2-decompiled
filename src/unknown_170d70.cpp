@@ -1307,6 +1307,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // local 11; on that, the volume address ahead of the count store as the matched 0x1733e0 writes it 84; that order alone
 // on this body 115. A forced-ranking search on the offset lead (30 decisions) gives at best 13 (the key in EDX): the
 // table load placed at the top of the admitted block is a scheduling choice, not an allocator decision.
+// M3 lane 4 r268 (fast with 0x1730a0 and 0x163db0, both MATCH each run): the scratch rotation probed with trivial
+// forced-inline accessors (no code of their own): the camera record as an accessor of (table, key) 105, the count store
+// through a setter 105, the key read through an accessor for the product 105 and for both uses 105 (all the same code);
+// the plane lookup spelled index first 105, through a portal byte pointer 105 (same code). Body unchanged.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
