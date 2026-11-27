@@ -6426,155 +6426,46 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
-// MiniMax R (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here.
-// MiniMax D (11-14): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx (retail's order is the tag in edx, the first argument in ecx and the second in eax, with the third and fourth on the stack), and the callers are in other files, so the convention cannot be changed from here.
-// MiniMax H (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX, and the arguments behind it still sit one stack slot lower; retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with the third and fourth on the stack, and the callers are in other files, so the convention cannot be changed from here.
-// score 62 (was 62): retail takes tag/first/second in EDX/ECX/EAX (first and second moved to ESI/EDI, the tag table
-// kept in EBX, fourth loaded into EBP from the stack, ret 8); ours takes tag EDX and fourth EAX, three on the stack.
-// MiniMax A (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail
-// takes it in ECX and the arguments behind it still sit one stack slot lower, so the entry block's register
-// choice is the call cycle's, not this body's; the callers are in other files, so the calling convention cannot be
-// changed from here. The original body is kept.
-// MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail
-// takes it in ecx, and the arguments behind it still sit one stack slot lower. This round: the permuter
-// ran out of time without reporting a form, so nothing was tried from it.
-// MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the declaration and the callers of this function are in other files, so the convention cannot be changed from here.
-// MiniMax E (11-16): no new form tried this round, no lower score (62): retail's convention is edx = the tag, ecx = the first
-// (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth, ret 8, and this build still takes the
-// second argument in eax with the arguments behind it one stack slot lower; the register an argument arrives in follows from the
-// callers, which are in src/flexible_surface.cpp:941 and src/unknown_19eda0.cpp:544, and the declaration is in
-// include/flexible_surface_calls.h:11, all in files this lane may not edit.
-// MiniMax A (11-06, run 52): no new form, no lower score (62) - the two address-taken parameters are
-// dropped (the same code), and retail keeps the first argument in ecx where ours reads it from the
-// stack.
 
-// MiniMax C (11-15): no new form, no lower score (62): retail's convention is edx = the tag, ecx = the first (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth, ret 8, and this build still takes the second argument in eax with the arguments behind it one stack slot lower; measured this round, the range index in a local leaves the code unchanged (62) and `first * 10` in place with that local scores 91 (239 bytes), so the register an argument arrives in still follows from how the body uses it.
-// MiniMax B (11-13): no new form, no lower score (62): this build still reads its first stack argument from [esp+0xc] where retail reads it from [esp+0x10]; the slot is fixed by the callers in the other files, so no source form here reaches it.
-// MiniMax G (11-12): no new form, no lower score (62); retail's convention is edx = the tag, ecx = the
-// first (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth (copied
-// to ebp), ret 8, with the tag table in ebx; the record index is the third argument and the selected
-// tag lands in the dead fourth slot, as here. New forms: `first * 10` in place 91 (239 B), the same
-// multiply fused into the entry read 91 (same code), the range index with its operands swapped 91 (same
-// code), a local holding a copy of the first argument (the same code). Restored.
-// MiniMax G (11-12): the call to 0x1bbf0 is the other blocker and it is in another file: our 0x1bbf0
-// (in this file) compiles to retail's code with the same `ret 0x14` slots, but retail's 0x16b90 takes
-// the scale as its third argument (its prologue reads the tag at e+8 and the state at e+4) while the
-// declaration at src/unknown_0167a0.cpp:263 has the scale last, so our 0x1bbf0 gives the second, third
-// and fourth parameters different stack slots and this caller pushes the first, third, second and
-// fourth where retail pushes the first, second, fourth and third.
-// MiniMax G (11-12): the permuter (300 s, 10 tries) reached 60 in both images by pulling the 0xffff and
-// the 10 into constant locals and reordering the two calls' arguments: two points is under the keep bar,
-// the constant locals and the reordered calls are not allowed forms, and the calls would pass something
-// else, so the body stands.
-// MiniMax C (11-11): no new form, no lower score (62); the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files.
-// MiniMax R (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
-// MiniMax I (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
-// MiniMax E (11-09): no new form, no lower score; the second argument still arrives in eax
-// where retail takes it in ecx, and the callers of this function are in other files.
-// MiniMax C (11-06): no new form, no lower score - the second argument still arrives in eax where retail
-// takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers are in other
-// files, so the calling convention cannot be changed from here.
-// MiniMax D (11-05): no new form, no lower score - retail reads the second argument in ecx and keeps the
-// tag table in ebx, ours takes the fifth argument in eax and reloads the table into esi; the record
-// multiplier written as the selected tag or as the fifth argument scores 90.
-// Earlier 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
-// ecx, and the arguments behind it sit one stack slot lower; the callers are in other files, so the
-// calling convention cannot be changed from here.
-// MiniMax C (11-08): forms tried, none lower: the second argument through a local 62, the entry
-// pointer through the table 62, the offset named after the selected tag 91, the entry built from the
-// slot 91 (base 62).
-// Earlier 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
-// arguments behind it sit one stack slot lower than retail's; the callers of this function are
-// in other files, so the calling convention cannot be changed from here.
-// Lane 18 r37 (fast): without the `(void)&` reads (one or both) 62 (same code); `first * 10` written in
-// place, or its local named just before the entry, 91 (239 B, ret 8: first now arrives in EBX and third in
-// EAX, where retail takes first in ECX, moved to ESI, and second in EAX; retail keeps the tag-table base
-// in EBX and reloads it after the 0x137bd0 call). Restored.
-// Round 170 (m3 lane 6, fast with 0x19f680/0x244470/0x2be5d0/0x116b00): the selected tag computed just before the
-// 0x1bbf0 call 91 (238 B), the group read ahead of the selected tag 78 (251 B), each with `first * 10` in place 99/91;
-// the selected tag as `selected = tag; if (tag == NONE) ...` 77; the group read as `*(dword *)&g_4e3b44[(short)tag]`,
-// the head through a copy of 0x16b90's material_parameters inline (diagnostic), the parameters pointer as a ternary
-// and the 0xc table named 62 each (same code). Re-measured: `first * 10` in place or named just before the entry 91.
-// Retail forms the group read as `add eax, ebx; mov eax, [eax]`, unlike 0x16b90 and 0x19f680 (folded).
-// MiniMax B (11-13): no new form, no lower score (62): the second argument's register is decided by the callers, which are in other files.
-// MiniMax S (11-14): no new form, no lower score (62): the second argument still arrives in EAX where retail takes it in ECX (retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with `ret 8`), and the register the argument arrives in is decided by the callers, which are in files this lane may not edit.
-// MiniMax D (11-15): no new form, no lower score (62): the second argument still arrives in eax where retail takes it
-// in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here.
-// MiniMax I (11-15): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here.
-// MiniMax R (11-16): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here; the permuter (8 tries in 302 s, annealing) reached 60 only by naming the constants 4, 10 and 0xffff in locals and by swapping the arguments of the two calls, so its variant was reverted.
-// MiniMax S (11-16): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of
-// this function are in other files, so the calling convention cannot be changed from here.
-// score 62 (was 62): the second argument arrives in eax where retail takes it in ecx; the callers are in other files.
-// MiniMax G (11-13): no new form, no lower score (62): the second argument still arrives in eax where retail
-// takes it in ecx, and the callers are in other files, so the calling convention cannot be changed from here.
-// MiniMax D (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx,
-// and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling
-// convention cannot be changed from here.
-// M3 lane 12 r136, HELD (needs the owner's OK: the reorder edits the call line inside 0x116b00, a contributor's function in
-// src/flexible_surface.cpp; the full diff is build/r136/held-4b2d0.patch; code here is main's): retail's own bytes give the order
-// (tag, first, record index, second, pass): the record index is the first stack argument (e+4, loaded late at 0x4b38e), the pass the
-// second (e+8, loaded into EBP at entry), and the tag, first and second arrive in EDX, ECX and EAX. Fast with 0x19f680 (322 on main's
-// order), 0x244470, 0x2be5d0 (both matched in every row) and 0x116b00 (319): that order on this body 62 (same code here; 0x19f680
-// 321, 0x116b00 319); with the lookup chain kept in a local pointer array filled like 0x16b90's state block (entry, range, pass,
-// records, record; `first * 10` in place) 63 at 251 B, first difference +0x32, aligned 48 -> 17: retail's prologue and convention
-// (first in ESI from ECX, second in EDI from EAX, the pass in EBP, `ret 8`) and its formed-then-read entry, range and pass
-// addresses; 0x19f680 311 and 0x116b00 280. On main's order the same array body 64 (252 B: the record index in EAX, the second on
-// the stack; 0x19f680 404 on its old body), `first * 10` in place alone 91 (239 B), the array with a slot for the tag-table entry
-// 78, the program read at the 0x1c590 call 69 (both 251 B, first difference +0x3), the chain in a force-inlined helper filling a
-// record 58 (254 B, first difference +0x32), not forced 217 (114 B: it stays a call); the variant declared last 63 (the pass then
-// arrives in EAX). Left on the array form: retail forms the group read's address first (`add eax, ebx; mov eax, [eax]`), keeps
-// the records chain in EBX and leaves a dead `add eax, edx` for the record address.
-// b12A (11-17) walk against retail, fast build on r846: fields, offsets, jcc senses, constants and callee arguments all
-// match (0x4b2d0-0x4b3c8); no behaviour difference. Retail multiplies first by 10 after the tables load (lea at
-// 0x4b34c), but without the hoisted `first_offset` it is 91 (239 B), 0x116b00 322 -> 414 and 0x19f680 370 -> 427: first
-// then arrives in EBX, further from retail's ECX, so the local stays. Why: retail's callers keep esi/edi/ebx/ebp live
-// over the call (0x116b9c-0x116ba4: edx = tag, ecx = group, eax = variant) and the callee saves all four
-// (0x4b2d3-0x4b2da) with the tag table in EBX (0x4b2f6), so the arguments can only arrive in EDX/ECX/EAX; here the
-// table sits in ESI and first takes EBX unsaved. A parameter order does not move a register: 20 orders of the five
-// (third before fourth) on this body all give `ret 8` with first in EBX (91-95); 8 on the old body keep `ret 0xc`
-// (61-63); (third, fourth, tag, first, second) with both callers updated: 63, 0x116b00 320, 0x19f680 404, so no reorder
-// is kept. Retail forms pass (0x4b37e) and record (0x4b3ae) addresses that are dead: `byte *const &` on pass (alone or
-// with record) gives 251 B and 81 (62 on the old body, same code); on entry or record alone 91. No form matches; the
-// open difference is the tag table in EBX (retail) against ESI (ours).
-// m3 lane 16 r132 (fast, for caller 0x19f680; see its note): on the (tag, first, third, second, fourth) order with both
-// calls, the chain's seven values as fields of a local record 63 (+0x32: the group read folds where retail forms
-// `add eax, ebx` then reads, the pass definition takes EDX where retail reuses EBX, and the record address lacks retail's
-// dead `add eax, edx`), which gives retail's convention and lets 0x19f680 MATCH; the record filled by a force-inlined
-// helper 64; the group read through an instance reference or `.unknown00` 63, as a `dword const &` 81. Natural bodies on
-// that order (`first * 10` in place; entry and range as word pointers formed and read; the tag entry by pointer; C-style
-// declarations at the top) 95 each, first then in EBX; `(void)&third; (void)&fourth;` on main's body 62 (same code), on
-// the in-place body 95. None kept (main's body, 62).
+// The values of the lookup are the fields of one local record: retail forms the tag instance's address before it
+// reads the group through it, keeps the template and pass definitions in registers of their own and forms the pass
+// and record addresses it never reads again (0x4b302, 0x4b342, 0x4b37e, 0x4b38a, 0x4b3ae).
 struct s_lookup_4b2d0
 {
+    s_tag_instance const *instance;
     byte const *parameters;
+    byte *definition;
     byte *tables;
     byte *entry;
     byte *pass;
     word *range;
+    byte *pass_definition;
     byte *records;
     byte *record;
+    long program;
 };
 
 // @retail 0x4b2d0
-// MiniMax C (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here, and the permuter's best (60) only renamed constants and swapped the arguments of the two calls, so it was reverted.
 void function_4b2d0(long tag, long first, long third, long second, long fourth)
 {
     long selected = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
-    s_tag_instance const &instance = g_4e3b44[(short)tag];
-    dword group = *(dword const *)&instance;
     s_lookup_4b2d0 lookup;
+    lookup.instance = &g_4e3b44[(short)tag];
+    dword group = *(dword const *)lookup.instance->unknown00;
     if (group == 0x5052544d || group == 0x70727433)
         lookup.parameters = (byte const *)function_137bd0(tag)->function_x947334();
     else lookup.parameters = *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
-    lookup.tables = *(byte **)(g_4e3b44[*(long const *)lookup.parameters & 0xffff].bytes + 0x5c);
+    lookup.definition = g_4e3b44[*(long const *)lookup.parameters & 0xffff].bytes;
+    lookup.tables = *(byte **)(lookup.definition + 0x5c);
     lookup.entry = *(byte **)(lookup.tables + 4) + first * 10;
     lookup.range = (word *)*(byte **)(lookup.tables + 0xc) + ((*(word *)lookup.entry & 0x1ff) + second);
     lookup.pass = *(byte **)(lookup.tables + 0x14) + ((*lookup.range & 0x1ff) + fourth) * 10;
-    lookup.records = *(byte **)(g_4e3b44[*(long *)(lookup.pass + 4) & 0xffff].bytes + 0x20);
+    lookup.pass_definition = g_4e3b44[*(long *)(lookup.pass + 4) & 0xffff].bytes;
+    lookup.records = *(byte **)(lookup.pass_definition + 0x20);
     lookup.record = *(byte **)(lookup.records + 4) + third * 0x132;
-    long program = *(long *)(lookup.record + 0x100);
+    lookup.program = *(long *)(lookup.record + 0x100);
     function_1bbf0(selected, first, second, fourth, third, 640.0f);
-    function_1c590((s_shader_cache *)g_51f0f0, program, 0);
+    function_1c590((s_shader_cache *)g_51f0f0, lookup.program, 0);
 }
 
 #include "geometry_cache.h"
