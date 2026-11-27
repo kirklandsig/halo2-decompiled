@@ -287,6 +287,10 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // propagated away before that numbering. With the scale as a file-private named constant the two entry definitions swap
 // when this file's own symbol is older than the 1.0 literal: MATCH on a one-function image, 2 with the two callers
 // listed and in the full image, where an earlier object already holds 1.0 (re-measured; lane 5 r189's reading).
+// M3 lane 13 r168 (h2m fast with 0x12b450/0x12b690, both MATCH each run; on the kept 25 body): the snap products
+// written constant first, `1.0f - 1.637f * absolute`, 25; the second offset after both magnitudes 25; both offsets and
+// both magnitudes in second-first order 25 (all three the same code); the sign factors as `-1.0f : 1.0f` 656 (1908 B);
+// the two quadrants in second-first order 29.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
