@@ -1203,6 +1203,15 @@ static __forceinline void solve_angular_friction_kernel(float target, float &lim
 	*result+=impulse;
 }
 
+// Capture the target independently from the coefficient that the kernel updates.
+// Conversion to the kernel's float argument occurs after both inputs are captured.
+struct bounded_target_31c940
+{
+ double value;
+ __forceinline explicit bounded_target_31c940(float const &source) : value(source) {}
+ __forceinline operator float() const { return value; }
+};
+
 // Keep B's field addresses across consecutive bounded angular rows. Capture
 // both axes before either angular write; only the SIMD impulse rounds here.
 static __forceinline void solve_bounded_angular(float mass, float target,
@@ -1808,7 +1817,7 @@ complete_circular_pair_31c940(impulse_b,scalar_work.next_circular,normal_axes,te
 					{
 						float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
 						double mass = mass_source;
-						float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
+						bounded_target_31c940 target(((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3]);
 						solve_bounded_angular(mass, target, ((solver_angular_row_31e7b0 *)terms), a, velocity_b_pointer, inverse_b_pointer,
 							operation_float(op, 4), operation_float(op, 8), step, result, projection_pool, scalar_work.simd_scalar);
 						terms += 2; ++result; op += 16;
