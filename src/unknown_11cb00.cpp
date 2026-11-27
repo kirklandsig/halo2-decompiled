@@ -7,8 +7,11 @@
 #include "unknown_11cb00.h"
 #include "unknown_11cc90.h"
 #include "vector_products.h"
+#include "vector2f_products.h"
 #include <math.h>
 #include <xtl.h>
+
+inline void decal_project_point_17d9a0(real const *point, short axis, bool side, point2f *out);
 
 long g_47ff34 = -1;
 
@@ -220,6 +223,12 @@ __inline void quaternion_rotate_point(
 // q.j * v.x (cz) and q.i * v.z (cy) are left with the v field first (each cross spelled both ways there 4). Redundant
 // parentheses on the square or the m chain 29-76 (they change that chain), on the dot's first term 6 (8 with the extra
 // local). Natural extra symbols: the scale named once for its three uses 9, declared at the top and assigned there 9.
+// M3 lane GA r31 (28 fast trials with 0x11dd80/0x27a100/0x11d820, calibrated 35/48/MATCH/MATCH): on HEAD, calling
+// existing point3f_scale alone 59 (456 B). On the held 8 form (0x11dd80 4): q->vector/q->scalar 8, v->n[] / q->n[] 8,
+// point3f * return 8, static __forceinline / static inline 8, rotate defined after 0x11dbb0 8, void point3f_scale 8,
+// real two = 2.f 8 (0x11dd80 7); existing dot3f / dot_11ea30 12 (0x11dd80 7, without dot local 69/29), basis_dot_xzy
+// 41 (21); cross3f_staged / cross3f + point3f_scale + vector3f_add_scaled 120/122; real_point3d_set 89; safe v scalar
+// / struct copy 118/149; explicit dot parens (j+i)+k 68, j+(i+k) 20; 3-stmt dot 20; real w 92; no cx/cy/cz locals 53.
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,
@@ -584,56 +593,44 @@ real function_11e6f0(
 	}
 }
 
-// score 109 (was 126): w, e1 and e2 are vector3f built with vector3d_from_points3d in main's statement order, the normal comes from cross3f, d from dot3f and the length test from length_sq3f. Gemini lane GA r19 reached 27 (551/551 B, frame 0x30) by also declaring n first, computing b-a before c-a, reading the i1 index and fields before i0 (vector2f w2/b2/c2) and writing the last test as cb + ca <= cd + 0.0001f; those are declaration, statement and operand order changes, kept only with a byte match, so that form is held as a patch (left there: the dot3f y/z pair and the 2D projection's i1/i0 registers). Other forms from that round: both short indices loaded before projection 64; i0 before i1 with natural fields 35 (553 B) or swapped fields 27 (551 B); scalar reals for 2D coordinates 49 (frame 0x34); inline 2D helper 60/64 (matches lines 1-75); proj pointer or direct table indexing 36/72-97; dot_11ea30 62; function_120810 120.
-// M3 lane 12 r195: applied together with 0x11e000's helper form (see there). On it: locals renamed to sort in
-// retail's slot order 109 (slots here do not follow names); GA's 27 form re-measured 27 (the two index loads tie at
-// allocator priority 84, creation order puts i1 in eax); on it the row read through a short pointer 36, i0 read
-// first 62, long indices 64; a forced-ranking search finds no single decision (best 29).
-// M3 lane 7 r235 (fast): on main's body, the 2D projections as `vector2f` values (frame 0x30 as retail) 102, with
-// short indices 107 (557 B), loaded i then j 107, read straight from the table as shorts 104 (554 B), as longs 106.
-// GA's 27 form re-measured 27 (left: the normal-dot sum adds k before j where retail adds j before k, and the two
-// indices swap EAX/ECX); on it: `dot3f(&w, &n)` 27, the staged cross helper 27 (the cross code and sum unchanged),
-// a long axis 37, the length test written first 52, i0 read ahead of i1 62 (554 B).
+// score 0 (was 109): MATCH (Gemini lane GA r31). The 2D projections go through the existing
+// decal_project_point_17d9a0 (defined in unknown_17d9a0.cpp, declared here), their cross products through
+// cross_product2d and the normal through the existing cross_out_11ea30; built on GA r19's held 27 form and the
+// measurements of lanes 12 and 7 (the declaration and statement order and the operands of the two tests are kept on
+// the byte match).
 // @retail 0x11e800
 bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {
-	vector3f w;
-	vector3f e2;
-	vector3f e1;
-	vector3f n;
+	vector3f n, w, e2, e1;
 	real d;
 
 	vector3d_from_points3d(a, p, &w);
-	vector3d_from_points3d(a, c, &e1);
 	vector3d_from_points3d(a, b, &e2);
-	cross3f(&e2, &e1, &n);
+	vector3d_from_points3d(a, c, &e1);
+	cross_out_11ea30(&e2, &e1, &n);
 	d = dot3f(&n, &w);
-	if (length_sq3f(&n) * 0.0001f > d * d)
+	if (d * d < length_sq3f(&n) * 0.0001f)
 	{
 		short axis = function_120850(&n);
 		bool positive = n.n[axis] > 0.f;
-		short const *indices = g_440b94[axis * 2 + positive];
-		long i0 = indices[0];
-		long i1 = indices[1];
-		real w1 = w.n[i1];
-		real e2_1 = e2.n[i1];
-		real e2_0 = e2.n[i0];
-		real w0 = w.n[i0];
-		real ca = w1 * e2_0 - e2_1 * w0;
+		vector2f w2, b2;
+		decal_project_point_17d9a0(e2.n, axis, positive, (point2f *)&b2);
+		decal_project_point_17d9a0(w.n, axis, positive, (point2f *)&w2);
+		real ca = cross_product2d(&b2, &w2);
 
 		if (ca > -0.0001f)
 		{
-			real e1_1 = e1.n[i1];
-			real e1_0 = e1.n[i0];
-			real cb = e1_1 * w0 - w1 * e1_0;
+			vector2f c2;
+			decal_project_point_17d9a0(e1.n, axis, positive, (point2f *)&c2);
+			real cb = cross_product2d(&w2, &c2);
 
 			if (cb > -0.0001f)
 			{
-				real cd = e1_1 * e2_0 - e2_1 * e1_0;
+				real cd = cross_product2d(&b2, &c2);
 
 				if (-0.0001f > cd || cd > 0.0001f)
 				{
-					if (cd + 0.0001f >= cb + ca)
+					if (cb + ca <= cd + 0.0001f)
 					{
 						real inv = 1.f / cd;
 
