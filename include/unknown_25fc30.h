@@ -26,13 +26,9 @@ struct s_type_d4fbfa
 	long unknown14;
 };
 
-/* a firing position being evaluated (0x78 bytes) */
-struct s_type_b36ac5
+/* geometry of a firing position being evaluated (+0x0c..+0x4b, 0x40 bytes) */
+struct s_firing_position_geometry
 {
-	s_type_d4fbfa *definition;
-	s_reference reference;
-	short type;
-	byte unknown0a[2];
 	point3f position;
 	real unknown18;
 	vector3f unknown1c;
@@ -41,6 +37,30 @@ struct s_type_b36ac5
 	real unknown30;
 	vector3f unknown34;
 	vector3f unknown40;
+};
+
+/* a firing position being evaluated (0x78 bytes) */
+struct s_type_b36ac5
+{
+	s_type_d4fbfa *definition;
+	s_reference reference;
+	short type;
+	byte unknown0a[2];
+	union
+	{
+		s_firing_position_geometry geometry;
+		struct
+		{
+			point3f position;
+			real unknown18;
+			vector3f unknown1c;
+			real unknown28;
+			real unknown2c;
+			real unknown30;
+			vector3f unknown34;
+			vector3f unknown40;
+		};
+	};
 	bool unknown4c;
 	bool unknown4d;
 	byte unknown4e[2];

@@ -1686,6 +1686,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // Arm 3 rows + early Arm 1 gravity clear 542 (`al=127, mk=72`: Arm 3 k still commutes into `xmm2`); Arm 2 `vz` +
 // `vector3f_assign` + Arm 3 rows 558; Arm 3 `delta` inline scale / `vector3f_add_scaled` / split `limited` assign
 // 499/482/198.
+// M3 lane 6 r252 (fast screen with 0x1f0450, 0x24590, 0x1f03e0, 0x30bf0 and 0xa75d0, all MATCH; control 198). Reading
+// of the first cross by operand age (younger operand loaded first): retail needs the facing i and j fields older than
+// the up vector's k, which no order inside the cross gives, since the i row reads up.k before any use of facing.i.
+// Forms: the first arm's cross after the facing scale 232, between the input scale and the facing scale 216; the
+// magnitude read through `state->input` instead of the input pointer 550 (3040 B), the first arm's input scale through
+// `&state->input` 485 (3055 B), both 316 (3051 B). All restored.
 // M3 lane GB r29 (38 fast trials across 3 batches with 0x1f0450/0x24590/0x30bf0/0xa75d0/0x1f03e0 all MATCH; control
 // 198, al=155, mk=203; body unchanged): low-normal `cross3f` / all `cross3f` 198; high-normal direct `state->facing`
 // 494; low-normal `d1/d2*normal` + `side` j,i,k (both `d2` orders) 200; early `delta` (before `if (flying)` or before

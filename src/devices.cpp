@@ -1862,6 +1862,12 @@ bool function_108530(long device_index, long name)
 // ramp_down_time)) ramp_down_time = remaining;` 116, both 116, all five clamps as ifs 116 (same code each: the clamp
 // piece still takes a register); the ramp-down minimum on `duration - ramp_up_time` with no remaining local 131 (528 B;
 // callers 31/13).
+// M3 lane 4 r269 (H2M_FAST with 0x108600/0x108670, both MATCH unless noted; control 116). A forced-ranking search (20
+// single decisions) found nothing below 116; the duration's entry piece is coloured late (priority 10) and takes XMM3.
+// Forms: `delta` computed after the eight motion stores 109 (523 B, callers MATCH; the entry registers are unchanged, so
+// the gain is layout, a moved declaration under the bar), the same between the cruise and duration stores 109 (same
+// code); `distance` computed beside `delta` 134 (callers 26/28); `delta` inside the duration block 140 (26/28); the
+// late `delta` with the cruise velocity stored per arm 120 (528 B). Body unchanged.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

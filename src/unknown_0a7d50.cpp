@@ -36,17 +36,17 @@ struct s_event_object_header
 bool function_a76b0(long index, long which);
 long function_a5930(long index);
 
-PRIVATE __forceinline long event_player(long index, long mode)
+PRIVATE __forceinline long event_player(s_event_object_header const *headers, long index, long mode)
 {
     long player = NONE;
-    if (mode >= 4 && mode <= 5)
+    if (4 <= mode && 5 >= mode)
     {
-        byte *object = EVENT_OBJECT(index);
+        byte *object = headers[index & 0xffff].object;
         if ((1 << object[0xaa]) & 3)
         {
             player = *(long *)(object + 0x13c);
             if (player == NONE && *(long *)(object + 0x24c) != NONE)
-                player = *(long *)(EVENT_OBJECT(*(long *)(object + 0x24c)) + 0x13c);
+                player = *(long *)(headers[*(long *)(object + 0x24c) & 0xffff].object + 0x13c);
         }
     }
     return player;
@@ -105,7 +105,6 @@ struct s_action_event_data
     long linked_slot;
 };
 
-// Stand-in image 145 -> 134: the linked object is read before the parent is stored in the list.
 // @retail 0xa7d50
 void function_a7d50(long index, long group, long target, short node, point3f const *point)
 {
@@ -146,51 +145,54 @@ void function_a7d50(long index, long group, long target, short node, point3f con
             if (subject != NONE)
             {
                 long player;
+                bool send = true;
                 if (mode != 4)
-                    player = event_player(subject, mode);
+                    player = event_player(headers, subject, mode);
                 else
                 {
-                    if (!function_a76b0(subject, 1))
-                        return;
+                    send = function_a76b0(subject, 1);
                     player = NONE;
                 }
-                s_action_event_data data;
-                memset(&data, 0, sizeof(data));
-                data.slot = slot;
-                data.definition = *(long *)object;
-                data.group = group;
-                data.direction = *g_4687a8;
-                data.relevance.first = 0;
-                data.relevance.second = 0;
-                data.relevance.object_index = NONE;
-                data.relevance.identifier = NONE;
-                if (target != NONE)
+                if (send)
                 {
-                    objects[1] = target;
-                    data.node = node;
-                    data.point = *point;
-                    data.field_c_9 = true;
-                }
-                if (source != NONE)
-                {
-                    function_82ac0((s_object_relevance_source *)(EVENT_OBJECT(source) + 0x1c8), &data.relevance);
-                    function_cb7e0(source, &data.direction);
-                }
-                if ((*(dword *)entry >> 13) & 1)
-                {
-                    long linked = *(long *)(object + 0x194);
-                    if (linked != NONE)
+                    s_action_event_data data;
+                    memset(&data, 0, sizeof(data));
+                    data.slot = slot;
+                    data.definition = *(long *)object;
+                    data.group = group;
+                    data.relevance.first = 0;
+                    data.relevance.second = 0;
+                    data.relevance.object_index = NONE;
+                    data.relevance.identifier = NONE;
+                    data.direction = *g_4687a8;
+                    if (target != NONE)
                     {
-                        long identifier = function_138880() ? function_a5980(linked) : function_a5930(linked);
-                        if (identifier != NONE)
+                        objects[1] = target;
+                        data.node = node;
+                        data.point = *point;
+                        data.field_c_9 = true;
+                    }
+                    if (source != NONE)
+                    {
+                        function_82ac0((s_object_relevance_source *)(EVENT_OBJECT(source) + 0x1c8), &data.relevance);
+                        function_cb7e0(source, &data.direction);
+                    }
+                    if ((bool)((*(dword *)entry >> 13) & 1))
+                    {
+                        long linked = *(long *)(object + 0x194);
+                        if (linked != NONE)
                         {
-                            data.linked_identifier = identifier;
-                            data.linked_slot = *(signed char *)(object + 0x177);
-                            data.linked = true;
+                            long identifier = function_138880() ? function_a5980(linked) : function_a5930(linked);
+                            if (identifier != NONE)
+                            {
+                                data.linked_identifier = identifier;
+                                data.linked_slot = *(signed char *)(object + 0x177);
+                                data.linked = true;
+                            }
                         }
                     }
+                    function_b5a70(player, 0xc, 2, (long)objects, sizeof(data), &data, g_4cee54);
                 }
-                function_b5a70(player, 0xc, 2, (long)objects, sizeof(data), &data, g_4cee54);
             }
         }
     }

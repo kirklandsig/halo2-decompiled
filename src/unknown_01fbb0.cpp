@@ -8,7 +8,6 @@
 #include "timed_effect.h"
 
 s_timed_effect_globals *g_5093e0;
-double g_4858a0;
 dword g_4b5690;
 byte g_4b569d;
 long g_4ba04c;
