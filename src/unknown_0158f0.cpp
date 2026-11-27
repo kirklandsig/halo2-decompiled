@@ -275,6 +275,12 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // arm as an early return 103 (26 B). Lead: the SDK library member holding the palette call is the only one of that
 // library this build pulls from the library itself (the held members are linked first, in retail's order); its place
 // in the link may be what retail's inliner saw.
+// GB26 (12 real + 1 flag diag fast trials with 0x1d3f0 and file peers; control 99 at 30 B, 0x1d3f0 76): `extern const`
+// `g_43e8d8` with retail values {3,2,1,0,32,64} 99 (0x1d3f0 76), + no `noinline` 99 (0x1d3f0 75); `result = palette;
+// created = true; if (!palette)` 99; `bool created` branch `*out` 93 (36 B, 0x1d3f0 91); `*out = NULL` before call 99
+// (+ no `noinline` 99, 0x1d3f0 110); `if (D3DPalette *palette = ...)` 99; ternary `*out` 99 (0x1d3f0 91); no `noinline`
+// + direct return 99 (0x1d3f0 69); `dest = out` alias 99; `*(g_43e8d8 + index)` 99; 4-case `switch` on size 40 (95 B,
+// jump table still calling `CreatePalette2` out of line, 0x1d3f0 76); diag `/O1` 94 (35 B, 0x1d3f0 91). Body unchanged.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
@@ -326,6 +332,13 @@ bool function_015b10(
 // `&g_484dd0[g_5093ac++]` 86 (285 B, al=27; Common first 84, al=26; flips all registers to retail's exact EAX/ECX/EDX/
 // ESI/EBX/EDI layout but adds early pointer copy); inc before Lock 83 / after Data 84; local palette_total with
 // `if (group_count > 0)` 56, store in outer 67, store in inner 63, post-inc 87. Body unchanged at 56.
+// GB26 (27 fast trials; control 56 at 280 B): 13 global-count forms (`D3DResource *`, `while` loops, a `dword` stage,
+// post-inc/pre-inc, nested/pointer bounds, a walking palette pointer, `if (group_count > 0)`, a temporary `D3DPalette`,
+// `const` pointers) 56-99. Calling the SDK's palette-header setter (the 256-entry size, the palette slot, the masked
+// palette address) in place of the three header stores matches byte for byte (280/280 B, plain-confirmed, seven
+// variants; unmasked 50; a `palette_total` local 3; post-inc 71; `D3DPalette_Register` 82), held as a patch: linking
+// that SDK routine into the image flips the matched 0x24cf66 (src/unknown_24c7c1.cpp, 0 -> 2, two loads swapped at
+// +0x3bd) in all seven variants.
 // @retail 0x15b70
 void function_015b70(void)
 {

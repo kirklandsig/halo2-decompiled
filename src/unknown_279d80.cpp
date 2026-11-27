@@ -2275,6 +2275,10 @@ void function_27dd10(void)
 // group end computed at the outer body's top, ahead of the empty-group test, 303; node_destination_get's map entry as a
 // short 382 (1753 B; 0x288570 and 0x289580 keep); the bit-flag pointer selected ahead of the output target 2 (0x288570
 // 3, 0x289580 78); the blend-1 rotation's destination as the cursor cast to the rotation type 2 (same code). All restored.
+// M3 lane 11 r174 (h2m fast; control 2): in function_288573's blend-1 arm, which only this function reaches: the rotation
+// destination as the output cast to the quaternion type 2; the rotation source as the decode target cast likewise 2;
+// the translation blend's three rows written out 2; the scale blend's row written out 2; the blend-1 arm ending in
+// `return` with the later methods' chain unnested 2 (all the same code).
 // @retail 0x27dff0
 void function_27dff0(void)
 {

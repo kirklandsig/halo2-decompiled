@@ -1201,6 +1201,11 @@ real function_30bf0(vector3f *vector);
 // on PIN+split (76): inline posture_scale helper 76 (+ seat ptr 70, al 12, mk 19), plane.d z+y+x 76; direct &secondary/&primary
 // with MAX ternary, real* pointers, reversed if, or real limits[2] array all cleanly pair amount+distance_squared (+0x1c/+0x18)
 // with result=+8 and range=xmm0 but keep seat-loop xmm1/xmm2 reloads (190/190/190/195 at 1331-1334 B).
+// M3 lane 6 r250 (fast screen with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84): the first delta
+// through the existing vector3d_from_points3d 142 (1308 B, retail's length, but the squared length's rows and the seat
+// crosses reorder); `forward` as a non-const pointer 84 (same code); the seat count as a long 193 (1318 B); `result`
+// renamed so it sorts after the other cells 84 and the seat maxima a and b given longer names 84 (same code: names do
+// not move these homes). Body unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

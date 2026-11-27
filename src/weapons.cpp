@@ -2105,6 +2105,10 @@ static inline bool unit_dual_wielding(long unit_index)
 // reset through the outer `weapon` pointer 156 (521 B); the trigger index without its `(short)` cast 46 (535 B); the
 // ticks store through a fresh lookup 148 (539 B), through `current` 150 (542 B); the gate's state read through a fresh
 // lookup 206 (581 B); the barrel call's index without its cast 17 (same code).
+// M3 lane 3 r316 (fast screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17), on main's body: the
+// trigger reset through the file's existing weapon_clear_trigger (its definition moved ahead of this function) 129,
+// with its own `short` counter 131; the `volatile` block as the 0xc9d00 call 27 (listed, re-measured), with the
+// helper 137 (533 B); the animation pointer formed from the first `weapon` pointer as 0x1058b0 does 188 (578 B).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
