@@ -1181,6 +1181,14 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // memcpy; the second rotation call's two arguments through one named `vector3f *` local; the definition pointer typed
 // const; the velocity add's x row written `velocity->i + field_28.i` like the y and z rows; the collision result
 // declared ahead of the workspace record. Body unchanged.
+// M3 lane 8 r248 (fast screen with 0x247fd0, 0x248cc0 and 0x247470, all MATCH each run; control 334; body unchanged).
+// Allocator reading: the definition pointer is split into pieces whenever a callee-saved pick takes its last register;
+// its final piece is never coloured (weighted cost at or below zero), and EDI goes to the shared +0x28 address, live from
+// the second rotation call through the collision copy and the velocity add's x row (`[edi]`); retail recomputes that
+// address with a fresh `lea` and holds the definition pointer in EDI from 0x247ba8 on. Forms: the kind test as
+// `!local_3->unknown0c` 334; the second rotation call's arguments cast like the first's 334; the velocity add's x row as
+// `field_28.i = field_28.i + velocity->i` 334; the velocity pointer chosen by an if/else 334 (all the same code); the
+// velocity test on `arg_2->effect_index` in place of local_0 411 (+0x1b).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
