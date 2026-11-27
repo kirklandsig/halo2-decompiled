@@ -309,6 +309,12 @@ vector2f *function_11df30(
 // stores in the inner test, named range, the direction or the dot through the vector helpers 2-6, statement orders
 // in the block 4-39); the existing 0x1f8640 flag reader in 0x1a8fa0 493 (still inlined). Same-shape bodies: if/else
 // clamp single-exit 70 (296 B), main's old body single-exit 69 (296 B), a named length squared 95 (265 B, inlined).
+// M3 lane 7 r235 (fast, with 0x1a8fa0): every 290-byte form is expanded at 0x1a8fa0's first site and every 296-byte
+// form is not, whatever the spelling, so the decision follows the callee's compiled size: the single-exit form 0
+// (0x1a8fa0 428), with a named clamp fraction 0 (428), with the else arm's vector named like the first arm's 0
+// (428), with `0.0f -` for the negation 0 (428); the inverted test with the else arm first 83 (269 B, 430); the
+// two-return form with the clamp and result named 37 (0x1a8fa0 MATCH). BLOCKED-BY 0x1a8fa0 (its flag form, listed
+// above, is the lead; its file was another lane's this round).
 // @retail 0x11e000
 real function_11e000(
 	point3f const *b,
@@ -562,6 +568,11 @@ real function_11e6f0(
 // retail's slot order 109 (slots here do not follow names); GA's 27 form re-measured 27 (the two index loads tie at
 // allocator priority 84, creation order puts i1 in eax); on it the row read through a short pointer 36, i0 read
 // first 62, long indices 64; a forced-ranking search finds no single decision (best 29).
+// M3 lane 7 r235 (fast): on main's body, the 2D projections as `vector2f` values (frame 0x30 as retail) 102, with
+// short indices 107 (557 B), loaded i then j 107, read straight from the table as shorts 104 (554 B), as longs 106.
+// GA's 27 form re-measured 27 (left: the normal-dot sum adds k before j where retail adds j before k, and the two
+// indices swap EAX/ECX); on it: `dot3f(&w, &n)` 27, the staged cross helper 27 (the cross code and sum unchanged),
+// a long axis 37, the length test written first 52, i0 read ahead of i1 62 (554 B).
 // @retail 0x11e800
 bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {

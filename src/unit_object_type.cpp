@@ -9227,6 +9227,12 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // 62/62/62, and both with a typed input block and projectile link 62. The four corresponding object-first
 // forms score 58 and reach +0x14b. NOT kept: the tag types do not change the emitted loads, and the owner
 // order alone gains four.
+// M3 lane 6 r250 (fast screen with 0xca700 and 0x15cbf0, both MATCH; control 62). Retail's shake block tests the range
+// through the spilled definition in EDX and then reads every field again through a copy in EAX, as an inlined helper
+// taking the definition would. Forms: the shake through a new file-local inline helper taking the definition and the
+// distance (fields read at each use), the range read in the test, 383 (1610 B), the same helper forceinline 383, the
+// whole expression written into the call 383, the helper with the range named for the test 383 (1614 B): without the
+// named shake fields the definition takes a register again; the minimum named ahead of the range test 62 (same code).
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -9997,6 +10003,15 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // esi,-1`; unit/weapon only 479); inline weapon lookup 505; `damage_index` before `weapon_index` alone 427 (2230 B,
 // mk 76); on GB24's 314 form + typed `TEST_FIELD_BIT(flags.bit11)` 324 (+0x0, with `objects` 475); `objects` +
 // `damage_index` before `weapon_index` (+ `tags` / `col`+sym) 550/550/551.
+// M3 lane 6 r250 (plain checks with 0xcfc90 and 0xcf040 MATCH; control 397; the reduced fast image builds this function
+// at 2182 B, so only plain checks count here). TEST_FIELD_BIT at both seat tests alone 390 (2219 B: both tests become
+// retail's `shr edx, 0xb; test dl, 1`, aligned 183 -> 167); the i ray row spelled up-first like the j and k rows alone
+// 393, both 386 (2219 B). Not kept: the idiom alone is under the bar and the respelled i row is an operand order picked
+// by score. Reading: in this build the i row's spelling alone sets the product order of all three rows (across-first
+// spelled i row: all rows across-first; up-first: all up-first; the factor order inside each product and the j and k
+// spellings change nothing), where retail's i row is across-first and its j and k rows up-first, as main spells them.
+// The tail's NONE register (ESI) and the unit index in EDI are the allocator's; retail reloads the unit index into ESI
+// before 0xceee0 and uses immediates.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

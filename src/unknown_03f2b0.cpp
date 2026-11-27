@@ -1659,6 +1659,10 @@ struct s_133f70;
 // reloaded from its home later), where ours uses EAX. Forms: the visibility byte through a named `bool *` at all
 // eight uses 93 (same code); the object type as one ternary 93; each with `success` declared first in the loop
 // body 91/91; all three 91.
+// M3 lane 15 r153 (H2M_FAST with the callers 0x133790/0x133ab0/0x133f70 and the twelve callees listed above, 93 as in
+// the plain build; aligned 130 / 48 / 19): the header lookup declared right after the 0x4bcc0 call 357; declared ahead
+// of the count store (retail loads the header global first) 94; the initial level declared ahead of the failure count
+// 95; `short entries` 366; the count store after the type store 94. Body unchanged.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

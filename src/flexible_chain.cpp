@@ -1107,6 +1107,16 @@ void __stdcall function_1160c0(real dt)
 // uninitialised at the loop top and assigned at its copy 95; the axis declared at the loop top 95 (same code each);
 // the vertical declared once ahead of the loop 300; the angle taken ahead of the cross product 314 (1353 B); the sine
 // named before the rotation call with the cosine in the argument 95; the predicted point's rows stored z, y, x 104.
+// M3 lane 16 r196 (fast with 0x116750, 0x1160c0 and 0x17c540, all MATCH; control 95). Reading of the low cells:
+// the frame (over 0x80 bytes) is packed by density, references x 1000 / size; the segment/scale/sine cell has 7
+// references (1750) and the axis 23 (1916), so the axis sits lower. Retail's listing has the same 7 references on the
+// cell but 20 instruction references on the axis against our 22 (one axis i load and one axis j load fewer: retail
+// keeps axis i in a register through the whole rotation), which is a tie at 1750; so the cell's place follows the
+// rotation block's float allocation and is not a separate cause. Forms: the header rotation's rows with the projection
+// term first 95 (same code in all six users); its rows as `v * cosine + (projection * a - cross * sine)` 153 (every
+// user worse); its dot through the existing dot3f, either operand order, 95 (0x2551f0 122, 0x1ff360 96, 0x26d570 71);
+// the rest-offset copy ahead of the vertical and the axis 273 (1370 B); the velocity rows ahead of the predicted rows
+// 128 (1380 B). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

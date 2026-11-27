@@ -545,6 +545,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // block 417 (1369 B, first +0x5: frame 0x34 as retail); with local_5's NONE moved there too 417 (1356 B); local_18 set
 // NONE in an else arm of that block 412 (1369 B, frame 0x34, aligned 245 -> 183, register-masked 233 -> 155; `this`
 // then in EBP for retail's EDI); that with 0x75910 returning bool 412; that with local_5's NONE in the same else 414.
+// M3 lane 2 r158 (fast screens with 0x75910, 0x76520, 0x765c0 and 0x77940, all MATCH each run; control 356): the out-parameter
+// local of 0x76520 declared first in the body 356 (same code); the channel search as a plain `static inline` in the sibling
+// file's spelling (result, channel_index, channel) 356 (same code); 0x75910 returning bool (`return owner && owner->active;`,
+// still matching) re-measured 355; on that, the window-size flag test as `TEST_FIELD_BIT((flags >> 3) & 1)` 432 (1387 B).
+// Body unchanged.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

@@ -1531,6 +1531,11 @@ PRIVATE __forceinline byte *function_2284c1(long arg_0)
 // `component_b` locals 91 (272 B, al 111->65, `impact` moves to EDX, confirming `lea eax,[..+0x5c]` setup order follows
 // 0x2285d0's parameter order); dead object header in helper 93; default-init single if 96; in-place material swap 100
 // (253 B); call-args locals at top diag 122; plain inline helper 125 (226 B, 0x2294a0->754). Body unchanged.
+// M3 lane 14 r162 (fast with 0x2285d0 MATCH and 0x2294a0 586 unchanged): still BLOCKED-BY 0x2285d0's parameter order
+// (contributor code; the reorder is held). Tried: component_b read once into a long used for the test, the use-b arm
+// and the call's flag 81 (same code); the condition negated with the arms exchanged 81 (same code); the use-a values
+// assigned first with a single overriding if 96 (277 B); the normal's address taken into a pointer at the top 91
+// (277 B); component_index initialised to NONE 81 (same code). Body unchanged.
 // @retail 0x2284c0
 void impact_material_effects_get(
 	s_impact const *impact,
@@ -2353,6 +2358,13 @@ s_impact_component_iterator g_5021bc;
 // file-local forced-inline helper taking the component 162 (same code; the parameter does not split the component's
 // candidate), with the count ternary 162, with that and the impact pointer 164. A forced-ranking search on this body
 // (50 decisions, many timing out) finds nothing under 151.
+// M3 lane 14 r162 (fast with 0x226a60 and 0x226f80, MATCH). Ledger: the component (the inlined iterator's result) sums
+// 324 over eleven blocks less 114 live-but-unused = 210; component_b sums 216 (160 of it in its lookup block: cost 8 x
+// weight 4 x five candidates) less 36 across the first find's nine-candidate block = 180. One more candidate in the
+// lookup block (n 6) would give it 212 and retail's ESI/EBP pair. Tried (all the same code unless given): the iterator's
+// result stored straight into the global's component field, tested there and then read into the local 162, with the
+// count ternary 162; component_b started NULL and set by an if 168 (674 B); component_b's index named for the test, the
+// lookup and the data's second index 162; the data and impact index declared ahead of component_b 162.
 // @retail 0x226ce0
 void function_226ce0(void)
 {

@@ -411,6 +411,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // index field again (the lookup on the local) 27 (99 B), that with the index read after the selector 23 (99 B); the kind
 // tested in the handler around a seeded availability helper, `kind == 1 ? helper() : 1`, 12; an early-return availability
 // helper under `if (kind == 1) ... else setting = 1;` 4 (same code).
+// M3 lane 2 r157 (h2m fast with 0x8c5b0/0x8c660, both MATCH each run; control 4; allocator view re-read: request and
+// kind both priority 20 in the entry block, the request ahead on its earlier definition), all with the existing kind
+// read: the kind arm through a payload pointer (`available ? &payload : NULL`, then an if/else on it) 50 (114 B); that
+// seeded `setting = 1` 49 (111 B); `long const old_setting` 4 (same code); both handlers through one shared plain-inline
+// store helper (index, setting) holding the old-setting test and the notify call, the reset still MATCH, 5; an
+// `__assume(request != NULL)` at the top (diagnostic) 4 (same code).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
