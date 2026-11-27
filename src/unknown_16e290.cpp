@@ -1538,284 +1538,12 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
-// MiniMax S (11-17): no new form, no lower score (87): the classification's plane sum written with the plane's
-// i, k and j terms in that order measures the same as the j, k, i order, so that reorder was restored; retail
-// still reloads the copied forward's second component before the third component's store where ours reloads the
-// third, the shared cross3f fixes the product order, and the permuter's 31 tries over this body (fast) found
-// nothing below 87.
-// MiniMax D (11-14): no new form, no lower score (87): the cross product's second product still takes
-// forward.j before up.k where the shared cross3f (include/vector_products.h, which this lane may not edit)
-// takes them the other way round, and the clip block still folds the cluster address into the load where
-// retail materialises it; a cluster pointer local and a pointer-arithmetic local both fold it again.
-// MiniMax H (11-14): no new form, no lower score (87).
-// MiniMax H (11-13): no new form, no lower score (87): the cross block still gives retail's up.k to xmm0 and forward.j to xmm1 the other way round, the clip block still folds the cluster address into the load where retail materialises it, and the interpolated pair still loads [esp+0x20] before the store to [esp+0x24]; the cross helper is in a shared header and 0x171d00 is in another file, and the permuter over this body was stopped at the run's time limit without a result.
-// older score 87: unchanged this round: the cross product's colouring is swapped against retail's
-// (retail gives up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the
-// clip block materialises the cluster address (a register load of the base, an add, then the byte load)
-// where ours folds the base into the load; the cross helper is in a shared header this lane may not edit.
-// MiniMax H (11-11): no new form, no lower score (87); retail materialises the cluster address (mov edi,[esi+0xa0]; add eax,edi; mov al,[eax+0x70]) and keeps the reference in al, ours folds the address into the load and keeps it in cl, so the block is one instruction short; the false-first narrow default with the plane terms in retail's order matches retail's clip block instruction for instruction but still scores 105 because of that one missing instruction, and no source form of the cluster access (a pointer local, a pointer-arithmetic local, an explicit 0xb0 multiply, the existing prediction_cluster_get helper, the index in a local) changes the folding.
-// MiniMax C (11-11): no new form, no lower score (87); retail computes the two interpolated values into the other pair of registers (it multiplies the value from [esp+0x18] into xmm0 and the one from [esp+0x20] into xmm1, ours the other way round) and loads [esp+0x20] before it stores the new value to [esp+0x24].
-// MiniMax I (11-10): no new form, no lower score (87); the cross block's xmm0/xmm1 colouring of up.k and
-// forward.j is still swapped against retail's, while the three products, their results and the store slots
-// (matrix+0x10/+0x14/+0x18, contiguous once the caller's push is counted) agree; the cross lives in a shared
-// header this lane may not edit, and a permuter run over this function found nothing in 26 tries (best 87).
-// MiniMax R (11-10): no new form, no lower score (87); the plane's three products in retail's order (i*x, k*z, j*y)
-// give retail's multiply and add sequence instruction for instruction, but the score stays 87 because the clip block
-// above it keeps the reference in cl with a folded address where retail keeps it in al with the address materialised,
-// so every row after it stays shifted; the false-first narrow default with the else chain removed still scores 105.
-// MiniMax R (11-09): no new form, no lower score (87); the cross block gives retail's up.k to xmm0 and forward.j to xmm1 where ours gives them the other way round, though the three products agree; the cross written out as three component assignments scores 186 and was restored.
-// MiniMax A (11-06, run 52), not kept (87, same score): the clip plane's three products summed in
-// retail's order, the i term first and the j term last, give retail's multiply and add sequence
-// instruction for instruction (its only other effect was 0x13d80 61 -> 60, under the keep bar); what is left is the register form of the clip block, where
-// retail keeps the cluster reference in al and materialises the cluster address, while ours keeps it
-// in cl and folds the address into the load.
 
-// MiniMax C (11-16): no new form, no lower score (87): the cross product's colouring is fixed by the shared helper's
-// text in include/vector_products.h; the clip block still folds the cluster address and the interpolated pair still
-// loads the value before storing it, so the register order stays as it is.
-// MiniMax S (11-16): no new form, no lower score (87): the inlined cross product still gives xmm0 the forward's j and xmm1 the up's k where retail gives xmm0 the up's k and xmm1 the forward's j, so the two products are the same and only their colouring differs; the cross helper's text is in include/vector_products.h, which this lane may not edit, so the swap cannot be produced from here.
-// MiniMax S (11-16): no new form, no lower score (87): the clip block still folds the cluster address where retail materialises it, the plane sum still adds the i*x term where retail adds the j*y term first, and the interpolation's two products still land in the other order; the interpolation's addend order, a false-first narrow default (105) and a plane-value accumulator all leave the same code, and the shared cross helper's text is in a header this lane may not edit.
-// MiniMax G (11-05): no new form, no lower score. The clip block still loads the cluster
-// reference with a folded address where retail materialises it (mov edi,[esi+0xa0]; add
-// eax,edi; mov al,[eax+0x70]), so the block is one instruction short and the code after the
-// clipping call stays shifted. Tried: the false-first narrow default with the else chain
-// removed 105; that plus a plane-value accumulator in retail's order 105 (the plane block and
-// the reference index then match retail exactly, only the address and the base register
-// differ); the cluster through the existing prediction_cluster_get helper 115 (the address
-// materialises, but the index compare becomes 32-bit and the clusters base folds into the
-// add); the same helper with the short index 124 (its NULL check returns); the cluster
-// through a pointer local, a pointer-arithmetic local and an explicit 0xb0 multiply 105 each
-// (all fold the address).
-// MiniMax R (11-01): the first cross-product carriers still differ; a permuter run over this
-// function was killed before it printed, so no new form was found.
-// MiniMax E (11-04): no new form, no lower score; the clip test still adds the plane terms
-// i*x, k*z, j*y where retail adds j*y, k*z, i*x (an accumulator in retail's order gives 87 too).
-// older score 87: this round found no gain - the frame is 0x9c against retail's 0x98, retail copies both
-// vectors whole while we copy them scalar by scalar, and the 0x171d00 narrow convention is set in
-// another file.
-// older score 87: frame 0x98, vector homes and forward/position EBX/EBP now agree;
-// Left: cross-product carriers, clipping-result production and interpolation scheduling.
-// Earlier: frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
-// position pointers take EBP/EBX for retail's EBX/EBP, the cross product's forward.j/up.k xmm0/xmm1
-// colouring, and the clipping call: retail passes the flag in DL and the end point in ESI, ours pushes
-// the flag and passes the point in EDX. That is 0x171d00's own convention (BLOCKED-BY 0x171d00, a held
-// file), and its longer flag code shifts everything after the call.
-// Native byte clipping truth 120; short/long/dword/word 124/123/123/124; entry fraction 140,
-// with word truth 124; byte truth plus role names 120, native state-field receivers 206,
-// delayed original-position receiver 250 (caller lost), inner alias removed 120, staged cross 121.
-// Complete shared zone test: direct/Boolean result 168/168; one-use byte result 92 (exact-only,
-// restored); native-byte shared return/direct use 92 (matched helper lost, restored).
-// Round 74: forward/up struct-copied from the state and passed to the shared cross3f (retail's
-// copies through EBX/EAX and cross inputs read back from the copied locals) 153; the volatile saved
-// state dropped 153; left computed before the matrix's forward/up copies and the position copied
-// after them 140. With the flag passed as a constant (diagnostic only) forward and point take retail's
-// slots 0x1c/0x28: the location/fraction slot order follows the stack-resident flag, BLOCKED-BY
-// 0x171d00 as well. At 140 or worse: up copied first 145; up matrix copy first 155; scale after the
-// cross 165 / last 166; position before the matrix copies 192; flag false by default 171; volatile
-// kept 153; position pointer late 167; state pointers kept for the store-back 167; interpolation
-// products as remainder * original 153 (code identical).
-// Round 67 (fast): forward/up struct copies and the matrix position copy through three state pointers
-// (each also used for the store-back) 212 (964 bytes; copy pattern as retail, forward local 0x24 for
-// retail 0x1c); that without the volatile saved state 212 (state spilled at 0x1c for retail 0x34); the
-// pointers set up in retail's order 213; with the position set from scalars 230; with the fraction
-// declared at function scope 212.
-// MiniMax R run 2026-10-29: forward/up declared at the top and struct-copied from the state, the matrix
-// position struct-copied, cross products with the operands swapped 204 (gain 5, under the keep bar; not kept).
-// Earlier forms on frame 0x9c: shared cross product 234, scoped matrix 234, working-vector matrix copies
-// 232, aggregate copies with shared cross product 249, role names 249, combined scope 249; direct view
-// call 235; entry point workspace 234; direct narrow predicate 229; entry probe workspaces 234; mode
-// branch 240; state first 253; early native declarations 229; split input/output vectors 229; scalar
-// position 223; full-width narrow 231 (frame 0x98); point setter 223; setter with wide predicate 253;
-// combined native copies 287; scalar-workspace role names 229; scale assigned after copies 229; later
-// position pointer 226; no inner position alias 229; directions published first 229; scalar vector
-// aggregates 229; later position pointer with native direction copies 237; complete direction memcpy
-// 237; direct input cross with late workspaces 244; later up pointer 253; native point carried through
-// composition 229; matrix-axis cross with late workspaces 241; adjustment memcpy 223; native directions
-// with point setter 251; fraction-only scope 223; location-only scope 223; geometry fields at each use
-// 223; interpolation setter 223; transformation scope 223; branch-assigned narrow 220; transformation
-// names 223; direction fields at use 213; native copies with branch-assigned narrow 240; direction
-// fields with branch-assigned narrow 209 (plain).
-// Round 215: signed-byte narrow 218; signed/unsigned-word narrow 208/208; function-scope narrow 209;
-// missing-location-first 209; recovered-frame saved-state name 209; composition output memcpy 209;
-// consistent direction/position role names 209; native byte predicate 218; invalid-reference-first 209;
-// recovered-frame forward-only/up-only copy 217/217; shared cross product 209; saved-state alias
-// removed 254; split high-bit predicate 209. Native player receiver 209; input/basis/composition/
-// publication component loops 1165/1161/1157/265; native receiver with input/composition loops
-// 1165/1157; all native copy phases 1210. Existing matrix constructor: scalar inputs 290; direct fields
-// 379; native/library direction inputs 330/330; native point 299; direct fields/library point 388;
-// native/library complete copies 332/332. Input/axis/output/all order 209 each; point/point-axis order
-// 209/209; cross ji/kj 209/209; input-axis order 209. On frame 0x98, split input/output direction
-// values: scalar 209; native 222; library copies 222; scalar values with native basis inputs 246; native
-// values with native basis inputs 222; library copies with native basis inputs 222; native values with
-// entry output declarations 222; scalar values with entry output declarations 209. Individual direction,
-// matrix, adjustment, point, fraction, location and position local names 209 each.
-// Frame 0x98 agrees; saved-state/input-output direction homes and clipping convention remain.
-// Earlier: Frame 0x98 agrees; saved-state and native direction/point homes plus the held narrow/fraction convention remain.
-// Earlier 209 (was 209): Frame 0x98 now agrees; saved-state/direction homes and narrow/fraction convention differ.
-// Frame 0x98 agrees; saved-state/direction homes and clipping convention remain.
-// Frame 0x98 now agrees; saved-state/direction homes and narrow/fraction convention differ.
-// Earlier forms on frame 0x9c:
-// shared cross product 234, scoped matrix 234, working-vector matrix copies 232,
-// aggregate copies with shared cross product 249, role names 249, combined scope 249.
-// Earlier vector-copy homes and narrow/fraction convention trials:
-// Direct view call 235; entry point workspace 234; direct narrow predicate 229; entry probe workspaces 234; mode branch 240.
-// State first 253; early native declarations 229; split input/output vectors 229; scalar position 223;
-// full-width narrow 231 (frame 0x98); point setter 223; setter with wide predicate 253; combined native copies 287.
-// Scalar-workspace role names 229; scale assigned after copies 229; later position pointer 226;
-// no inner position alias 229; directions published first 229; scalar vector aggregates 229;
-// later position pointer with native direction copies 237. Three-point gain rejected.
-// Complete direction memcpy 237; direct input cross with late workspaces 244;
-// later up pointer 253; native point carried through composition 229; matrix-axis cross with late workspaces 241.
-// Adjustment memcpy 223; native directions with point setter 251; fraction-only scope 223;
-// location-only scope 223; geometry fields at each use 223.
-// Interpolation setter 223; transformation scope 223; branch-assigned narrow 220;
-// transformation names 223; direction fields at use 213; native copies with branch-assigned narrow 240;
-// direction fields with branch-assigned narrow 209 (plain).
-// Round 215: signed-byte narrow 218; signed/unsigned-word narrow 208/208;
-// function-scope narrow 209; missing-location-first 209. One-point gains rejected.
-// Recovered-frame saved-state name 209; composition output memcpy 209; consistent
-// direction/position role names 209; native byte predicate 218; invalid-reference-first 209.
-// Recovered-frame forward-only copy 217; up-only copy 217; shared cross product 209; saved-state
-// alias removed 254; split high-bit predicate 209. Frame 0x98 agrees; saved-state and direction
-// homes plus clipping convention remain.
-// Native player receiver 209; input/basis/composition/publication component loops 1165/1161/1157/265;
-// native receiver with input/composition loops 1165/1157; all native copy phases 1210. All restored.
-// Existing matrix constructor: scalar inputs 290; direct fields 379; native/library direction inputs 330/330;
-// native point 299; direct fields/library point 388; native/library complete copies 332/332. All constructor
-// and declaration forms restored.
-// Input/axis/output/all order 209 each; point/point-axis order 209/209; cross ji/kj 209/209;
-// input-axis order 209.
-// On frame 0x98, separate input and output direction values: split scalar input/output values
-// 209; split native input/output values 222; split library input/output copies 222; split scalar
-// values and native basis inputs 246; split native values and native basis inputs 222; split
-// library copies and native basis inputs 222; split native values with entry output declarations
-// 222; split scalar values with entry output declarations 209. All restored.
-// Individual direction, matrix, adjustment, point, fraction, location and position local names
-// 209/209/209/209/209/209/209/209.
-// Round P208: distinct native composition output, scalar/native inputs and native/library
-// output copies 257/276/257/276; the same four with entry output declaration 257/276/257/276.
-// All frames 0xcc versus 0x98; original alias-safe composition and native homes restored.
-// Original-position pointer before view queries: scalar/native directions, word truth, both
-// 252/260/248/271; those four with entry matrix declaration 252/260/248/271. All restored.
-// Round 227: Shared vector setters at input/basis/composition transfers, all subsets, then publication 209/216/219/226/229/237/240/289.
-// Original body and all helpers restored.
-// Round 202: Existing saved-state lifetime after view/basis/composition/output-copy/validation
-// phases 239/239/239/239/256; view/composition/validation with entry fraction 239/239/256.
-// Original saved-state initialization, qualifier and fraction lifetime restored.
-// Typed state/saved-state/both field receivers 209/209/209; each with native
-// directions 221/221/221; both with native position 232, with complete native
-// direction/position copies 204 (five-point gain dropped). Original types and body restored.
-// Round 383: complete retained/adjusted/both interpolation contributions 209 each;
-// complete conditional plane products alone/with either/both interpolation producers 209 each;
-// all products with word truth 208 (one-point gain dropped). Original products and body restored.
-// Round 170: Plain two-attempt validation loop, byte/short/long/dword ordinal, then native input copies
-// on the same loop graph 657/658/656/656/695/706/704/704. Original validation, copies and qualifier restored.
-// Round 34: Complete wide-truth producer, bool/byte/short/long 218/218/208/208; with
-// native forward/up inputs 210/210/214/213. Original narrow truth, copies and body restored.
-// Round 261: separate out-of-line validation/mode/location declaration subsets, all seven
-// 209; separate composition declaration 209. Original declarations and complete body restored.
-// Round 409: Staged cross with direct or retained matrix inputs, each with/without the inner position alias, 144/144/144/144; genuine reused state-field receivers on those four graphs 209/209/209/209. State/forward/point homes and held clipping convention remain. Original cross, copies, aliases and complete body restored.
-// Round 42: position declared after directions 249; forward/up full state receivers 119/119;
-// working matrix inputs both/forward-only 120/120; early matrix declaration 120; const position
-// pointer 120; two-read forward receiver 120. One-point gains rejected; original body restored.
-// N227: Independent computed left-axis output, simple/staged cross, direct/retained matrix
-// inputs and native/CRT transfers: eight at 239/976. Original cross destination, copies
-// and complete body restored; forward/position saved-register exchange remains.
-// Round 45 (lane 9): BLOCKED-BY 0x171d00 (held file): retail passes the clip flag in DL and the end point in ESI.
-// Flag false by default with one `= true` under retail's nesting 165; plane test through plane_distance_to_point 127;
-// plane terms spelled i, k, j 120 (retail's j, k, i product order, aligned 88 -> 86); with a cluster pointer local
-// 120; with a reference-table base local 120.
-// Round 90 (fast): forward pointer local declared before/after the position pointer 118/118 (plain
-// fast 119); forward and up pointer locals in all six declaration orders 166..248; up pointer only
-// 166; position written as the field expression (forward then takes EBX, but position is spilled)
-// 203, with forward/up pointer locals 203/206; a typed observer view (position/forward/up/flags
-// fields) 120 (identical code) in every pointer form; position through the pointer at each subset
-// of its four uses (copy, call, interpolation, store-back): only the interpolation decides, 119/220.
-// MiniMax C (11-06): no new form, no lower score - the frame now agrees at 0x98 bytes on both sides; what
-// is left in the first block is the cross product's register plan, retail loads forward.y into xmm1 right
-// after the forward copy and up.z into xmm0 late, ours loads up.z into xmm1 right after the up copy and
-// forward.y into xmm0 late, so the first product's operands are the other way round; the callee 0x171d00's
-// narrow/fraction convention (in another lane's file) still decides the extra spill.
-// N271: signed-byte reference with byte/bool/signed-byte/long truth 112/87/112/115;
-// short/word/long/dword references 95 each. On the 87 graph, staged cross 90, retained basis
-// inputs 87, both 90, both without the inner position alias 90. Keep signed reference and bool
-// truth, plain 87 at 953 bytes. Cross carriers, clipping producers and interpolation still differ.
-// Round N274: On signed-reference/bool homes, false-first result 105; native high-bit test 87;
-// false-first with high-bit 105; table fields at use 87; fields with false-first/high-bit/both
-// 105/87/105; all with entry constant result 243. Original clipping-result and cross graph restored.
-// Round 278: Existing real-vector interpolation scale/add-scaled or scale/scale/add, direct cross with
-// native/CRT point publication 88 each; staged cross with both pipelines and both publications 91 each.
-// Exact 953-byte lengths but no gain; original interpolation, helper graph, includes and complete body
-// restored. Native frame/pointer homes agree; first cross carriers and clipping-result production remain.
-// MiniMax E (11-09): no new form, no lower score (87); the two interpolated values are computed into the other
-// registers (retail multiplies the value it loaded from [esp+0x18] into xmm0 and the one from [esp+0x20] into
-// xmm1, ours the other way round, with the same results stored to [esp+0x58] and [esp+0x5c]), and retail loads
-// [esp+0x20] before it stores the new value to [esp+0x24] where ours stores it first; the rest of the function
-// matches instruction for instruction.
-// MiniMax B (11-14): no new form, no lower score (87); what is left is the interpolation's two products, which our
-// compiler hands to the registers the other way round than retail (retail multiplies the value it loaded from
-// [esp+0x18] into xmm0 and the one from [esp+0x20] into xmm1, ours the other way round, with the same results
-// stored), and the clip block, which folds the cluster address into the load where retail materialises it; the cross
-// helper's text is in include/vector_products.h and the narrow/fraction convention of 0x171d00 is in another file,
-// so this lane may not edit either (BLOCKED-BY).
-// MiniMax I (11-15): no new form, no lower score (87): the clip block still folds the cluster address into the load where retail materialises it (every spelling tried from here folds the same way), and the cross helper's colouring and 0x171d00 are in other files, so the first differences stay.
-// MiniMax I (11-15): no new form, no lower score (87): the clip block still folds the cluster address into the load where
-// retail materialises it (every spelling tried from here folds the same way), and the cross helper's colouring and 0x171d00
-// are in other files, so the first differences stay.
-// older score 87: unchanged this round: the two products of the interpolation keep retail's operands but our
-// compiler hands them to the registers the other way round, and the clip block folds the cluster address into the
-// load where retail materialises it; the cross helper and 0x171d00 are in other files, which this lane may not edit.
-// older score 87: unchanged this round: the cross product's colouring is swapped against retail's (retail gives
-// up.k to XMM0 and forward.j to XMM1 where ours gives them the other way round), and the clip block folds the cluster
-// address into the load where retail materialises it; the addends of the clip sum and of the interpolation compile in
-// the same order either way, and the cross helper and 0x171d00 are in other files.
-// MiniMax S (11-15): no new form, no lower score (87): the cross-product rows differ, with retail keeping the first product
-// in the register ours uses for the second and adding the two products in the other order, and the clip call's block follows
-// from it; the shared cross product's text fixes that order and it lives in another file.
-// MiniMax I (11-17): no new form, no lower score (87): the clip block still folds the cluster address into the load
-// where retail materialises it, and the cross product's colouring is still the other way round; the cross helper's
-// text lives in include/vector_products.h, which this lane may not edit.
-// b16G (11-17) walk against retail, fast build on r852: shared cross3f (include/vector_products.h) rows written
-// a->j*b->k - b->j*a->k give the cross product retail's registers (fwd.j loaded early at 0x16ecab, up.k late at
-// 0x16ed0f), 87 -> 68, first block matches. The clip lookup reads cluster->cluster_reference at each use through one
-// pointer (retail's `add eax, edi` at 0x16ee7c is not folded into the load; the reference local and the null-returning
-// helper fold or re-test) 70 with the sum below; the sum spelled i, k, j compiles to retail's j, k, i products from
-// 0x16ee9f, and `narrow` starts false (`xor dl, dl` 0x16ee5f, one assignment, `mov dl, 1` 0x16eed7) with the `& 0x80`
-// test (`jns` 0x16ee9f) -> 49. All 1163 functions of the 43 files using cross3f, before/after: only this one moved.
-// Left: the interpolation (0x16ef03..0x16ef57): retail multiplies point.x by amount first, loads point.y early and
-// stores y and z together at the end (0x16ef51, 0x16ef57), then the tail stores [ebp+8] after [ebx] (0x16ef7d);
-// operand spellings, temps, k-j-i order, a component loop and 1 - amount inline all give the same 49; a blended
-// point3f temp 87, x + (p - x) * f 69.
-// score 49 (was 87): see above; 0x171d00 now matches, so the old BLOCKED-BY no longer applies.
-// M3 lane 4 r265 (fast screen, control 49): the blend's products are ordered at code generation (the scheduler keeps
-// their order; a forced-ranking search over the blend and tail scheduler regions changes nothing), and every spelling
-// gives one code: the sums written point-first 49, both products operand-swapped 49, `point *= amount` then
-// `+= original * remainder` 49, the blend through a same-text vector3f_interpolate copy 49. The `original` pointer
-// declared beside original_position 49, ahead of the location query 49, ahead of `fraction` 49, original_position
-// used directly 49; `point` declared first in the function 49, beside original_position 49. 1..31 unused
-// initialised locals at the top 49 at every count (not a symbol-count state). Body unchanged.
-// M3 lane 5 r253 (fast screen with 0x171d00, 0x11bed0 and 0x142a60, all MATCH; control 49). The blend's operand order is
-// the reassociation sort (descending rank, stable): point.x/z/y rank by their first reads in the plane test (below amount
-// and remainder), and a float read through `original` ranks above both, so retail's point-first products and its
-// remainder-first row x need ranks no named local reaches. Forms: a new inline point-blend helper with pointer parameters
-// and `1.0f - t` written in each row 49 ((1 - t) becomes a common temp ranked below the read); `amount` declared at the
-// top of the function 49 (its rank does not move); `point.x *= amount;` then `point.x += original->x * remainder;` per
-// row 49; the original read through a `point3f const &` 49; every product spelled remainder-first and amount-first 49.
-// Body unchanged.
-// M3 lane 14 r164 (H2M_FAST with 0x11bed0, 0x142a60 and 0x171d00, all MATCH; control 49). Reassociation ranks read
-// from the back end's sort (pass 2): `amount` 0x1c00 and `remainder` 0x1c20 are numbered after every named symbol,
-// point.x/z/y weigh 0x320/0x360/0x3a0 (their plane-test reads), the offset-0 read through `original` 0xc008 and the
-// +4/+8 reads are address nodes that outrank every leaf. Retail's x row (remainder copied, point loaded, the remainder
-// product as the sum's destination) needs the amount below the point components while the remainder stays above the
-// offset-0 read and its product above the point product, which only an amount numbered before the plane test gives.
-// Forms: dead initialised longs right before the clip call (K 0..12), after `amount` (K 0..8) and after `remainder`
-// (K 1, 4, 7) 49 each; an inline blend taking the amount by value (the call passing `fraction * 0.9f`) 49 (the amount is
-// still a late temporary, 0x11c40); with two dead longs at the top the x row's remainder product sorts remainder-first
-// but its sum then puts the point product first (49, as lane 4 r265's scan); the point stored back through
-// `state + 0xb8` 49 (same code); forward and up read and stored through named slot pointers 203 (943 B); the forward
-// store ahead of the point store-back 49 (the stores then follow the new source order exactly, so ours keeps them in
-// source order where retail stores forward.x between point.y and point.z); the matrix's own position used throughout in
-// place of the `point` copy 270 (933 B). Body unchanged.
+// MATCH (was 49): the clip plane is tested through plane_distance_to_point and the blended point is written through
+// real_point3d_set, whose arguments are evaluated last to first (so the point's components come after the blend amount
+// and its z ahead of its y); the remainder is written `1.0f - amount` at each use; the position pointer is declared
+// after the forward copy; the final store-back goes through the state pointer like the two beside it (through the
+// position pointer the forward store waits on it). M3 lane 3 r321.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {
@@ -1829,7 +1557,8 @@ void function_16ebf0(long user_index)
 			if (*(long *)(user + 0x2094) != NONE && (*user & 4))
 				function_142a60(&adjustment, (transform4x3f *)(user + 0x2098), &adjustment);
 		}
-		if (!g_510c54->active || !g_510c54->unknown01)
+		s_game_time_globals *game_time = g_510c54;
+		if (!game_time->active || !game_time->unknown01)
 		{
 			switch (function_155760(user_index))
 			{
@@ -1843,8 +1572,8 @@ void function_16ebf0(long user_index)
 			}
 		}
 	}
-	point3f *original_position = (point3f *)(state + 0xb8);
 	vector3f forward = *((vector3f *)(state + 0xd8));
+	point3f *original_position = (point3f *)(state + 0xb8);
 	vector3f up = *((vector3f *)(state + 0xe4));
 	transform4x3f matrix;
 	matrix.scale = 1.0f;
@@ -1882,22 +1611,21 @@ void function_16ebf0(long user_index)
 				if (entry->index != NONE)
 				{
 					narrow = !(cluster->cluster_reference & 0x80) ||
-						entry->plane.i * point.x + entry->plane.k * point.z + entry->plane.j * point.y - entry->plane.d < 0.0f;
+						plane_distance_to_point(&entry->plane, &point) < 0.0f;
 				}
 			}
 		}
 		real fraction;
-		point3f *original = original_position;
-		if (function_171d00(original, &point, &fraction, narrow))
+		if (function_171d00(original_position, &point, &fraction, narrow))
 		{
 			real amount = fraction * 0.9f;
-			real remainder = 1.0f - amount;
-			point.x = original->x * remainder + point.x * amount;
-			point.y = original->y * remainder + point.y * amount;
-			point.z = original->z * remainder + point.z * amount;
+			real_point3d_set(&point,
+				original_position->x * (1.0f - amount) + point.x * amount,
+				original_position->y * (1.0f - amount) + point.y * amount,
+				original_position->z * (1.0f - amount) + point.z * amount);
 		}
 	}
-	*original_position = point;
+	*(point3f *)(state + 0xb8) = point;
 	*((vector3f *)(state + 0xd8)) = forward;
 	*((vector3f *)(state + 0xe4)) = up;
 }

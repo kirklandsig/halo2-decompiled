@@ -249,6 +249,14 @@ struct s_reference_filter_view
 // arm order, inline 153 (225 B), forced inline 100 (279 B); the not-flag arm as a nested if/else on the flag (to be
 // folded into a set later), true arm first, 98 (263 B), as a fourth chain arm 98, with our arm order 105 (256 B).
 // Body unchanged.
+// M3 lane 13 r168 (h2m fast, control 6): the chain true arm first re-measured 66 (285 B: the not-flag arm falls into
+// the result test, so `result = flag` keeps its jump and the block stays inline); round 171's `result = !flag; if
+// (allow_any) result = true;` re-measured 29 (out of line, not-flag first); early returns throughout (no filter: true,
+// failed admission: false, other team or distance: false, `return result` at the end), true arm first, 110 (280 B); the
+// failed admission as its own first arm (`if (!entry || !(...)) result = false; else {...}`) 6 (same code); the flag as
+// `bool const` with the true arm first 66 (285 B). Reading: our layout moves the chain out of line only when that saves
+// a jump, which it does only when the chain's last arm cannot fall into the result test; retail has the true arm first
+// and the chain out of line anyway. Body unchanged.
 // @retail 0x2623a0
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference)
 {

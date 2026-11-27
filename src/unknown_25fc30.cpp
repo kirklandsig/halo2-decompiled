@@ -1102,7 +1102,20 @@ void __stdcall function_25eea0(
 // commuted Loop 2/3 adds 111; on `dir3 + 1e4a50 + zone` (235): switch-type 250, ternary max / outer result / `move_res` /
 // preinc `j` / no-`type` / fn-scope `j` / `while` `j` / counter reorder / `point` after guard / Loop 2 kji all 235, no-`point`
 // 343, `if/else` bonuses 241, `pos_dist` 246, chained zero 250, ptr/ref Loop 3 322/251, all after guard 316, diag dropping
-// `inline_depth(0)` + `distance3d` + `1e4a50` 383. Earlier notes follow.
+// `inline_depth(0)` + `distance3d` + `1e4a50` 383.
+// GB r33 (51 valid + 5 diag fast trials on the 111 base, 7 peers MATCH; body unchanged): `0x1b0710` param reorder
+// `(actor_index, object_index, ...)` 109 (-2, under bar); `no-type`, `move_result`, `j` outer, `scoped i`, `no early
+// return`, `factor < 0.f`, `factor` ternary, `distance` no-cast/kji/inline-no-delta, `origin` first, `if` no-`continue`,
+// `score` commuted/`if` bonuses/`line_bonus` local, and `weight`/`bonus`/`cover_bonus` scale commutes all 111;
+// `weight * 12.f`, `max_dist` inside `if`, `factor` ternary, `distance >= inner`, `double dx/dy/dz`, `ratio` + `no-type`,
+// `else if` weight, `weight *=`, and `PIN` clamp all 245-246 (1322 B, flipping both Loop 2 and Loop 3 `addss` parity
+// together; `double dx/dy/dz` and `weight *=` hit al 47); `target_dist` 319, `weapon_range` 334, `inner clamp * 12.f` 354,
+// `use_type` 246, `bonus` `if/else` or ternary 200, `weight < 4.f` 315, `double distance` 254, `origin - pos` 118,
+// `cover_bonus` `if/else` 154, `weight` before early return 130. Diagnostics: dropping `#pragma inline_depth(0)` and
+// calling existing `vector3d_from_points3d(&origin, &geometry->position, &delta)` + `magnitude3d(&delta)` (+ `0x1e4a50`)
+// matches all 42/42 Loop 2 instructions verbatim (`fstp st(3); fstp st(0); fstp st(0); fst [esp+0x38]; fld [esp+0x40];
+// fcompi st(1)` + 2-insn `addss`), but still inlines `0x1e5240` (`364`, 1336 B, al 102, mk 41) even with all 7 retail
+// callers of `0x1e5240` linked and with `if (!context->unknown5b)` nesting. Earlier notes follow.
 // Earlier 253 (was 253): the cover loop's line index stays in memory where retail keeps it in EBX (sharing the zero
 // register); the allocator ranks the moving counter (-38) above the index (-44) for EBX. Also the weight block's
 // quotient and weight colours (retail quotient XMM1, weight XMM2), retail keeping the leader distance on the x87 stack
@@ -1184,6 +1197,28 @@ void __stdcall function_25eea0(
 // `mk=4`; same with `0x1e4a50` do-while, `continue`, `bonus+=score`, `weight*factor`, `score` ptr, outer/inner swap/rename),
 // and adding `ratio`/`excess`/`range_limit`/`weight_ternary`/`l1_bonus`/`num`/`scale`/`max_dist` flips the Loop 2/Loop 3
 // `addss` parity to **`mk=3`** (`100`, 120 consecutive Loop 2 + Loop 3 cover insns exact); `pos_dist` combo hits `fd=+0xc0` (`105`).
+// M3 lane 1 r179 (H2M_FAST with the same callees, control 111): retail calls 0x1e5240 out of line here; without the
+// inline-depth pragma this build expands it at a call one or two conditionals deep and calls it at three, as in the
+// matched callers 0xcf040, 0x1b9540 and 0x265d30. Without the pragma: distance3d for the leader distance 364 (1336 B);
+// with the body nested under the 0x5b test as well 364; the weapon read through `618 ? call : NULL` there 362 (1336 B).
+// The pragma around the 0x1e5240 call alone (diagnostic) 87. With the call one level deeper (an always-true test, not
+// keepable): distance3d 87, magnitude3d on the hand delta 76 (1306 B; the leader loop's x87 keep and k, j, i squares
+// exact; left: the weight block's XMM1/XMM2 colours, the 0x1df560 and 0x1b0710 argument order, the inner/outer loads
+// and the leader score's 3-insn add). Lead: a natural third conditional level around the 0x1e5240 call, then magnitude3d.
+// GA35 (29 fast source trials + /Ob1 diagnostic probes across 3 batches with 11 peers MATCH; control 111 at 1306/1306 B,
+// +0x52, al=50, mk=13; body unchanged): on HEAD (111), commuted Loop 3 bonus 1 / both / local, nested leader guard without
+// local, Loop 1 `weight * factor` / commuted add, commuted weight mul, Loop 2 commuted bonus / add / `outer` decl first,
+// nested cover guard, Loop 3 `if/else` bonus 1 (plain and commuted) all tie at `111`; Loop 1 ternary clamp / weight split
+// `246`; Loop 3 per-arm `+=` `244`, `< 1` ternary `124`; `0x1b0710` param reorder + commuted bonus 1 `109`; dropping
+// `#pragma inline_depth(0)` (or `#pragma inline_depth(1)`) with `actor_get`, `object_get`, `vector3d_from_points3d`,
+// `magnitude3d` (with or without `function_1e4a50`) auto-inlines `0x1e5240` (`362`, `1336 B`). Loop 3 `real *score =
+// &positions[i].score;` for all 3 adds `246` (top or after `j` loop; `244` with `0x1b0710` reorder; all loops `234`); for
+// the first 2 adds only `100` (`1306/1306 B`, `mk=12`, fixes `addss xmm0, [ecx]`, not kept: mixed pointer/direct writes).
+// Diagnostic (`/Ob1` on `src/character_tag_accessors.cpp` + dropping `#pragma inline_depth(0)` + real helpers `actor_get`,
+// `object_get`, `vector3d_from_points3d`, `magnitude3d` + `0x1b0710` reorder): hits `100` (`al=40`, `mk=3`, fixing `0x1df560`
+// SI-before-CX and all 45 Loop 2 insns verbatim; `+ pos_dist` `82` at `+0xc0`, `al=22`; `+ *score` for first 2 Loop 3 adds
+// `34`, `mk=1`, matching 181 consecutive insns 407-587 verbatim), but `/Ob1` regresses `0x25eea0` (`0 -> 303`) where retail
+// auto-inlines `0x1e5240`.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

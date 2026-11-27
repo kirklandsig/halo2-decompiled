@@ -1492,6 +1492,12 @@ __forceinline long vehicle_round(real value)
 // side cross's loads rank forward (i, j, k) 6, 0, 5 and up 2, 0, 1 on this body, 1, 0, 6 and 2, 0, 2 on S + D (the higher
 // is loaded first, a tie keeps the helper's spelling order); both j loads rank 0 in both forms, so forward.j * up.i needs
 // up.i tied at 0; D, after the side cross, still moves the side cross's ranks. All restored.
+// M3 lane 5 r256 (h2m fast; S = cross3f_staged at the first cross, B = a `real_bounds const *` to the rate bounds read
+// after the rate; S+B re-measured 2). Ranks on S+B, side cross: forward i/j/k levels 2/0/2, up 6/0/1; the pair left
+// needs up.i at or below forward.j. On S+B: B as a `real_bounds const &` 2; no up pointer 8; the up pointer only for the
+// rate 10, only for the first cross 4; the reference with no up pointer 8. Diagnostics on S+B (reverted at once): 1-3
+// redundant float parens around the rate's division 6/4/8 or around the whole rate 6/4/8; 1-7 dead long locals at the
+// top 6/12/8/8/17/13/4; 1-4 in the side block 6/8/6/6; no cell gives 0.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2773,6 +2779,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // M3 lane 3 r319 (h2m fast), at 9: the forward speed spelled forward-first i, j, k 9, k, i, j with the i term
 // velocity-first 9, j, k, i 9, and the velocity-first i term then k, j 9 (all the same code); the final loop's clamp as an
 // if / else-if pair 9 (same code).
+// M3 lane 5 r256 (h2m fast, at 9): the function-channel loop's graph looked up once into a named pointer before the loop
+// 141; overlay 4's period bound as `real const &` 13, both engine-overlay arms that way 13; the final loop's overlay
+// bound as a `c_type_709360 const &` for its test and play 83; its half product written `0.5f * value` 9 (same code);
+// re-measured: arm 3's terms velocity-first k, j, i 9, grouped (k + j) + i 11, `graph != NULL` 9, `state` as `*const` 9.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

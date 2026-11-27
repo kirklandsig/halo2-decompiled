@@ -1196,6 +1196,14 @@ void function_2640c0(long object_index, s_object_motion_view *result);
 // 85 (the NULL and the found arms are both threaded); with the copy in the last arm: the squad read through a const
 // reference for the test 84, the lookup as an if/else assignment 84, the squad test held in a named bool 84 (each
 // threads the NULL arm; the return-0 exit stays ahead of the return-3 one). Body unchanged.
+// M3 lane 13 r168 (h2m fast with 0x263ed0, control 12): the allocator gives the parameter EAX up to the first lookup and
+// the copy EDI from the squad test's join; retail's `mov edi, eax` at the call reads as one value split there. Forms:
+// the parameter updated in place re-measured 101 (the convention moves arg_2 to ECX); `short result = 0;` with the
+// chain nested under `!(local_1 && local_1->flag1)` 17 (316 B: the return-3 exit is then ahead of the zero exit, as in
+// retail, but the zero is kept in EBX and returned by `mov ax, bx`), with the copy in the last arm 88, with `else
+// result = 0;` for the failed second lookup 50; the nested chain with direct returns (`return 3;`, the call returned,
+// one `return 0;` at the end) 12 (16-bit constant returns, the zero exit still first), with the copy in the last arm 83;
+// the negated test with `else result = 0;` last re-measured 71 (that zero exit is laid inline after the test).
 // @retail 0x25cb60
 short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *arg_4, long arg_5, short arg_6)
 {
