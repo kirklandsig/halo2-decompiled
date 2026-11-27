@@ -588,6 +588,15 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // `0.3f * step` 334 (same code); `inverse` computed ahead of the squares in the builder 332 (1782 B; two points, not
 // kept); the rotated rows' products written vector component first 334 (same code); the diagonals written
 // `xx + (1.0f - xx) * cosine` 334 (same code). Body unchanged.
+// M3 lane 8 r245 (h2m fast with 0x137ed0, MATCH throughout; control 334). Reading: the compiler sorts each cross
+// product by operand rank, and the builder's complement local ranks below the three axis components (global loads
+// numbered after the helper's locals), so it forms j * i, k * i and k * j before the cosine; any form that ranks the
+// complement first (inline in each term 348 again, or 32 dead locals ahead of it as a diagnostic 342) also shares
+// complement * k between xz and yz, which retail forms twice. Forms: the builder's parameters as (matrix, axis,
+// cosine, sine) 371 (1815 B); the nine entries as a brace-initialised matrix3x3 local assigned to the output 381
+// (1804 B); both matrices as one two-element array 348 (1792 B); the squares and sine products as brace-initialised
+// vector3f locals 341 (1779 B, the frame moves); the cross terms as one brace-initialised vector3f 351 (1763 B).
+// Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5045,6 +5054,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // retail's `mov al, byte ptr [state + 0x94]`, 485 (2035 B, retail's length; one point, not kept); the camera delta alone
 // read from the stored copy at view + 0x110 513 (2004 B), with the byte read 513; the reset flag as `(flags >> 1) & 1`
 // without `!= 0` 486 (same code), with both others 513. Body unchanged.
+// M3 lane 8 r245 (h2m fast with 0x36b50; control 486). Frame reading: the two inlined projection results and `a` and
+// `b` each take an 8-byte slot (not split into scalars) and `old` gets its own 12-byte slot because `previous` shares
+// `a`'s; a forced-ranking search over single decisions finds nothing below 482. Forms: the projection result built
+// with a brace initialiser 486, `a` and `b` bound as const references to the returned values 486, `point2f a, b;`
+// declared at the top of the loop body 486, the projection helper taking the point by const reference 486, the moved
+// point as a brace-initialised point3f 486 (same code each). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -6186,6 +6201,13 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // M3 lane 3 r313 (fast, control 231): the opacity test as `0.05f < opacity` 231; the alpha as `opacity * (1.0f - t)` 231;
 // the radius as `0.35f * radius field` 231; the offset's z set first 231; the offset declared ahead of the corners 231
 // (same code each).
+// M3 lane 8 r245 (h2m fast with 0x141710 and 0x1697c0, MATCH; control 231). Frame reading: past 0x80 bytes the slots
+// are laid out by reference density; ours holds two corners' z and one y in the z slot (9 refs), so it sorts above the
+// radius and its negation, where retail's z slot holds one corner's z (3 refs) and sorts below them; the small-slot
+// order follows the corner locals' spill choices, not the declarations. Forms: a named height read from the last
+// corner for the three vertices that use it 405 (1798 B); the offset brace-initialised 231; a const pointer to the
+// collision point passed to the four corners 231; the bias as `corner->z = corner->z + 0.001f` 231 (same code each but
+// the first). Body unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
