@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "saved_frames_storage.h"
+#include "timed_effect.h"
 #include "projection_storage.h"
 #include "view_context_storage.h"
 /* UNKNOWN_02C560.CPP: nested view setup and auxiliary rendering */
@@ -16,13 +17,6 @@ struct s_2f800_source;
 struct s_2f800_size;
 struct s_2f800_view;
 struct s_2f970_view;
-struct s_frame_parameters_12a50
-{
-    long mode;
-    dword identifier;
-    double time;
-    dword unknown10, unknown14;
-};
 
 struct short_rect { short v0, v1, v2, v3; };
 struct short_rect_pair { short_rect a, b; };

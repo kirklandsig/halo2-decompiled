@@ -4039,6 +4039,18 @@ enum
 // scratch, event AX/BX and kill EBX/ESI); const member-address definition 309; inline tag_get 309; 2-use owner_player local 312 (nested 309);
 // direct DAMAGE_OBJECT owner stores 466 (1902 B); forceinline set_owner 309; while reverse pass 309; prefix --i 309; short region_index 444;
 // event type via s_damage_object_datum 498.
+// M3 lane 2 r160 (fast screen with 0xd9b60 5, 0xdb210 and 0xd8cb0 MATCH each time; control 309 at 1885 B): the kill
+// block's two vitality stores through a block-local pointer from its own lookup 355 (1902 B); the event word read into a
+// named short ahead of the tests 309 (same code); the event block's type test through the pool datum 498 (1891 B); the
+// side-effect block's team read through `object` 340 (1880 B); that block's type test through `object` 279 (1885 B: not
+// kept, retail reads the pool datum's type byte there, at +3 of the entry it then takes the object from), both 373
+// (1867 B); the report call taking `objects[i]` 309 (same code). The r140 lead rebuilt (accumulator-field shield read,
+// node stores in record order, body flag first, friendly ahead of the definition, `kill = true` first): 283 at 1880 B.
+// On it four groups are left: the head's tag load (ECX with an in-place add; retail EAX then `lea ecx, [eax + 0x10]`),
+// the count (ESI; retail EDI, with the first index through `lea eax, [edi - 1]`), the scratch pair in the inlined info
+// lookup (ECX / EAX exchanged) and the event block (word in BX; retail AX, victim index in EDX). A forced-ranking search
+// on that lead lists eight register moves (2665 candidate decisions, none of the 24 tried lowers 283), so more than
+// three decisions still separate it from retail.
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)

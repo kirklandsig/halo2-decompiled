@@ -1075,6 +1075,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // where ours steps induction pointers. On the point-typed centre form (1344): both base-velocity adds through vector3f_add
 // as well 1344 (same code); every call of this file's scale helper through the existing vector3f_scale 1425 (6211 B);
 // both end-of-loop torque crosses through cross3f 1378 (6238 B).
+// M3 lane 13 r166 (reduced-image screens, control 1346): the two output clears written arg_2 first 1346 (same code); the
+// first normalizer's scaling through this file's scale helper with 1 / length, in place, 1419; the magnitude helper's
+// three products cast to double, copy kept, 1393; the definition pointer read after the datum pointer 1346 (same code);
+// the result array and query buffer declared at the top of the function 1346 (same code, frame still 0x44 over).
+// Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

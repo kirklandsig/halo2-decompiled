@@ -1,4 +1,5 @@
 #include "filter_storage.h"
+#include "timed_effect.h"
 #include "material_records_storage.h"
 #include "render_source_storage.h"
 #include "visibility_storage.h"
@@ -1230,7 +1231,6 @@ long function_35510(long format)
 extern byte g_485a77;
 real g_48597c[36];
 extern byte g_4858bc;
-extern short g_4858c8;
 extern real g_485a0c[8], g_485a34, g_485a40;
 extern long g_485a2c;
 long g_4858cc;
@@ -1634,7 +1634,6 @@ void function_4b3d0(s_vector_perturbation *state)
 	state->step = state->step_scale * g_509418;
 }
 
-extern real g_485a6c;
 real g_485a30;
 real g_4e69c0[4];
 real g_4c19b0, g_4c19b4;
@@ -3132,6 +3131,13 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // kept forward dot 284, with the dot written delta-first k, i, j 281, axis-first k, i, j 281, delta-first i, j, k 280
 // (one point, not kept); the distance attenuation as a ternary initialiser, unequal bounds first 424, equal bounds first
 // 496 (2285 B). Retail keeps attenuation in its stack cell from the 1.0 default on; none of these moves it there.
+// M3 lane 13 r166 (reduced-image screens, control 281). Reading the operand ranks: the deltas are symbols 0x18/0x1a/0x1e
+// (first mention k, i, j) and the camera axis members 0x2a/0x2b/0x2d, so every forward product copies the axis. Forms:
+// the delta through vector3d_from_points3d with the dot written axis.k * delta.k + axis.i * delta.i + delta.j * axis.j
+// 281 (the deltas are still numbered at the helper's stores, below the axis), with delta.k first in the k product 281;
+// the helper delta with the kept dot 284; the written deltas with that k, i, j dot 281 (same code); the attenuation
+// default between the deltas and the dot (where retail stores 1.0) 503; the deltas written j, i, k with the dot grouped
+// (j + i) + k 487. Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -6345,7 +6351,6 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 }
 
 
-extern double g_4858a0;
 struct s_masked_list;
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining);
 bool __stdcall function_37a60(void *state);
@@ -6881,7 +6886,6 @@ s_light_definition_storage g_light_definition_storage;
 s_filter_buffer_storage g_filter_buffer_storage;
 
 extern byte g_485a75, g_485a76;
-extern long g_485898;
 void function_15680(short mode);
 void function_15370(short mode);
 extern s_record_sources *g_467138;

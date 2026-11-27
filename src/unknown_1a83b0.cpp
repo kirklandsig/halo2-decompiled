@@ -891,6 +891,12 @@ s_1a8a10 g_4453c0[] =
 // merge into the join ahead of the y store, j read once). So a point store, even into an escaping buffer, never splits
 // the two j reads; they split only where the negation is the first j read (re-measured: i in a scalar with j read in
 // place 31, the left sum's i * y then computed before the negation and the plain j load after the left sum).
+// M3 lane 3 r319 (h2m fast with 0x1a8c30, MATCH; control 17; base: the copy's j assigned between the sums with the
+// identifier, index, score initialisation order, round 296's 15): the forward sum's i read from the actor 92; x and y
+// named from the point after the switch 15 (same code); the four stores in the orders [2], [0], [3], [1] 16, [0], [1],
+// [2], [3] 16, [1], [0], [3], [2] 16, [3], [1], [2], [0] 17 and [2], [3], [0], [1] 16. Re-measured: the rotated y carried
+// in a scalar and stored to the point after the copy 24.
+// A forced-ranking search of scheduling decisions on the 15 form (40 tried) finds nothing below 15. All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
