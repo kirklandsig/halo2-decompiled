@@ -1201,6 +1201,17 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
+// Roasted-Codes (draft #1576, released 2026-11-27; fast reduced-image checks from the same 39 baseline, 376 of 375
+// bytes): the extra byte is the register choice. Ours keeps the item in EBP and the cached tag instances in EBX, retail
+// has them the other way round (`mov ebp, [0x4e3b44]`, the item in EBX), so the definition-index load is
+// `mov eax, [ebp+0]` against retail's `mov eax, [ebx]`. Same code as now: the item bound ahead of the tags, an inline
+// definition accessor, the clamp as if/else-if, the sound record as an aggregate initialiser, an early reference to the
+// item's location. The tag instances read through the global at both lookups 120 at 360 B (the item takes EBX, but the
+// tag load repeats and the frame shrinks); no cached arrays 118 at 364 B; `direction` copied ahead of the lookups 57 at
+// 377 B; `kind` as a byte 80; `kind` assigned in explicit type-4 and else branches 107; the material in a local ahead of
+// the effect call 82 at 383 B; the location copied member by member 71 at 387 B. Also open: retail sets up the 0x188180
+// call with `kind` in EDX and the material in EDI. The permuter's only lower variant in 445 tries over two seeds (33)
+// swaps the two arguments of the 0x1201a0 call, which changes behaviour.
 // @retail 0x10c880
 void function_10c880(long item_index, s_item_impact const *impact, vector3f const *velocity, point3f const *point)
 {
