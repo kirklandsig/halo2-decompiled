@@ -1484,10 +1484,16 @@ static __forceinline float first_pending_normal_impulse_31c940(double mass,
 {
  return mass * diagonal + other * coupling;
 }
-static __forceinline float second_pending_normal_impulse_31c940(float mass,
+// Preserve the captured normal-row coefficient through the coupled sum.
+struct normal_mass_31c940
+{
+ float value;
+ __forceinline explicit normal_mass_31c940(float input) : value(input) {}
+};
+static __forceinline float second_pending_normal_impulse_31c940(normal_mass_31c940 mass,
  float diagonal, float const &other, float coupling)
 {
- return mass * diagonal + other * coupling;
+ return mass.value * diagonal + other * coupling;
 }
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -1585,8 +1591,8 @@ solver_scalar_work_31c940 scalar_work(work_prefix,simd_word,frame.work);
                         (float const &)scalar_work.pair_b, error_b, operation_float(op, 4));
                     float const &mass_b_source = terms[5].m128_f32[3];
                     float mass_b = mass_b_source;
-                    scalar_work.fallback_scalar = second_pending_normal_impulse_31c940(
-                        mass_b, error_b, (float const &)scalar_work.pair_b, operation_float(op, 4));
+                    scalar_work.fallback_scalar = second_pending_normal_impulse_31c940(normal_mass_31c940(
+                        mass_b), error_b, (float const &)scalar_work.pair_b, operation_float(op, 4));
                     first_positive = load_stored_impulse(scalar_work.pair_a) > 0.0f;
                     if ((first_positive) && load_stored_impulse(scalar_work.fallback_scalar) > 0.0f)
                     {
