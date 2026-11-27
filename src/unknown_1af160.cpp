@@ -408,6 +408,17 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // fresh lookup 31, storing the false result flag into the field 31 (both the same code); the bool output copied into a
 // named local at the not-equal arm's top 12 (forwarded); the clear through the entry actor pointer (diagnostic, not
 // retail's code) 257 (954 B).
+// M3 lane 5 r255 (fast screen with 0x1e1f20, MATCH; control 12). Frame model: a copy of the back end's middle-pivot
+// density sort run over today's traced cell list (creation order: 0x261280 result with the 0x265c30 flag, long output,
+// actor, 0x25d690 pointer, scratch pair, offset temporary with the 0x262b40 result, bool output, saved reference group,
+// node) reproduces our layout; no single cell moved, swapped, added, removed or re-weighted gives retail's. Of the
+// orders the packing rule allows, retail's comes out only when the scratch buffer reaches its third reference before
+// the 0x25d690 pointer (its release is the last statement, the pointer's third use is the 0x210ac0 argument) and the
+// saved reference reaches its second before the offset temporary (its compare follows the equal arm's clear), or with a
+// third reference on the bool output and the offset temporary no longer first of the two-reference cells. Diagnostic,
+// removed: an unreachable address-taker on the bool output (no code) 9 (+0x50, both pairs rotate further). Forms: the
+// saved-reference compare with its operands swapped 13; the saved reference `const` 12 (same code); the actor's +0x4ae
+// store ahead of the output's +4 clear 14; the 0x265c30 flag declared ahead of the 0x1e1f20 test 22.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

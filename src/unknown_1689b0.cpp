@@ -1477,6 +1477,14 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // guard around the instance loop 26 (with the dword mask 44); the cluster entry taken from the BSP global at its use,
 // no bsp local, 23 (same code); a `long *` to the instance's mark for the test and the store 57; the instance element
 // read at each use 157; the mask as a long from the flag-test macro 41.
+// M3 lane 15 r155 (h2m fast over this file's markers, 23). Reading: the instance tick is one allocator candidate from
+// its increment (a memory increment) to the instance loop's test and store, live but unreferenced through the whole
+// cluster loop, so it is never coloured. Diagnostics (reverted): 0x16a0a0 storing the instance flag 23, the tick as a
+// separate scalar that 0x16a0a0 writes 23, the increment dropped 161; in all three the in-loop load stays at the loop
+// top, so neither the callee's writes nor the increment decide retail's preheader load. Forms: the tick read once into
+// a named local ahead of the instance loop 193 (902 B); the dword mask with the 0x245aa0 guard as `test_world &&
+// found` 42; the hit count named once for the leaf loop bound 227 (914 B); named bools for the instance and object
+// flag tests, four uses each, 251 (932 B).
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)
