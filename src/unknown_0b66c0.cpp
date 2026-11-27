@@ -64,7 +64,7 @@ unsigned long function_0b6720(const char *string)
 	return length;
 }
 
-// `inline` (M3 lane 3 r313, lane 14 r134; S2 harvest 11-27): retail's callers 0x106790, 0x166d75, 0x16760c, 0x1cd070,
+// `inline` (M3 lane 3 r313, lane 14 r134; #1605): retail's callers 0x106790, 0x166d75, 0x16760c, 0x1cd070,
 // 0x1cd8a0 and 0x1cdb00 keep nothing in ECX/EDX across its calls and 0x106790 expands it at its channel-0 tests, so
 // retail's callers had no register summary for it.
 // @retail 0x000b6760

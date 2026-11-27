@@ -2718,13 +2718,14 @@ bool function_0b6760(s_index_pair const *pair);
 // MiniMax C (11-20): no new form, no lower score (61): the channel-1 call loads the device index into eax, retail into ecx.
 // M3 review (11-20, lane 14 r134): a MATCH was found and is held for the user's ruling: it needs `inline` on 0xb6760's
 // definition (called from five other files), a bool in the matched 0x1cd070 that keeps one 0xb6760 call out of line, the
-// position test in a bool here, the unit byte tested `<= 0`, and 0x107cc0's state ahead of its channel. Body is main's.
+// position test in a bool here, the unit byte tested `<= 0`, and 0x107cc0's state ahead of its channel. (Superseded by
+// the match below, as are the BLOCKED-BY 0xb6760 lines above.)
 // MiniMax B (11-20): no new form, no lower score (61): the entry registers are still one rotation off from retail's and the body is sixteen bytes short of retail's 1495; what is left sits at the two channel-1 0xb6760 calls, whose convention is fixed in another file.
 // MiniMax R (11-20): score 61 (was 61): no new form; the prologue still clears the result flag before the definition
 // pointer where retail stores the definition first, and the two channel-1 0xb6760 calls still load the device index into
 // eax where retail loads it into ecx (the callee's link-time convention is fixed in another file, so the body stays
 // BLOCKED-BY 0xb6760).
-// S2 harvest (11-27): MATCH, the form of the M3 review of lane 14 r134 above: 0x107cc0 takes the animation state ahead
+// MATCH (11-27, #1605; reduced image, then the full image), the form of the M3 review of lane 14 r134 above: 0x107cc0 takes the animation state ahead
 // of its channel (definition, declaration and both calls; 0x107cc0 still matches), the position-group test named
 // `moving`, the result declared after the definition, acceleration and speed as running sums and the unit byte tested
 // `<= 0`, with `inline` on 0xb6760's definition (see 0x166d75). Without the `inline` this body is 2.

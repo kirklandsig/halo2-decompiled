@@ -2247,12 +2247,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // `& 0xa` 172, as `(flags & 2) || (flags & 8)` 368, nested under the update call 172; the sound callback chosen by an
 // if/else 172; the lead's zoom/scope block alone (positive flags, retail's second zoom test before the tail-merged overlay
 // call) 368 (2193 B), with the clear test as one direct condition 364. Body unchanged.
-// S2 harvest (11-27): MATCH (fast, with 0x165dc1, 0x166561, 0x11eed0 and 0xb6760 in the image). The form is M3 lane 8
-// r232's lead (the active preset, the callback as `== 0 ? right : left`, the channel byte in a long local, the zoom logic in
-// retail's positive sense with the play per arm under `else if (zoomed)`) with GA16's `animation` pointer for the four
-// animation-state calls, `should_clear` and `current_set`, completed by M3 lane 3 r313's `inline` on 0xb6760's definition
-// (retail's callers keep nothing in ECX/EDX across that call). With that `inline`, 0x1cd070 and 0x106790 keep their match
-// through the forms noted there.
+// The BLOCKED-BY 0xb6760 lines above are superseded by the match below.
+// MATCH (11-27, #1605; reduced image with 0x165dc1, 0x166561, 0x11eed0 and 0xb6760, then the full image). The form is
+// M3 lane 8 r232's lead (the active preset, the callback as `== 0 ? right : left`, the channel byte in a long local, the
+// zoom logic in retail's positive sense with the play per arm under `else if (zoomed)`) with GA16's `animation` pointer
+// for three animation-state calls and one field read, `should_clear` and `current_set`, completed by M3 lane 3 r313's
+// `inline` on 0xb6760's definition (retail's callers keep nothing in ECX/EDX across that call). With that `inline`,
+// 0x106790 gains its match too (61 on main); 0x1cd070 needs the form noted there.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
