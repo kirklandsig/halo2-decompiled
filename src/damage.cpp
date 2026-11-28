@@ -1936,6 +1936,11 @@ long function_1e4a10(long index);
 // `overflow * (1.0f / multiplier) + body_damage` 8, as `(1.0f / multiplier) * overflow` 8; the scaled shield damage
 // through a `real &` bound to the shield damage 8; the maximum as a `real const &` bound to the call result 8 (all the
 // same code). All restored.
+// M3 lane 6 r256 (h2m fast, control 8; every register and stack cell agrees with retail, only the three reload orders
+// differ). Existing-helper forms: the shield-damaged flag set through the file's word_flags_set idiom on the flags word
+// 8 (same code); the accumulator's flag through bit_vector_set 8 (same code); both 7; the stun ticks through
+// real_to_long with the first, the second or both setters 7 / 7 / 7, alone 7 (re-measured); slot_handler.h included
+// with nothing else changed 8. No combination below 7; all restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
