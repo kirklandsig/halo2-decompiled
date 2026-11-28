@@ -8254,6 +8254,12 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // 247 (1611 B), through cross3f 247 (1611 B); the angles through the existing 0x11df30 219 (same code here, but its
 // first reference in this file costs 0x24cf66: a layout flipper); that with cross3f_staged 247; cross3f_staged with
 // the three-way clamp 134 (1615 B, first +0x357; the per-arm copies are match-only).
+// M3 lane 11 r180 (fast screen with 0xe5bc0, 0xdef60, 0xde9d0, 0xe63b0, 0xdf5f0, 0xb9dd0, 0x11df30 and the flippers;
+// control 219): round 30's held recipe re-measured on today's tree with this round's other changes in place (the
+// three-way clamp with the copy in each arm, the named self/other bipeds, the existing cross3f_staged, the one-caller
+// inline helper for the in-place dot transform, the existing 0x11df30 for the two angles): MATCH at 1624 B in the
+// screen and in a plain check of every function of this file, but the plain check again loses 0x1c4590 (5),
+// 0x24cf66 (2) and 0x54590 (2), the same three as in round 157. Still HELD as a patch; main's body kept.
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {

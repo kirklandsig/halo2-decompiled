@@ -239,7 +239,23 @@ struct s_weapon
 	};
 	byte unknown12d[0x154 - 0x12d];
 	long unit_index;
-	byte unknown158[0x16e - 0x158];
+	byte unknown158[0x16c - 0x158];
+	union
+	{
+		word status_flags;
+		struct
+		{
+			word status_flag0 : 1;
+			word status_flag1 : 1;
+			word status_flag2 : 1;
+			word status_flag3 : 1;
+			word status_flag4 : 1;
+			word status_flag5 : 1;
+			word status_flag6 : 1;
+			word status_flag7 : 1;
+			word : 8;
+		};
+	};
 	short value_16e;
 	byte value_170;
 	byte value_171;
@@ -3868,419 +3884,26 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 
 long unit_get_player_index(long unit_index);
 
-// GA r9 lead, held as a patch (not kept: the forms are kept only with a byte match): 2 against 593: Only two commuted SIB base/index encodings differ at +0x5cd (`[eax + edx + 8]` vs `[edx + eax + 8]`)
-// and +0x616 (`[edx + ecx + 0x1b8]` vs `[ecx + edx + 0x1b8]`) in the post-0x105fa0 recoil lookup; all 634 instructions,
-// 2533 bytes, frame 0x1c60, registers, and stack slots match retail.
-// score 593 (was 603): Frame 0x1c64 versus 0x1c60; retail keeps the unit index in EDI through the fired block (`cmp edi, -1`)
-// where the volatile home is read at each use here; weapon/barrel and definition/holder homes remain.
-// MiniMax I (11-20): no new form, no lower score (636): the prologue keeps the barrel index in EBX where retail keeps the weapon index, reads the barrel's flag byte into CL where retail tests it in memory, and the definition sits at [esp+0x28] where retail has it at [esp+0x14], so the copy-out loop and the rest of the body differ as well.
-// MiniMax B (11-18): no new form, no lower score (643 in the fast check, 607 in the plain one): retail keeps the weapon index in ebx, the barrel offset in edi and the definition spilled to [esp+0x14], where this build keeps the barrel offset in ebx, the definition in edi and the weapon index in a stack slot, so the prologue and every later home differ; dropping the volatile on the unit index measures 657.
-// MiniMax I (11-17, run 103): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in
-// EBX and the barrel index in EDI and reads the first argument after its first push, where this build keeps the barrel
-// index in EBX, the definition in EDI and reads the argument before the pushes; the frame still agrees at 0x1c60.
-// MiniMax I (11-17): no new form, no lower score (607 plain, 643 fast): the frame still agrees with retail at 0x1c60 but
-// ours is 2545 bytes against retail's 2533, retail keeps the weapon index in ebx, the weapon pointer in ebp and the barrel
-// offset in edi and spills the definition to [esp+0x14] where this build keeps the weapon index in a stack slot, the
-// barrel offset in ebx and the definition in edi, so the prologue and every later home differ; the permuter cannot search
-// this function on the reduced image and its full-image baseline is 604 differing instructions, so the body stands;
-// MiniMax H (11-14): no new form, no lower score (607 plain, 643 fast): the frame agrees with retail at 0x1c60, but
-// the length is 2545 bytes against retail's 2533 and the homes do not: retail keeps the weapon index in ebx, the weapon
-// pointer in ebp and the barrel offset in edi and spills the definition to [esp+0x14], where this build keeps the weapon
-// index in a stack slot, the barrel offset in ebx and the definition in edi, and its stack slots sit four bytes off
-// retail's, so the prologue and every later home differ.
-// The permuter cannot search this function on the reduced image (it reports that the reduced image builds it
-// differently); on the full image its baseline is 604 differing instructions, so only a plain-image search can try forms.
-// MiniMax H (11-13): no new form, no lower score (607 plain, 643 fast); the frame agrees at 0x1c64 against
-// 0x1c60 and the weapon, barrel, definition and holder still live in different homes, so the prologue and the
-// register allocation of the barrel walk differ. Nothing here can be reshaped without touching the declarations
-// that other files own.
-// MiniMax R (11-14): no lower score (643 fast): the frame 0x1c64 differs from retail's 0x1c60 by four
-// bytes and the weapon, barrel and definition homes remain; the unit index without the volatile
-// measured 657, with it 637 and with the NONE at the declaration 640, so the kept form stands.
-// MiniMax G (11-10): no new form, no lower score (607).
-// MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
-// MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
-// MiniMax C (11-01): no new form, no lower score.
-// Earlier 607 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
-// MiniMax H (11-18): score 643 (was 643): no new form, no lower score; the frame stays 0x1c64 against retail's
-// 0x1c60 and the weapon, barrel, definition and holder still live in other homes, so the prologue and the
-// barrel walk's register allocation differ; the plain image reads 607 for the kept body.
-// Earlier 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
-// Earlier score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
-// Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
-// below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus
-// 0x1c60; weapon/barrel and scalar homes remain.
-// frame 0x1c64 versus 0x1c60; weapon/barrel and scalar homes remain.
-// Earlier: the three behaviour fixes below are applied by the
-// coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus 0x1c60; weapon/barrel and
-// scalar homes remain.
-// Plain single-store unit 637; later effect locals 659; long marker count 607;
-// CRT marker copies 565; long fired 582.
-// Owner getter 563; scale names 565; direct barrel uses 641; const barrel tag 565;
-// effect cursor before snapshot 565 (all plain). Original body restored.
-// copy differ. Trials: word fired 627; word failure 648; native original index 641; native interval
-// bounds 623; word selected marker 565; later fired lifetime 573.
-// Native effect entry 565; byte fired 565; byte failure 565; unsigned selected marker 565; barrel element
-// reference 565. Existing call inputs and random sequence retained.
-// Magazine selector 624/622; accumulated-shot snapshot 629/583 (fast/plain);
-// shared player lookup 642; later tag outputs 639; later scale outputs 653 (fast, control 637).
-// Admission scope 637f; rounds before independent owner/default stores 632f/607 plain;
-// owner lifetime at entry 637f; entry marker workspaces 637f; unsigned-word mode 637f
-// (control 637f). Original body restored.
-// Round 115: Later failure lifetime 636; reversed tag defaults 637; interval field reads 634; positive magazine arm first 637; byte selected marker 638 (fast, control 637). Three-point preview gain rejected; opening body restored.
-// Round 337 (fast control 637): direct short/promoted barrel values 637/634;
-// direct weapon value/both short values 637/637; both promoted values 634;
-// first-use promoted barrel/both/immutable values 634/634/634. Gain 3 rejected; all restored.
-// Round 367: Test-produced shot result 642; holder scalar name 637; both 642; shared notification on two-
-// branch holder graph 637; shot/shared 642; holder/shared 637; all 642; all with shot-result name 642 (fast
-// control 637). Original body restored.
-// Complete native tag-reference arrays with short/long/byte/word mode, raw/native interval
-// fields: 637/637, 639/639, 632/632, 637/637 (fast control 637). Five-point gains rejected;
-// original effect type, fields, body, parameter aliases and local qualification restored.
-// Chained tag/scale/both defaults 637/637/637; chained admission-failure alone/with
-// tags/with scales/with both 636 each; all reverse chains 637 (fast control 637).
-// One-point gain rejected; original initialization graph and body restored.
-// Round 172: real weapon/tag/barrel-record fields in seven nonempty family subsets, then all
-// with native tag bits, all eight 637 (fast control 637; full baseline 565). Original padding,
-// macros, inherited aliases/qualification and body restored; frame and receiver/scalar homes remain.
-// Round 381 initial producer orders (definition D, barrel metadata M, barrel B, holder H), preview:
-// DBMH 635; BDMH 566; DBHM 610; BHDM 613; HDMB 624; HBDM 634; DHMB 620; DHBM 633.
-// Ordinary t02 620, t03 595, t04 626, t07 630, t05 632. All original producers and body restored.
-// Round 32: shared RNG for selection/count/both 637/637/637; complete effect-count
-// capture alone/selection/count/both/const both 621 each (fast control 637). Capture
-// plain 621 at 2533/2533 bytes versus baseline 565 at 2526/2533; rejected. Original body restored.
-// Round 168: Failure-threshold/result/recoil subsets 579/567/596/638/605/593/627/627 fast (control 637); ordinary t01/t02/t03/t05/t06/t07 635/573/626/636/600/627. Original 565 restored; preview-only frame recovery rejected.
-// Round 186 (fast control 637): ordinary holder with four initial producer orders
-// 652/655/570/637; the four direct-parameter forms give the same scores.
-// Barrel/holder before definition, original/direct inputs, ordinary 619/619.
-// Original holder qualification, producer order, parameter aliases and body restored.
-// Round 300: Existing point/vector marker setters, both, workspace lexical names, point/names,
-// vector/names, both/names, and complete graph with entry workspaces:
-// 660/657/674/637/660/657/674/674 (fast control 637; full 565). Original body restored.
-// Round 87: three source errors against retail (now FIXED in the body), each raising the positional count: retail picks the random
-// effect once before the do loop (604), passes the barrel scale (1 when not fired) as the first scale and the
-// heat ratio as the second at both effect calls (571, 2533/2533 bytes, aligned count 277 -> 271), and clamps the
-// heat as `!flag3 && heat > max` else `heat > 1`; all three 606. Single-store volatile unit 629 (630 with the
-// fixes). A plain (non-volatile) unit index set to NONE then overwritten gives retail's 0x1c60 frame and aligned
-// count 229 (219 with the scale order, 227 with all fixes) but 2503-2509 bytes, positional 645-649: the next lead.
-// The two parameter-address references were code-identical no-ops and are removed.
-// Round 94 (plain): plain unit index 651 (2503 bytes, frame 0x1c60, aligned 348 -> 276); with the definition
-// declared after the barrel pointers 651; second barrel-side argument as `barrel_index ? 2 : 1` 605 (retail
-// recomputes the test there); barrel pointer declared before the definition 610 (retail's prologue order; the
-// definition keeps EDI where retail spills it); that with the plain unit index 655.
-// Round 239: complementary shot/failure/both results 570/570/571 fast; ordinary
-// holder counterparts 660 each; both byte results 571, ordinary holder 660. Fast
-// control 640; four promising forms all 604 plain. Original body restored.
-// Round 246: live magazine/metadata/both/both with ordinal 653/602/581/634;
-// ordinary-holder counterparts 641/666/659/672 (fast control 640). Ordinary
-// metadata/both 643/649 versus full 604. Original receiver graph and body restored.
-// Walk against retail (w1C, 11-05): every block of 0x102fb0 was compared with retail statement by statement; the only
-// logic difference was the effect marker's direction, now read from markers[].matrix.forward (retail 0x1038f0-0x103914
-// copies element+0x3c, the matrix forward, not element+0x8 of the node matrix); fast 640 -> 643, 2542 -> 2545 bytes (retail 2533).
-// Dropping the `volatile` on unit_index gives fast 657 / 2501 bytes (retail keeps it in [esp+0x24], stored at entry and
-// reloaded into EDI after each call). What remains differs only in homes: retail EBX = weapon_index, EDI = barrel offset
-// (index*0x34, the barrel is never a pointer), definition spilled to [esp+0x14]; ours EDI = definition, EBX = offset.
-// Permuter, 40 minutes (11-05): full image 590 only with temporaries for call arguments and indices and casts that change
-// no value. Its plain parts (barrel before barrel_definition, function_b7360 before the rounds read, the clamp as nested ifs,
-// the fired test written positively, burst declared after the unit) give 639 fast, from 643. Not kept.
-// MiniMax E (11-10): no lower score (643 in the fast check, 607 in the plain one). Retail keeps the weapon
-// index in EBX, the barrel offset in EDI and spills the definition to [esp+0x14]; ours assigns those registers
-// the other way round and reserves four bytes more frame (mov eax, 0x1c64 against retail's 0x1c60). The fast
-// check warns that this function builds differently in the reduced image, so its plain-check score differs
-// from the fast one. The parameter layout is the same as retail's (both arguments on the stack, the callee
-// popping eight bytes), so what is left is register allocation and the frame.
-// MiniMax A (11-12, run 62): no new form, no lower score (607 in the plain check, 643 in the fast one); the first
-// difference is at +0xb, where ours loads the actor argument and the definition table before the weapon and retail
-// loads the pool pointer and takes the argument into EBX, so the prologue's registers and the four extra frame bytes
-// differ before any case body is reached.
-// MiniMax A (11-14): no new form, no lower score (607 in the plain check, 643 in the fast one); retail's frame is four bytes shorter than ours and its homes for the weapon index, the definition and the two barrel offsets differ, so the prologue and the copy-out loop stay laid out differently.
-// MiniMax S (11-15): no new form, no lower score (607): retail keeps the weapon index in EBX and the barrel offset in EDI with
-// a frame four bytes shorter than ours, and the copy-out loop and the effect marker's block order differ.
-// MiniMax D (11-16): no new form, no lower score (643 in the fast check; ours is 2545 bytes against retail's 2533):
-// retail's frame is four bytes shorter and it keeps the weapon index in ebx, the barrel's offset in edi and the definition
-// spilled to [esp+0x14], while this build gives ebx the barrel's offset, edi the definition and esp+0x14 the weapon; the
-// barrel itself is reached as the weapon's base plus the index scaled by 0x34 in retail, and the direct barrel uses this
-// lane measured worse, so the body stands.
-// Round 605. The full build still uses 0x1c64, compared with 0x1c60 in retail. Reduced control 643. Default
-// holder before the inventory test 637. Shared absolute slot 643. Read-only weapon, barrel and both definition
-// views 643 each. Declared definition flags 643. Named barrel scale store 643. Weapon item bitfield 636. NOT
-// kept: the holder default and item bitfield each gain fewer than eight in the preview.
-// Round 103 (m3 lane 15, all plain, control 607): the plain unit index set to NONE first (retail caches it in EDI and
-// reloads it from its frame home only after the redirect, an ordinary spill) 648 (2506 bytes, frame 0x1c60); the
-// firing-effect entry formed before the two barrel stores (retail loads the effect table before them) 636 (2522
-// bytes; the effect loop then lines up with retail); both 654 (2506 bytes; opcode shape 570 of 634, against 535);
-// that entry form with the redirected unit as a ternary argument 637; the `scale_a = 0.0f` store retail makes in
-// the not-fired arm (movss [esp+0x20] at 0x103462) 609 (2543 bytes); the plain unit, the entry and the store
-// together 646 (2512 bytes, shape 571). Left over: the per-call instruction counts are within five of retail's
-// everywhere, so the positional count comes from drift: retail keeps the weapon index in EBX up to the first
-// fire call, the magazine definition in EBX across the 0x106030/0xd1210 calls and the barrel offset in EDI.
-// Not kept: no count below 607. Original body restored.
-// Round 145 (m3 lane 16, plain): the unit index from the file's existing weapon_get_owner_unit_index (main wrote its
-// body out as an if/else), the volatile kept, 603 (kept); without the volatile 648 (2506 bytes); the helper's own shape
-// written in place (NONE stored first, then overwritten, as retail stores [esp+0x24] before its je) 596, not kept (a
-// hand-written helper body). Fast reads 636/640/637 for the three (fast control 643).
-// On 603 (plain): the second barrel-side argument as `barrel_index ? 2 : 1` 600 (retail recomputes it, no cached
-// slot; frame stays 0x1c64; a three-point gain, not kept); the first as `(barrel_index != 0) + (failure ? 3 : 1)` 644.
-// The four definition flag tests read from the definition's named bits instead of shifted raw words: 603 (same code, kept).
-// The extra frame word: retail keeps the magazine definition in EBX across the 0x106030/0xd1210 calls and reuses its
-// [esp+0x2c] for the rounds_loaded temporary; ours spills the magazine definition there and gives the temporary [esp+0x50].
-// The magazine definition read at its one use instead of the local 640 (2518 bytes); with the ternary above 641.
-// Left: ours caches the sign-extended rounds_loaded and the constant 1 of the unit-type test in frame slots where retail
-// keeps them in ECX/EDX, and retail holds the magazine pointer in [esp+0x34] with its definition in EBX.
-// Typed unit player fields 643, ordinary holder query 640, inventory-selected holder with
-// typed player fields 640, typed header table base 643, magazine record references 643,
-// magazine tag resolved at notification 601, indexed barrel tag fields 836, named replacement
-// barrel field 643. Reduced control 643. NOT kept: late magazine lookup reaches retail length
-// with frame 0x1c58 and delays an early retail lookup. The ordinary holder forms shorten the body.
-// MiniMax B (11-19): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in EBX and
-// the barrel's offset in EDI, spills the definition to [esp+0x14] and the unit index to [esp+0x24], where this build
-// gives EBX the barrel's offset, EDI the definition, [esp+0x14] the unit index and [esp+0x28] the definition, and
-// the full build still uses a 0x1c64 frame against retail's 0x1c60; a local copy of the weapon index, a computed
-// barrel offset, the definition declared after the barrel pointers and a non-volatile unit index all score the same
-// or more, and the fast check warns that this function builds differently in the reduced image.
-// Round 149 (m3 lane 16, plain): main's volatile on the unit index dropped 648 (2506 bytes), but aligned exact 287 -> 232
-// and register-masked 110 -> 76: retail's NONE-first store to [esp+0x24], the 0x1c60 frame and the EDI unit index of the
-// fired block all appear, so the plain local is retail's form. On it: the magazine definition declared before the magazine
-// pointer (the order 0x1023d0 uses) 571 (2538 bytes; a declaration order, kept only with a match); `scale_a = 0.0f` in the
-// not-fired arm 644; the 0x1058b0 side argument as `barrel_index ? 2 : 1` 646; the barrel pointer before the definition 651;
-// both side arguments as ternaries 646. On 571: the not-fired `scale_a` store 611; the side ternary 606; rounds declared
-// before burst 571 (same code). The magazine definition first with the volatile kept 616. Left on 571: EDI holds the
-// definition and EBX the barrel offset in the prologue and the effect loop (retail: EBX the weapon index up to the 0xa7cd0
-// call, EDI the barrel offset, the definition never in a register), and the magazine pointer is not materialized (retail
-// spills it to [esp+0x34]).
-// Holder retained through recoil, notification, effects and player 571 fast/608 plain;
-// through notification 570; through redirected effects 636; notification and redirect only 637.
-// Redirected holder restored after the effect 640; with ordinary owner query 572;
-// ordinary owner query with separate effect target 640. Nested magazine admissions 639/639.
-// NOT kept: the shared holder reaches retail length on the plain check but retains frame 0x1c64 and raises the opening score.
-// Round 444: Reused initial loaded short/promoted count 636/639. Initial short with the fallback
-// minimum read once 636. Post-heat short/promoted debit 639/639. Both loads with signed shorts,
-// with promoted debit, or with named fallback minimum 639/639/639. Reduced control 636.
-// NOT kept: ties and regressions. The early magazine tag and post-heat rounds still occupy separate
-// spill homes in the full build, with the 0x1c64 frame and swapped weapon/barrel registers.
-// Round 611. signed post-debit remainder 627, positive-rounds branch 636, saturated debit store 643, prefetched
-// magazine flags 597, prefetched notification predicate 635, late notification bit 639, positive branch with signed
-// remainder 627, shot result before debit 633. NOT kept: the flag snapshot moves the flag read and shortens the
-// frame to 0x1c5c in the reduced image. The full frame and register roles still differ.
-// Magazine record or tag names 636 each, immutable receiver bindings 636,
-// separate record or tag references 636 each, positive notification branch 636,
-// fallback rounds before burst reset 636, and nested fallback thresholds 636.
-// Reduced control 636. The full frame and separate magazine-tag and round spills still differ.
-// Typed holder-header accessor 636; unsigned type mask 636; typed Boolean type bit 632;
-// conjunctive holder rejection 636; negated ammunition shortage 636; short debit store 636;
-// negated heat exemption 636; ammunition/heat gate before the loaded-minimum gate 639.
-// NOT kept: four-point best reduced gain against 636, with no length improvement. The full build
-// still gives the magazine definition and post-heat rounds separate homes in frame 0x1c64.
-// Magazine record or tag names 636 each, immutable receiver bindings 636,
-// separate record or tag references 636 each, positive notification branch 636,
-// fallback rounds before burst reset 636, and nested fallback thresholds 636.
-// Reduced control 636. The full frame and separate magazine-tag and round spills still differ.
-// M3 lane 5 r220 (fast with 0x101db0 and 0x159dd0 listed, which makes the screen agree with the full build at 603):
-// ours keeps `barrel_index != 0` from the 0x105fa0 call in a stack temp for the 0x1058b0 call where retail recomputes the
-// setne there (0x1036f0); the event arguments as constant selects (`failure ? (barrel_index ? 4 : 3) : (barrel_index ?
-// 2 : 1)` and `barrel_index ? 2 : 1`) drop that temp, 600 (2538 B, frame still 0x1c64); with the effect target as a
-// select in the 0xd03e0 call (retail's cmovne) 599 (2537 B); the target select alone 602. Retail's frame has no home
-// for the magazine's rounds (ours spills it to frame +0x24 because EDX is needed for `mov dx, [esi+0x2a]`; retail keeps
-// it in ECX, the magazine in EAX); the rounds named once for the opening tests 599 (same code). The unit index plain,
-// read by const reference in the player helper 646 (2507 B). None reaches the bar; body unchanged.
-// Shot/holder/effect, magazine/effects, result/scale and ammunition/result names 603 each.
-// Paired tag/scale defaults 604, burst published after multiplication 638, signed minimum carried into fallback 625,
-// shared player lookup at both queries 600. NOT kept: three-point best gain and the 0x1c64 frame remains.
-// Shared shot notification 603; admission predicates producing the fired value 577;
-// plain holder plus nested feedback tests 648; named short fallback minimum 603;
-// pre-heat round predicate 603; separate magazine tag base 603; scoped owner rejection 603;
-// short selector with tag before magazine 666. NOT kept: the 577 form stores fired before
-// the magazine debit where retail stores it after admission and the magazine update.
-// The short selector recovers the 0x1c60 frame but grows the body to 2566 bytes.
-// Post-heat loaded short retained through the holder test, with native compound debit, signed balance, short
-// difference, or word balance. The shared and separate threshold and holder gates all score 603. Frame 0x1c64
-// and separate magazine-tag and round spills remain.
-// Exhaustive burst assignments 577; shared post-wake accumulator 630; selected burst before round
-// multiplication 639; separate round requirements 651; selected burst with short minimum 620;
-// named shot multiplier or debit conversion 603/603; short pre-wake minimum 608.
-// NOT kept: 577 defers the default burst store until after the wake call, which retail places before it.
-// Split admission after balance, heat, the per-shot minimum or the holder test, then
-// with separate balance and heat blocks, balance and minimum blocks, heat and minimum
-// blocks, and separate heat, minimum and holder blocks: 603 each. NOT kept: all keep
-// the extra frame word and the early magazine tag spill.
-// The magazine tag and admitted round count still compete for frame homes.
-// Late shot result with full/balance/heat/minimum/holder admission split 652/597/634/600/660,
-// explicit no-magazine arms 652, explicit magazine result arms 646, default no-magazine success 648.
-// NOT kept: the 597 form gains six, grows to 2541 bytes and still publishes fired ahead of the debit.
-// Reduced control 636. Captured tag array indexed throughout 752; tag element reference 636;
-// runtime barrel indexed throughout 598; runtime and tag indexed 732; runtime indexed with tag reference 598;
-// runtime element reference 636, with indexed tag 752, with tag reference 636.
-// NOT kept: full check of the indexed runtime form scores 645 and shortens to 2518 bytes.
-// The 0x1c60 stack probe returns, but the barrel offset is formed after the wake call and still takes EBX.
-// Zero-extended loaded count with signed threshold and separate or combined
-// gate, signed or unsigned cost: word 603 each, dword 561 each.
-// NOT kept: dword shortens to 2525 bytes, replaces retail's xor and word load
-// with movzx and leaves the count at +0x50 and the frame at 0x1c64.
-// Required rounds scoped to ammunition 603. Magazine selector by field
-// reference 568. Loaded balance by field reference, both field references,
-// or both scoped to ammunition 647/647/647. Late tag defaults 630, late scale
-// defaults 674, both after scoped ammunition 665. Selector reference after
-// the sentinel test 603. NOT kept: the 568 form shares the first selector load
-// with sign extension where retail reads twice. The later binding restores
-// those reads and ties. Required rounds and the original field reads restored.
-// M3 lane 3 r301 (fast with 0x101db0 and 0x159dd0 listed, which agrees with the plain check; control 603). Reached 566
-// (2538 bytes): `scale_a = 0.0f` in the not-fired arm (retail stores it there at 0x103462, as in the other two arms)
-// 574; with the player-index helper's result preset and set under its test (retail's `or ecx, -1` at 0x10379c) 570;
-// with the marker count as a long (retail sign-extends the call result once at 0x1038c3, then compares and divides a
-// dword) 570; the three 566. On the kept form with the target select: the effect target as a select in the 0xd03e0
-// call 566 (2537 bytes, no gain, not kept); the event arguments as constant selects 591; the notification written in
-// each arm of the rounds test 603; the unit index plain 648 (2508 bytes, frame 0x1c60), with the magazine definition
-// declared first 605 (2540 bytes).
-// Review (r301): not kept. The not-fired `scale_a = 0.0f` repeats the declaration's zero (a redundant statement counts
-// only with a match); without it the preset helper result and the long count read 598, under the 8-point bar, so
-// main's body stays at 603. The 574/566 steps and the 555 set above are leads for a match.
-// The closest structure reached (aligned difference count 285 against main's 349, register-masked 105 against 184,
-// 634 instructions as retail): the unit index plain, the magazine definition declared before the magazine pointer, the
-// barrel pointer declared right after the weapon (0x104150's order: the prologue then computes in retail's order and
-// the homes are retail's, [esp+0x14] definition, [esp+0x18] barrel offset, [esp+0x24] unit index), the constant
-// selects, the not-fired store, the target select, the notification in each arm, the preset helper and the long count:
-// 555 (2525 bytes, frame 0x1c5c). It needs both declaration orders, which count only with a match; without them the
-// same set reads 627 (645 without the notification form, and 638 / 626 / 632 / 625 / 625 less one form each).
-// Steps toward it, all on the plain unit index: alone 648 (2506 bytes); the magazine definition first 571 (2538
-// bytes; the fired block from 0x10355f is then retail's nearly instruction for instruction); the barrel pointer first
-// on that 617, without the magazine order 651; on the barrel-first form the constant selects 627, the not-fired store
-// 595, the target select 617, the three 632 (2545 bytes); on those the notification in each arm 629 (2533 bytes,
-// frame 0x1c5c), the preset helper 630, the long count 628.
-// What is left there is one entry role: retail loads the weapon index into EBX right after `push ebx`, keeps the
-// barrel offset in EDI and never gives the definition a register; this build keeps the definition in EDI and the
-// offset in EBX and reads the weapon index from its home. A second 0xb7360 call at the entry (a diagnostic: one more
-// unconditional use of the weapon index) gives retail's set, the definition computed in ECX and stored, with the
-// weapon index in EDI and the offset in EBX, 631; the same extra use in the fired block 623, at the tail 604 or as
-// the notification in each arm does not move it, nor do one or two fewer definition uses in the fired block (645,
-// 667) or the owner lookup written in place (same code; with fresh weapon lookups 626). The same call at the top of
-// the effect block (a diagnostic) 507 (2541 bytes, frame 0x1c60): it stops the random-state pointer being loaded
-// ahead of the effect tests, where retail loads it at each use.
-// On the kept 566 form, none lower: the effect entry pointer formed ahead of the two barrel stores in the selection
-// loop (retail loads the effect table before them) 631 (2524 bytes, frame 0x1c5c, register-masked 148 against 180);
-// the shake amount of the 0x187510 call named before the call 566 (same code); `burst + 1` named before the two
-// barrel stores 566 (same code); the effect mode as a long 611; the barrel pointer declared right after the weapon
-// 568; the magazine definition declared first 649 (2551 bytes, frame 0x1c60).
-// M3 lane 11 r157 (plain; control 603): ours keeps `barrel_index != 0` from the 0x105fa0 argument in a stack cell for the
-// 0x1058b0 call (the extra frame word: `mov [esp+0x24], eax` in both arms, `inc` of the reload later); retail recomputes it
-// there with xor/cmp/setne/inc. The second call's trigger as `barrel_index ? 2 : 1` 600 at 2538 B (aligned 349 -> 320; the
-// reduced image then has retail's 0x1c60 frame, the full one still 0x1c64: the magazine pointer and the movsx'd loaded
-// count still take two cells where retail keeps the magazine definition in EBX); that with the unit index not volatile 646
-// at 2507 B (aligned 255, register-masked 153 against 238: structurally the closest form so far); both trigger arguments
-// as ternaries 636 fast (same code as the first); the first as `(barrel_index != 0) + (failure ? 3 : 1)` 631 fast at 2512 B.
-// The effect loop: retail hoists `movzx eax, word` for the mask test and reloads the mask (xor/mov) for the `|=`, ours
-// hoists a 16-bit load and reuses it for the `|=`; compile-only, the test as dword/long/word-masked/operands swapped, the
-// `|=` as an assignment or without its cast, and named mask/index/ticks fields in the barrel record: same code each (with
-// no `|=` at all, diagnostic, the hoist becomes retail's movzx and the bit goes to EBX as retail). Body unchanged.
-// M3 lane 11 r164 (H2M_FAST with 0x101db0, 0x159dd0, 0x101b10, 0x101b80, all MATCH; control 603). Behaviour fix: the
-// marker-name call passed the weapon and barrel indices to 0x101b10 the other way round; retail sets up ECX = the barrel
-// index and EDX = the weapon index there, the definition's order, as the matched 0x101b80 does (603, same count). Kept
-// (593 at retail's 2533 B): the marker count as a `long` (retail sign-extends 0xb8d30's short result once and compares
-// and divides the dword) 599 alone; with the second event call's trigger as `barrel_index ? 2 : 1` (retail computes
-// `setne; inc` again there; ours kept the first call's `barrel_index != 0` in a stack cell) 596; with the first call's
-// arguments as selects too 596; with the player-index helper as a single-exit result preset to NONE (retail's `or ecx,
-// -1` there) 593 (both calls written as selects, so one spelling). Measured without parts: without the long count 597,
-// without the second call's select 598; the effect target as a select in the 0xd03e0 call on the kept set 594, on the set
-// without the long count 596. Reading (frame and colouring traces): ours has 17 dword cells against retail's 16, and
-// the weapon index (a parameter) is never coloured (live across 93 unreferenced blocks to the tail's marker calls), where
-// retail holds it in EBX from the entry to the fire call; no single forced allocator decision reaches retail.
-// M3 lane 2 r147 (H2M_FAST with 0x101db0 and 0x159dd0, control 593; al = aligned differing rows exact/register-masked,
-// 261/150 on this body): the fire call once after the if/else on `fired` 593 (same code; on the plain unit index 649, same
-// code); the owner-unit lookup declared first 631 (2497 B); the effect's remaining count stored in each arm of
-// `lower == upper` (retail stores in both arms and re-reads the field for the loop test at 0x10338b) 641 (2518 B, frame
-// 0x1c5c, al 284/163), with the plain unit index 657 (2502 B, al 227/129); the plain unit index alone re-measured 649
-// (2503 B, al 208/95, the closest structure: the definition and the barrel offset trade both register and home, EDI and
-// [esp+0x18] against retail's [esp+0x14] and EDI). Body unchanged.
-// Named accumulated heat 593; shared tag cap 612; merged cap publication 604; native barrel accumulator 593.
-// Native item flag 629; chained failure flags 593; nested destruction test 593; named no-magazine heat rejection 593.
-// NOT kept: ties or regressions. The 0x1c64 frame and early weapon/tag register assignments remain.
-// Holder, magazine, effect tags, selected entries, owner and barrel role-name trials 630 each (reduced control 630).
-// Shared effect-history word setter 627, pending weapon byte setters 630, both 627. NOT kept: a three-point
-// preview change. The full probe still differs by four bytes and the weapon index and barrel occupy different registers.
-// Fallback-produced balance, admission or initial balance 621/623/640. Conditional fallback cost,
-// burst or both 593/639/639. Separate admitted cost 547, or 545 with path-produced admission.
-// NOT kept: both forms have retail length but carry the required rounds in EDI before the magazine check.
-// Retail keeps one stack home through debit. The 547 form keeps frame 0x1c64 and the 545 form grows it to 0x1c68.
-// The 0x1c64 frame and weapon/barrel register assignments still differ. NOT kept: cached history drops
-// the publication reload, the local duration keeps a joined timer store and register test, and both
-// shorten the body. The positive timer exit restores the frame but regresses. history word for the free-
-// effect scan 593; promoted history for the free-effect scan 593; exhausted history as a shared value
-// 536; positive effect-timer exit 635; single bounded next effect 631; scan history and fresh
-// publication word 593; interval result initialized from lower bound 526; active effect index before
-// timer debit 593.
-// Typed barrel history, slot/countdown, complete selection state, three scales, extra shots,
-// shot count/sequence, continuation handle and all runtime fields: 630 each in the reduced image.
-// NOT kept: all tie the reduced control, which has a 0x1c60 probe and 2542-byte extent. The full
-// 0x1c64 probe, weapon/barrel register roles and separate magazine spills remain.
-// Typed weapon-tag heat cap, destruction, misfire and holder feedback; typed barrel-tag recovery/heat,
-// pitch curve and event kind; all fields together: 593 each. NOT kept: all tie. The 0x1c64 probe
-// and separate magazine-tag and loaded-round spills remain.
-// Positive debit balance, explicit empty result, staged reload decision, and short-circuit reload
-// after debit: 593/593/590/593. With the ordinary owner index: 649/649/607/629.
-// NOT kept: the staged reload decision gains three at retail length but retains the 0x1c64 probe.
-// The ordinary-owner forms recover 0x1c60, shorten the body, and raise the score.
-// GA round 9 (lead held as a patch, not kept; the allowed forms alone, the volatile dropped, the existing
-// unit_get_player_index, one `if (fired)` call and the field names, give 667, so the body stands; plain verified 593 -> 2, 2533/2533 B, frame 0x1c60, 0 masked diffs, 0 peer losses): dropped volatile on
-// unit_index; replaced unit_player_index_102fb0 with existing unit_get_player_index (0x14de90); declared barrel right
-// after weapon, unit_tag_index before tag_index, rounds before burst, and magazine_definition before magazine; moved
-// `if (fired) function_a7cd0(weapon_index);` once after the magazine if/else (557 -> 302); formed effect entry before
-// barrel stores with lower == upper arms; named misfire `chance` (130 -> 117); set scale_a = 0.0f in !fired and mode = 2
-// before barrel flag6/7 (76 -> 35, killing g_4e7408 hoists); incremented value06 before storing burst (115 -> 76, restoring
-// `lea edx, [ecx + 1]`); typed weapon+0x16c as a word bitfield union on s_weapon and owner_unit via WEAPON_UNIT_GET
-// (35 -> 2); passed the 0x187510 kick through point2f (recovering frame 0x1c60 and [esp+0x44] spill; without it 159).
-// Tried for the last 2 SIB bytes (all score 2): offset+ptr, idx[arr], dword cast, header local, barrel inside if,
-// forceinline recoil helper before/after, function-scope updated/object_data, shadow block, no updated_definition local,
-// objects local; non-inline/deferred inline helpers stayed out of line (846-850); without chance 18.
-// Pre-heat loaded snapshot short/long 593/621; separate pre- and post-heat snapshots short/long 593/621;
-// post-heat short for the minimum and debit 593; one short refreshed across both samples 593; debit
-// through the post-heat short 593, with its clamp also 593 at 2521 bytes. The 0x1c64 probe and magazine spill remain.
-// M3 lane 13 r159: GA round 9's held lead rebuilt from its recorded edits, plain check 2 (2533 B, +0x5cd); the reduced
-// image reproduces it only with the file's callees listed beside it (alone it reads 539 at 2552 B). Reading (operand
-// ranks): after the 0x105fa0 call the re-lookup's scaled index (an entry temporary) outranks the pool data load, and the
-// barrel offset temporary outranks the `updated` pointer, so both addresses come out index-first. On the lead: no
-// `updated` local (two lookups) 2, no `updated` or definition local 2, a barrel pointer formed from `updated` 2, the
-// definition read twice through `updated` 2, `updated` const 2, the weapon definition named before the barrel's 2;
-// diagnostics (reverted at once) with 1-8 dead initialised locals at the top 2 each (neither address flips). Main's
-// body restored.
-// M3 lane 8 r243 (H2M_FAST with 0x101db0, 0x159dd0, 0x101b10 and 0x101b80, MATCH each time; control 593): GA round 9's
-// held lead rebuilt on this base reads 2 (the two post-0x105fa0 addresses index-first). Operand ranks read per form:
-// each address is one sum sorted by descending rank after the global optimiser; the weapon-index offset and the barrel
-// offset shared with the entry are optimizer temporaries numbered by the distinct intermediate-code expressions met
-// before the re-lookup (here 0x361 and 0x36a), and retail's two orders both need that number about 150 higher.
-// Diagnostic, not source: N initialised dead locals on the lead, at the top, before 0xb7360, before the effect block,
-// before 0x105fa0 or right before the re-lookup: N = 8, 128, 144 give 2, N = 160, 176, 192, 208, 224, 240, 256, 320,
-// 384 MATCH (2533 B); 256 after the fired block 1. Natural forms on the lead: the random draws with file and line
-// arguments 2; the existing weapon_get_102e10 at both weapon lookups 2, at the re-lookup alone 2; the 0x105fa0 state
-// named as a local 2. So retail's body holds about 150 or more further distinct expressions ahead of the re-lookup that
-// fold away (inlined helpers whose code is removed are the likely source; 0x100130 above needs the same kind of
-// surplus). Body unchanged.
-// M3 lane 7 r236 (H2M_FAST with the same four callees, MATCH each time; control 593). The one-caller hand copy of the
-// player-index lookup replaced by the existing unit_get_player_index (0x14de90): 593, identical code (kept). Operand
-// ranks on GA round 9's 2 form: index temporary 0x1d840 against the pool data's 0x18008 (the data load only takes even
-// levels, at most 0x1c008), barrel temporary 0x1da80 against `updated` 0x10380, so both need the temporaries' numbers to
-// wrap past 0x400: 159 to 163 more distinct expressions ahead of the re-lookup with no new own locals (each own local
-// declared ahead of `updated` widens the top by half). Measured on the lead: the existing weapon_get_102e10 at the first
-// lookup +3 (and the data load drops to level 0), file and line arguments in the random draws +0, `updated` renamed
-// (three names) +0. On main's body: the unit-index volatile dropped 649 (2503 B); the +0x16c status bits as a word
-// bitfield 594; the owner's player through WEAPON_UNIT_GET 593; one `if (fired)` call after the magazine if/else 593;
-// the four allowed forms together 656 (2495 B).
-// M3 lane 7 r237 (h2m fast with 0x101db0, 0x159dd0, 0x101b10 and 0x101b80, MATCH each time; control 593): single
-// pieces of GA round 9's held lead on main's body, each a declaration order or a named part (kept only with a match):
-// unit_tag_index declared before tag_index 592; rounds declared before burst 593; the barrel pointer right after the
-// weapon 595; the magazine definition pointer before the magazine pointer 570 (2546 B, first difference +0x13); the
-// misfire threshold named `chance` 592.
+/* fires one round (or burst) from a barrel: debits the magazine, picks the
+   firing effect, starts the barrel's recoil and feeds the owner's heat,
+   rumble and kick. Retail keeps the barrel's byte offset in its own stack
+   home and adds it to the weapon again after 0x105fa0, where the weapon is
+   fetched afresh; the later owner and unit lookups go through one copy of
+   the object pool pointer */
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
     s_weapon *weapon = WEAPON_GET(weapon_index);
+    long barrel_offset = barrel_index * (long)sizeof(s_weapon_barrel);
+    s_weapon_barrel *barrel = (s_weapon_barrel *)((byte *)weapon->barrels + barrel_offset);
     s_weapon_definition *definition = WEAPON_DEFINITION(weapon);
     s_weapon_barrel_definition *barrel_definition = &definition->barrels[barrel_index];
-    s_weapon_barrel *barrel = &weapon->barrels[barrel_index];
-    volatile long unit_index = weapon_get_owner_unit_index(weapon_index);
-    long tag_index = NONE, unit_tag_index = NONE;
+    long unit_index = weapon_get_owner_unit_index(weapon_index);
+    long unit_tag_index = NONE, tag_index = NONE;
     real scale_a = 0.0f, scale_b = 0.0f;
     bool fired = false, failure = false;
-    long burst = 0;
     long rounds = barrel_definition->rounds_minimum;
+    long burst = 0;
     function_b7360(weapon_index);
     if (WEAPON_REAL_AT(barrel, 0x24) >= 1.0f)
     {
@@ -4289,8 +3912,8 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
     }
     if (barrel_definition->magazine_index != NONE)
     {
-        s_weapon_magazine *magazine = &weapon->magazines[barrel_definition->magazine_index];
         s_weapon_magazine_definition *magazine_definition = &definition->magazines[barrel_definition->magazine_index];
+        s_weapon_magazine *magazine = &weapon->magazines[barrel_definition->magazine_index];
         if (magazine->rounds_loaded < rounds && magazine->rounds_loaded >= barrel_definition->rounds_minimum)
         {
             burst = 0;
@@ -4309,14 +3932,14 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             else if (magazine_definition->flags & 2)
                 function_105a80(5, weapon_index, barrel_definition->magazine_index);
             fired = true;
-            function_a7cd0(weapon_index);
         }
     }
     else if (!TEST_FIELD_BIT(definition->flag11) || !(weapon->heat >= 1.0f))
     {
         fired = true;
-        function_a7cd0(weapon_index);
     }
+    if (fired)
+        function_a7cd0(weapon_index);
 
     if (barrel_definition->firing_effect_count > 0)
     {
@@ -4335,26 +3958,31 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
                     ++effect_index;
                     if (effect_index >= barrel_definition->firing_effect_count) effect_index = 0;
                 } while (WEAPON_WORD_AT_102FB0(barrel, 8) & (1 << effect_index));
+                byte *entry = (byte *)barrel_definition->firing_effects + effect_index * 0x34;
                 WEAPON_SHORT_AT(barrel, 0xa) = effect_index;
                 WEAPON_WORD_AT_102FB0(barrel, 8) |= (word)(1 << effect_index);
-                byte *entry = (byte *)barrel_definition->firing_effects + effect_index * 0x34;
                 short lower = WEAPON_SHORT_AT(entry, 0), upper = WEAPON_SHORT_AT(entry, 2);
-                WEAPON_SHORT_AT(barrel, 0xc) = lower == upper ? lower :
-                    (short)(lower + ((_random(&g_4e7408->unknown0, NULL, 0) * (upper - lower)) >> 16));
+                if (lower == upper)
+                    WEAPON_SHORT_AT(barrel, 0xc) = lower;
+                else
+                    WEAPON_SHORT_AT(barrel, 0xc) = (short)(lower + ((_random(&g_4e7408->unknown0, NULL, 0) * (upper - lower)) >> 16));
             } while (WEAPON_SHORT_AT(barrel, 0xc) <= 0 && effect_index != original);
         }
         --WEAPON_SHORT_AT(barrel, 0xc);
         byte *entry = (byte *)((byte *)barrel_definition->firing_effects + WEAPON_SHORT_AT(barrel, 0xa) * 0x34);
         if (WEAPON_REAL_AT(definition, 0x25c) > 0.0f && WEAPON_REAL_AT(definition, 0x25c) < 1.0f && weapon->heat > WEAPON_REAL_AT(definition, 0x25c))
-            if ((weapon->heat - WEAPON_REAL_AT(definition, 0x25c)) * WEAPON_REAL_AT(definition, 0x260) / (1.0f - WEAPON_REAL_AT(definition, 0x25c)) >
-                function_x82e52f(&g_4e7408->unknown0, NULL, 0))
+        {
+            real chance = (weapon->heat - WEAPON_REAL_AT(definition, 0x25c)) * WEAPON_REAL_AT(definition, 0x260) / (1.0f - WEAPON_REAL_AT(definition, 0x25c));
+            if (chance > function_x82e52f(&g_4e7408->unknown0, NULL, 0))
                 failure = true;
+        }
         short mode;
         if (!fired) {
+            mode = 2;
             barrel->flag6 = true;
             barrel->flag7 = true;
-            mode = 2;
             scale_b = 1.0f;
+            scale_a = 0.0f;
         } else {
             scale_b = WEAPON_REAL_AT(barrel, 0x10);
             if (failure) {
@@ -4375,26 +4003,27 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
     if (fired)
     {
         if (burst) WEAPON_REAL_AT(barrel, 0x24) -= (real)burst;
-        WEAPON_SHORT_AT(barrel, 0x2c) = (short)burst;
         barrel->value06 += (short)(burst + 1);
+        WEAPON_SHORT_AT(barrel, 0x2c) = (short)burst;
         ++WEAPON_BYTE_AT(barrel, 0x2e);
         WEAPON_LONG_AT(weapon, 0x248) = g_510c54->game_time;
         function_105fa0(weapon_index, failure ? (barrel_index ? 4 : 3) : (barrel_index ? 2 : 1));
         s_weapon *updated = WEAPON_GET(weapon_index);
+        s_record_pool *objects = g_4e0300;
         s_weapon_barrel_definition *updated_definition = &WEAPON_DEFINITION(updated)->barrels[barrel_index];
         if (updated_definition->value_9c > 0.0f && !TEST_FIELD_BIT(updated_definition->flag4))
-            WEAPON_REAL_AT(&updated->barrels[barrel_index], 0x14) = 1.0f;
+            ((s_weapon_barrel *)((byte *)updated->barrels + barrel_offset))->value14 = 1.0f;
         if (WEAPON_REAL_AT(barrel_definition, 0xa0) > 0.0f) WEAPON_REAL_AT(barrel, 0x18) = 1.0f;
         if (g_4e6948->state == 2)
         {
             long owner = function_101fb0(weapon_index);
             if (owner != NONE)
             {
-                long player = WEAPON_LONG_AT(WEAPON_GET(owner), 0x13c);
-                if (player != NONE) function_1628f0(player, 1);
+                s_weapon_unit *owner_unit = ((s_weapon_unit_header *)objects->data)[owner & 0xffff].unit;
+                if (owner_unit->player_index != NONE) function_1628f0(owner_unit->player_index, 1);
             }
         }
-        if (unit_index != NONE && WEAPON_LONG_AT(WEAPON_GET(unit_index), 0x13c) != NONE)
+        if (unit_index != NONE && WEAPON_LONG_AT(((s_weapon_header *)objects->data)[unit_index & 0xffff].weapon, 0x13c) != NONE)
             function_d0e60(unit_index, WEAPON_REAL_AT(definition, 0x27c), WEAPON_REAL_AT(definition, 0x280));
         WEAPON_REAL_AT(weapon, 0x180) += WEAPON_REAL_AT(barrel_definition, 0xa4);
         if (!TEST_FIELD_BIT(((s_weapon_item_flags_view *)weapon)->flag3) && WEAPON_REAL_AT(weapon, 0x180) > WEAPON_REAL_AT(definition, 0x154))
@@ -4407,7 +4036,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
         if (!failure)
         {
             barrel->flag1 = true;
-            WEAPON_BYTE_AT(weapon, 0x16c) |= 1;
+            weapon->status_flag0 = true;
             function_bfc30(unit_index, WEAPON_SHORT_AT(barrel_definition, 0x36), true);
         }
         if (unit_index != NONE && unit_tag_index != NONE)
@@ -4417,7 +4046,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             if (redirected != NONE) target_102fb0 = redirected;
             function_d03e0(target_102fb0, unit_tag_index);
         }
-        if (definition->reload_style == 3 && barrel_index == 1) WEAPON_BYTE_AT(weapon, 0x16c) |= 8;
+        if (definition->reload_style == 3 && barrel_index == 1) weapon->status_flag3 = true;
         if (unit_index != NONE)
         {
             if (unit_get_player_index(unit_index) != NONE)
@@ -4426,8 +4055,9 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
                 if (player_slot != NONE)
                 {
                     real value = function_17ca10(WEAPON_REAL_AT(barrel, 0x20), WEAPON_SHORT_AT(barrel_definition, 0xc0));
-                    function_187510(player_slot, 0.0f, WEAPON_REAL_AT(barrel_definition, 0xb0) +
-                        (WEAPON_REAL_AT(barrel_definition, 0xb4) - WEAPON_REAL_AT(barrel_definition, 0xb0)) * value);
+                    point2f kick = { 0.0f, WEAPON_REAL_AT(barrel_definition, 0xb0) +
+                        (WEAPON_REAL_AT(barrel_definition, 0xb4) - WEAPON_REAL_AT(barrel_definition, 0xb0)) * value };
+                    function_187510(player_slot, kick.x, kick.y);
                 }
             }
             function_c86e0(unit_index, true);
