@@ -1193,6 +1193,17 @@ void function_245400(s_source_245400 const *source, long index,
 // cross3f_staged 53 (same code); the facing dot through dot3f, either operand order, 61; the plane pointers indexed
 // from the source field with no table local 53; the side bits as `(code & 0x8000) != 0` 53 (same code). A lead for a
 // match needs 0x142640 inlinable (BLOCKED-BY 0x142640: its file's /Ob1). Body unchanged.
+// M3 lane GA r39 (71 valid fast trials with 0x245270/0x244de0/0x245400/0x245850/0x245aa0 all MATCH throughout; control 163
+// at 783/783 B, +0x2): on main's body, both material pointers (second first) / 0.0001f > local_13 / cross3f_staged 163
+// (same code), first-first material pointers 213, vertex pointers v0/v1 210, ((code & 0x8000) >> 15) bool or byte /
+// ((word)code >> 15) / (code & 0x8000) != 0 226 each, direct long codes (either order) 228, vector3f_rotate_into_axes 266
+// (scale after 246), cross returning pointer into dot3f 235, inline 2-step point transform 161 (783 B, -2, not kept). On the
+// 0x2c-frame lead (2-step edge and point): direct component edge subtraction drops the k,j,i-dot base 182 (799 B) to 55
+// (789 B, 210/210 insns, same as dot3f); cross returning pointer into dot3f (either order), plane-typed cross, array-indexed
+// cross, vector3d_from_points3d returning pointer, ((word)code >> 15), byte sides, 0.0001f > local_13, local_14 at block top
+// all 55; ((code & 0x8000) >> 15) 57, v0/v1 locals 57, k,j,i edge subtraction 73, scale local 147, vector3f_rotate_into_axes
+// 239, vector3f scaled copy 196; clean bindings (vertices, second_idx, first pointer) move offset-0 cross ranks to mk=37
+// (55 each), and all five bindings (with planes and v0/v1) reach 53 (789 B, al=54, mk=38, fixing b.j*a.i). Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

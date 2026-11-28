@@ -2841,6 +2841,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // the complete predicate published: 238/205 for each with captured spin, 261/228 for
 // each with direct damping success. NOT kept: publication with captured spin reaches
 // 892 bytes with different entry registers, and direct damping shrinks the frame.
+// Roasted-Codes (#1602, 11-28): the damage point, the event pointer from 0xb9dd0 and the event data as one local
+// struct inside the damage_index != NONE arm 154 (892 B, frame 0xb0); with the owner in the same struct at its
+// declaration 165 (898 B, frame 0xbc). Retail's frame is 0xac, and both still copy the point with movss where retail
+// moves integer words. NOT kept.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

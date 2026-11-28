@@ -535,6 +535,13 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // index 4 (the second group loop's sum then flips to `[eax + edi]`, the first stays). Reading: one loop-scoped index
 // alone, in any of the twelve loops, gives 3; the first six loops scoped flip the second group loop and five do not, so
 // its two temporaries sit one used symbol either side of a wrap; the first group loop's pair needs a far larger shift.
+// M3 lane 7 r240 (fast screen with 0x198540 MATCH; control 3). Rank reading: the entries loop's address is one sum of six
+// terms ranked 1648, 1452, 1090, 638 (the walking group pointer, a loop temporary), 2 (a parameter symbol) and the
+// constant; retail adds the parameter ahead of the walking pointer, so its temporary is numbered at or past the 2048
+// wrap (about 1410 more numbers ahead of it than here). Extra statements or unused locals in 0x198540 leave this body
+// at 3 (the numbering is per function). Forms: the device loop's record pointer declared ahead of the changed test 3;
+// the counters loop without the group pointer 72; the group pointer `const` 3; the address loop storing straight into
+// `record->addresses[i][j]` 3; the header's flag tests on the update's flags 20.
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {

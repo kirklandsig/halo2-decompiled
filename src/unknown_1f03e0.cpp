@@ -1740,6 +1740,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // delta while keeping `planar_scale` on Arm 2 `limited` and Arm 3 damping 361 (`3047 B`, `kC=0, ts=1`: matches all 51
 // Arm 3 lines 311-361 and Arm 1 `jmp 0x1f0f58` tail-share verbatim, confirming only dropping Arm 2's `state->speed`
 // binding uncommutes Arm 3 `out.k`).
+// M3 lane 11 r179 (H2M_FAST with 0x1f0450, 0x24590, 0x1f03e0, 0x30bf0 and 0xa75d0, all MATCH; control 198). Rank
+// reading of the first cross: the state's field loads weigh up.i 0xc008, up.j 0x4008, up.k 0x0008 (wrapped), facing.i
+// 0xa008, facing.j 0x4008, facing.k 0x8008, so the two up.k products load the facing field; the input pointer declared
+// after the flags and cross3f for the cross leave every weight as it is. Forms: the three flag bits without `!= 0` 196
+// (3050 B); as mask tests 198 (same code); with `flying` also without `!= 0` 196; without `!= 0` and `direct` declared
+// ahead of `damping` 192 (3050 B, a declaration order); without `!= 0` and the direct arm's rotated pair scaled in
+// place 198.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

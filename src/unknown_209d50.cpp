@@ -394,6 +394,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // the volatile-free control (40 decisions) gives nothing below 94. Reading: retail's result is a load of the pointer's
 // stack home that is forwarded from the store after registers are chosen (`mov eax, ebx`), so retail's pointer is a
 // memory variable in the IL; the volatile home gives the memory variable but forbids the forwarding.
+// M3 lane 4 r272 (fast screen with 0x2099f0, which stays matched; control 12). Allocator reading: on the kept body the first
+// frame takes EAX with no penalty and the result copy starts later (EAX), as retail; volatile-free, the pointer and the
+// result are one value from the first allocation on and its return preference adds 2 to EAX for the first frame, which
+// then takes ESI and folds its load. Forms: volatile-free 95 and null-first 83 re-measured; diagnostics (reverted) with
+// the pointer's address stored to a global, the copy at the top 83 (287 B), after the second allocation 118 (302 B),
+// after the third 118 (302 B); a 600 s permuter run on the null-first body, 50 tries, best 74 only with volatile
+// qualifiers on the frame reference and the result (not usable), plain variants 79 at best.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

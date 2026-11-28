@@ -427,6 +427,10 @@ void function_254200(void)
 // 0x74-byte bitmap element type (width and height at +4/+6) in place of the raw offsets 4; those named width/height and
 // read width first 4; through a const pointer of that type 4; the point read through the parameter at each use 341
 // (1162 B); the chosen bitmap declared in the `if` condition 4 (same code). All restored.
+// M3 lane 6 r256 (h2m fast with 0x254200 MATCH and 0x2548f0 2; control 4): one of the two render states written by
+// hand (the cached value's store, then the device call) with the other through the shared setter, either way round,
+// 4 / 4; the readiness tests as an early return 4; the draw-ready test as an early return 4; the two readiness tests as
+// nested ifs 4 (all five the same code). All restored.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -976,6 +980,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // named as a real before its conversion 412, declared just after the color call 386 (2272 B); the scale copied into a
 // `real const` at the top with the alpha named as a real 2 (same code); the half product from that copy 412, also with
 // the named alpha 412.
+// M3 lane 5 r257 (H2M_FAST with 0x254490 4 and 0x254200 MATCH; control 2): the depth as a `real const depth = 16777215.f`
+// at the head of the success block, used at every vertex, 2 (same code: it folds before the numbering); the first
+// quad's three colour components named as reals ahead of the 0x1cf50 call 377 (2252 B, first +0x83); the first two
+// texture calls through the plain device export instead of the scoped wrapper 467 (2157 B), the first Begin through it
+// 446 (2196 B: the inlining changes); the last quad's centre bound as two `real const &` in place of the two pointers 2
+// (same code). The two reloads stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

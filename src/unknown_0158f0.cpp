@@ -291,6 +291,26 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // (96); a compare with the OK code 99 (96); the failure test into a local palette with both arms storing `*out` 87 at
 // 42 B (77); the status named, then the success test 86 (96); an early `return false` on the failure test 91 at 38 B
 // (96). The nested call stays out of line in each.
+// M3 lane 8 r249 (fast screen, 0x1d3f0 in brackets; control 99 (77)): `__fastcall` 99 (77); the NULL test as `if
+// (palette)` with the success arm first 99 (77); the size read into a local of the SDK's palette-size type 99 (77);
+// the result and flag declared ahead of the call 99 (77); `result = palette; created = palette != NULL;` 103 at 26 B
+// (96). Reading: retail's inlined body calls the default allocator directly at each site, so the title's
+// allocation override (0x12280, its switch folded on the constant attributes) was expanded inside the SDK body
+// before that body was expanded here; the SDK call stays out of line in every straight-line form.
+// M3 lane GA r37 (11 valid untried fast trials + 2 diag with `0x1d3f0` and file peers; control 99 at 30/95 B, `0x1d3f0`
+// 77; body unchanged): 4-case `switch (index)` passing constant `D3DPALETTE_*` literals 53 (76 B, jump table still
+// calling `CreatePalette2` out of line), named `bool created = (*out = ...) != NULL` 103 (26 B, `0x1d3f0` 96),
+// `((D3DDevice *)g_407488)->CreatePalette` 87 (42 B), 6-entry initialized `D3DPALETTESIZE` table 99, shared template
+// tail helper across `0x158f0`–`0x15b10` 103 (breaks `0x158f0`/`9b0`/`a60`), success early return 99, ternary assign
+// return 99 (`0x1d3f0` 96), template create wrapper 99, `D3DDevice_CreatePalette != S_OK` with 2-arm tail 99, const fn
+// ptr 98, `index >= 0 && index < 6` bounds guard 90 (39 B); diag `/Ob1` 99, scoped `#pragma optimize("t", on)` +
+// `auto_inline(on)` + `inline_depth(255)` 99. `D3DDevice_CreatePalette2` (`d3d8ltcg`) stays out of line in
+// every non-loop form.
+// GB r37 (12 untried fast trials with 0x1d3f0 and file peers; control 99 at 30/95 B, 0x1d3f0 77, body unchanged):
+// __fastcall without noinline 99 (0x1d3f0 75), void **out / D3DPalette *&out / struct-wrapped g_43e8d8 / 2D
+// g_43e8d8[1][6] / inline size getter / long const index / pre-initialized result+created with 2-arm assign all 99
+// (77); D3DDevice::CreatePalette with FAILED/SUCCEEDED + 2-arm tail 87 at 42 B (77, spurious HRESULT padding, not
+// kept); if (out) guard 96 (33 B); index >= 0 ternary guard 95 (34 B). CreatePalette2 stays out of line in every form.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
