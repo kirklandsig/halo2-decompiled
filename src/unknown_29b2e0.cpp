@@ -1007,6 +1007,12 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
 // (1726-1730 B). Diagnostic (reverted): 0-7 unused initialised locals at the top x 0-3 parenthesis pairs on the pitch
 // difference, with the pointer local: best 121 (5 locals, no pairs, 1710 B); 1-3 locals move the frame (211 to 334).
 // Body unchanged.
+// M3 lane 2 r163 (H2M fast with 0x29b990, 0x170d70, 0x11cc90, 0x11ce20 and 0x1e5450, all MATCH; control 130; without
+// those companions the reduced image builds this function at 1309 B, 817). Forms: the second copy's k cleared ahead of
+// the planar pair 130 (same code); the planar pair filled by two assignments 130 (same code); the fallback arm's angle
+// zeroes ahead of its facing copy 130 (same code); both angles zeroed at their declarations with the else arm copying
+// only the facing 329 (1716 B); the planar normalisation tested ahead of the length 221 (1710 B); the planar pair read
+// from the copy re-measured 303. Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

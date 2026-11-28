@@ -4413,6 +4413,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // EBX, animation spills); control or definition (or both) declared after the lookup's `if` 156-188, with the clears
 // early 177-198 (the 668 B ones, 191, reach retail's size and clear order but form control after the branch,
 // where retail forms it before 0x10ffc4); animation initialised at the top 182, as a ternary 177; byte flags 36.
+// Roasted-Codes (#1598, 11-28): definition, and separately control, bound as a const reference to the pointer
+// (`* const &`) with the rest unchanged: 12 each at 668 B, the same code (only two constant-pool operands move); no
+// combined form tried, and the homes of definition and control stay swapped.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

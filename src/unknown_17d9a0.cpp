@@ -936,6 +936,14 @@ PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
 // 876, direct `return false` on texture failure 884, `matrix_transform_vector` header in `decal_vector_17ef10` 884,
 // dropping `input`/`output` copies in `if (transform)` (from `&placement->position` or in-place `&position`) 888 (with
 // `matrix_transform_vector` 910, clean combos 903/913).
+// M3 lane 14 r167 (h2m fast with 0x17e490 and 0x17ed70 MATCH; the reduced image builds this function at 841 at 3593 B
+// for the full build's 837): the result declared just ahead of the texture test 868 (3582 B); one recent-entry pointer
+// for the two loops with the fill reading the global 871 (3604 B); the basis block's two products through dot3f, either
+// argument order, 848/848 (3583 B); the sequence clamp as an if / else-if / else chain on the state's choice with no
+// local 857 (3599 B). Restored. Retail reading: its oldest-slot loop loads g_510c54 into ESI every pass so its empty-slot
+// exit can fill the entry in place on the loop's own pointer (with the lifetime from that register), then jumps past the
+// fill that follows the loop; the basis block runs two inlined vector transforms in 0x142640's shape (scale in
+// registers, the zero k in XMM7) with the scale test repeated for the second one.
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,

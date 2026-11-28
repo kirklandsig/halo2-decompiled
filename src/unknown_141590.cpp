@@ -1424,6 +1424,12 @@ void function_143250(
 // and s35_r2_r3_r3 842 (frame 0x2fc each), `r6_r4` after `r4_r2` 1446, `r5_r1` ahead of `s105_s2` 717 (same code),
 // `s7_s105` after `r6_r4` 712. A search on the 712 form over the products whose first definition comes in another
 // order than retail's (each moved next to its retail neighbour, 28 forms) found only the 710. Body unchanged.
+// M3 lane 16 r201 (fast screen with 0x143250, MATCH each run; control 939; body unchanged): the band-three 1/14 factor as a
+// file-scope named constant 939, the 1/28 factor named 939, both named 939 (the named constants fold, same code; retail
+// keeps 1/14 in XMM5 from entry 23's last term through entry 25); entry 24's cube as a named product just above it 939;
+// entry 24's 1.5 factor written first 939 (same code each). Reading: per-cell reference counts over the scalar homes
+// differ by more than one split (ours-only cells 3, 6x3, 7x3, 9; retail-only 2x2, 4, 5x3, 8, 10x2, the same 718 references),
+// so the extra retail cell comes with several different slot joins, not one value kept apart.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

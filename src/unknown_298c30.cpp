@@ -921,6 +921,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 353/367, +0x147), hoisting the SSE `y * cos` product before `jne` and placing unity in XMM2 without a helper, but not
 // kept (match-only one-use locals, store/condition order and element reread; loop-head `fstp; fld`, `cos * y` operand
 // order, second normalizer store order and tangent dot order remain).
+// M3 lane 3 r322 (fast screen with 0x29a190 and 0x298c30, both MATCH each run; control 305; body unchanged): the loop
+// distance's sum written y term first 305 (same code: ours still forms dy first on x87 where retail forms dx first,
+// and the order does not follow the spelling); the ratio clamp against `1.0f` 365 (1717 B, first difference +0xab);
+// the arccosine clamp against `1.0f`/`-1.0f` 385 (1692 B); both 398 (1685 B); the facing test against `0.0f`
+// re-measured 361 (1740 B).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
