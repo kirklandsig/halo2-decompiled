@@ -1155,6 +1155,24 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `0x2c0e9a`; the unit index in a named local 529; `basis_dot_xzy` + inline obj `distance_squared` + retail sphere vel dot 490 (`3731 B`;
 // + nested vehicle `if` 490; + `moving | (sphere_flags | obstacle_flags)` 490; + 1-expr sphere `squared` + inline radius 488
 // `3731 B, mk=56`); keeping `distance_squared` 539 (`mk=47`); x-z-y + retail sphere vel dot 542 (`mk=45`).
+// M3 lane 15 r157 (fast screen with 0x2c0d00, 0x29a190 and 0x25d810; control 718, aligned 165, masked 73): the dot flag
+// kept in its own `facing_straight` and `straight` set after the actor block as `actor_index == NONE ||` that flag (so
+// the no-actor edge would store the 1 and the actor edge coalesce) 912 (+0x19, masked 135; caller 0x29a190 1), the
+// same with `!actor ||` 912; `aligned` declared ahead of `straight` 720 (+0x3c); both flags in one declaration 718
+// (same code); re-measured, the no-actor `else straight = true;` 544 (masked 66, match-only).
+// M3 lane GA r37 (29 valid untried fast trials across 2 batches with 0x25d810, callers 0x29a190/0x29cbb0/0x2c41b0 and 10
+// file peers, all 11 matched peers MATCH; control 718 at 3731/3731 B, +0x4a, fr=0x2cac, al=159, mk=68; body unchanged):
+// on 718 base, uninit `straight` set after `ai_object_get` + `else straight = true;` 722 (+0x3c, drops 0x2c0e9a); `if (dot <= ...)
+// straight/aligned = false;` 842 (+0x3c); vehicle dot `dx/dz/dy` 717 (mk=74), `x-z-y` 720 (mk=66); object dist `k,j,i` + `>` 718
+// (mk=65), `i,j,k` + `!(d2 <= r*r)` 718 (mk=62); 3-use `marker_flags` 874 (3697 B); `long type` all 7 sites 824 (fr=0x2cb0);
+// clean retail bundle (`k,j,i` 724 mk=61 / + early `enabled` 827 mk=58; `i,j,k` + `x-z-y` + all-3 dir-first vel + nested sphere
+// `<=` 726 mk=48); all-3 dir-first vel alone 715 (mk=64, -3 under bar); `s_ai_object` typed fields 720; positive nested sphere
+// height 718 (still reloads `position` into `eax` at 0x2c1a86); `actor` ternary 920; marker dot operand swaps 718. Match-pursuit
+// on `else straight = true;` + 2-use `word device_flags` (control 405, 3731 B, +0x91, al=167, mk=65): full retail bundle with
+// `dx/dz/dy` 376 (3731 B, al=197, mk=66; ablating `k,j,i` obj dist 370 al=188 mk=69; ablating `dx/dz/dy` 408 mk=46; ablating
+// early `enabled` 383; + `actor_team` 379; + direct `+0x248` reread 501 at 3745 B mk=51; + 3-use `marker_flags` 554 / 549);
+// fixed retail bundle (`i,j,k` `!(d2 <= r*r)` + `x-z-y` + all-3 vel + nested sphere `<=` + early `enabled`) 408 (3731 B, al=177,
+// mk=39; + nested height 408; + marker swaps 408; + `moving | (sph|obs)` 408; + direct `+0x248` 529 at 921/921 insns, al=144, mk=36).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

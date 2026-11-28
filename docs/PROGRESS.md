@@ -2,6 +2,26 @@
 
 The newest entry comes first.
 
+## 2026-11-27: 10996 functions match
+
+```
+matched 10996 of 11326 game functions (2311099 of 2786206 bytes, 82.95%)
+matched 1435 of 1436 Havok functions (282693 of 290362 bytes, 97.36%)
+```
+
+2 new matches, `0x1cd070` lost (MATCH to 150): the always-true `result &&` guard that kept it matched is dropped, and the maintainer accepted that loss for these two matches:
+- @andrewnakas's #1605: `0x106790` and `0x166d75` match.
+
+## 2026-11-27: 10995 functions match
+
+```
+matched 10995 of 11326 game functions (2308538 of 2786206 bytes, 82.86%)
+matched 1435 of 1436 Havok functions (282693 of 290362 bytes, 97.36%)
+```
+
+1 new matches, none lost:
+- Machine 3's batch 386 (#1609): `0x12560` match.
+
 ## 2026-11-27: 10994 functions match
 
 ```

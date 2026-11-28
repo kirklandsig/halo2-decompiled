@@ -1120,6 +1120,15 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // index 90, and a forced-ranking search gives a byte match with the session at 89 or the index at 100; the player
 // loop's latch is the only block that references the index and not the session (six candidates, three of them
 // constants), so one more candidate there would move the index 8 and the session 2. Body unchanged.
+// M3 lane 4 r272 (fast screens with 0x6e500, 0x72700, 0x6e910, 0x5c5c0, 0x5b080; control 22; the 8 and 36 forms rebuilt).
+// Reading: in the 8 form the two opening leas are scratch temporaries on the eax/ecx/edx cursor, which is why the summary
+// lea gets EDX and the mask EAX; with the NULL-preset pair they are register candidates and the cursor gives retail's
+// EAX/EDX. Ledger on the 36 form: session 99 (the pair's arm +16 over four candidates), index 90; one more candidate in
+// the player loop's latch would give 98 against 97. On the 36 form: players assigned first 36; the presets in an else arm
+// 36; the copy's source bound to a const reference 36; the shifted bit named ahead of the mask test 36; the mask in a
+// plain local 108 (477 B); the variant declared at the top of the player loop body 39; the variant declared between the
+// pair and its test 153 (495 B, the tests no longer threaded); an early `return false;` for the state test 144; the result
+// set false in an else arm 153 (491 B).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
