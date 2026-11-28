@@ -439,6 +439,12 @@ void function_19c6d0(s_record_pool *data, long key0)
 // 108 (still hoisted); `long index = flagged.count++;` 65; the iterator set up by an aggregate initialiser 65; the
 // element store through `*(flagged.elements + index)` 65; the flagged arm storing `flagged.elements[index] =
 // keys[count++] = entry->key` with the keys store in an else 106 (403 B); the flag test as `!= 0` 65.
+// M3 lane 8 r249 (fast screen with 0x19c6d0 and 0x19c190 MATCH; control 65). Reading: retail's matched 0x16b840 re-reads
+// the high-water index at its scan latch because all seven registers are busy in that loop; here
+// a forced-ranking search taking the hoisted high-water value to -4 or -8 leaves 65 (a later pass still colours it), so the re-read
+// needs the latch read not to be hoisted at all, not a lower rank. Forms: the walk's datum declared with a NULL
+// initialiser 65; the search result named as a `long found` 65; the datum declared in the loop body 65 (same code);
+// the dead `iterator.datum_index = NONE` store dropped 65; the iterator set up ahead of the sort_4byte block 67.
 struct s_flagged_keys
 {
 	long count;
