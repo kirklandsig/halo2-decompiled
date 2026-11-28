@@ -2551,6 +2551,10 @@ bool function_1900a5(long index);
 // Also tried on the lead: `before6_step`/`before6_idx`/`after6_idx`/`props_first`/`pbefore_id`/`no_rec_local`/`j_lt_rcount`,
 // `while`/`if (records_used > 0)`/`do-while`/`for` duplicate scans, `long`/`dword` `record->type`, `memcpy` vs `XUID` copy,
 // `byte key[12]`, `record_matches_id` inline helper, and `!=` early `continue` (398-652).
+// m3 lane 13 r169 (fast, control 633): the variant-slot loop index as long 714; the logon test as two nested ifs 755;
+// pre-increment in the slot loop 633 (same code); the identity copied with memcpy 633 (same code); the delay as an
+// else-if chain 633 (same code). BLOCKED-BY 0x647d0 (the record-base users cursor needs that getter expanded; its file
+// is /Ob1) and 0x75890 (the request gate's by-value time, same reason); the slot test's cmovne needs /arch:SSE.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

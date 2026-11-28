@@ -1085,6 +1085,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // direction test through the existing dot3f, either operand order, 568 each; the first clamp's 12/8 factor named
 // ahead of t (retail selects it there) alone 679 (2858 B; 0x1eb6f0 22); the output position pointer declared at the
 // top of the body, after or before `fail`, 722 each (2876 B; 0x1eb6f0 11). Body unchanged.
+// m3 lane 13 r169 (fast with 0x1eb6f0, 0x1ed4a0, 0x30bf0; control 567): retail's entry load of q into EBX serves the
+// non-update path; in the update path retail borrows EBX and reloads q, and it never gives d a register (each of
+// d's uses reads its stack slot). Diagnostics, reverted at once: every d use read through d's address 685 (EBX still
+// d); the same through a volatile pointer 709 (retail's entry exactly, q in EBX from +0x10, but an XMM zero is hoisted
+// to the entry). Forms: the settle alignment dot with nq first 567 (same code); the output copy written through out
+// before the position pointer 567 (same code); the 0.866 test negated as `!(... >= 0.8660254f)` 661.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,
