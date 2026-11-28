@@ -17,8 +17,6 @@
 
 
 
-// @stub 0x1d3920
-void __stdcall function_1d3920(byte *component, dword *mask, real value) { }
 
 
 
