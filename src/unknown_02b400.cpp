@@ -1461,6 +1461,15 @@ bool function_143c0(long, short, short, real);
 // the sibling 0x38450 writes it, 346 (165 on the 14 lead); `result` left uninitialised and set true in an else arm
 // of the geometry test 347; `lines` declared ahead of `result` 348; the 0x39780 result named first 348; both alphas
 // typed `long` 345 (the constant 2 still -7 against -6).
+// GA39 (32 valid untried fast trials across 2 batches with 0x1cbe0 MATCH and 0x36b50 258; control 175, body unchanged):
+// rebuilt lane 11/7 r15 348 form (348, 1420 B, al 156, mk 25) and records-at-entry lead (14, 1420 B, lines 21-352
+// verbatim). On 348: shifting alphas in the loop drops second_alpha's B3 priority below constant 2 and restores EDI=2
+// at entry with records still after 0x12de70 (291, fd=+0x2b, 350/350 insns); (byte)(long) alpha cast (direct or
+// helper, and byte locals) 261 (350/350 insns, adds movzx; 220 on HEAD); switch(mode) case2/default or default/case2
+// 300, case 0/1/2 319 (1430 B); typed state struct 264 (1439 B); D3DCOLOR_ARGB, 256*a, (dword)(a*256), alpha helper,
+// sep long alpha, early alpha decl, divisor if-chain / inline pin, vel/pos ptrs in point/line arms, member D3D calls,
+// and struct player count all 348; short divisor 346 (al 148); ptscale before enables 347; slot ptr / inline 0x1cc30
+// diag 346; color local 345; zero-based loop 348; while loop 435 (1329 B); ptr-walk loop 374 (1391 B).
 // @retail 0x391f0
 bool __stdcall function_391f0(void *state_address)
 {
