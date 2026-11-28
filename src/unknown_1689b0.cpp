@@ -2437,6 +2437,21 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // (2880 B); that with the distance as one expression 550 (2875 B); the coefficient locals without the offset 552;
 // `projected = *point;` then each row's scaled offset added in place 615 (2910 B); both averages as the sum divided by a
 // named `real count` 571 (2889 B). Body unchanged.
+// M3 lane 1 r180 (fast; control 551; "aligned/masked" = differences left after aligning the two instruction
+// streams, plain and with registers and stack offsets masked: control 564/238). LEAD, not kept (every step is a moved
+// statement or declaration, an arm swap or a one-use successor named ahead of a call: match-only): the zero-based edge
+// loop with `long next_vertex = (vertex + 1) % prism->point_count;` at its top 619 (2904 B, frame 0xb968, aligned
+// 489/210); the averages as `face_sum.x / face_count` (no reciprocal local) 578 (509/264); both 623 (471/185); plus the
+// nearest reset and `inside` right after the plane distance 622 (464/179); plus the squared radius at the prism loop's
+// top 621 (458/171); plus the edge vector computed ahead of the relative vector 560 (2877 B, frame 0xb964 again:
+// the extra cross-row spill goes, 383/158); plus the face arm first as `if (use_normal)` 568 (2868 B, 273/75). Left on
+// that lead: the low cells (retail: projected lowest, face sum, nearest, edge sum, first point; ours: first point
+// lowest), the point cursor and the point word exchanging EBX and EBP in the edge loop, plane.j preloaded in retail's
+// projected row, and a few operand sides (`ray.k + point->z` loads the point first here). On the lead: the third
+// distance term written point first, nearest declared between the sums, the y row written `(0 - distance) * plane.j`,
+// `inside` ahead of the nearest reset 568 each (same code); a diagnostic grid of 0-7 unused locals x 0-3 float paren
+// pairs on the distance's first term gives no low cell (best masked 66 at two pairs; one to four locals move the
+// frame). Body unchanged.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

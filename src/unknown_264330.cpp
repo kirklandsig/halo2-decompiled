@@ -1082,6 +1082,14 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // the prior state as short 404; the two flags declared after the 0x263670 call 404; the node pointer taken from the byte
 // view 404; the maximum test written `(short)maximum < field` 405. Diagnostic, reverted: case 1's rounding as a plain cast
 // without the asm helper 436, still a stack argument.
+// M3 lane 15 r157 (fast screen with 0x1e34e0, 0x263210, 0x264330, 0x265680, 0x2641c0, 0x264210; control 404 at 1624 B):
+// the tail's tracked prop index read once into a named local for both tests and both 0x25d700 calls 409 at retail's
+// 1616 B (retail keeps that index in ESI for the second test); the tail as one exit with a `settled` flag 421 (1644 B);
+// the next link and prior state through the typed node fields 404 (same code); the named tail index with case 1's
+// 0x25c820 call jumping to the release block's call 460 (1592 B). Retail calls 0x25c820 at the release block and
+// tail-merges case 1's call into it; our link expands that site. Diagnostic: 0x264210 in an /Ob1 file with 0x2641c0's
+// noinline declaration dropped still expands 0x2641c0 there (114 at 139 B; here 509): a caller's /Ob1 does not stop
+// the link-time expansion. The actor index stays a stack argument in each.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

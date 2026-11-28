@@ -346,6 +346,11 @@ void function_e3f00(long object_index);
 // store written as a statement before each call (the damage callers' idiom) 16; that with the index read into a named
 // long ahead of the event 29 (the event block then in retail's order, but the index in EAX and every later rotation one
 // off); the event declared under the damage-data type's own name (no casts at the calls) 16.
+// M3 lane 7 r240 (fast screen with 0x1da550 and 0x1da9e0, MATCH each run; control 16). Retail's 0xd6660 setup pushes
+// the index (a stack argument) with the event pointer in EDX. Forms: the velocity copy declared bare and assigned 16; the
+// rigid-body count test as `!= 0` 17; the constructor's NONE store in its body 16; the event's material typed as the
+// existing c_type_47f957 (its default constructor stores NONE) 16; the speed ratio folded into the force product 48
+// (775 B).
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {
