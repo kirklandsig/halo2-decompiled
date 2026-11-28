@@ -903,6 +903,10 @@ s_1a8a10 g_4453c0[] =
 // `i * x` as its own statement ahead of the left sum and `+= j * y` after it 38; the negated product first with `+= i *
 // y` after the forward sum 31; the forward sum first in main's term orders 31; the left sum stored to [0] before the
 // forward sum is computed 17 (same code).
+// M3 lane 4 r272 (fast screen with 0x1a8c30, MATCH; control 17). Reading: retail's only store between the copy's j load and
+// the negated read is the rotated point's y, so retail's point is a local whose stores may alias the actor (escaped).
+// Forms: both sums `real const` 17; the negated stores as unary minus 17; the copy's j read as `(&facing.i)[1]` 17; the
+// float block in its own scope 17; the facing copy declared at the function's top 17 (all the same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
