@@ -151,3 +151,61 @@ def test_circular_a_inertia_precedes_scalar_copy(solver_images, precision, activ
                 snapshots[rounding] = (snapshot, b_home)
             else:
                 assert snapshots[rounding] == (snapshot, b_home), context
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_circular_preserves_rounded_input_until_external_callback(solver_images, precision):
+    # The second C7 input remains in its initialized float home after the row.
+    # An external operation can read it through its caller-supplied payload.
+    # Reusing that home for a retained row pointer changes observable memory,
+    # even when the circular operation's velocity and impulse outputs agree.
+    frame = STACK + 32768 - 0xd0
+    retail, compiled, symbols = solver_images
+    for rounding in range(4):
+        data = solver_case(7, 0)
+        put(data, STEP, '7fi', 0, 1, 0, 1, 1, 0, 0, 1)
+        put(data, OPS, '6I', 0x11801, TERMS, RESULTS, frame - 0x20, HEAP + 0x80, 8)
+        put(data, OPS + 24, 'IIffI', 7 | (20 << 8) | (5 << 16),
+            FRICTION_RESULTS, 0, 100, 8)
+        put(data, OPS + 44, '4I', 14 | (16 << 8) | (2 << 16),
+            CALLBACK, frame + 0x1c, HEAP + 0x7000)
+        put(data, OPS + 60, 'I', 0x400)
+        for row in range(2):
+            put(data, TERMS + 48 * row, '12f',
+                0, 0, 0, float(row == 0), 0, 0, 0, 1, 0, 0, 0, 1)
+        put(data, HEAP, 'B', 3)
+        put(data, HEAP + 0x90, '12f', *([0.] * 8 + [1.] * 4))
+        put(data, IMPULSES, '2f', 0, 0)
+        snapshots, callback_traces = [], []
+        for machine, entry, gate in [
+            (retail, 0x31c940, 0x480c60),
+            (compiled, address(symbols, 'solve_operations_31c940'),
+             address(symbols, 'g_480c60')),
+        ]:
+            machine.mem_write(frame - 0x10, b'\0' * 16)
+            machine.mem_write(frame + 0x10, b'\0' * 16)
+            machine.mem_write(gate, b'\x01')
+            calls = []
+
+            def copy_word(uc, va, size, user):
+                _, terms, payload = words(uc, uc.reg_read(ux.UC_X86_REG_ESP), 3)
+                source, destination = words(uc, payload, 2)
+                value = bytes(uc.mem_read(source, 4))
+                uc.mem_write(destination, value)
+                calls.append((terms, payload, source, destination,
+                              struct.unpack('<I', value)[0]))
+                return_from_hook(uc)
+
+            snapshots.append(execute(machine, entry, data, [STEP, OPS, HEAP, IMPULSES],
+                                     hooks=[(CALLBACK, copy_word)],
+                                     precision=precision | (rounding << 10)))
+            callback_traces.append(calls)
+        assert len(callback_traces[0]) == 1, (precision, rounding, callback_traces)
+        observed = callback_traces[0][0]
+        assert observed[:4] == (TERMS + 96, OPS + 52, frame + 0x1c, HEAP + 0x7000)
+        # Signed zero depends on rounding. Comparisons below retain every bit.
+        assert observed[4] & 0x7fffffff == 0, (precision, rounding, observed)
+        assert callback_traces[0] == callback_traces[1], (precision, rounding)
+        # Exact full heap and return; execute also checks stack, saved registers
+        # and floating-point controls. Only the callback and ready gate are synthetic.
+        assert snapshots[0] == snapshots[1], (precision, rounding)
