@@ -1307,6 +1307,11 @@ s_3c9a0_matrix g_4c1b68;
 // swapped corner multiply operands 210; min/max template on pair+3loops 227 (out of line). Diff reading on 210: ours keeps
 // m00/m10/m20 and -near_y/near_y/-far_y in XMM and spills m01/m11/m21, where retail keeps m00/m01/m10/m11/m21 in XMM and
 // reloads g_4c1b08[0..1,3].y from memory. Body unchanged.
+// M3 lane 6 r254 (H2M_FAST; 0x3c9a0 and 0x16a90 MATCH, 0x3c3c0 74 throughout; control 291). The division and the clamp
+// go to x87 because the view tangent is still on the x87 stack (retail stores it and divides in SSE); the first
+// tangent alone in a memory home does not move them: the tangent computed ahead of the 0x3c9a0 call 302 (stored across
+// the call, then `fdiv` from memory); the aspect's 1.5 test ahead of the tangent 303; the view tangent as
+// `(real)tan(half_angle) * aspect` 291 (same code); both 302; both tangents `real const` 291 (same code).
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {

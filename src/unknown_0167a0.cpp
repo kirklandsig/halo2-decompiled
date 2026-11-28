@@ -987,6 +987,10 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // but every such form rebuilds the switch: `out += 2;` then ascending `out[0]`/`out[1]` zeros in 12 and 13 104 (688 B), in
 // 12 only 88 (708 B), 13 falling into 12's advance 104 (688 B), the advance with `out[1] = out[0]` 104 (688 B); the zeros
 // through `(&out[2])[0]`/`[1]` ascending 6 (folded to the direct stores).
+// M3 lane 13 r168 (h2m fast with 0x19be0/0x19ca0, both MATCH unless stated): the 12 and 13 zeros as `out[2] = 0.0f;
+// out[3] = out[2];` 6 (the flip); case 20, case 17, the 15/19 zeros or case 11 as plain ascending statements 2 each (same
+// code); the sizes in one declaration 2 (same code); the size pair through a row pointer re-measured 47 (708 B,
+// 0x19ca0 130, lane 6 r244's form).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

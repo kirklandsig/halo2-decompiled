@@ -826,6 +826,20 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // 0x1d8 (not a symbol-count state); the second rigid body looked up with the clamped slot local 829 (4267 B, frame 0x1dc);
 // local_15 initialised from the clamped slot 929 (4273 B); the zero vector local_25 and response_fraction declared after
 // the object-type block 853 (4259 B, retail's length). Body unchanged.
+// M3 lane 3 r321 (H2M_FAST with 0x1d2070, 0x1cf9f0, 0x1d1260, 0x1d2280, 0x54590, 0xc2d00 and 0x142eb0, all MATCH each
+// run; control 808 at 4260 B, register-masked aligned 110 rows of 977/982). LEAD without any new member or helper
+// (match-only, held as a patch): the element pointer formed from the component's list field at the loop head
+// (`&((s_1d24a0 *)arg_0->unknown94->data)[local_8]`, as the loop test already reads the field) and the list local
+// declared at the removal for its three uses 757 (4269 B, aligned 87): the loop head (list header in EBX, `shl eax, 3`,
+// the element pointer formed in place and stored at +0x64) and the swap-remove are then retail's instruction for
+// instruction, the same result as round 253's member lead. Not kept: it is the field read directly at one use with a
+// local for the others, and a declaration moved later, both match-only. The same head with the list local left at the
+// loop top 757 (the same code); with the removal spelled `data[i] = data[--size]` as matched 0x1d2070 spells it 757;
+// no list local at all, the removal reading the field at each use 910 (4286 B, aligned 96); on main's head: the
+// removal as `*local_10 = data[size]` 808 and spelled as 0x1d2070's 808 (same code each); the list local declared
+// ahead of the loop with the loop test through it 929 (4256 B). Left on the 757 form: frame 0x1d8 against 0x1d4, the
+// flag bytes' homes and `and cl, 1` placement after the two simulating tests, the object-type `movzx`, and the float
+// product sides in the limit arms. Body unchanged.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

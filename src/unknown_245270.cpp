@@ -1167,6 +1167,11 @@ void function_245400(s_source_245400 const *source, long index,
 // transform reuses the rotation's field loads at the same levels, so the two transforms' scaled components would need
 // symbol numbers near 0x100 and far apart, which no tried form gives. On main's body the facing dot through dot3f, either
 // operand order, 235 each. Body unchanged.
+// M3 lane 6 r254 (H2M_FAST with 0x245aa0, 0x245400 and 0x244de0, MATCH unless noted; control 163). Retail reads the
+// second material index (+0x0a) first, forms the second record's address, then reads +0x08. On this body: the second
+// material read ahead of the first index local (materials local first) 165; a second record pointer for the second
+// material's code 163 (same count); both 165; the facing test as an if/else of two exits 221 (768 B); the plane table
+// read after the edge vector 165 (0x245aa0 3). Body unchanged.
 // M3 lane GA r33 (43 valid fast trials with 0x245aa0/0x245400/0x244de0/0x245270/0x245850 all MATCH unless noted; control 163
 // at 783/783 B, fr 0x24; body unchanged): on main's body, vertex-table local 163, + second-before-first material read 165,
 // early return on equal materials 163, inline copy+scale+rotate edge 163, 0x245850-style 3-step accumulated edge rows 213,

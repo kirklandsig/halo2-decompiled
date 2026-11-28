@@ -244,6 +244,16 @@ __inline void quaternion_rotate_point(
 // real two = 2.f 8 (0x11dd80 7); existing dot3f / dot_11ea30 12 (0x11dd80 7, without dot local 69/29), basis_dot_xzy
 // 41 (21); cross3f_staged / cross3f + point3f_scale + vector3f_add_scaled 120/122; real_point3d_set 89; safe v scalar
 // / struct copy 118/149; explicit dot parens (j+i)+k 68, j+(i+k) 20; 3-stmt dot 20; real w 92; no cx/cy/cz locals 53.
+// M3 lane 6 r254 (h2m fast with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820; control 8). Rank reading: q.i ranks by
+// the parameter `a` itself (level 2, fixed: unused locals do not move it), v.x by the helper's point parameter (level 6,
+// +1 per local), every other field by its expression position (q.j 6, q.w 4, v.z 2, v.y and q.k 0). Both spots left are
+// exact ties that ours breaks against q.i (cy's q.i * v.z 2/2, the dot's i and k terms); by these levels only q.i 3
+// with v.x 5 or 6, or q.i 4 with v.x 5, give retail's whole rotate, which no shift of locals or expression count reaches
+// while q.i goes through `a`. Forms: a `left` copy of `a` re-pointed at the temporary (q.i then ranks 4, v.x 7) 19 (a
+// moves to EAX, 0x107ed0 and 0x27a100 139), declared ahead of the temporary 19, with a one-use position pointer 17;
+// `left = a` after the two copies 77 (455 B); `left` and `right` copies for both operands 28 (callers 139).
+// Diagnostics: `left` with six unused locals (v.x 5) 17, the whole rotate retail's, only the convention and the first
+// scale product differ; with seven (v.x 6) 17, the dot's i term then ties ahead of j.
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,

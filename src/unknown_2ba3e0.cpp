@@ -248,6 +248,14 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
 // as the first member's address 7 (ranks unchanged); hand-written rows on `wind.n[0..2]` 7; the amount as
 // `phase - 0.5f` then `*= scale` 7; a real member at +0x34 (the particle's three uses) 7, on main's body 46 (same
 // code); the amount as a const reference to the product with a separate scaled local 7.
+// M3 lane 6 r254 (H2M_FAST with 0x2b8da0 and 0x2ba3a0, MATCH throughout; control 46; round 171's clock with
+// vector3f_scale + vector3f_add rebuilt 7 at 665 B). Rank reading on that form: the amount ranks 197 and the wind
+// members 202/206/210, numbered at their first direct mention inside the scale; retail needs wind.i below the amount
+// and wind.j, wind.k above it. Diagnostic (reverted): a dead `wind.i = 0.0f;` ahead of the lookup numbers wind.i first
+// and gives retail's i-row product, but the velocity i add then takes the delta first (56 at 669 B; with the add's
+// operands swapped 61). Forms: the wind vector zero-initialised at its declaration 59 (674 B), with round 171's form
+// 69 (680 B); a clock pointer local read twice 46 (same code), with vector3f_scale + vector3f_add 47; round 171's form
+// with the add written `vector3f_add(&delta, &particle->velocity, ...)` 29.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {

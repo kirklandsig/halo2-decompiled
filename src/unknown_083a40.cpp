@@ -1095,6 +1095,16 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // key folds to cursor - 0x24. Reading: retail's sum groups the invariant inverse with `collection` first, so in retail
 // the base was treated as loop-invariant when the element address was rebased onto the cursor, while ours rebases only
 // the index product. The swap callee's own bytes form `index * 0xb4 + collection + 4` index first.
+// M3 lane 1 r178 (fast screen with 0x84e90/0x84c90/0x83c90, all MATCH each run; control 28). Reading of the reassociation
+// sort (last pass): the occupied key is one sum [i * 0xb4 (a product node, level 2), collection (a leaf, 0x180), 4]; the
+// product node outranks every plain leaf, so `collection` is added after it, and strength reduction later replaces
+// the product alone by (inverse + cursor). Retail's (collection + inverse) + cursor needs `collection` sorted ahead of
+// the product, i.e. a node above leaf level there (a load or another operation), so the base and the product are
+// rebased together. Forms: the occupied record (type, index, key, apply) as a file-local forceinline (collection,
+// index, update) helper shaped like the swap callee 28 (same code); the key copied from `&...players[i].key[0]` 28
+// (same code); the key through a `t_player_key const &` bound ahead of the update 45; `collection` from a reference-
+// returning inline accessor of the watcher's players 28; `register` on `collection` 28 (both the same code). All
+// restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

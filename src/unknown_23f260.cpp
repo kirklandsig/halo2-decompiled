@@ -421,6 +421,22 @@ PRIVATE inline bool score_team_present(long team)
 // review: retail's calls into the partition sorters (0x13de6c, 0x13dfbb) push three arguments and pass the low end in
 // EAX, so nothing in retail shows a forwarded first argument; the unread parameter would be there only for its effect
 // on this caller. A form without a new parameter is still open.
+// M3 lane 3 r321: the instruction scheduler ranks each load by height plus successor count: fallback's load has three
+// successors (its store, the count load that reuses EAX, and a memory edge to the sort call, which is handed its slot)
+// against two for criteria's, 48 vs 47; retail's order is the 47/47 tie, so retail's sort call has no memory edge to the
+// slot it passes while the sorter still keeps that stack argument. Sorter forms without a new parameter, in place of
+// the address-taking local: a dead by-value copy of the parameter 200 (the argument is dropped, 737 B), `(void)&unused;`
+// 200 (dropped), both sorters as member functions of an empty record with the scratch as their unread `this` 200
+// (dropped). On the held forwarded form, a plain uninitialised swap temporary per call (`long` for the players, `word`
+// for the teams) in place of &fallback is a byte MATCH too: the temporary is never live, so the packer lays it over
+// fallback's argument slot by itself (the same temporaries with main's sorters: 20, the frame grows). Held as a patch
+// with the forwarded form. 0x132d60, 0x173130 and 0x215900 keep their match with such a temporary under either sorter
+// form, so they do not tell the two apart.
+// M3 lane 2 r161 (h2m fast with both sorters, MATCH): caller-side forms with &fallback unchanged: the contexts' fallback
+// read through a `bool const &` 4; the team context's criteria and fallback taken from the player context 16; the team
+// context copied whole from the player context 16; the player context filled ahead of the player loop 242 (738 B); the
+// contexts' criteria read through a `const byte *const &` 4. Reading: with fallback captured its load is a plain memory
+// load placed ahead of criteria's spill reload; in retail both are reloads in source order.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {

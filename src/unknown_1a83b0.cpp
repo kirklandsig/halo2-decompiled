@@ -897,6 +897,12 @@ s_1a8a10 g_4453c0[] =
 // [2], [3] 16, [1], [0], [3], [2] 16, [3], [1], [2], [0] 17 and [2], [3], [0], [1] 16. Re-measured: the rotated y carried
 // in a scalar and stored to the point after the copy 24.
 // A forced-ranking search of scheduling decisions on the 15 form (40 tried) finds nothing below 15. All restored.
+// M3 lane 2 r161 (h2m fast with 0x1a8c30, MATCH each run; control 17). Reading: retail copies i for the forward product
+// and consumes i in the left product, so the forward `i * x` comes first in the compiler's order while the left sum is
+// scheduled first. Forms: the copy assigned j first with the forward sum first in retail's term orders 31; the forward
+// `i * x` as its own statement ahead of the left sum and `+= j * y` after it 38; the negated product first with `+= i *
+// y` after the forward sum 31; the forward sum first in main's term orders 31; the left sum stored to [0] before the
+// forward sum is computed 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
