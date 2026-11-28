@@ -4490,6 +4490,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // selector 937; the selector folded into the shifted local, `(dword)(small ? 5 : 4) << 24`, 976 (4840 B); both as
 // `dword` 9 (same code); the shifted local as a copy then `<<= 24` 9 (same code: folded); the selector as `4 +
 // small` 961. The reload pairs are placed in ascending piece order (the constant's piece first). Body unchanged.
+// M3 lane 4 r273 (h2m fast; control 9): the stage-one input words built with the SDK's combiner-input macro this body
+// already uses for stages 4, 5 and 7 (no shifted local) 4, with stage two's alpha word so too 4 (the shift then
+// matches, but it is the shift written at both uses: not kept); on that 4 form the alpha selector inside the macro
+// 947 (4840 B), both selectors inside the macros 975 (4840 B), the whole/fraction clamp as two statements 4. Reading:
+// the float split pass splits the span (defined at the reciprocal) ahead of the 1.0f constant and hands out free
+// numbers 116, 115, 107, 72, 78, 97, 94, 96, 85, 86, so the span's long piece is 115 and the constant's 96; the span's
+// first piece would need the fourth free number or later. Body unchanged.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

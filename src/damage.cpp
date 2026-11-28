@@ -3374,6 +3374,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // team code then comes first, its exits still not-enemy first); the zero-scale store arm with its own return 5; the
 // state read into a `long mode` local (0x20f040's spelling) 5; a positive ally flag tested false 74 (487 B); the team
 // logic in an explicit else of the engine test 5.
+// M3 lane 4 r273 (fast screen with 0xdb210 and 0xd8cb0; control 5): the enemy flag as one ternary 66 (491 B); the
+// allegiance call tested `== false` 5; its result named first and negated 5; the no-team return as the team test's
+// else arm with the not-enemy path falling to the final return 5; the team read inside the test's block (the test on
+// the field) 5. All but the ternary give the same bytes. Body unchanged.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {

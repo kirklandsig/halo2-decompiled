@@ -1052,6 +1052,12 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 // declared just ahead of its conditional assignment (0x133050's shape) 255 (1341 B), the same with the NONE at the
 // top of the visible block 111; the duplicate search assigning `index` first and comparing through it 129 (1361 B),
 // on this body 81 (1361 B).
+// M3 lane 4 r273 (H2M_FAST with 0x163c80 and 0x163d20, MATCH throughout; control 11, the late store plus the named
+// index 70). Ledger on the late store: the plane test's five integer candidates are data, the centre, the shared zero
+// and the two output bools. Forms on the late store: the filter as one ternary 193 (1358 B); `found` declared ahead of
+// `index` 70 (same code); one `behind`/`in_front` pair for both plane-test calls at the top of the outer loop 109. On
+// this body: the else arm's bit test as `== 0` 11; `found == false` 11; the duplicate compare with the index first 12;
+// the shared pair 50.
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {

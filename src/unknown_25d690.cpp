@@ -1204,6 +1204,11 @@ void function_2640c0(long object_index, s_object_motion_view *result);
 // result = 0;` for the failed second lookup 50; the nested chain with direct returns (`return 3;`, the call returned,
 // one `return 0;` at the end) 12 (16-bit constant returns, the zero exit still first), with the copy in the last arm 83;
 // the negated test with `else result = 0;` last re-measured 71 (that zero exit is laid inline after the test).
+// M3 lane 4 r273 (h2m fast with 0x25c9d0 and 0x263ed0, control 12): the squad-flag case as a direct `return 0;` 82
+// (321 B), with the copy in the last arm 87 (317 B); the arg_2 case as a direct `return 3;` 13 (a 16-bit constant,
+// the exits unmoved), with the copy in the last arm 85; the copy declared first 87 (the NULL arm is then threaded and
+// EBX reused), between the actor and squad lookups 87, first with the first lookup on it 87; the squad ternary as
+// `== NONE ? NULL : squad_get(...)` 20, with the copy in the last arm 85. Body unchanged.
 // @retail 0x25cb60
 short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *arg_4, long arg_5, short arg_6)
 {

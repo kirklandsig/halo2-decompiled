@@ -219,44 +219,9 @@ struct s_reference_filter_view
 	bool allow_any;
 };
 
-// score 6 (was 65): only the six-instruction allow_any/!flag polarity inside the out-of-line else block differs
-// (jne/!flag/true vs retail je/true/!flag); single-exit bool result = true with s_type_d4fbfa::flags0e & 0x20 != 0
-// matches bytes 0..+0xfc and retail's 295 B; else-if allow_any inlines the else block (66, 285 B); orig else 29;
-// inverted !require_flag 67; boolean/ternary/or forms 66-136.
-// M3 lane 13 r160 (fast; control 6): the else arm as `if (!require_flag) { allow_any ? true : !flag } else flag` 67;
-// the else arm as `result = allow_any ? true : !flag` 66; one ternary `require_flag ? flag : allow_any || !flag` 103 (256 B);
-// `result = flag;` then the else arm under `if (!require_flag)` 91 (282 B); else arm `result = true; if (!allow_any)
-// result = !flag;` 82 (283 B), `result = !flag; if (allow_any) result = true;` 29 (295 B); the three tests as an
-// early-return inline predicate 66 (the same code as the else-if allow_any form: every true-first spelling lays the
-// else block inline). All restored.
-// Round 171: retail places the else block (test of allow_any, `mov bl, 1; jmp` into the result block, `sete bl; jmp`
-// back to the result test) after the returns, true arm first; every spelling with the true arm first in the source
-// lets the not-flag arm fall into the result test and lays the block inline after `result = flag; jmp`. Tried: the
-// final `else result = true;` dropped 105 (280 B); the same under `if (!require_flag)` 106 (280 B); `result = flag ==
-// false` 6; `if (!require_flag) { if (allow_any) true else !flag } else flag` 67 (285 B); one nested ternary
-// `require_flag ? flag : allow_any ? true : !flag` 66 (285 B); `if (!require_flag) result = allow_any ? true : !flag;
-// else result = flag;` 67 (285 B).
-// M3 lane 16 r198 (H2M_FAST, control 6): the out-of-line block holds the two arms in source order (both end in jumps,
-// one threaded past the result test), so the arm order inside it follows the chain's order. Forms: `allow_any == false`
-// 6, `!allow_any ? !flag : true` 6, `flag ? false : true` 6 (same code each); the bit tested at each use with no flag
-// local 83 (299 B); the flag as `(bool)(((dword)entry->flags >> 5) & 1)` 79.
-// M3 lane 4 r270 (fast, control 6): `if (!require_flag) { if (!allow_any) !flag else true } else flag` 67 (285 B:
-// the not-flag arm jumps over the flag arm and the block stays inline); the allow_any arm left empty (result already
-// true) 105 (280 B); `if (!require_flag) result = allow_any || !flag; else result = flag;` 136 (253 B); `result =
-// !(!allow_any && flag)` in the else arm 105 (256 B); the chain in a single-exit inline predicate taking the filter and
-// the flag (true arm first), inline or forced inline, 66 (285 B); the admission test and the chain together in a
-// result-style inline predicate taking the filter and the entry (`result = predicate(...)` under `if (entry)`), either
-// arm order, inline 153 (225 B), forced inline 100 (279 B); the not-flag arm as a nested if/else on the flag (to be
-// folded into a set later), true arm first, 98 (263 B), as a fourth chain arm 98, with our arm order 105 (256 B).
-// Body unchanged.
-// M3 lane 13 r168 (h2m fast, control 6): the chain true arm first re-measured 66 (285 B: the not-flag arm falls into
-// the result test, so `result = flag` keeps its jump and the block stays inline); round 171's `result = !flag; if
-// (allow_any) result = true;` re-measured 29 (out of line, not-flag first); early returns throughout (no filter: true,
-// failed admission: false, other team or distance: false, `return result` at the end), true arm first, 110 (280 B); the
-// failed admission as its own first arm (`if (!entry || !(...)) result = false; else {...}`) 6 (same code); the flag as
-// `bool const` with the true arm first 66 (285 B). Reading: our layout moves the chain out of line only when that saves
-// a jump, which it does only when the chain's last arm cannot fall into the result test; retail has the true arm first
-// and the chain out of line anyway. Body unchanged.
+// Matched (M3 lane 4 r273, plain check): the admission test sets `result` false in its else arm and `if (result)`
+// follows the admission block, with the flag chain written allow_any-true first; with the result test inside the
+// admission block every arm order lays the chain out of line in the wrong order or inline.
 // @retail 0x2623a0
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference)
 {
@@ -270,31 +235,31 @@ bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_
 			bool flag = (entry->flags0e & 0x20) != 0;
 			if (filter->require_flag)
 				result = flag;
-			else if (!filter->allow_any)
-				result = !flag;
-			else
+			else if (filter->allow_any)
 				result = true;
-			if (result)
-			{
-				long other_index = function_262a30(reference);
-				if (other_index != actor_index && other_index != NONE)
-				{
-					s_actor_view *other = actor_get(other_index);
-					if (other->unknown024 == actor->unknown024)
-					{
-						point3f point;
-						function_210850((s_type_c3b527 *)entry, &point);
-						real distance = distance3d((point3f *)((byte *)other + 0x238), &point);
-						if (distance < 1.0f || distance3d((point3f *)((byte *)actor + 0x238), &point) * 2.0f > distance)
-							result = false;
-					}
-					else
-						result = false;
-				}
-			}
+			else
+				result = !flag;
 		}
 		else
 			result = false;
+		if (result)
+		{
+			long other_index = function_262a30(reference);
+			if (other_index != actor_index && other_index != NONE)
+			{
+				s_actor_view *other = actor_get(other_index);
+				if (other->unknown024 == actor->unknown024)
+				{
+					point3f point;
+					function_210850((s_type_c3b527 *)entry, &point);
+					real distance = distance3d((point3f *)((byte *)other + 0x238), &point);
+					if (distance < 1.0f || distance3d((point3f *)((byte *)actor + 0x238), &point) * 2.0f > distance)
+						result = false;
+				}
+				else
+					result = false;
+			}
+		}
 	}
 	return result;
 }
