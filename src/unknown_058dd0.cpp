@@ -1042,11 +1042,7 @@ bool function_72140(c_session_state_matchmaking *state)
 	return result;
 }
 
-extern s_session_id g_510520;
-extern s_session_id g_510540;
-extern long g_510518;
-extern bool g_51051c;
-extern bool g_51051d;
+#include "online_round_state.h"
 long __stdcall function_73b10(long a, long b);
 void function_73bc0(const s_session_id *session_id, const s_session_id *round_key,
 	__int64 arg_2, bool free_for_all);

@@ -627,9 +627,8 @@ long __stdcall function_74800(const s_match_player_rating_collection *collection
 		(total > g_network_configuration.valuec78 ? g_network_configuration.valuec78 : total);
 }
 
-extern long g_510518;
-long g_510514;
-long g_510530;
+#include "online_round_state.h"
+s_online_round_state g_online_round_state;
 
 // @retail 0x73dc0
 void function_73dc0(long value)
@@ -645,8 +644,6 @@ void function_73dc0(long value)
 		g_510514 = value;
 	}
 }
-
-extern s_session_id g_510540;
 
 extern long g_467214;
 long online_task_get_logon_status(long task_index);
@@ -695,12 +692,6 @@ long __stdcall function_73b10(long a, long b)
 	return result;
 }
 
-extern bool g_51051c;
-extern bool g_51051d;
-extern s_session_id g_510520;
-extern s_session_id g_510528;
-long g_510534;
-long g_510538;
 long online_round_register(bool free_for_all, XNKID const *session_id, ULONGLONG const *round_key, long seconds);
 
 // @retail 0x73bc0

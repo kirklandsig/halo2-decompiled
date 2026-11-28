@@ -873,9 +873,7 @@ void function_199310(byte *results)
 byte g_510cb2;
 long g_510de0;
 long g_510de4;
-extern long g_510518;
-extern bool g_51051c;
-extern bool g_51051d;
+#include "online_round_state.h"
 
 long __stdcall function_73b10(long a, long b);
 void function_73ca0(byte *results);

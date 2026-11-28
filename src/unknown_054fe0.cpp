@@ -1075,8 +1075,7 @@ bool network_session_parameters_set_language(c_class_58d20 *session, long langua
 bool network_session_set_local_properties(c_class_58d20 *session, const s_session_parameters *properties);
 bool network_session_host_set_player_properties(c_class_58d20 *session, long player_index, const byte *properties);
 
-s_session_id g_510520;
-s_session_id g_510540;
+#include "online_round_state.h"
 
 /* the round trip times to the session's other members */
 struct s_session_member_latency

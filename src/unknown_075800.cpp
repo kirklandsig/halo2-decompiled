@@ -66,11 +66,9 @@ bool __stdcall function_05d9e0(c_class_58d20 *session, const void *message);
 bool network_session_handle_peer_establish(c_class_58d20 *session, long remote_index);
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message, long *reason, bool *has_identity, s_session_member_identity *identity);
 
-/* the session disband and boot handlers below are kept out of the build (see
-   there); the dispatcher calls stubs of them (src/stubs/lane_j.cpp) */
+/* the session disband and boot handlers (0x94310, 0x94330) are the handler's members handle_session_disband and
+   handle_session_boot, defined in src/unknown_094310.cpp and src/unknown_094330.cpp */
 class c_class_938e0;
-void __stdcall function_094310(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address);
-void __stdcall function_094330(c_class_938e0 *handler, const s_session_id *message, const s_type_99af70 *address);
 
 /* src/unknown_075870.cpp, src/unknown_0820f0.cpp */
 inline __declspec(noinline) bool link_connection_get_address(s_link_connection *connection, s_type_99af70 *address);
@@ -181,6 +179,9 @@ public:
 	s_network_session_list *session_manager;
 };
 
+/* finds the session with an id. The session's id comes through network_session_get_key (0x5a620, expanded in place
+   as retail has it). Its store through the id pointer means the compiler cannot prove that this call leaves a
+   caller's address-taken globals unchanged, so 0x59940 reads the round state again after it. */
 // @retail 0x75800
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *session_id)
 {
@@ -188,9 +189,9 @@ c_class_58d20 *network_session_manager_find_session(s_network_session_list *mana
 	for (dword i = 0; i < sizeof(manager->sessions) / sizeof(manager->sessions[0]); i++)
 	{
 		c_class_58d20 *session = manager->sessions[i];
-		if (session && session->state != 0 && session->flag24)
+		s_session_id id;
+		if (session && network_session_get_key(session, &id, NULL, NULL, NULL))
 		{
-			s_session_id id = *(s_session_id *)&session->unknown1c;
 			if (memcmp(&id, session_id, sizeof(s_session_id)) == 0)
 			{
 				local_0 = manager->sessions[i];
@@ -833,11 +834,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 		return;
 	case 13:
 		if (connection->state == 5 && link_connection_get_address(connection, &address))
-			function_094310(this, (const s_session_id *)message, &address);
+			handle_session_disband((const s_session_id *)message, &address);
 		return;
 	case 14:
 		if (connection->state == 5 && link_connection_get_address(connection, &address))
-			function_094330(this, (const s_session_id *)message, &address);
+			handle_session_boot((const s_session_id *)message, &address);
 		return;
 	case 15:
 		if (connection->state == 5)
@@ -1590,10 +1591,10 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 		function_0942d0(this, (const s_session_id *)message, address);
 		return;
 	case 13:
-		function_094310(this, (const s_session_id *)message, address);
+		handle_session_disband((const s_session_id *)message, address);
 		return;
 	case 14:
-		function_094330(this, (const s_session_id *)message, address);
+		handle_session_boot((const s_session_id *)message, address);
 		return;
 	case 22:
 		function_94520((const s_session_id *)message, address);

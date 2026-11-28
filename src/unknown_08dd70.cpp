@@ -30,8 +30,7 @@ extern bool g_4d8ba0;
 extern long g_510584;
 extern bool g_510580;
 
-extern long g_510518;
-extern long g_510530;
+#include "online_round_state.h"
 extern s_search_value_globals g_509450;
 extern s_session_interface_globals g_4cd868;
 extern c_class_93590 *g_510560;

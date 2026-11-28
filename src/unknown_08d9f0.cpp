@@ -88,7 +88,7 @@ extern c_data_allocator *g_4d8f10;
 extern long g_4d8f14;
 extern s_0b35e0_entry *g_4d8f18;
 extern s_search_value_globals g_509450;
-extern long g_510530;
+#include "online_round_state.h"
 extern bool g_510554;
 extern dword g_510558;
 extern bool g_510580;
