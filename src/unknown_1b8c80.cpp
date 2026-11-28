@@ -1172,6 +1172,15 @@ extern "C" void _ReadWriteBarrier(void);
 // the slot read once through a `s_slot *const *` to the parameter with no barrier 44. Allocator view on main: the slot is
 // one candidate over the NONE block and the flags arm only (B2..B3), so its load is placed at B2's head; retail's
 // load sits in the entry block, as if a copy of the slot made there survived to allocation and was then coalesced.
+// M3 lane 15 r158 (fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6): the point copied by a 12-byte memcpy, with
+// the barrier 6 (same code), without it 44 (208 B); one flat chain with the busy test inverted first and each path ending
+// in its own 0x450 store, with the barrier, 45 (208 B); the body as a `__forceinline` routine taking (actor, state), called
+// with the lookup and the cast as arguments, no barrier, 44; the same taking (state, actor) 44. Diagnostics (semantics
+// changed or a parameter reused, reverted at once): the NONE block's head made a loop join by a goto from the 0x50c arm
+// 49 (212 B: the slot loads at the head of the NONE block, ahead of the join, so a multi-predecessor head does not move
+// the load into the entry block); the slot parameter reassigned to the point's address in the flags arm 6 (same code).
+// Allocator view: the slot is one candidate over B2..B3; any candidate that covers B1 conflicts with B1's pool and data
+// temporaries at block granularity, which is why every anchored form sends the data base to ESI.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

@@ -443,7 +443,23 @@ struct s_2fd90_projection
     real half_width, half_height;
 };
 
-// Score 221 in a full build with stand-in SDK headers (was 256): up is the shared cross3f of right and the forward
+// score 206 (was 221): the cutting plane's distance is now accumulated on the member in three statements (221 -> 206
+// in the plain check). Held lead (layout flipper): right through the existing cross3f_staged of the forward and up
+// vectors and backward through the existing vector3f_negate_ab of the forward vector (this body writes both out)
+// 137, with the accumulation 122, at 1278 B in the plain check, but the full check then loses the matched 0x1c4590
+// (0 -> 5) and 0x24cf66 (0 -> 2), so main's hand-written right and backward stay. Still differs from +0x11 (the right
+// vector's three components take xmm0..xmm2 in another order; the helper form fixes that and leaves +0x28a: the bounds
+// copy and the half sizes interleave in another order, the near-plane block's registers, retail keeping the plane's
+// i, j, k, d in xmm2, xmm3, xmm0, xmm1, and the scaling's shared factor). Tried (M3 lane 15 r158, plain check; the
+// reduced image builds this body differently; a forced-ranking search over 40 single decisions on the helper form,
+// with its callees kept, finds nothing below 122), each on the helper form: the half sizes computed before the bounds
+// copy 123, 107 with the next two (lead, not kept: a statement order); the fabs sum written i then j 136, 121 with the
+// accumulation (gain under the bar); the plane rotation through the existing matrix_transform_vector with its header
+// included earlier 147 (first +0x30: the earlier include flips the second cross product's operand order); the bounds
+// typed as the existing box2f and copied by aggregate assignment 122 (same code); the flip through
+// vector3f_negate_ab on the plane's normal 124; the near-plane branch storing d first 122; the scaling written
+// `reciprocal * plane.i * scale` 122 and as `*=` 122.
+// Earlier 221 in a full build with stand-in SDK headers (was 256): up is the shared cross3f of right and the forward
 // vector (retail loads each field and multiplies by a register), and the half sizes multiply size by scale.
 // Roasted-Codes (draft #1563, released 2026-11-27; body left as above, 221 at 1278 of 1278 bytes): the half sizes
 // computed before the bounds copy, the fabs sum written i then j and plane.d accumulated on the member in three
@@ -491,7 +507,9 @@ void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out)
         plane.i = inverse->up.i * k + inverse->left.i * j + inverse->forward.i * i;
         plane.j = inverse->up.j * k + inverse->left.j * j + inverse->forward.j * i;
         plane.k = inverse->up.k * k + inverse->left.k * j + inverse->forward.k * i;
-        plane.d = cutting_plane->d * inverse->scale + inverse->position.z * plane.k + inverse->position.y * plane.j + inverse->position.x * plane.i;
+        plane.d = cutting_plane->d * inverse->scale + inverse->position.z * plane.k;
+        plane.d += inverse->position.y * plane.j;
+        plane.d += inverse->position.x * plane.i;
     }
     else
     {

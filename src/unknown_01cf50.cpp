@@ -3567,6 +3567,18 @@ bool function_128c0(s_128c0_settings const *settings)
     }
     return result;
 }
+// score 60 (was 62): the locked rectangle is now used directly (no pointer to the whole local) and each row's
+// address is computed from its index, which is the form retail's strength-reduced row loop comes from (row offset
+// from top * pitch, plus pitch per row; the left edge and the pointer read again each row). Still differs: retail
+// ORs the flag into the pointer in memory and reads the pointer and the pitch from the frame every row, with the
+// pointer homed below the pitch (two scalar homes ordered by use count, not the platform's rectangle layout); ours
+// ORs in a register and folds the pointer into the row address before the loop, so the source pointer and the row
+// offset trade EBX/EBP and the body is 383 bytes. Tried (M3 lane 15 r158): the surface local renamed to sort before
+// or after the platform call's own locals 62/62 (same code); the rectangle used directly with the running row
+// pointer 63 (399 B); with a running row offset added to the pointer each row 67 (399 B); on the kept form, pixels
+// stored by index 71, the source indexed by `y * width + x` 69, the left edge added at the store 74 (403 B), the
+// whole address written at the store 119 (406 B), the lock through the surface's method wrapper or the C wrapper
+// 60/60 (same code). The older notes below are in the order they were written.
 // MiniMax R (11-17): no new form, no lower score (62): retail keeps the locked pBits in memory where this build holds it in a register, and the XDK's D3DLOCKED_RECT has Pitch before pBits while retail has pBits first, so the inlined lock's slot order cannot be reproduced from this source.
 // MiniMax C (11-17): no new form, no lower score (62): retail's own call is the XDK's D3D::PixelJar::FindSurfaceWithinTexture with five out-pointers, so I called that directly (with the XDK's D3D::BlockOnResource before it) and passed the pixel pointer as a void* so that the 0xf0000000 flag is set in memory as in retail: that form matches retail's shape (the flag in memory, the pointer reloaded from the frame in every row, the row base advanced by the pitch) but measures 81 to 88, because this build gives the void* local and its byte cast an extra frame slot, so the five out-pointers and the description sit four bytes above retail's; the macro form stands.
 // MiniMax E (11-16): no new form tried this round, no lower score (62): the locked rectangle's pointer and pitch still sit in the
@@ -3630,15 +3642,15 @@ bool function_128c0(s_128c0_settings const *settings)
 // pointer's row offset 61, the rectangle used directly 63, the components in retail's order 82), and
 // the pointer's slot stays above the pitch slot in every one of them.
 // MiniMax I (11-15): no new form, no lower score (62): retail still keeps the locked rectangle's pointer at [esp+0xc] and its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where this build keeps the pitch at [esp+0xc], the pointer at [esp+0x10] and sets the flag in a register; the locked rectangle's field order comes from the XDK's own layout.
-// score 62 (was 62): this round's fields read straight off the locked rectangle (63) and the row
+// Earlier (62, was 62): this round's fields read straight off the locked rectangle (63) and the row
 // kept as an offset instead of a pointer (67) both score worse; the rectangle still sits four
 // bytes lower than retail's and the pitch slot stays below the pointer slot.
-// score 62 (was 62): retail's locked rectangle keeps the pointer at [esp+0xc] and the pitch at
+// Earlier (62, was 62): retail's locked rectangle keeps the pointer at [esp+0xc] and the pitch at
 // [esp+0x10] and sets the 0xf0000000 flag in memory at the pointer, ours keeps the pitch at
 // [esp+0xc] and the pointer at [esp+0x10] and sets the flag in a register; the row counter and
 // the surface pointer sit four bytes lower than retail's (at [esp+0x10] and [esp+0x14]), and the
 // description is at [esp+0x24] in both.
-// score 62 (was 62): this round found no gain - our frame slots for the locked rectangle sit four bytes
+// Earlier (62, was 62): this round found no gain - our frame slots for the locked rectangle sit four bytes
 // lower than retail's, and retail builds each row from a running pointer while we recompute it from
 // the row base.
 // MiniMax C (11-08): no new form, no lower score.
@@ -3652,7 +3664,7 @@ bool function_128c0(s_128c0_settings const *settings)
 // where this build has the pitch first (the locked-rectangle type in the XDK header fixes that order), and retail still sets the 0xf0000000 flag
 // in memory while this build holds the pointer in a register; reading the fields straight off the locked rectangle measures 63, so the pointer
 // form stands.
-// score 62 (was 62): our frame slots for the locked rectangle sit four bytes lower than retail's,
+// Earlier (62, was 62): our frame slots for the locked rectangle sit four bytes lower than retail's,
 // so the surface pointer and the LockRect arguments are stored at other offsets; we hold pBits in a
 // register and set the flag there, where retail sets it in memory and keeps the pointer in the frame;
 // our loop hoists the left edge and counts the destination pointer up, where retail loads the left
@@ -3688,25 +3700,23 @@ void function_13d80()
         if (description.Size == description.Width * description.Height * 4)
         {
             D3DLOCKED_RECT locked;
-            D3DLOCKED_RECT *locked_result = &locked;
-            D3DSurface_LockRect(surface, locked_result, NULL, 0);
-            locked_result->pBits = (void *)((dword)locked_result->pBits | 0xf0000000);
-            if (locked_result->pBits)
+            D3DSurface_LockRect(surface, &locked, NULL, 0);
+            locked.pBits = (void *)((dword)locked.pBits | 0xf0000000);
+            if (locked.pBits)
             {
                 long width = (short)(g_5093c0.second >> 16) - (short)(g_5093c0.first >> 16);
                 long height = (short)g_5093c0.second - (short)g_5093c0.first;
                 byte const *source = (byte const *)g_5093c8;
-                byte *row = (byte *)locked_result->pBits + (short)g_5093c0.first * locked_result->Pitch;
                 for (long y = 0; y < height; ++y)
                 {
-                    dword *pixel = (dword *)row + (short)(g_5093c0.first >> 16);
+                    dword *pixel = (dword *)((byte *)locked.pBits + ((short)g_5093c0.first + y) * locked.Pitch) +
+                        (short)(g_5093c0.first >> 16);
                     for (long x = 0; x < width; ++x)
                     {
                         long value = source[x] * g_5093cc;
                         byte level = (byte)(value < 0 ? 0 : value > 255 ? 255 : value);
                         *pixel++ = (((((dword)level << 8) | level) << 8 | level) << 8) | level;
                     }
-                    row += locked_result->Pitch;
                     source += width;
                 }
             }
@@ -5029,6 +5039,17 @@ bool function_45ce0(short index, byte *out, short part, short transform_index)
 
 __declspec(noinline) dword __cdecl pack_color4f(color4f const *color);
 
+// score 67 (was 67): retail is 8 bytes longer because it pushes the eight zero vertex arguments as immediates and
+// keeps the width in ESI (height EDI); ours keeps a zero in ESI from the z-state block to the end and the width in
+// EBX. The allocator gives every candidate of the tail block a penalty on ESI (the out-of-line alpha-test call there
+// takes its state in ESI; with that call removed, diagnostic, the zeros are immediates), so the width avoids ESI; a
+// forced-ranking search's best is the width in ESI, 35 (then the jump table, the vertex tail and the x/y block's
+// registers line up). Also differs: the colour block loads the alpha global third in retail (ours the green one),
+// and the pixel-shader stores run alpha inputs, count, constant, outputs, rgb inputs in retail. Tried (M3 lane 15
+// r158): the vertex calls through the device's method wrappers 67 (same code); the alpha set by a chained
+// assignment to both colours with no local 68; the width declared before the height 69; the z-state block through
+// the device's render-state inline 81 (1360 B); the body under `if (g_485870)` with no early return 67 (same code).
+// Diagnostic (pragma interplay, reverted): the alpha-test call written in each case 308 (1324 B).
 #pragma inline_depth(0)
 // @retail 0x40890
 void function_40890(void)
@@ -6761,7 +6782,7 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 // MiniMax S (11-16): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler
 // rebuilds the body, 117), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where this
 // build spills it and reads it back; a volatile local is only allowed with a byte match.
-// score 54 (was 54): this round found no gain - the score rests on the volatile tag local; without it the
+// Earlier (54, was 54): this round found no gain - the score rests on the volatile tag local; without it the
 // compiler rebuilds the body (117), computing the block before the tag gives 111 and the two-element tag
 // table gives 115, so the body is unchanged.
 // MiniMax B (11-13): no new form, no lower score (54): the volatile tag local is load-bearing (the record's tag has to be read before the block base), so the order of the two reads still differs from retail's.
@@ -6807,6 +6828,17 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 // reads the record tag and keeps that tag in a register, ours spills the tag
 // to a stack slot and reloads it, and adds the table's base pointer in after
 // the definition lookup instead of before it
+// M3 lane 15 r158 (fast): retail forms the reference's address with a lea and reads the tag index at +4 (the
+// map's 8-byte tag reference, group then index). Lead, not kept (match-only forms): the block computed first, then
+// the reference as a `s_tag_reference const *const &` bound to `references + record[0]`, read `->tag_index`, with no
+// volatile 28 at 514 B (first +0xd7: the entry, block, reference and definition are retail's; left are the part's
+// two temporaries in the other order and the later scratch registers rotated by one, eax/ecx/edx), the block offset
+// folded into the block 28, the reference table in its own local first 28; the same reference bound after the part
+// (block last) 100 (509 B). Forms tried on it: the part written five ways (operands swapped, `20 *`, index cast to
+// dword or long, `&base[index * 20]`, a named offset) 28 each; file-local inline accessors for the part index and the
+// parts base 28. Without the bound reference (lea folded): a two-argument tag getter (group, index) 117; an inline
+// helper taking the reference by pointer 111, by const reference 111; the element bound as `s_tag_reference const &`
+// 111; a plain one-use pointer 111; the reference copied by value 99 (518 B); the typed element read in place 111.
 void __stdcall function_4ebd0(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
 {
