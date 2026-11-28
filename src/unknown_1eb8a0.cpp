@@ -1091,6 +1091,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // d); the same through a volatile pointer 709 (retail's entry exactly, q in EBX from +0x10, but an XMM zero is hoisted
 // to the entry). Forms: the settle alignment dot with nq first 567 (same code); the output copy written through out
 // before the position pointer 567 (same code); the 0.866 test negated as `!(... >= 0.8660254f)` 661.
+// M3 lane GA r39 (38 valid fast trials with 0x1eb6f0 and 0x30bf0 MATCH throughout; control 567 at 2877/2881 B, +0x9):
+// on main's body, magnitude3d(&qr) before nq, unary -len4/-m2, active globals = g_510c54, and inlining one-use align
+// all 567 (same code); dropping ratio/back 586 (2880 B), !(0.001f >= e3) 639 (2881 B), active vector3f_add_scaled 659,
+// 5.f > cnt vector3f_add_scaled 681, unfolded lo/hi+ticks_left 681, activation vector3f_add_scaled 684, unfolded
+// ticks_left 697, rate local 699, rem_cnt 702. On the 3-call ease_step_speed + 2-call ease_ramp_ticks + cmove +
+// unfolded lo/hi family (25 trials, all 0x1eb6f0 MATCH): unfolding + 3.f then + 0.5f / - 0.5f via est eliminates the
+// hoisted xorps xmm6, giving xmm7=3.0f, xmm6=0.5f, and local xorps throughout (ternary cap 618 at 2861 B, al=497,
+// mk=167; + dot3f 0.866 test 725, mk=157; vector3f_add off/on identical 697/726, avoiding 0x24cf66). Body unchanged.
 // @retail 0x1eb8a0
 void function_1eb8a0(
 	s_ease_state *s,

@@ -330,6 +330,18 @@ PRIVATE __forceinline void decal_add_adjacent_17dd80(s_decal_mesh_view const *me
 // both definitions inline 391, 0x17d900 inline with the call first 381, the call first alone 381. Left on the 295
 // form: the iteration count's slot and its register across the latch, the loop head's edge and faces loads, the
 // adjacent-face add's layout and retail's reload of mesh and face_index at the latch.
+// M3 lane GA r38 (27 valid untried fast trials across 2 batches with 0x22bbca, control 387 at 1799/1799 B, 7/7 matched
+// peers MATCH; body unchanged): same code (387): `iteration` at function scope, renaming `iteration`/`other_count`
+// (proves `[esp+0x18..0x24]` are spill slots rather than name-ordered homes), `word iteration`, output loop using
+// `points[i]` with inner `polygon_points`, `short &count` in `decal_add_adjacent_17dd80`, local `inline` on `0x120790`
+// forward declaration only, `dot_product2d` for `clip.d`, `while` condition flip, `u` before `v`. Other trials:
+// early-return `for` / `bool found` search loops 385 (1800 B; 379 with call-first compare, layout unmoved), `long
+// iteration` 386 (1799 B; 380 with call-first compare), `length == 0.0f` first 389, `word edge_index` 393, inline 2D
+// plane helper 406, `if (face != NONE)` wrapping search 407, `word iteration % 2` 409, `vector2d_from_points2d` for
+// `clip.n` 420, zero-init `count`/`other_count` 427, `long point_count` 429, `iteration == 0` before `polygon_points`
+// 439, `for` clipping loop 444, plain `inline` on `decal_add_adjacent_17dd80` 792 (out of line). Caching
+// `s_decal_vertex_17dd80 *out_v = &output->vertices[output->vertex_count++]` scores 323 at 1767/1799 B only via
+// diff alignment (retail reloads `output->vertex_count` at each field store and increments it last).
 // @retail 0x17dd80
 void __stdcall function_17dd80(s_decal_mesh_view const *mesh, s_decal_quad_17d9a0 const *quad,
 	s_decal_output_17dd80 *output, long face_index, bool gather, real radius, short mode,
@@ -913,6 +925,17 @@ PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
 // block through 0x1427f0 and 0x142640 as calls 1728 (2721 B: not expanded, their file is /Ob1), and as a diagnostic
 // with that file built without /Ob1 991 (3448 B; 987 without the 0x11d000 call), so expanding the real transform
 // helpers alone does not give retail's blocks either.
+// M3 lane GA r38 (26 valid untried fast trials across 2 batches on 14-VA fast list, control 837 at 3592/3591 B, 10/10
+// matched peers MATCH; body unchanged): `real angle = state->angle` 836 (3591 B), storing `preparation->sequence`
+// before reading `sequence + 0x38` 836 (3591 B; combined 837 at 3591 B). Same code (837): `fetch_bitmap_texture`
+// structure in `!unknown0`, retail recent-fill field order, renaming `tangent`/`perpendicular`, caching `byte *globals`
+// across loops 1-2 only, `vector3d_from_points3d` + `dot3f` in nearby distance check, `matrix->up = normal` before
+// `matrix->left`, flipped `< -0.0001f` facing test. Other trials: `short unknown1` 838 (0x17ee20 MATCH), `count = 0`
+// before `scale == 0` 840, recent loop 1 pointer walk 841 (both loops 878), `dot3f` in basis 847, combo 847,
+// `orientation_bounds` from `matrix->up` 859, caching `recent` across loops 1-2 only 867, basis `scaled_dir` pointer
+// 876, direct `return false` on texture failure 884, `matrix_transform_vector` header in `decal_vector_17ef10` 884,
+// dropping `input`/`output` copies in `if (transform)` (from `&placement->position` or in-place `&position`) 888 (with
+// `matrix_transform_vector` 910, clean combos 903/913).
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,

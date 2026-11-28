@@ -445,6 +445,17 @@ void function_19c6d0(s_record_pool *data, long key0)
 // needs the latch read not to be hoisted at all, not a lower rank. Forms: the walk's datum declared with a NULL
 // initialiser 65; the search result named as a `long found` 65; the datum declared in the loop body 65 (same code);
 // the dead `iterator.datum_index = NONE` store dropped 65; the iterator set up ahead of the sort_4byte block 67.
+// M3 lane GA r37 (21 valid untried fast trials across 2 batches with 8/8 peers MATCH unless noted; control 65 at
+// 400/393 B, +0x91; body unchanged): on 65 base, `flagged.count++; flagged.elements[flagged.count - 1] = entry->key`
+// 152 (371 B), `flagged.elements[++flagged.count - 1]` 152, `*(flagged.elements + flagged.count++)` 153 (370 B),
+// `keys[count++]` after flagged `if` 107 (393 B), `s_entry_c` 1-bit flag bitfield 65, iterator/datum declared before
+// `sort_4byte` 65, `s_flagged_keys` constructor zeroing `count` 134 (393 B), Loop 2 datum address via `data->size` 76
+// (401 B); on `s_flagged_keys::push(long)` (51, +0x11d, al=6, mk=5), `next_abs` taking `long &index` / non-inline
+// `static next_abs` / early-return `while` / nested `if` `do-while` / `goto` scan / `s_record_pool const *` / `!(index
+// >= high_water_index)` / direct `iterator->data` all 51 (still hoisting `[ebx+0x38]` into `edi`), `while (++index >= 0
+// && ...)` 131 (breaks `0x19c190`), single outer `for` loop 151 (breaks `0x19c190`), pre-reading `data->data`+`data->size`
+// before bitmap loop 147 (saturates all 7 registers yet still hoists `[ecx+0x38]` into `edi` and spills `data`),
+// caching `flagged.count` before Loop 3 135, flat `result = NULL` init 132.
 struct s_flagged_keys
 {
 	long count;
