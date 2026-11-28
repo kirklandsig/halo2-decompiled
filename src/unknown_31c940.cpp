@@ -2051,7 +2051,7 @@ complete_circular_pair_31c940(impulse_b,scalar_work.next_circular,normal_axes,te
 						// Capture mass before the target and retain the target in the
 						// x87 scalar path until the impulse is formed.
 						// This local also carries the mass-scaled error through the step scale.
-						double mass = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
+						float mass = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
 						double target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
 						__m128 *linear_b_pointer = &body_b.body->linear;
 						__m128 *angular_b_pointer = &body_b.body->angular;
