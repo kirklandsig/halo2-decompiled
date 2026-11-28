@@ -1229,6 +1229,12 @@ real function_30bf0(vector3f *vector);
 // facing`) with scoped `facing_secondary`/`facing_primary` + `PIN` + split + `seat` 136 (1313 B; inline `distance_squared`
 // 136); on `PIN` + split + `seat` (70 at 1310 B, `range * scale` same 70): + `dot3f` plane + `vector3f_add_scaled` clipped
 // 80 (1310 B), + `vector3d_from_points3d` delta 72 (1310 B, mk=32, fixes first-cross k row).
+// M3 lane 3 r322 (fast screen with 0x263740, 0x26d370, 0x25c9d0 and 0x263d70, all MATCH; control 84; body unchanged): the
+// existing staged cross helper for the first seat cross, for the second, and for both 84 each (the same code: the
+// subtracted products' operand order does not follow the helper's spelling); the plane's distance through the
+// existing dot3f, origin first or normal first, 138 each (1308 B, retail's length, but the tier tail is laid out
+// with four pops per exit). Diagnostic dead-local scan K = 8..30: 84/84/86/138/138/82/82/82 repeating every 8 (the
+// 1308-byte state at K = 3, 4 mod 8), no state under 82.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

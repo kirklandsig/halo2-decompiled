@@ -1123,6 +1123,14 @@ void __stdcall function_1160c0(real dt)
 // of the stiffness product 102; cosine then sine named ahead of the rotation call 135 (1373 B), sine then cosine 132
 // (1373 B); angle, sine and cosine ahead of the rest-offset copy 296 (1377 B). A forced-ranking search (40 decisions)
 // finds nothing below 95. Body unchanged.
+// M3 lane 1 r180 (fast with 0x116750, 0x1160c0 and 0x17c540, all MATCH; control 95). The rotation block from the
+// angle call to the loop end is one allocation block with 18 to 22 float candidates; the axis i value is not held in a
+// register through it (retail keeps it in XMM6), which leaves the axis at 22 references and the segment/scale/sine cell
+// above it. Forms: the velocity rows through vector3d_from_points3d and an in-place vector3f_scale 148 (1399 B); the
+// predicted point as `predicted = position;` then three `+=` rows 176 (1389 B); the normalization test as
+// `!normalize3d(&axis)` 95 and the guard as `0.f < dt` 95 (same code each); the last-segment test written
+// `definition->segment_count == i` 96; the listed angle, sine and cosine ahead of the rest-offset copy re-measured 296.
+// Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

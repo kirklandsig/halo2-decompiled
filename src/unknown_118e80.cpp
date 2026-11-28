@@ -1375,6 +1375,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // store moved after the re-fetched object pointer, ahead of the +0x88 copy 40; the member store written
 // `(byte)local_force` 14 and the force local typed `char` 14 (both the same code). Still BLOCKED-BY 0x1c4b00 (its bool
 // formal; two of its declarations sit in other lanes' files this round).
+// M3 lane 15 r157 (fast screen with 0x119bc0, 0x1c4b00, 0x119020 and 0x119c10, all MATCH each run; control 14): the member
+// store moved after the 0x1c4b00 call 96 (1041 B); no member store with the force read through a `bool const &` 90; no
+// member store with the force a `long` 91; the member set from the call and the local read back from it 97 (1039 B);
+// the +0x88 copy through the existing vector3f_assign with the member store 40 (1046 B), without it 97 (1042 B);
+// re-measured, the member passed as the force 43 (1035 B). Retail's force shares the dead definition pointer's cell
+// (+0x14) and is pushed as a whole dword with no widening, which a `long` formal cannot give. Still BLOCKED-BY 0x1c4b00
+// (its bool formal; three of its declarations sit in other lanes' files this round).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

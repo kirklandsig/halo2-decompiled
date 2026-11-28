@@ -4225,6 +4225,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // code), on the no-default form 78; `reason` declared at function scope 8, on the no-default form 78; the masked index
 // named at the loop top (`absolute_index`, declared ahead of the loop) for both playback reads and the advance's
 // `absolute_index + 1` 181 (575 B), on the no-default form 194 (578 B).
+// M3 lane 8 r249 (fast screen, control 8): the unreachable default as `return;` 100 (572 B); the switch on the mode
+// expression with no `mode` local 50 (the short local is what gives retail's `movsx eax, ax; sub eax, 0` dispatch);
+// the flag4 test first as `if (...) continue;` with the switch on the promotion entry's mode field alone 65; the
+// readiness call tested without the byte cast 9, with a bool cast 9.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

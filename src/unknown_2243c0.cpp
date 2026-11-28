@@ -1051,6 +1051,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // through a by-value accessor for the pass lookup, for both lookups; the pass lookup through a named pointer to its
 // table entry. The pass tag bound as a `long const &` to an accessor's result 59 (first +0x50: arg_3 then loads into
 // EBP); the pass lookup's masked index so bound 59 (the same code). Body unchanged.
+// M3 lane 16 r201 (fast with 0x2243c0, 0x224d90 and 0x173ba0, all MATCH unless given; control 117; body unchanged): the
+// group test reading the instance at each use (no instance pointer) 165 (first +0xe); the stage block's element 0 read
+// through its data pointer directly 117 (same code); the +0xd8 flags read after the vertex search 132; the flags read and
+// the search both ahead of the context's first store 147; the flags read between the two cache tests 149 (0x224d90 36).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

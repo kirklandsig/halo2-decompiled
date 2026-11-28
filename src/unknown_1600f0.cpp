@@ -1848,6 +1848,11 @@ PRIVATE inline long score_string_list_1608e0()
 // named inside the clamp arm 738 (2840 B: the conversion moves ahead of the zero test); the viewer pointer computed
 // after the scores pointer 700; the team range test as one unsigned compare 708 (2856 B); the player row number stepped
 // at the end of the player loop 689; the team activity as one boolean expression 706 (2856 B). Body unchanged.
+// M3 lane 2 r163 (H2M fast with 0x161420 and 0x1600f0, MATCH each run; control 679). A forced-ranking search over
+// 30 single decisions found none below 679 (the 4-byte frame gap is not one allocator choice). Forms: the row total and
+// the height summed team count first 678; the row total declared after the height 683; the time flag as a ternary
+// (`flag1128 ? true : score_to_win != 1`) 696; the alternate score stored ahead of the score flag 684; the listed rows
+// named once for the row total and the height 679 (same code). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

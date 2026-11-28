@@ -2557,6 +2557,12 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // the SDK library's code, rescheduled by LTCG. Tried (all 2 or worse): the pattern in a local pointer, the 1.0f store
 // before the call (26), `16.0f` literal, `opacity` const local, `&g_487288[index][0]`, and calling function_1c290(1.0f)
 // instead of the written-out fistp block (134: not inlined, call 0x1c290 stays; also with its __asm removed).
+// m3 lane 13 r169: retail calls 0x1c290 and the stipple setter out of line at all nine other sites (0x2dd80 ... 0x52eef)
+// and expands both only here; 0x1c290's own /Ob1 file keeps it out of line everywhere (callee-side decision), so the
+// written-out block stays. Our out-of-line setter has retail's rep-then-add order; only this inlined copy flips it.
+// Tried (all fast): clamp as two ifs 2; index declared before scaled 2; the flag stored as scaled / 16 2; early
+// return on the tolerance test 2; pattern local with the flag stored before the call 26; an opacity local for the
+// product and the store 2.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -4025,6 +4031,15 @@ bool g_55e6bc;
 // MiniMax R (11-17): no new form, no lower score (17): writing every product with the constant operand first does not move the bytes, so MSVC canonicalises the multiply's operands and keeps the row-varying one in the register where retail keeps the other; the divisor's reload and the call's setup order still differ.
 // MiniMax S (11-17): no new form, no lower score (17): the far plane in a local of its own is hoisted to the function entry (18), the near and far planes each in a local used once score 10 (a match-only form, not kept), the two planes in locals with the far one first also score 18, and the depth-clip factor in a local of its own scores 129; what still differs is that retail loads the far plane into xmm2 from before the near-plane multiply while this build loads it after the near store, and that retail loads the fixed factor of the middle product of three of the four columns into the register while this build loads the row-relative one.
 // MiniMax C (11-17): no new form, no lower score (17): the far clip plane is still loaded into xmm1 after the near store where retail loads it into xmm2 before the near multiply, and three of the four middle products still load the row-relative factor into the register where retail loads the fixed one; the near and far planes each read into a local used once measure 10 but are a match-only form, and the products' operand order does not move the bytes.
+// m3 lane 13 r169 (fast, baseline 17): the twelve fixed-element addresses are hoisted out of the loop; which factor of
+// a middle product loads first follows an operand-rank phase set by the count of expression nodes (unused locals are
+// inert, 0..7 all 17). Diagnostics only (redundant float parentheses, not kept): on main's body one pair on the first
+// product 19, two 25, three 25; on the two-plane-locals form (10) one pair ahead of the loop 6 (only the first and
+// fourth middle products left), with one more on the first column's third product 8 (only the fourth left). Natural
+// forms on the two-plane-locals form: a column pointer `&matrix[i]` 1005; the projection defaulted in place 97; the
+// scale computed first 108; the output default as a ternary 10; the near plane scaled in an if 107; the far local
+// first 18. On main's body: the near product with the global first 17; the matrix defaulted by an if 19; the output
+// default first 24; the output default as a ternary 17.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -10441,91 +10456,18 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, long y, long x);
-// MiniMax I (11-16): no new form, no lower score (171): the palette's result is still written through a local out-parameter here, where retail hands the palette global itself to the callee, and the palette's home sits in another slot; the callee's declaration lives in src/unknown_0167a0.cpp.
-// MiniMax S (11-15): no new form, no lower score (171).
-// MiniMax C (11-14): no new form, no lower score (171): the only form that puts the two offsets in retail's order measures 167, under the keep bar, and the widths they are handed over in are the callee's own declaration's, which is in another file.
-// MiniMax H (11-13): no new form, no lower score (171).
-// MiniMax C (11-11): no new form, no lower score (171); retail hands the two offsets to 0x16a30 sign-extended (movsx ecx,cx and movsx edx,ax) and reaches the palette through a different call sequence, while the callee's declaration lives in src/unknown_0167a0.cpp, which this lane may not edit.
-// MiniMax D (11-10): no new form, no lower score (171); the two offsets still reach 0x16a30 in the other order
-// than retail's, and their width is the callee's own declaration's, which is in another file this lane may not
-// edit.
-// MiniMax S (11-09): no new form, no lower score (171): retail sign-extends the two offsets at the
-// call because its callee took ints, while ours folds the constants into the argument registers
-// because the callee here takes shorts, and retail passes the palette global itself as the
-// out-parameter where ours reaches the palette through a local; the type-punned call form scores
-// 169 and the palette-through-the-global form scores 184.
-// MiniMax D (11-09): no new form, no lower score (171); the two offsets still reach 0x16a30 in the other
-// order than retail's and the palette is still reached through a different call sequence, and the callee
-// takes short offsets here where retail's took ints, so it is declared in another file this lane may
-// not edit.
-// MiniMax A (11-06, run 52): no new form, no lower score (171) - retail passes the two offsets to
-// 0x16a30 in its own order and reaches the palette through a different call sequence.
-// MiniMax C (11-06): no new form, no lower score - retail still passes the two offsets to 0x16a30 in its
-// own order and still reaches the palette through a different call sequence, so the difference is in the
-// call order rather than in a local form; the earlier trial with the offsets swapped scored 167, under
-// the keep bar.
-// MiniMax E (11-10): no new form, no lower score (171); the palette's address given straight to the callee was
-// tried again this round and scores 184, so the call sequence stays.
-// MiniMax E (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
-// registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
-// shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
-// MiniMax H (11-12): no new form, no lower score (171): the two offsets still reach 0x16a30 in the other order than retail's, and the callee takes short offsets here where retail's took ints; the callee's declaration lives in another file this lane may not edit.
-// MiniMax H (11-14): no new form, no lower score (171): retail sign-extends the two offsets into the argument
-// registers of 0x16a30 and hands the palette global over as the out-parameter, this build passes the offsets as
-// sixteen bit values in the other order and reaches the palette through a local; the callee's declaration is in
-// src/unknown_0167a0.cpp, which this lane may not edit.
-// MiniMax D (11-14): no new form, no lower score (171): retail still hands the two offsets to 0x16a30 as
-// sign-extended 16-bit values in eax and ecx and passes the palette global itself as the out-parameter, where
-// this build passes them as dwords in ecx and edx and reaches the palette through a local; that callee's
-// declaration is in another file this lane may not edit.
-// MiniMax R (11-15): no new form, no lower score (171): retail still sign-extends the two offsets into the argument registers of 0x16a30 and passes the palette global itself as the out-parameter, and that callee's declaration is in another file.
-// score 170 (was 171; the fast-build 170 is after the b8C walk below): the two offsets passed to 0x16a30 sat in the
-// other order, and the palette was reached through a different call sequence than retail's (both fixed by b8C).
-// MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.
-// MiniMax H (11-04): no new form, no lower score; the two offsets passed to 0x16a30 in retail's order
-// (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx) match retail's behaviour but
-// leave the score at 171, so the body stands as it is.
-// MiniMax H (11-03): no new form, no lower score; retail passes the two offsets to 0x16a30 in the other order (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx, where ours passes 0x20/0x30 in ecx); swapping them matches retail's behaviour but leaves the score at 171, so the body was restored.
-// Tried (MiniMax C run): the two offsets passed in the other order (0x20/0x18 and 0x30/0x24
-// as the second and third arguments), the device result tested directly with the failure
-// path writing the flag, and the palette result in a local of its own: 167 against 171;
-// under the keep bar, body restored.
-// MiniMax E (11-09): no new form, no lower score (171); retail hands the two offsets over as sign-extended
-// 16-bit values (movsx ecx,cx and movsx edx,ax after the two movs, with the width left in EAX as well) where
-// ours passes the two constants as dwords; the callee's declaration, which decides that, is in another file
-// this lane may not edit.
-// MiniMax B (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
-// registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
-// shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
-// MiniMax R (11-16): no new form, no lower score (171): the palette's result is written through a local out-parameter
-// here, where retail hands the palette global itself to the callee, and the palette's home sits in another slot.
-// MiniMax A (11-12): no new form, no lower score (171); retail sign-extends the two offsets into the argument
-// registers of 0x16a30, whose declaration is in another file, and passes the palette global itself as the
-// out-parameter, which the address-taking exception does not cover; the offset order, the palette result local and
-// the dimension orders all score no better.
-// MiniMax S (11-16): no new form, no lower score (171): the dimension selection, the palette result and the
-// callee's out-parameter still differ, and the callee's declaration is in another file, so the palette result
-// cannot be written into it from here.
-// b8C (11-17) walk against retail, fast build on r836: 171 -> 170 (no full build). Behaviour fixes:
-// (1) the two offsets were handed to 0x16a30 swapped. Retail loads (0x20,0x18) or (0x30,0x24) into eax/ecx
-// (0x12588-0x12599) and passes ecx = 0x18/0x24, edx = 0x20/0x30 (0x125a7, 0x125aa); the callee stores ecx at 0x485a92
-// and edx at 0x485a94 (0x16a7f, 0x16a78). Ours passed the pair the other way round.
-// (2) the "stencil enable" state was retail's simple state 0x40338 (mov ecx at 0x126bb, mirror store at 0x126cc),
-// which is D3DSIMPLERENDERSTATEENCODE[81], D3DRS_SOLIDOFFSETENABLE; ours reached the stencil-enable path instead.
-// (3) retail pushes 0x484dbc itself as the palette out-parameter (0x125f9); the callee writes *out on every path,
-// so passing &g_484dbc changes no behaviour and drops the NULL local. (4) the volatile on success is gone: retail
-// stores 0 only on the failure path (0x125d5). (5) the position copy is one struct assignment (dword moves,
-// 0x12809-0x1281a). Callers/callees: 0x1d3f0 (62), 0x2ca00 (3) unchanged, 0x2c8a0 and 0x16a30 still MATCH.
-// Retail sign-extends both offsets (0x125a7, 0x125aa) because its callee takes longs, as function_016a30 is now
-// declared. Still differs: 0x3f6e10 takes 0x11 in eax (0x12670) where the XDK lib here takes it on the stack.
+// Initializes the rasterizer once: the device, palettes, default render and texture-stage states, then the
+// caches and the render-state storage. Retail sets the shader constant mode (0x11) here, not a vertex shader
+// (0x3f6e10 tests its 0x10 no-reserved-constants flag), and stores each word of the saved point right after
+// loading it, which the copy through its address gives (an aggregate assignment hoists the three loads).
 // @retail 0x12560
 void function_12560()
 {
     if (g_485a88) return;
     function_0169f0();
     short x, y;
-    if (g_485ac5 && g_485ac6) { x = 0x18; y = 0x20; }
-    else { x = 0x24; y = 0x30; }
+    if (g_485ac5 && g_485ac6) { y = 0x20; x = 0x18; }
+    else { y = 0x30; x = 0x24; }
     function_016a30(1.0f, y, x);
     Direct3D_SetPushBufferSize(0x100000, 0x8000);
     bool success;
@@ -10548,7 +10490,7 @@ void function_12560()
         memset(g_484dd0, 0, 0x180);
         if (success)
         {
-            D3DDevice_SetVertexShader(0x11);
+            D3DDevice_SetShaderConstantMode(D3DSCM_192CONSTANTS | D3DSCM_NORESERVEDCONSTANTS);
             D3DDevice_SetRenderState(D3DRS_CULLMODE, 2);
             D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 1);
             D3DDevice_SetRenderState(D3DRS_ZFUNC, 0x203);
@@ -10576,7 +10518,7 @@ void function_12560()
         g_4670f8 = 0x24;
         if (function_1eff0())
         {
-            g_4b72b4 = *g_468788;
+            memcpy(&g_4b72b4, g_468788, sizeof(g_4b72b4));
             g_4b72c0 = NONE;
             success = true;
         }

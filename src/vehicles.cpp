@@ -1498,6 +1498,13 @@ __forceinline long vehicle_round(real value)
 // rate 10, only for the first cross 4; the reference with no up pointer 8. Diagnostics on S+B (reverted at once): 1-3
 // redundant float parens around the rate's division 6/4/8 or around the whole rate 6/4/8; 1-7 dead long locals at the
 // top 6/12/8/8/17/13/4; 1-4 in the side block 6/8/6/6; no cell gives 0.
+// M3 lane 6 r256 (h2m fast with caller 0xefde0, control 4; S = cross3f_staged at the first cross, re-measured 4).
+// Rank reading of the side cross (last reassociation pass): the six loads rank forward i/j/k 6, 0, 5 and up 2, 0, 1;
+// retail's six orders need up.k above forward.i and forward.j, forward.j and forward.k at or above up.i, and forward.i
+// and forward.k at or above up.j, which no single shift of all six gives (up.j has to move by itself as well). Forms:
+// the flip mode read once into a byte local at the arm's top for its six later reads 122, on S 118; the same as a long
+// 163, on S 162 (the caller grows to 2280 B); one forward pointer at the arm's top for the first cross, the axis copy,
+// the side cross, its down term and the projection 164, on S 164. All restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2156,6 +2163,9 @@ long function_10f5f0(long object_index);
 // with the do-while 615. So the rolled sum costs 84 bytes less than the unrolled one and retail is 36 bytes longer still
 // than the helper + rolled form; the stores and the rolled loop each need a steering form (a two-definition result, a
 // changed loop guard or a hand-inverted loop), none kept.
+// M3 lane 11 r179 (H2M_FAST; control 561): the flags word copied into a `dword` or `long` local 561/561, the door
+// position as an explicit ternary in place of MAX 561, the physics gate's bit 6 read from the word field 561, the
+// average guarded by `count > 0` 561 (all the same code).
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2783,6 +2793,16 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // 141; overlay 4's period bound as `real const &` 13, both engine-overlay arms that way 13; the final loop's overlay
 // bound as a `c_type_709360 const &` for its test and play 83; its half product written `0.5f * value` 9 (same code);
 // re-measured: arm 3's terms velocity-first k, j, i 9, grouped (k + j) + i 11, `graph != NULL` 9, `state` as `*const` 9.
+// M3 lane 6 r256 (h2m fast with caller 0xf0f50 MATCH, control 9). Rank reading (last reassociation pass): overlay 1's
+// dot numbers its six leaves in spelling order (left.k 22, velocity.k 24, velocity.j 26, left.j 28, left.i 29,
+// velocity.i 30) and each product loads the higher first; arm 3's forward loads are address nodes far above every
+// velocity leaf, and its sum sorts by product rank, so (k + j) + i needs velocity.k numbered after velocity.j, while
+// overlay 1's own (i + j) + k with its three operand orders needs its j product ranked above its k product: no order
+// of one spelled expression gives both (the j unit would have to come before the k unit and still rank above it), so
+// one of the six leaves has to be first mentioned outside the dot. Forms: overlay 1's cross written out as three
+// assignments to `left` (rows i, j, k) 312, rows k, j, i 312, rows j, k, i 314, rows k, j, i with a forward pointer in
+// arm 3 312 (the cross then reads the products in another order); overlay 1's dot spelled j term first 21
+// (re-measured). All restored.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -4195,6 +4215,13 @@ real g_47ff30 = 2.5f;
 // existing vector3f_add_scaled of the global up vector and the facing scaled by its -k 683 (3246 B; retail builds it on
 // the x87 stack); `facing` dropped, the local velocity read through the vehicle at each use 795 (3289 B); the bank
 // limit as a ternary with the turn-rate boost under one test 717; the climb field read at each use 738 (3223 B).
+// M3 lane 11 r179 (H2M_FAST; control 672). The mass field read at each use with the transform position as three
+// zero stores re-measured 676 (3248 B, frame 0xfc). Retail's three mass products sit in the cells the unused
+// angular-velocity output leaves after its call (forward, left, up at +0x14/+0x18/+0x1c); a rank reading of the
+// maximum speed and speed products gives boost 0xe0 against field loads of 0x0008 (wrapped), so boost is the copied
+// operand where retail loads the field. On the 676 form: the masses as one vector3f (forward, left, up) 728 (3262 B);
+// the acceleration scale field read at each use 769 (3206 B); the mass products in forward, left, up order 675. On
+// main: that order 672; that order with the three zero stores 682.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -7646,6 +7673,13 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // product in its own `{}` block 1125; the flip arm's fields through VEHICLE_GET at each use (no pointer local) 1153
 // on main, 1187 with the product form; the quaternion's vector normalised in place (no axis copy) with the product
 // form 1130 (5059 B).
+// M3 lane 11 r179 (H2M_FAST; control 959). Allocator reading on main: the index's web runs from entry to the
+// side-flip calls (priority 8, EDI, the only register left) and overlaps the forward pointer's ESI web; retail
+// ends it at 0xf44a0 and reloads the parameter home after it, so retail's index and forward can both take ESI and
+// the offset takes EDI. Retail's reversal loop is rolled and stores the acceleration in both arms (the sign of
+// the acceleration as a byte, the target's as a full register). Forms: a block-scoped `long` index 959 (same code,
+// still unrolled); the comparison's two sides swapped 959; `acceleration.n[i] <= 0.0f` 959; the store as a ternary
+// in both arms over a block-scoped `long` index 1066 (5123 B), over a block-scoped `short` index 1019 (5094 B).
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

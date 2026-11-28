@@ -2246,6 +2246,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // code each). On the write-local form: the nested header helper 114; the aggregate invalidation 114; the local copied
 // after the header strings with the header address named 114; the close's argument read through the record pointer
 // 114; the count copied into a named local used for the test and the flag 114 (the same code each). Body unchanged.
+// M3 lane 16 r201 (fast; control 33; body unchanged). Lane 9 r132's 5 form rebuilt 5 (write success set by its own test,
+// the header read as `else if` with `valid = true`, the stored checksum through a reference; all match-only). Allocator
+// reading on it: the write's flags zero is a two-reference register candidate alone in the write block; it takes EAX, the
+// first free register, with no preference scores. A forced-ranking search over every priority (141 decisions) gives no
+// match, while that one pick moved to ECX alone gives the byte match, so retail's flags candidate had a preference or a
+// neighbour score against EAX, not a different ranking. On the 5 form: the write count's address named at the call
+// 5 and at the write block's top 5 (same code, the pointer folds); a named write handle 114 (917 B: the write is then
+// retail's, the close loses its `mov ecx, eax` copy); on that, the close's argument as an explicit copy 114 and the
+// close test through the record's handle field 114.
 // @retail 0x213970
 void function_213970(void)
 {

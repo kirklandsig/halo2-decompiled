@@ -443,6 +443,14 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // separation test as `local_26 > 0.0f && local_1->field_34 > local_26` 256; the self test on the iterator's object 252 (same
 // code); the count raised ahead of the three sums re-measured 253; the nearest point declared ahead of the nearest distance
 // 252 (same code).
+// M3 lane 16 r201 (fast screen listing 0x293b30, 0x293d30, 0x294050, 0x295600, 0x11c380 and 0x293130 with this function,
+// all MATCH; control 252; body unchanged): the wander (0x295600) output in its own vector 746 (3736 B); the avoidance
+// (0x293d30) output in its own vector 744 (3736 B); the path (0x294050) output in its own vector 743 (3736 B); the waypoint
+// index read once into a `long` local used three times 456 (3711 B); the walk's cone test as an early `continue` 704 (first
+// +0x72); the request's +0xc member typed as a vector (no cast at the copy) 252 (same code). Frame model (the back end's
+// density quicksort re-run over this build's packing list): retail's layout needs the walk position packed ahead of the
+// offset and the speed vector one reference lower, and even then the object spill and the nearest distance stay swapped;
+// no change of one to three objects' counts by up to two references reaches retail's layout, so retail's set of homes differs.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
