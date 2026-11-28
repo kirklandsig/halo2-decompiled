@@ -676,6 +676,15 @@ void session_searches_dispose(void);
 // made at the top with the first call given `&g_527330.state` directly 51; the owner local `const` 51; the five client
 // stores and the first call through a reference to the client 51; `return g_527330.initialized = true;` 51 (same code
 // each: both differences sit at the two callee calls, whose member forms are the open lead above).
+// M3 lane 2 r162 (fast with 0x70190 and 0x6de50, plain where named; the reduced image always reads 0x54590 as 2, so
+// that function needs the plain check). HELD (needs the owner's OK; held as a patch): 0x6de50 alone as a member of
+// s_session_owner (`SESSION_OWNER->session_owner_initialize(...)`, body unchanged), 0x70190 left a free routine taking
+// the state by pointer: 22 plain (first +0x135, only the `mov esi, eax` after 0x70190 is left), 0x6de50, 0x70190 and
+// 0x54590 MATCH in the plain check with 0x53610/0x53de0/0x55060/0x560e0. So the 0x54590 cost of the both-members match
+// comes from 0x70190's member form alone: 0x70190 alone as a member of its state (0x6de50 free) 57 plain (retail's
+// fresh `mov esi, 0x527500` after the call, but the owner constant still loaded ahead of the first call) with 0x54590
+// lost (2 at +0xff). Body-only: 0x70190 taking the state by reference 51 (same code); the searches call's and the
+// matchmaking call's state pointer spelled through SESSION_STATE and cast back 51 / 51 (same code). Body unchanged.
 // @retail 0x58ee0
 bool network_session_manager_initialize(long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b)
 {

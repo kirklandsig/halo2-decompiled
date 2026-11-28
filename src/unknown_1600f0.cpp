@@ -1843,6 +1843,11 @@ PRIVATE inline long score_string_list_1608e0()
 // computed ahead of x 680; the score table as a ternary initialiser 705 (first difference +0x0); the viewer lookup after
 // the score table 700; the row total summed team count first 678; the fade-count conversion after the two colour
 // declarations 679 (same code). Body unchanged.
+// M3 lane 12 r199 (fast screen with 0x161420 and 0x1600f0, MATCH; control 679). Reading: retail converts the scroll
+// limit once, in the clamp's second arm after the zero test, while it reads the height cell twice. Forms: the limit
+// named inside the clamp arm 738 (2840 B: the conversion moves ahead of the zero test); the viewer pointer computed
+// after the scores pointer 700; the team range test as one unsigned compare 708 (2856 B); the player row number stepped
+// at the end of the player loop 689; the team activity as one boolean expression 706 (2856 B). Body unchanged.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

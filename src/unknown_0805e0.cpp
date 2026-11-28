@@ -1005,6 +1005,15 @@ void function_1537f0(s_profile_record *record);
 // statements in retail's store order 46; E with the builder's view in a named pointer passed to it 46; E with the record
 // filled before the identity clear 87 (277 B); main with a named view pointer passed to the builder 18; E with the four
 // heads by one memset 74 (260 B). All restored.
+// M3 lane 16 r200 (fast screen with 0x7f8b0 and 0x1537f0, MATCH each run; control 18; E = round 169's element-only body,
+// re-measured 46). Allocator ledger on E: the -1 = 4 head refs x 3 entry-block candidates (12) - 6 (live through the
+// six-constant preheader) + 96 (links) = 102, the record word = (definition 2 + use 2) x 2 x 12 = 96 with the later tie;
+// on main the link store at the cursor's zero displacement costs nothing, so the -1 is 78 and loses. Forms: E with the
+// counters cleared by one 8-byte memset 70 (259 B); E with one named source pointer for the record initializer and the
+// builder 46; E with the four links as one element chain in field order 46; main with the builder's identity argument
+// taken from the identity memset's return 156 (335 B, the memset becomes a call). Diagnostic (not retail's order): E with
+// the counters and version stored after the loop 74 (255 B): the entry block then counts two candidates and the
+// preheader seven, the -1 97, still one above the record word, so no entry-block order can end the hoist.
 // @retail 0x7f930
 void function_7f930(void)
 {

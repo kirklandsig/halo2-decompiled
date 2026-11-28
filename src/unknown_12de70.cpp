@@ -874,6 +874,14 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // index product picked into EBP, the loop's block still straight in ESI). Rank reading on that form: the index product
 // 18 is coloured ahead of the cache block 16 (6 references against main's 7 and 22), which is the EDI/EBP swap; the
 // loop's block (44) still sees ESI free with its argument preference. Still BLOCKED-BY 0x223e00 (the arm's second use).
+// M3 lane 16 r200 (fast screen with 0x12e210 and 0x223e00, both MATCH each run; control 27). Rank reading: with the count
+// named and stored after the block read the count is live across the load, but the allocator charges it ESI +1 for the
+// block's call-argument preference, so the count takes EDI and the block still ESI (73). Forms: the block held as the
+// fixup group it is released as, the linked test through a geometry view cast, 27 (same code); the count named, the block
+// read, its linked flag read into a bool, then the count stored and the arm on the flag 73 (266 B); both loop reads from
+// the field (the busy sibling's arm spelling with the cache block kept) 27 (same code); the count stored after the block
+// read with the time fix through the field and no time pointer 79; the time test as the sibling's age (object time
+// minus block time, tested against zero) 59.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

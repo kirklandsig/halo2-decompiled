@@ -1197,6 +1197,14 @@ void __stdcall function_25eea0(
 // `mk=4`; same with `0x1e4a50` do-while, `continue`, `bonus+=score`, `weight*factor`, `score` ptr, outer/inner swap/rename),
 // and adding `ratio`/`excess`/`range_limit`/`weight_ternary`/`l1_bonus`/`num`/`scale`/`max_dist` flips the Loop 2/Loop 3
 // `addss` parity to **`mk=3`** (`100`, 120 consecutive Loop 2 + Loop 3 cover insns exact); `pos_dist` combo hits `fd=+0xc0` (`105`).
+// M3 lane 1 r179 (H2M_FAST with the same callees, control 111): retail calls 0x1e5240 out of line here; without the
+// inline-depth pragma this build expands it at a call one or two conditionals deep and calls it at three, as in the
+// matched callers 0xcf040, 0x1b9540 and 0x265d30. Without the pragma: distance3d for the leader distance 364 (1336 B);
+// with the body nested under the 0x5b test as well 364; the weapon read through `618 ? call : NULL` there 362 (1336 B).
+// The pragma around the 0x1e5240 call alone (diagnostic) 87. With the call one level deeper (an always-true test, not
+// keepable): distance3d 87, magnitude3d on the hand delta 76 (1306 B; the leader loop's x87 keep and k, j, i squares
+// exact; left: the weight block's XMM1/XMM2 colours, the 0x1df560 and 0x1b0710 argument order, the inner/outer loads
+// and the leader score's 3-insn add). Lead: a natural third conditional level around the 0x1e5240 call, then magnitude3d.
 // GA35 (29 fast source trials + /Ob1 diagnostic probes across 3 batches with 11 peers MATCH; control 111 at 1306/1306 B,
 // +0x52, al=50, mk=13; body unchanged): on HEAD (111), commuted Loop 3 bonus 1 / both / local, nested leader guard without
 // local, Loop 1 `weight * factor` / commuted add, commuted weight mul, Loop 2 commuted bonus / add / `outer` decl first,
