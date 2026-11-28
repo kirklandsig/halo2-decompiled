@@ -798,6 +798,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // base: object index, array, absolute index, rigid body from the array, header array, type 96 [0]; the array first 94
 // [2]; header array, array, object index, absolute index, rigid body, type 118 at 268 B [155]; the object index as
 // `dword` 28 [0] and const rigid-body and header pointers 28 [0] (same code each). Body unchanged.
+// M3 lane 1 r180 (fast, caller 0x1d5bf0 matched in every run; control 96). Round 60's one-read form rebuilt 28, with
+// case 0 through the bit2 view 24 at 256 B (case 0 then retail's byte shift; left the entry permutation and the byte
+// type's `mov al` + `movzx eax, al`). On the 24 form: the type local as `word` 35 and `short` 35 (260 B), as `dword` 89
+// (retail's single `movzx`, but `cmp edi, 7` is then scheduled ahead of the type load); the kind-7 route as
+// `if (type == 1) result = 0xc; else result = 1;` with the main switch as its else (one exit) 94, with a long type 101.
+// Allocator reading of the 24 form: absolute index 110 (EAX), rigid body 94 (ECX, first free), the component's object
+// index 73 (EDX) and the header table 53 (ESI); retail needs the object index and the table coloured ahead of the rigid
+// body. A forced-ranking search (40 decisions) gives no match; its best single decision (the rigid body in EBX) leaves
+// 39 of 66 distance. Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
