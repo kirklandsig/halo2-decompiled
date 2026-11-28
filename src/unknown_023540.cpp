@@ -2440,6 +2440,10 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 // MiniMax E (11-17): no new form, no lower score (140): the flag byte is still loaded into cl before the branch where retail loads it into al after it, and the value stored to the global still comes after that load where retail stores it first; the body's length matches retail's (1729 bytes).
 
+// score 14 (was 14; earlier 100, was 140): main keeps the 14 form (u by division, inverse_height named, corner-order
+// defaults); width and height trade homes 0x10/0x14 (ten lines) and the bottom edge's two v products load the
+// coordinate first where retail loads the reciprocal's home first (four lines). The point2f size form gives 4
+// (match-only: it groups two locals to move their homes). Stacked score lines below merged into this note (m3 lane 5 r258).
 // MiniMax A (11-20): no new form, no lower score (4): the bottom pair's v multiply has its operands in the other order, and spelling it reciprocal-first gives the same code, so the spelling does not set the operand order
 // MiniMax E (11-16): no new form, no lower score (140): the body's length matches retail's, but this build still hoists the preserve_alpha load above the `simple` branch where retail loads it after, and the callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
 // MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
@@ -2468,16 +2472,16 @@ dword __cdecl function_131fc0(real alpha);
 // register, this build keeps the reciprocal in the destination register and multiplies by the coordinate; the
 // permuter found nothing below 4 (80 tries), and a named reciprocal always gives the coordinate first while an
 // inline reciprocal duplicates the reciprocal.
-// score 4 (was 14; earlier 100, was 140): at retail's 1729 bytes everything up to the default rectangles equals retail (the
+// Earlier line, point2f form 4 (was 14; earlier 100, was 140): at retail's 1729 bytes everything up to the default rectangles equals retail (the
 // flag loads, the short arm's reload and the two parameter-home writes included). Left: the bottom edge's two vertex
 // products, where retail loads the coordinate and multiplies by the reciprocal's home and this build loads the
 // reciprocal and multiplies by the coordinate (see the round above).
-// score 14 (was 14; earlier 100, was 140): at 1733 bytes against 1729 everything up to the default rectangles equalled retail (the
+// Earlier line 14 (was 14; earlier 100, was 140): at 1733 bytes against 1729 everything up to the default rectangles equalled retail (the
 // MiniMax A (11-20): 14 -> 4 (fast): the bitmap's width and height are now one point2f (x = the width, y = the
 // height, both 1.0f before the bitmap test), which puts their homes at retail's 0x10 and 0x14; the reciprocals and
 // the default rectangles now match retail, and only the bottom edge's two v products keep this build's operand
 // order (writing the reciprocal first does not change this build's code).
-// score 4 (was 14): the body is now retail's length (1729 bytes) and every instruction matches except the bottom
+// Earlier line, point2f form 4 (was 14): the body is now retail's length (1729 bytes) and every instruction matches except the bottom
 // edge's two v products, where retail multiplies the stored reciprocal by source[3] and this build puts source[3]
 // in the register first.
 // Earlier score 14 (was 14; earlier 100, was 140): at 1733 bytes against 1729 everything up to the default rectangles equalled retail (the
@@ -2794,6 +2798,14 @@ dword __cdecl function_131fc0(real alpha);
 // NOT kept (coordinator screen, MiniMax H 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // NOT kept (coordinator screen, MiniMax A 11-20): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
 // NOT kept (coordinator screen, MiniMax B 11-21): the named local height replaced by its expression at each use (kept only with a byte match); the named local width replaced by its expression at each use (kept only with a byte match): `width = 1.0f`; the body is main's again.
+// M3 lane 5 r258 (fast screen, on the point2f 4 form; control 4): dead locals (1, 2, 3, 5, 8, 13) right after the
+// inverse-height definition or just ahead of the third vertex 4 each (no symbol-count state there either); a
+// forced-ranking search (54 single colouring, pick, priority, height, cut, flag, cost and alias decisions) finds no
+// match, so the bottom pair's operand choice is code generation, not allocation; a forceinline per-vertex helper
+// taking the destination coordinates by pointer 697 (1957 B, the platform's vertex call is expanded), with the
+// helper calls at inline depth 1 788 (2024 B); `real const inverse_height` with the bottom pair as `source[3] / size.y`
+// 72 or `source[3] * (1.0f / size.y)` 72 (1735 B, two homes again); the bottom coordinate bound to a const reference
+// 4 (same code); a named copy of it 433 (1725 B). Body unchanged.
 // @retail 0x2a8d0
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
