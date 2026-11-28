@@ -1485,6 +1485,17 @@ PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 // a named local ahead of the instance loop 193 (902 B); the dword mask with the 0x245aa0 guard as `test_world &&
 // found` 42; the hit count named once for the leaf loop bound 227 (914 B); named bools for the instance and object
 // flag tests, four uses each, 251 (932 B).
+// M3 lane 6 r256 (h2m fast over this file's markers, control 23; the other users measured with the fast check over
+// every marker of the eight files that include the two mark headers). Cause of the tick rows, from a diagnostic: with
+// the cluster marks and the instance marks declared as ONE global object (the two blocks are adjacent, 0x4e7410 to
+// 0x4e8c20), the leaf loop's store to the cluster table may change the instance tick, so the tick's value is confined
+// to the instance loop and is loaded ahead of it and again after the call, as retail does: 4 (only the three world
+// mask rows and its test are left); with the dword mask on top 22 (the mask in EDI and the BSP pointer in EBX again).
+// NOT kept, a lead: on the fast image the one-object model unmatches 0x132d60 (76), 0x14a6d0 (87) and 0x180b60 (88)
+// and takes 0x134390 from 11 to 195 (their tick increments change between a memory increment and load, increment,
+// store). The cluster table merged with the instance block while the cluster flag and tick stay an object of their
+// own: 34 here, 0x14a6d0 124, 0x1697c0 421. Forms on main's model: the cluster mark through an element pointer used
+// for the test and the store 23 (same code); the leaf's cluster as a short 157.
 // @retail 0x16a440
 bool __stdcall function_16a440(dword flags, point3f const *position, real extent, real height,
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)

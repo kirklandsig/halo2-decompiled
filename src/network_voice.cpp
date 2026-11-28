@@ -4175,6 +4175,22 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // (retail's third, zero-trip exit) 160 (490 B), with bare declarations at the top 160 (same code), with the plain arm
 // first 150 (491 B). A forced-ranking search on the guarded cursor form: best 149 (the cursor ranked lower); the channel
 // given EBP alone 160. Body unchanged.
+// M3 lane 3 r322 (fast screen with 0x564c0, MATCH each time; control 139). The compiler strength-reduces `data + consumed`
+// into a walking pointer of its own (EDI, with an immediate start `add edi, 2 + bias`, as retail's `add edi, 2`) when
+// the loop body makes fewer loads through the packet: the two kind-byte tests' and both 56df0 arguments' four reads
+// at main's count keep the indexed form; with only three loads left (diagnostic: the two kind arguments as 0) it is
+// reduced, the channel takes EBP from the entry, the member is spilled and consumed/stride/counter take retail's slots.
+// The bias is the offset of the last packet address the body forms (+1 with the plain arm's payload last, +3 with the
+// arms swapped). Forms: the cursor started from a header record's array member 164 (same code as `data + 2`); a word
+// kind local read at the loop top for both arms 137 (471 B, reduced, kind in SI), as a byte 150; a word kind local per
+// arm (test and 56df0 argument, the member test split from it) 127 (476 B, reduced with bias +1, kind in SI, stride
+// in EBX, the plain arm laid out after the loop), as a byte 140 (488 B: kind spilled to a new frame slot, stride ESI,
+// channel EBP, members BX, frame 0x14), as a long 152; the word kind in the relay arm only 149, in the plain arm only
+// 133; the member fetch under its own `if (relay)` with one shared kind test before the arms 188 (459 B, relay tested
+// twice, not threaded); the per-arm word form with a named relay payload 127 (same code). The word type is picked by
+// score (the field is a byte), so none is kept. Lead: a natural reason for retail's reduction with five packet loads
+// (retail re-reads the kind byte from EDI after each talker call, as an uncoloured kind value reloaded from the packet
+// would). Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

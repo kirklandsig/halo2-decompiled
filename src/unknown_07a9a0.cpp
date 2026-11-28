@@ -1975,6 +1975,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // first 871; the capacity tests written `function_193300(variant) < capacity || function_1932c0(variant) > capacity` 871;
 // the machine id array declared ahead of the group count store 871 (all three the same code); the party spread computed
 // once after the party scan (`last - first`, NONE - NONE = 0 when none qualify) 907 (2748 B). Body unchanged.
+// M3 lane 3 r322 (fast screen with 0x73530, MATCH each time; control 871; body unchanged; still BLOCKED on the link-wide
+// inlining split): the first group-size histogram fill as a plain indexed loop 923 (2716 B); the two team-type tests
+// as one block 908 (2752 B); the allowed imbalance read once into a local 975 (2648 B: retail calls it twice); the
+// machine id array declared before the player loop 871 (same code); the group test through the summary's group
+// array 931 (2716 B).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

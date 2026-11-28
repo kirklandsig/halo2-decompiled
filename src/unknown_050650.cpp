@@ -2483,6 +2483,11 @@ struct s_actor_looking_structure_view
 // to forward declared ahead of the candidate array 142 (928 B); the clear as `forward.k = 0;` 23 (same code); the angle as
 // `(real)(i * 0.785398185)` (a double product) 150 (928 B); the angle wrapper passing `(real)sin(angle)` and
 // `(real)cos(angle)` straight to the in-place helper 23 (same code here; 0x296e60 269). Restored.
+// M3 lane 14 r167 (h2m fast with 0x296e60 at 239, 0x297660, 0x2980d0 and 0x24590 matched throughout; control 23): the
+// trace distance read into a named real before its 0.2 product 69 (first difference +0x55); the normalized length named
+// before its test 144 (928 B); both 141 (927 B); the in-place helper's rows written scalar-first (`cosine * vector->i`,
+// `sine * cross_i`) 23 and its projection written versine-first 23 (both the same code). Diagnostics: one unused
+// initialised long at the top 33; a no-op `* 1.f` on the angle 132 (928 B). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
