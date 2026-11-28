@@ -1612,6 +1612,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // drops nearest off EDI); offset via vector3f_assign or real_point3d_set on entries + first ahead 781 each (2307 B, fr
 // 0x30); copy_light_sample long order 418, const sample ref 418; `fraction > 0` / `< 1` nesting 416 (2111 B, al 418, -2
 // under bar); fallback via vector3f_assign 419; local bsp pointer for count 418.
+// M3 lane 12 r200 (H2M_FAST with 0x22750, 0x22c30 and 0x24550, all MATCH; control 418). Allocator reading: scan 2's
+// three dot products are live together here (the i product formed before the first add), so only delta.i and
+// delta.k get XMM registers and delta.j is read from memory; retail adds the j and k products before it forms the i
+// product, keeps all three delta members in XMM5-7, and that pressure spills offset.i and the pass counter into its
+// 0x2c frame. Forms: one best-distance variable for both scans 418 (same code); scan 1 as a do-while 971 (1724 B,
+// not unrolled); the count == 1 copy as an if/else around the scans 418 (same code); scan 2 under a redundant
+// `if (0 < count)` 585 (2100 B); `first` formed ahead of scan 2 on the samples local with the delta from it 439
+// (2088 B). Body unchanged.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

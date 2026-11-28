@@ -1135,6 +1135,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // count reads, removed): on the 175 form, volatile top test alone 211; volatile `current = count` and top test 115 (784 B,
 // +0x28, fr 0x14, al 87, mk 32), confirming that extending lowest-scan `edx` into `current` and the top compare is what
 // forces the back-edge `mov edx` reload and keeps epilogue 1 from falling through before compaction.
+// M3 lane 12 r200 (H2M_FAST with 0x239d50, 0x239b80 and 0x239cb0, all MATCH; control 144, difflib-aligned 137). Lane GB
+// r35's do-while body (`goto finished` exits, the top test inside the loop, differ closure) re-measured 154 but only 45
+// aligned differences: `current = count` copies the lowest scan's EDX bound where retail reloads count's home (which
+// also moves the loop padding), the top test reads count from EDX, the closure's last test jumps to the exit where
+// retail falls into a duplicated epilogue, and the compaction's scratch registers rotate. A forced-ranking search on it
+// (30 decisions) found nothing below 154. On that body: `current` read once through count's address 154 (same code);
+// diagnostic own-parameter volatile reads for `current` and the top test 123 (the test becomes movsx + cmp; reverted);
+// `if (classifier != 2) return hull_count;` ahead of the block 230; the departure as `left_start = left_start ||
+// points2d_differ(...)` 155. Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
