@@ -5183,25 +5183,7 @@ struct s_section_lists
 
 s_section_lists *function_181a80(s_section_lists *lists, long object_index, bool all_sections);
 
-/* walks the constraints of a physics model, of six kinds */
-struct s_physics_constraint_iterator
-{
-	byte *physics;
-	short type;
-	short index;
-};
-
-struct s_physics_constraint_block
-{
-	long count;
-	byte *elements;
-};
-
-void function_1eb110(s_physics_constraint_iterator *iterator);
-void function_1eb160(s_physics_constraint_iterator *iterator);
-struct s_physics_model_shape_key;
-struct s_impact_tag_block;
-s_impact_tag_block *physics_model_shape_block_get(byte *physics_model, s_physics_model_shape_key const *key, long *element_size);
+#include "physics_constraint_iterator.h"
 long render_model_find_marker_group(long render_model_index, long index);
 
 PRIVATE inline long damage_section_list_size(s_section_lists *lists, long list_index)
@@ -5212,16 +5194,6 @@ PRIVATE inline long damage_section_list_size(s_section_lists *lists, long list_i
 PRIVATE inline long damage_section_list_entry(s_section_lists *lists, long list_index, long i)
 {
 	return list_index == NONE ? (char)lists->unlisted.sections[i] : (char)lists->lists[list_index].sections[i];
-}
-
-PRIVATE inline byte *damage_constraint_element(s_physics_constraint_iterator *iterator, long *element_size)
-{
-	s_physics_constraint_block *block = (s_physics_constraint_block *)physics_model_shape_block_get(iterator->physics,
-		(s_physics_model_shape_key const *)&iterator->type, element_size);
-
-	if (iterator->index >= block->count)
-		return NULL;
-	return block->elements + iterator->index * *element_size;
 }
 
 /* the model node a physics node belongs to (a copy of
