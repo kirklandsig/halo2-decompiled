@@ -3286,6 +3286,13 @@ struct s_1cf531
 // sphere-box header (`local_18 = inverse * local_7`) 2 (same code); the direction normalized in place in local_7 with
 // local_13 corrected and scaled in place 23 (908 B); local_14 declared with local_7 in the outer block 2 (same code);
 // the final product `corrected * splat` 20 (908 B); local_13 declared with local_7 in the outer block 7 (905 B).
+// M3 lane 5 r257 (h2m fast with 0x1d0770 MATCH; control 2): local_13 corrected in place and the final product in a new
+// block-local hkVector4 passed to the call 94 (910 B, first +0x8: local_13 no longer reaches a call and the copy is
+// forwarded from local_7), the final written into local_14 93 (910 B); the factor read as `_mm_load_ss(&local_20)` on
+// main 23 (907 B), with local_13 corrected and scaled in place 28 (910 B); local_13 corrected and scaled in place
+// re-measured 23 (908 B); that in-place form with the factor splatted through `__m128 &splat = factor` 6 (905 B: the
+// corrected vector is stored to retail's 0x30, but its reload is a separate movaps hoisted above the fstp and the splat
+// stays in XMM0), and with `_mm_load_ss(&local_20)` as well 24 (907 B).
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
