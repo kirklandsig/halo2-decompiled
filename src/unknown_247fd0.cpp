@@ -1189,6 +1189,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // `!local_3->unknown0c` 334; the second rotation call's arguments cast like the first's 334; the velocity add's x row as
 // `field_28.i = field_28.i + velocity->i` 334; the velocity pointer chosen by an if/else 334 (all the same code); the
 // velocity test on `arg_2->effect_index` in place of local_0 411 (+0x1b).
+// M3 lane 16 r201 (fast with 0x247fd0, 0x248cc0 and 0x247470, all MATCH each run; control 334; body unchanged): the
+// else arm's add written out on the members (diagnostic: an existing helper's body) 343, its rows then add the scaled
+// +0x1c values from registers as retail does, so the add-scaled helper's pointer reads are what make ours reload them;
+// on that, the kind word read into a named short first 343; the kind word named on main's body 334 (same code); the
+// collision normal read at each use (no pointer local) 334 (same code); the velocity j and k rows as `+=` 334 (same
+// code); the blend's start weight `1 - t` named once for the three rows 335.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
