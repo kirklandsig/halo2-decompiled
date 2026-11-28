@@ -208,12 +208,6 @@ void __cdecl function_2d6fb0(void *address)
 // disabled there; called from Havok code, so standard cdecl)
 struct s_component_contact_pair;
 class hkEntity;
-// @stub 0x279410
-bool __cdecl function_279410(s_component_contact_pair const *pair, hkEntity *moving,
-	hkEntity *opposing, float limit, float reduction, float approach)
-{
-	return false;
-}
 
 // the walk that tests a tree's nodes against planes (3124 bytes, not decompiled)
 struct pending_2ddbd0;

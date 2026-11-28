@@ -1792,8 +1792,12 @@ counters_done:
 }
 
 
-#if 0
-// Activating this draft loses matched 0x2901e0 and 0xfa100 through LTCG shifts.
+// 0x1ec690's probe loop sits in function_1ec690_clear_probe below, not in the body: its `__m128` locals, declared in
+// the body, mark the function for the whole-program pass (see "Aligned locals block register arguments" in
+// docs/DECOMPILING.md); the mark passes on through 0x1ed340 (this file, /Ob1) and 0x1c4b00 stops taking an argument in
+// ebx, which is what lost matched 0x2901e0 and 0xfa100 (callers of 0x1c4b00's callers 0x119020 and 0xf8eb0) when the
+// body was enabled. With the locals in the inline helper nothing is lost in the full check (body 601, 2049 of 2140 bytes;
+// open 0x1e55d0, its caller, moves 319 -> 348 against the live body's convention).
 #include "unknown_1efac0.h"
 #include "unknown_1eb550.h"
 #include <xmmintrin.h>
@@ -1810,7 +1814,41 @@ public:
  real radius;
 };
 
-// @retail 0x1ec690 disabled
+/* the last of the remaining probe spheres that is clear at the input's position (NONE when every one is blocked) */
+static __forceinline long function_1ec690_clear_probe(byte const *input, s_state_c570 *state)
+{
+  real extra = g_47f05c + 0.001f;
+  long selected = NONE;
+  __m128 rotation[3];
+  rotation[0] = _mm_setzero_ps();
+  rotation[1] = _mm_setzero_ps();
+  rotation[2] = _mm_setzero_ps();
+  for (long index = state->field_13 + 1; index < 3; index++)
+  {
+   byte *shape = *(byte **)(*(byte **)(input + 8) + 0x24) + index * 0x80;
+   real radius = *(real *)(shape + 0x2c) - extra;
+   if (g_47f05c > radius) radius = g_47f05c;
+   c_2def90 sphere(radius);
+   __m128 position = _mm_set_ps(0.0f, *(real *)(input + 0xf0), *(real *)(input + 0xec), *(real *)(input + 0xe8));
+   position = _mm_add_ps(position, *(__m128 *)(shape + 0x70));
+   transform4x3f matrix;
+   matrix.scale = 1.0f;
+   matrix.forward.i = 1.0f;
+   matrix.forward.j = ((real *)&rotation[0])[1];
+   matrix.forward.k = ((real *)&rotation[0])[2];
+   matrix.left.i = ((real *)&rotation[1])[0];
+   matrix.left.j = 1.0f;
+   matrix.left.k = ((real *)&rotation[1])[2];
+   matrix.up.i = ((real *)&rotation[2])[0];
+   matrix.up.j = ((real *)&rotation[2])[1];
+   matrix.up.k = 1.0f;
+   matrix.position = *(point3f *)&position;
+   if (!function_1c5210(&matrix, &sphere, *(long *)(input + 0x18), *(long *)(input + 0x24))) selected = index;
+  }
+  return selected;
+}
+
+// @retail 0x1ec690
 void function_1ec690(byte const *input, s_state_c570 *state, byte *output)
 {
  long component_index = *(long *)(input + 0x18);
@@ -1900,34 +1938,7 @@ void function_1ec690(byte const *input, s_state_c570 *state, byte *output)
  if (input[0xb9]) state->field_13 = 0;
  else if (input[0xb8] && state->field_13 < 2)
  {
-  real extra = g_47f05c + 0.001f;
-  long selected = NONE;
-  __m128 rotation[3];
-  rotation[0] = _mm_setzero_ps();
-  rotation[1] = _mm_setzero_ps();
-  rotation[2] = _mm_setzero_ps();
-  for (long index = state->field_13 + 1; index < 3; index++)
-  {
-   byte *shape = *(byte **)(*(byte **)(input + 8) + 0x24) + index * 0x80;
-   real radius = *(real *)(shape + 0x2c) - extra;
-   if (g_47f05c > radius) radius = g_47f05c;
-   c_2def90 sphere(radius);
-   __m128 position = _mm_set_ps(0.0f, *(real *)(input + 0xf0), *(real *)(input + 0xec), *(real *)(input + 0xe8));
-   position = _mm_add_ps(position, *(__m128 *)(shape + 0x70));
-   transform4x3f matrix;
-   matrix.scale = 1.0f;
-   matrix.forward.i = 1.0f;
-   matrix.forward.j = ((real *)&rotation[0])[1];
-   matrix.forward.k = ((real *)&rotation[0])[2];
-   matrix.left.i = ((real *)&rotation[1])[0];
-   matrix.left.j = 1.0f;
-   matrix.left.k = ((real *)&rotation[1])[2];
-   matrix.up.i = ((real *)&rotation[2])[0];
-   matrix.up.j = ((real *)&rotation[2])[1];
-   matrix.up.k = 1.0f;
-   matrix.position = *(point3f *)&position;
-   if (!function_1c5210(&matrix, &sphere, *(long *)(input + 0x18), *(long *)(input + 0x24))) selected = index;
-  }
+  long selected = function_1ec690_clear_probe(input, state);
   if (selected != NONE)
   {
    state->field_13 = (byte)selected;
@@ -1975,4 +1986,3 @@ void function_1ec690(byte const *input, s_state_c570 *state, byte *output)
  }
 }
 
-#endif

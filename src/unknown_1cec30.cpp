@@ -2719,12 +2719,23 @@ PRIVATE inline void component_frame_matrix(hkTransform const *frame, transform4x
     vector3d_from_havok((vector3f *)&matrix->position, &frame->m_translation);
 }
 
-// BLOCKED-BY match cost: enabling this body loses 10 matched functions that neither call it nor
-// are called by it (0x82980, 0xbfa40, 0xebaa0, 0xec940, 0xec970, 0x141f60, 0x142360, 0x1424f0,
-// 0x16c4f0, 0x16c5f0; maintainer's full check on #566), so `@stub 0x1d3920` in src/stubs/lane_s.cpp
-// stays active. The body behaves like retail on 6/6 in-game snapshots (fecheck): retail keeps all
-// three arguments on the stack (ret 0xc) and its callers 0xbc8dc and 0xbd1a7 push them.
-#if 0
+/* the matrix of one child frame of a list shape (the shape builds the frame in the buffer when it keeps none) */
+PRIVATE __forceinline void component_child_frame_matrix(c_component_child_frames *shape, long index, transform4x3f *matrix)
+{
+    hkVector4 buffer[16];
+    s_component_child_frame *frame = shape->get_frame(index, buffer);
+    component_frame_matrix(&frame->transform, matrix);
+}
+
+// The child frame's `hkVector4 buffer[16]` sits in component_child_frame_matrix above, not in this body. Declared here,
+// the 16-aligned local marks this function for the whole-program pass (see "Aligned locals block register arguments"
+// in docs/DECOMPILING.md); the mark passes on through the /Ob1 functions 0x1d3d20 (this file) and 0x142360
+// (src/unknown_141590.cpp), and 0x141f60 stops taking an argument in ebx. That was the earlier "enabling this body loses
+// 10 matched functions that neither call it nor are called by it" (0x141f60, its callers 0x142360, 0x1424f0, 0xbfa40,
+// 0x16c4f0, 0x16c5f0 and functions above those; maintainer's full check on #566). With the buffer in the inline helper
+// nothing is lost in the full check and the body's score is its own (298, 985 of 1023 bytes). The body behaves like
+// retail on 6/6 in-game snapshots (fecheck): retail keeps all three arguments on the stack (ret 0xc) and its callers
+// 0xbc8dc and 0xbd1a7 push them.
 /* views of s_component_node_object and s_component_node_render_model with the fields
    this function reads named (same layouts) */
 struct s_component_node_object_1d3920
@@ -2746,7 +2757,7 @@ struct s_component_node_render_model_1d3920
 
 /* Moves the component's driven nodes onto their rigid bodies (raised by `offset`), marks
    them in `updated` and rebuilds the rest of the hierarchy from the moved nodes. */
-// Retail 0x1d3920, disabled with its blocker above.
+// @retail 0x1d3920
 void __stdcall function_1d3920(byte *component_bytes, dword *updated, real offset)
 {
     /* retail keeps all three arguments on the stack (ret 0xc); its callers push them */
@@ -2794,11 +2805,9 @@ void __stdcall function_1d3920(byte *component_bytes, dword *updated, real offse
             matrix->position.z += *offset_reference;
             if (link->node != first->node)
             {
-                hkVector4 buffer[16];
                 transform4x3f frame_matrix;
                 c_component_child_frames *shape = *(c_component_child_frames **)((byte *)component->rigid_bodies.data[i].rigid_body + 0xc);
-                s_component_child_frame *frame = shape->get_frame(j, buffer);
-                component_frame_matrix(&frame->transform, &frame_matrix);
+                component_child_frame_matrix(shape, j, &frame_matrix);
                 function_142a60(matrix, &frame_matrix, matrix);
             }
             (*updated_reference)[link->node >> 5] |= 1 << (link->node & 31);
@@ -2811,7 +2820,6 @@ void __stdcall function_1d3920(byte *component_bytes, dword *updated, real offse
     if (changed && render_model->node_count > 0)
         component->function_1d3d20(0, *updated_reference, moved, orientations, unknown);
 }
-#endif
 
 // The rigid body is read through the component at each use: a local body pointer makes LTCG pass the
 // component in ECX instead of retail's EAX (194). Retail takes the component in EAX and the body index

@@ -1,9 +1,12 @@
 // @flags /O2 /Gr /arch:SSE
-// BLOCKED-BY 0x182b90: enabling this body loses matched 0x1cfd10 and 0x277ec0 in the full image: once this
-// self-aligning (16-byte frame) caller reaches 0x1cfd10, our 0x182b90 takes its fourth argument on the stack
-// instead of in ebx; any 16-aligned caller does it, and 0x182b90's own frame is not the cause (it is retail's
-// since round 27; build/codex-report.md, rounds 26 and 27).
-#if 0
+// The speed math sits in the two inline helpers below, not in the body, because of the whole-program pass: a function
+// that itself declares a 16-aligned local (`__m128`) is marked before inlining, and the functions it calls then stop
+// taking arguments in ebx; the mark passes on through a callee built with /Ob1 to that callee's own callees. With the
+// `__m128` locals written in this body, 0x1cfd10 (called here, an /Ob1 file) passed the mark on to 0x182b90, whose
+// fourth argument moved from ebx to the stack, and matched 0x1cfd10 and 0x277ec0 were lost (the earlier BLOCKED-BY
+// 0x182b90). A helper's locals join this frame only after inlining: the body's code is byte for byte what it was (frame
+// aligned to 16 as in retail, 600 of 600 bytes, score 149 in the full check) and 0x182b90 keeps its ebx argument. The
+// helpers take the result's address because a returned value changes the body's stores (193).
 #include "unknown_1cec30.h"
 
 struct s_2792c0_context;
@@ -22,7 +25,29 @@ static inline real havok_entity_property_real_get(hkEntity const *entity, dword 
     return 0.0f;
 }
 
-// Retail 0x279410, disabled with its blocker above.
+/* the length of a vector's first three components */
+static __forceinline void havok_vector_length3(hkVector4 const &vector, real *length)
+{
+    __m128 squared = vector.m_quad;
+    squared = _mm_mul_ps(squared, squared);
+    __m128 accumulated = _mm_add_ss(_mm_shuffle_ps(squared, squared, 0x55), squared);
+    accumulated = _mm_add_ss(_mm_shuffle_ps(squared, squared, 0xaa), accumulated);
+    accumulated = _mm_sqrt_ss(accumulated);
+    _mm_store_ss(length, accumulated);
+}
+
+/* the length of the difference of two vectors (first three components) */
+static __forceinline void havok_vector_distance3(hkVector4 const &a, hkVector4 const &b, real *length)
+{
+    __m128 difference = _mm_sub_ps(a.m_quad, b.m_quad);
+    difference = _mm_mul_ps(difference, difference);
+    __m128 sum = _mm_add_ss(_mm_shuffle_ps(difference, difference, 0x55), difference);
+    sum = _mm_add_ss(_mm_shuffle_ps(difference, difference, 0xaa), sum);
+    sum = _mm_sqrt_ss(sum);
+    _mm_store_ss(length, sum);
+}
+
+// @retail 0x279410
 bool __cdecl function_279410(s_component_contact_pair const *pair, hkEntity *moving,
     hkEntity *opposing, real limit, real reduction, real approach)
 {
@@ -35,23 +60,13 @@ bool __cdecl function_279410(s_component_contact_pair const *pair, hkEntity *mov
     if (opposite_slot != NONE && part)
         second_entity = (byte *)havok_object_get(part->object_index);
 
-    __m128 squared = ((hkRigidBody *)moving)->m_motion->m_linear_velocity.m_quad;
-    squared = _mm_mul_ps(squared, squared);
-    __m128 accumulated = _mm_add_ss(_mm_shuffle_ps(squared, squared, 0x55), squared);
-    accumulated = _mm_add_ss(_mm_shuffle_ps(squared, squared, 0xaa), accumulated);
-    accumulated = _mm_sqrt_ss(accumulated);
-    _mm_store_ss(&absolute_speed, accumulated);
+    havok_vector_length3(((hkRigidBody *)moving)->m_motion->m_linear_velocity, &absolute_speed);
     real speed = absolute_speed;
     if (((hkRigidBody *)opposing)->m_motion->kind_code() != 7)
     {
-        __m128 difference = _mm_sub_ps(((hkRigidBody *)moving)->m_motion->m_linear_velocity.m_quad,
-            ((hkRigidBody *)opposing)->m_motion->m_linear_velocity.m_quad);
-        difference = _mm_mul_ps(difference, difference);
-        __m128 sum = _mm_add_ss(_mm_shuffle_ps(difference, difference, 0x55), difference);
-        sum = _mm_add_ss(_mm_shuffle_ps(difference, difference, 0xaa), sum);
-        sum = _mm_sqrt_ss(sum);
         real relative_speed;
-        _mm_store_ss(&relative_speed, sum);
+        havok_vector_distance3(((hkRigidBody *)moving)->m_motion->m_linear_velocity,
+            ((hkRigidBody *)opposing)->m_motion->m_linear_velocity, &relative_speed);
         if (absolute_speed > relative_speed)
             speed = relative_speed;
     }
@@ -78,4 +93,3 @@ bool __cdecl function_279410(s_component_contact_pair const *pair, hkEntity *mov
     return result;
 }
 
-#endif
