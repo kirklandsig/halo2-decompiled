@@ -93,6 +93,22 @@ PRIVATE __forceinline long function_1d96d4()
 // link pointer 985 (same code); the link record filled through a named pointer 999; all three 992; the object flag
 // computed after the speed magnitude 983 (a statement order, two points); the flag tested at its use with no local
 // 1054 (3676 B). Still BLOCKED-BY 0x20670. Body unchanged.
+// M3 lane 3 r321 (H2M_FAST with the same ten callees, control 985 at 3660 B, aligned 633 rows; plain 1088). Read on
+// the reduced image, where the iterator call stays: retail tests both entry counts unsigned (`cmp [count], 0x10; jae`
+// at 0x1d9b80 and 0x1d9bda) yet bounds its two final loops signed (`test edi, edi; jle`), so the counts are signed and
+// the bound is an unsigned one; and retail keeps the contact index and both counts in memory with nothing strength
+// reduced (`imul esi, esi, 0x94` + `lea esi, [esp+esi+0x32c]` at the damage call, `imul eax, eax, 0x2c` for the link
+// record, `lea ecx, [eax+eax*8]` for the contact, `inc dword ptr [count]`), where ours carries a stepped pointer for
+// each of the three; ours also keeps the fixed-body flag in BL where retail has it in a stack byte and the per-contact
+// flag in BL. Forms: both tests against the arrays' sizeof-based element counts 985 (the two `jae` appear, aligned
+// 630; plain 1088, no gain, not kept); the counts declared unsigned with the final loops cast back 985 (same code); a
+// dead pointer to each count 985 and the damage count stepped through a pointer in an inline step 985 (both same code:
+// an address that does not escape changes nothing); the damage count stepped by the call's result (`count += f()`) 1009
+// (3644 B): the entry pointer is then retail's multiply and the frame is retail's 0xc5c, but the step is `movzx; add`
+// where retail has `test al, al; je; inc`; the contact index declared ahead of its loop 985 (same code); diagnostic,
+// the contact index stepped by a value the compiler cannot fold: its offset is no longer carried and the frame is
+// 0xc5c again, while both entry pointers stay stepped (1000), so each of the three is reduced on its own and retail
+// has a cause for each or one that makes all three memory variables. Still BLOCKED-BY 0x20670. Body unchanged.
 // @retail 0x1d96d0
 void function_1d96d0(long arg_0)
 {
