@@ -2543,6 +2543,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // as a `byte` 137. Diagnostics (an added pointer test, not source): a test of the type object ahead of the queries 192
 // (572 B), a test of the 0x1751d0 result ahead of the type lookup 198 (576 B): a block boundary on either side of the
 // type lookup does not end the system's piece at the 0x1751d0 call (the system stays in EDI through the colour call).
+// M3 lane 1 r180 (fast with 0x178eb0 and 0x179020, MATCH throughout; control 128). Retail's 0x44 frame is exactly
+// colour A's 4-byte home below the spawn record (12 bytes) and the matrix (0x34): colour A and colour B are both read
+// before the 0x1751d0 call, colour B kept in EDI across the three calls. On main: colour B read into a local ahead of
+// the spawn stores, colour A at the call, 187 (572 B); that with the spawn record built from an aggregate initialiser
+// and copied 211 (588 B); the type block without its braces 128 (same code); the set_location call in braces with both
+// queries tested `!= false` 193 (572 B); the spawn's location index stored first 128 (same code). Body unchanged.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {

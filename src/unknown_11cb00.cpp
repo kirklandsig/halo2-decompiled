@@ -254,6 +254,22 @@ __inline void quaternion_rotate_point(
 // `left = a` after the two copies 77 (455 B); `left` and `right` copies for both operands 28 (callers 139).
 // Diagnostics: `left` with six unused locals (v.x 5) 17, the whole rotate retail's, only the convention and the first
 // scale product differ; with seven (v.x 6) 17, the dot's i term then ties ahead of j.
+// M3 lane 8 r249 (fast screen with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820, all MATCH; control 8): a named
+// `quaternionf const *rotation = &a->rotation;` for both calls 77 (455 B: the pointer is copied out of EBX),
+// declared at the top 77, with a named `b` position pointer as well 77; a named output position pointer for the
+// rotate and scale calls 11 (448 B), used for the closing sums too 11; both copy tests as `out == a` / `out == b` 10;
+// the scale named for its three uses re-measured 9 (the dot takes retail's order, cy and cz turn v-first and the
+// scale is held in xmm0).
+// GB r37 (22 untried fast trials with 0x11dd80/0x107ed0/0x27a100/0x11d820 MATCH unless noted; control 8 at 452 B,
+// body unchanged): parameter orders (a, b, out) 10 and (a, out, b) 10 (both break 0x107ed0 to 139 and 0x27a100 to 145,
+// confirming (out, a, b) is retail's order), returning real_quaternion_transform * 14 (with (a, b, out) 11, breaks
+// callers), __stdcall 8; quaternion_rotate_point param orders (v, q, out) 4 (breaks 0x11dd80 to 7), (out, q, v) 8
+// (breaks 0x11dd80 to 7), (out, v, q) 8 (0x11dd80 MATCH), const-ref params 8, vector3f * params 8, qv=&q->vector local
+// 29 (breaks 0x11dd80 to 77), 141590 no-dot form 56 (breaks 0x11dd80 to 15); existing vector3f_add for position sum 8,
+// real_point3d_set for sum 19, out == a/b compares 10, scale == 1.f first 45, 2-arg in-place point3f_scale 12 (breaks
+// 0x11dd80 to 4), 2-use qa=&a->rotation 77, 3-use out_pos=&out->position 11 (both 66), 3-use a_pos=&a->position before
+// qrp 68, after scale branch 4 (452 B, all 4 peers MATCH, fixes dot order leaving q.j*v.x and q.i*v.z; NOT kept: field
+// pointer without match).
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,

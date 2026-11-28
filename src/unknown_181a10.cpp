@@ -1347,6 +1347,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // instance plane via matrix_transform.h function_2477b1 separate/in-place 331/342 (fr=0x4c, mk=97), with shape +
 // `(data>>29)-1` 333, combo 336 (mk=86); j,k,i plane locals + d assoc 239 (mk=96); /Ob1 diagnostic 238 (loses 0x182800/
 // 0x183670). Body unchanged.
+// M3 lane 12 r200 (H2M_FAST with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238, difflib-aligned 180):
+// the surface index decoded before the entry index 238 (same code); the instance transform view declared ahead of the
+// plane call 238 (same code); `short material` declared first in the kind-24 block 238 (same code: it still shares the
+// sibling else block's restitution cell); `second` declared ahead of `first` 245; `restitution` declared ahead of
+// `friction` 238 (same code). Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

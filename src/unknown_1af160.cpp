@@ -423,6 +423,17 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // outputs declared in reverse order 12; the 0x1e4be0 flags test written `local_4 != NULL && (*local_4 & 1) != 0` 12; the
 // not-equal arm's flags declared local_18 first, both ahead of the 0x262b40 call 12; the five output clears written as
 // `false` stores 12; the result flag declared ahead of the five clears 12 (all the same code).
+// M3 lane 15 r157 (fast screen with 0x1e1f20, MATCH; control 12; the same two density ties, actor 1000 against the offset
+// temporary's cell 1000 and the prop node 500 against the bool output 500): kept, the second position pointer passed
+// straight to the vector helper (no one-use pointer local) 12 (same code); the scratch buffer fetched after the
+// 0x261280 outputs' declarations 12; the 0x1af530 real output declared at the not-equal arm's top 12 (both the same
+// code); the two 0x1f4a20 flags in one declaration after the 0x262b40 result 15; that pointer removal with the late
+// scratch fetch 12.
+// Round 164's post-if clear lead re-measured 31 (homes and layout retail's; left the clear block, where the threaded
+// result store comes ahead of the clear and the scratch registers rotate EAX/ECX/EDX for retail's ECX/EDX/EAX); that
+// with the result restated after the clear 173 (977 B: the block is no longer threaded into the exit); the equal arm
+// setting a separate lost-target flag and the post-if block clearing and then storing the result 173 (977 B), the
+// result stored first there 173.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
@@ -519,9 +530,8 @@ bool function_1af160(long arg_0, s_1af160 *arg_1)
                     local_26 = false;
                 else if (!REFERENCE_EQUAL(local_15, g_470fa0))
                 {
-                    point3f *local_28 = &function_25d690((s_prop_datum *)local_1)->position;
                     vector3f local_29;
-                    vector3d_from_points3d(&local_12.point, local_28, &local_29);
+                    vector3d_from_points3d(&local_12.point, &function_25d690((s_prop_datum *)local_1)->position, &local_29);
                     if (length_sq3f(&local_29) < *(real *)(local_24 + 0xc) * *(real *)(local_24 + 0xc))
                         local_26 = false;
                 }
