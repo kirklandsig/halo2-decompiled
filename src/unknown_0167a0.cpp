@@ -991,6 +991,10 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // out[3] = out[2];` 6 (the flip); case 20, case 17, the 15/19 zeros or case 11 as plain ascending statements 2 each (same
 // code); the sizes in one declaration 2 (same code); the size pair through a row pointer re-measured 47 (708 B,
 // 0x19ca0 130, lane 6 r244's form).
+// M3 lane 7 r241 (fast screen with 0x19ca0/0x19be0, both MATCH each time): the 14/18 zeros as a plain loop over out[1..3]
+// 80 (the block layout changes from the head); the 12/13 zeros as a loop over out[2..3] 78; both 78; every zero run (11,
+// 12/13, 14/18, 17, 20) as a loop 78; the 14/18 zeros as `out[1] = 0.0f;` then two stores of out[1] with the 12/13 pair
+// ascending 6 (the flip), with main's 12/13 pair 2 (same code).
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

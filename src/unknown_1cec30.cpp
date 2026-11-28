@@ -3293,6 +3293,16 @@ struct s_1cf531
 // re-measured 23 (908 B); that in-place form with the factor splatted through `__m128 &splat = factor` 6 (905 B: the
 // corrected vector is stored to retail's 0x30, but its reload is a separate movaps hoisted above the fstp and the splat
 // stays in XMM0), and with `_mm_load_ss(&local_20)` as well 24 (907 B).
+// M3 lane 7 r241 (fast screen with 0x1d0770 MATCH; control 2). Frame packer on lane 14's 7 form (re-measured 7): the 16-byte
+// objects go local_7 (7 references), local_13 (4, makes 0x30), the rsqrt temporary (3, makes 0x40), the square's spill
+// (joins 0x40), local_14 (makes 0x50) and the block-local final (2), which local_14 refuses and 0x40 takes; an escaping
+// object declared in the outer block interferes with every object there, one in an inner block only with local_14.
+// Forms: the 7 form with the final declared in the outer block 8 (the frame grows); copy and correction in one `__m128`
+// with the direction normalized in place in local_7 and local_13 written only by the final product 62 (915 B, the
+// subtraction sinks past the scale call); the correction stored into the final object and scaled there in place 30
+// (908 B: the final, now 4 references, is packed at 0x30, but local_13 takes a fifth 16-byte slot), that with the final
+// in an inner block from the correction on 36 (908 B); the 7 form with the factor splatted through `__m128 &splat =
+// factor` 25.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

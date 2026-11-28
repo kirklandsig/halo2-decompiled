@@ -542,6 +542,14 @@ static inline void counters_apply_1988e0(s_input_counter *counters, long count, 
 // at 3 (the numbering is per function). Forms: the device loop's record pointer declared ahead of the changed test 3;
 // the counters loop without the group pointer 72; the group pointer `const` 3; the address loop storing straight into
 // `record->addresses[i][j]` 3; the header's flag tests on the update's flags 20.
+// M3 lane 7 r241 (fast screen with 0x198540 MATCH; control 3). Rank reading: the first group loop's pair is the
+// difference 786 against the walking record pointer 586, the entries sum's walking update pointer 638 against the
+// record parameter's 2; both flip together only when the walking pointer's number lands on 0 modulo 2048 with the
+// group pair about 52 below it. Forms: the device loop with no pointer locals (`update->devices[i][j]` and
+// `record->devices[i][j]` at each use) 401; the entry loop the same way 469; both 502 (1823 B); the pair loop with no
+// pair pointer 11; device, entry and pair loops all that way 520 (1823 B). One loop-scoped index shifts the numbers by
+// 0, 6, 10 or 16 depending on the loop, all twelve by 142; the direct device loop moves the walk to 98 but the group
+// pair to 1834 (no fit), the direct entry loop keeps their distance (160/212).
 // @retail 0x001988e0
 void function_1988e0(s_input_record *record, s_input_update *update)
 {

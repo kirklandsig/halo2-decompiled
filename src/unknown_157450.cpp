@@ -1091,6 +1091,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // compare written `old_team_mask != present_teams` 77; stored through `globals->team_mask` with no field pointer 129
 // (375 B); the OR and its store ahead of the playing store 129 (375 B); the added teams computed after the stores 77; both
 // change compares written saved value first with the mask widened 78. Body unchanged.
+// M3 lane 7 r241 (fast screen with 0xb58c0/0x196780, both MATCH; control 23). Ledger on the plain present: present 15 (entry
+// 18, loop update 20, compare 4, change block 42 for the OR's source, its destination and the store) against the pool
+// pointer's 11, the globals pointer uncoloured; one reference in the change block would leave present at -13. Forms:
+// the update as a read-modify-write of the field, `*team_mask |= (word)present_teams;`, 130 (375 B, the field is read
+// again after the loop), with a plain present 130 (374 B), uncast 130; `*team_mask = *team_mask | present_teams;` with a
+// plain present 130, with the volatile one 130; a plain present declared first (ahead of the globals pointer) with the
+// uncast one-expression store 63 (384 B), with `(word)(present_teams | old_team_mask)` 63. Body unchanged.
 // @retail 0x158140
 void function_158140(void)
 {

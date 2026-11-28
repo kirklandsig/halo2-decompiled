@@ -2291,6 +2291,11 @@ void function_27dd10(void)
 // of the interpolation test for both function_288573 calls 2 (same code); the three frame-state restores ahead of the
 // interpolation arm's function_288573 call (the output target restored after it) 71 (0x281b60 62, 0x285750 87, 0x288570
 // 373). All restored.
+// M3 lane 7 r241 (fast screen with 0x281b60 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x27f530/0x2898b0;
+// control 2): function_288573's blend-1 arm moved to the end of the method chain 2 (same code everywhere); the walk's bit
+// test through a named bool 2 (0x289580 78); the flags shift as `(dword)local_2 >> 1` 230 (1742 B, every walk user
+// regresses); function_288573 given `local_4` in both calls (the lookup sets it to the node index for kind 0) 2 (0x288570
+// 3); orientation_scale_blend with the difference named 2 (same code). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
