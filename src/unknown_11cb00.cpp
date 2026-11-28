@@ -254,6 +254,12 @@ __inline void quaternion_rotate_point(
 // `left = a` after the two copies 77 (455 B); `left` and `right` copies for both operands 28 (callers 139).
 // Diagnostics: `left` with six unused locals (v.x 5) 17, the whole rotate retail's, only the convention and the first
 // scale product differ; with seven (v.x 6) 17, the dot's i term then ties ahead of j.
+// M3 lane 8 r249 (fast screen with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820, all MATCH; control 8): a named
+// `quaternionf const *rotation = &a->rotation;` for both calls 77 (455 B: the pointer is copied out of EBX),
+// declared at the top 77, with a named `b` position pointer as well 77; a named output position pointer for the
+// rotate and scale calls 11 (448 B), used for the closing sums too 11; both copy tests as `out == a` / `out == b` 10;
+// the scale named for its three uses re-measured 9 (the dot takes retail's order, cy and cz turn v-first and the
+// scale is held in xmm0).
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,

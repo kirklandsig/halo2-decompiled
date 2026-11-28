@@ -2658,6 +2658,10 @@ void function_cfec0(long unit_index)
 // diagnostics: the body below the NONE test in an inline helper called as `if (unit_index != NONE) return
 // helper(unit_index); return unit_index;` 340 (stays out of line, 14 B; both callers lose), the same helper
 // `__forceinline` 51 (252 B; callers 3 and 1). No lower score.
+// M3 lane 8 r249 (fast screen with callers 0x1a4900 and 0x1a4c00, both MATCH; control 1): the test as `unit_index ^ NONE`
+// 96 (254 B); `unit_index >= 0 || unit_index < NONE` 90 and the halves the other way round 89 (255 B, two branches);
+// `(unit_index != NONE) != false` 2 (258 B: the NONE exit folds to the constant); `unit_index > NONE || unit_index <
+// NONE` 92 (253 B); `unit_index >= 0 || unit_index != NONE` 100 (264 B). No lower score.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {

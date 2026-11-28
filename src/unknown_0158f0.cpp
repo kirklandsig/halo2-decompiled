@@ -291,6 +291,12 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // (96); a compare with the OK code 99 (96); the failure test into a local palette with both arms storing `*out` 87 at
 // 42 B (77); the status named, then the success test 86 (96); an early `return false` on the failure test 91 at 38 B
 // (96). The nested call stays out of line in each.
+// M3 lane 8 r249 (fast screen, 0x1d3f0 in brackets; control 99 (77)): `__fastcall` 99 (77); the NULL test as `if
+// (palette)` with the success arm first 99 (77); the size read into a local of the SDK's palette-size type 99 (77);
+// the result and flag declared ahead of the call 99 (77); `result = palette; created = palette != NULL;` 103 at 26 B
+// (96). Reading: retail's inlined body calls the default allocator directly at each site, so the title's
+// allocation override (0x12280, its switch folded on the constant attributes) was expanded inside the SDK body
+// before that body was expanded here; the SDK call stays out of line in every straight-line form.
 // @retail 0x15b10
 bool function_015b10(
 	long index,
