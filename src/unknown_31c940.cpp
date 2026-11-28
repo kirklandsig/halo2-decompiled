@@ -1511,6 +1511,64 @@ static __forceinline void save_solver_scales_31c940(float const &error,
  memcpy(&saved_error, &error, sizeof(saved_error));
  memcpy(&saved_velocity, &velocity, sizeof(saved_velocity));
 }
+// Carry the current kind across each run of dynamic bodies. The next kind
+// is captured only after both accumulated fields have been published.
+static __forceinline void save_velocity_run_31c940(
+ solver_velocity_31c940 *body, signed char &kind)
+{
+ for (;;)
+ {
+  switch (kind)
+  {
+  case 3: return;
+  case 2:
+   do
+   {
+    body->accumulated_angular = body->angular;
+    body->accumulated_linear = body->linear;
+    ++body;
+    kind = (signed char)body->kind;
+   } while (kind == 2);
+   break;
+  }
+ }
+}
+static __forceinline void add_velocity_run_31c940(
+ solver_velocity_31c940 *body, signed char &kind)
+{
+ for (;;)
+ {
+  switch (kind)
+  {
+  case 3: return;
+  case 2:
+   do
+   {
+    body->accumulated_angular = _mm_add_ps(body->accumulated_angular, body->angular);
+    accumulate_velocity_field_31c940(body->accumulated_linear, body->linear);
+    ++body;
+    kind = (signed char)body->kind;
+   } while (kind == 2);
+   break;
+  }
+ }
+}
+static __forceinline void process_velocity_epoch_31c940(
+ long iteration, solver_velocity_31c940 *bodies)
+{
+ if (iteration == 0)
+ {
+  solver_velocity_31c940 *velocity_body = bodies;
+  signed char velocity_kind = (signed char)velocity_body->kind;
+  save_velocity_run_31c940(velocity_body, velocity_kind);
+ }
+ else
+ {
+  solver_velocity_31c940 *velocity_body = bodies;
+  signed char velocity_kind = (signed char)velocity_body->kind;
+  add_velocity_run_31c940(velocity_body, velocity_kind);
+ }
+}
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -1906,16 +1964,18 @@ complete_circular_pair_31c940(impulse_b,scalar_work.next_circular,normal_axes,te
 				}
 				// Linear friction with a scalar limit.
 				case 6:
-				{
-					solver_scoped_body_fields_31c940 const &body_b = scoped_b;
-					// Publish the retained pointer homes before binding the linear field.
-					__m128 const * &inverse_b_pointer = scalar_work.inverse_b;
-					inverse_b_pointer = &body_b.body->inverse_inertia;
-					__m128 * &angular_b_pointer = scalar_work.angular_b;
-					angular_b_pointer = &body_b.body->angular;
-					float const * &friction_scale_pointer = scalar_work.friction_scale;
-					friction_scale_pointer = &step->friction_scale;
-					__m128 *linear_b_pointer = &body_b.body->linear;
+    {
+     solver_scoped_body_fields_31c940 const &body_b = scoped_b;
+     // Publish the scale home before capturing the body's field addresses.
+     float const *&friction_scale_pointer = scalar_work.friction_scale;
+     friction_scale_pointer = &step->friction_scale;
+     solver_velocity_31c940 *captured_b = body_b.body;
+     __m128 const *&inverse_b_pointer = scalar_work.inverse_b;
+     inverse_b_pointer = &captured_b->inverse_inertia;
+     __m128 *linear_b_pointer = &captured_b->linear;
+     __m128 *&angular_b_pointer = scalar_work.angular_b;
+     angular_b_pointer = &captured_b->angular;
+
 					do
 					{
 						float target=((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
@@ -2159,48 +2219,8 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 		} while (!dispatch_done);
 
 
-		// Save the first iteration's velocities, then accumulate later ones.
-		// Retail consumes consecutive kind-2 bodies before checking the sentinel.
-		solver_velocity_31c940 *body = bodies;
-		// Retain the captured type until advancing to the next body.
-		signed char body_kind = (signed char)body->kind;
-		if (state.solving.iteration == 0)
-		{
-			while (body_kind != 3)
-			{
-				switch (body_kind)
-				{
-				case 2:
-					do
-					{
-						body->accumulated_angular = body->angular;
-						body->accumulated_linear = body->linear;
-						++body;
-						body_kind = (signed char)body->kind;
-					} while (body_kind == 2);
-					break;
-				}
-			}
-		}
-		else
-		{
-			while (body_kind != 3)
-			{
-				switch (body_kind)
-				{
-				case 2:
-					do
-					{
-						accumulate_velocity_field_31c940(body->accumulated_angular,body->angular);
-						accumulate_velocity_field_31c940(body->accumulated_linear,body->linear);
-						++body;
-						body_kind = (signed char)body->kind;
-					} while (body_kind == 2);
-					break;
-				}
-			}
-		}
-		// The third operation byte classifies the residual row layout.
+		process_velocity_epoch_31c940(state.solving.iteration, bodies);
+// The third operation byte classifies the residual row layout.
 		{
 
 			// This pass keeps B in a register across consecutive residual rows.
@@ -2217,17 +2237,25 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 			terms = first_residual_header->terms; op += 24;
 			// Carry the class through grouped rows; class zero finishes this pass.
 
-			residual_kind = (signed char)op[2];
-			for (;; residual_kind = (signed char)op[2])
+			
+			// The outer entry fetches a class. The inner entry reuses the class
+   // captured after the first pair, before any next-pair publication.
+   bool residual_done = false;
+   do
+   {
+    residual_kind = (signed char)op[2];
+    for (;;)
 			{
 				switch (residual_kind)
 				{
-				case 0: break;
+				case 0:
+     residual_done = true;
+     break;
 				case 1:
 				{
 					solver_header_31c940 *header = (solver_header_31c940 *)op;
 					a = header->a; b = header->b; terms = header->terms; op += 24;
-					continue;
+					break;
 				}
 				case 5:
 				{
@@ -2235,48 +2263,48 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 					{
 						__m128 first, second;
 						{
-							__m128 bank[7];
-							solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-							// Retain the shared inputs across both projections.
-							// Reuse each input only after its final multiplication.
+       __m128 work_0, work_1, work_2, work_3, work_4, work_5, work_6;
+								solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+								// Retain the shared inputs across both projections.
+								// Reuse each input only after its final multiplication.
+								work_3 = a->angular;
+								work_1 = row[0].a;
+								work_2 = b->linear;
+								work_5 = row[0].b;
+								work_0 = work_3;
+								work_0 = _mm_mul_ps(work_0, work_1);
+								work_1 = row[1].a;
+								work_3 = _mm_mul_ps(work_3, work_1);
+								work_1 = a->linear;
+								work_1 = _mm_sub_ps(work_1, work_2);
+								work_2 = b->angular;
+								work_6 = work_1;
+								work_4 = work_2;
+								work_4 = _mm_mul_ps(work_4, work_5);
+								work_5 = row[1].b;
+								work_2 = _mm_mul_ps(work_2, work_5);
+								work_3 = _mm_add_ps(work_3, work_2);
+								work_5 = row[0].linear;
+								work_0 = _mm_add_ps(work_0, work_4);
+								work_6 = _mm_mul_ps(work_6, work_5);
+								work_0 = _mm_add_ps(work_0, work_6);
+								work_4 = row[1].linear;
+								work_1 = _mm_mul_ps(work_1, work_4);
+								work_3 = _mm_add_ps(work_3, work_1);
+								work_2 = _mm_shuffle_ps(work_3, work_3,0xaa);
+								work_1 = _mm_shuffle_ps(work_3, work_3,0x55);
+								work_1 = _mm_add_ss(work_1, work_3);
+								work_3 = work_2;
+								work_2 = work_0;
+								work_2 = _mm_shuffle_ps(work_2, work_2,0xaa);
+								work_3 = _mm_add_ss(work_3, work_1);
 
-							bank[3] = a->angular;
-							bank[5] = row[0].b;
-							bank[2] = b->linear;
-							bank[1] = row[0].a;
-							bank[0] = bank[3];
-							bank[0] = _mm_mul_ps(bank[0], bank[1]);
-							bank[1] = row[1].a;
-							bank[3] = _mm_mul_ps(bank[3], bank[1]);
-							bank[1] = a->linear;
-							bank[1] = _mm_sub_ps(bank[1], bank[2]);
-							bank[6] = bank[1];
-							bank[2] = b->angular;
-							bank[4] = bank[2];
-							bank[4] = _mm_mul_ps(bank[4], bank[5]);
-							bank[0] = _mm_add_ps(bank[0], bank[4]);
-							bank[5] = row[1].b;
-							bank[2] = _mm_mul_ps(bank[2], bank[5]);
-							bank[5] = row[0].linear;
-							bank[6] = _mm_mul_ps(bank[6], bank[5]);
-							bank[3] = _mm_add_ps(bank[3], bank[2]);
-							bank[0] = _mm_add_ps(bank[0], bank[6]);
-							bank[4] = row[1].linear;
-							bank[1] = _mm_mul_ps(bank[1], bank[4]);
-							bank[3] = _mm_add_ps(bank[3], bank[1]);
-							bank[1] = _mm_shuffle_ps(bank[3], bank[3], 0x55);
-							bank[1] = _mm_add_ss(bank[1], bank[3]);
-							bank[2] = _mm_shuffle_ps(bank[3], bank[3], 0xaa);
-							bank[3] = bank[2];
-							bank[3] = _mm_add_ss(bank[3], bank[1]);
-							bank[2] = bank[0];
-							bank[1] = _mm_shuffle_ps(bank[0], bank[0], 0x55);
-							bank[1] = _mm_add_ss(bank[1], bank[0]);
-							bank[2] = _mm_shuffle_ps(bank[2], bank[2], 0xaa);
-							second = bank[3];
-							bank[2] = _mm_add_ss(bank[2], bank[1]);
-							first = bank[2];
-						}
+								work_1 = _mm_shuffle_ps(work_0, work_0,0x55);
+								work_1 = _mm_add_ss(work_1, work_0);
+								work_2 = _mm_add_ss(work_2, work_1);
+								first = work_2;
+second = work_3;
+      }
 						_mm_store_ss(&projection_pool.residual_normal_first, first);
 						terms[0].m128_f32[3] -= projection_pool.residual_normal_first;
 						_mm_store_ss(&projection_pool.residual_normal_second, second);
@@ -2290,48 +2318,48 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 					{
 						__m128 first, second;
 						{
-							__m128 bank[7];
-							solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-							// Retain the shared inputs across both projections.
-							// Reuse each input only after its final multiplication.
+       __m128 work_0, work_1, work_2, work_3, work_4, work_5, work_6;
+								solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+								// Retain the shared inputs across both projections.
+								// Reuse each input only after its final multiplication.
+								work_3 = a->angular;
+								work_1 = row[0].a;
+								work_2 = b->linear;
+								work_5 = row[0].b;
+								work_0 = work_3;
+								work_0 = _mm_mul_ps(work_0, work_1);
+								work_1 = row[1].a;
+								work_3 = _mm_mul_ps(work_3, work_1);
+								work_1 = a->linear;
+								work_1 = _mm_sub_ps(work_1, work_2);
+								work_2 = b->angular;
+								work_6 = work_1;
+								work_4 = work_2;
+								work_4 = _mm_mul_ps(work_4, work_5);
+								work_5 = row[1].b;
+								work_2 = _mm_mul_ps(work_2, work_5);
+								work_3 = _mm_add_ps(work_3, work_2);
+								work_5 = row[0].linear;
+								work_0 = _mm_add_ps(work_0, work_4);
+								work_6 = _mm_mul_ps(work_6, work_5);
+								work_0 = _mm_add_ps(work_0, work_6);
+								work_4 = row[1].linear;
+								work_1 = _mm_mul_ps(work_1, work_4);
+								work_3 = _mm_add_ps(work_3, work_1);
+								work_2 = _mm_shuffle_ps(work_3, work_3,0xaa);
+								work_1 = _mm_shuffle_ps(work_3, work_3,0x55);
+								work_1 = _mm_add_ss(work_1, work_3);
+								work_3 = work_2;
+								work_2 = work_0;
+								work_2 = _mm_shuffle_ps(work_2, work_2,0xaa);
+								work_3 = _mm_add_ss(work_3, work_1);
 
-							bank[3] = a->angular;
-							bank[5] = row[0].b;
-							bank[2] = b->linear;
-							bank[1] = row[0].a;
-							bank[0] = bank[3];
-							bank[0] = _mm_mul_ps(bank[0], bank[1]);
-							bank[1] = row[1].a;
-							bank[3] = _mm_mul_ps(bank[3], bank[1]);
-							bank[1] = a->linear;
-							bank[1] = _mm_sub_ps(bank[1], bank[2]);
-							bank[6] = bank[1];
-							bank[2] = b->angular;
-							bank[4] = bank[2];
-							bank[4] = _mm_mul_ps(bank[4], bank[5]);
-							bank[0] = _mm_add_ps(bank[0], bank[4]);
-							bank[5] = row[1].b;
-							bank[2] = _mm_mul_ps(bank[2], bank[5]);
-							bank[5] = row[0].linear;
-							bank[6] = _mm_mul_ps(bank[6], bank[5]);
-							bank[3] = _mm_add_ps(bank[3], bank[2]);
-							bank[0] = _mm_add_ps(bank[0], bank[6]);
-							bank[4] = row[1].linear;
-							bank[1] = _mm_mul_ps(bank[1], bank[4]);
-							bank[3] = _mm_add_ps(bank[3], bank[1]);
-							bank[1] = _mm_shuffle_ps(bank[3], bank[3], 0x55);
-							bank[1] = _mm_add_ss(bank[1], bank[3]);
-							bank[2] = _mm_shuffle_ps(bank[3], bank[3], 0xaa);
-							bank[3] = bank[2];
-							bank[3] = _mm_add_ss(bank[3], bank[1]);
-							bank[2] = bank[0];
-							bank[1] = _mm_shuffle_ps(bank[0], bank[0], 0x55);
-							bank[1] = _mm_add_ss(bank[1], bank[0]);
-							bank[2] = _mm_shuffle_ps(bank[2], bank[2], 0xaa);
-							second = bank[3];
-							bank[2] = _mm_add_ss(bank[2], bank[1]);
-							first = bank[2];
-						}
+								work_1 = _mm_shuffle_ps(work_0, work_0,0x55);
+								work_1 = _mm_add_ss(work_1, work_0);
+								work_2 = _mm_add_ss(work_2, work_1);
+								first = work_2;
+second = work_3;
+      }
 						_mm_store_ss(&projection_pool.residual_bounded_first, first);
 						terms[0].m128_f32[3] -= projection_pool.residual_bounded_first;
 						_mm_store_ss(&projection_pool.residual_bounded_second, second);
@@ -2339,7 +2367,7 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 						terms += 6;
 					}
 					result_cursor.advance(2); op += op[1];
-					if (op[2] != 6) continue;
+					if (op[2] != 6) break;
 				}
 				case 6:
 				{
@@ -2424,7 +2452,7 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 						solver_header_31c940 *header = (solver_header_31c940 *)op;
 						a = header->a; b = header->b; terms = header->terms; op += 24;
 					}
-					continue;
+					break;
 				}
 				case 3:
 				{
@@ -2436,7 +2464,7 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 						++row; result_cursor.advance(1); op += op[1];
 					} while (op[2] == 3);
 					terms = (__m128 *)row;
-					continue;
+					break;
 				}
 				case 4:
 				{
@@ -2447,15 +2475,16 @@ unsigned long spin_bits=apply_spin_second_fields(impulse_b,scalar_work.next_circ
 						++row; result_cursor.advance(1); op += op[1];
 					} while (op[2] == 4);
 					terms = (__m128 *)row;
-					continue;
+					break;
 				}
-				case 2: op += op[1]; continue;
+				case 2: op += op[1]; break;
 
-				default: continue;
+				default: break;
 				}
 				break;
 
 			}
+   } while (!residual_done);
 
 		}
 		// The limit may partly overlap the counter home. Retain both inputs
