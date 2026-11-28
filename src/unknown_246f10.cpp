@@ -120,6 +120,8 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // lea and puts the lea after the last push). Each 6 in the fast build: material as a local; (long)&impact->direction
 // in a local (after the material, and before the scale call); the scale call inside the argument list; the normal in
 // a local pointer; impact->index inside the call. None moves the schedule.
+// Roasted-Codes (#1598, 11-28): both 0x188180 arguments (position and normal) named in one-use const pointers after
+// the scale call 6; the scale call ahead of the index read 6. Neither moves the material load or the last lea.
 // @retail 0x247070
 void function_247070(s_object_246eb0 const *particle, s_particle_impact const *impact, long definition_index, long tag_index)
 {
