@@ -1123,6 +1123,13 @@ struct s_physical_block_iterator
 // (same code); case 0 as a ternary on equal times 284 (1182 B, +0x2f). Reading: retail's three policy cases all leave the
 // result in AL and join at one `test al, al` (default, case 1, case 0, then the join); ours places case 0 and case 1 after
 // the scan loop and threads the default arm's `setg` into the take test.
+// M3 lane 2 r163 (H2M_FAST; control 201; lane 1 r124's 40 lead rebuilt, 40 at 1213 B, first difference +0x356). A
+// forced-ranking search on the lead (40 single decisions) found none below 40: the walk's handle, block offset and
+// overlap sum sit in EBX/ECX/EDX against retail's ECX/EDX/EBX, and ours schedules the block offset load (folded as
+// `[eax + ebx + 8]`) ahead of the salt read where retail reads the salt first. On the lead: the delete call's handle
+// built from the block's salt and the iterator index 376; the overlap test as a negated `>= || <=` 40; the pool pointer
+// in a local for the iterator 40; the second overlap test written best-first 40; the first written sum-first 40 (the
+// last four the same code). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

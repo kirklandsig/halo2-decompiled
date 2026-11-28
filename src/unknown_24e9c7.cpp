@@ -830,6 +830,13 @@ struct s_24e9c7_points
 // re-measured 139, 742 B): the up products as `-result * forward_i` / `-result * forward_j` 139; the bounds height and width
 // named ahead of the height 139; up y as `-(result * forward_j)` 139; back as `0.0f - side.x` / `0.0f - side.y` 139 (all
 // the same code); the size step written y first 138 (739 B).
+// M3 lane 2 r163 (H2M fast with 0x22a664, MATCH each run; control 125). Retail's cell references: [ebp-4] 4, [ebp-8] 5
+// (the early across j product, then the side's j), [ebp-0xc] 0, result [ebp-0x10] 3, kind 2, bitmap index 2; the frame
+// packer here founds result's slot second, so retail's second slot needs a 4-byte founder with three or more references
+// ahead of result that the side pair then joins. Forms: across j built in two steps (`= size; *= forward_i`) 125 (folded,
+// same code); that with side j scaled before side i 125; the height conversion written straight into the result (no
+// height local) 125 (same code); the half width computed ahead of the height 131; the sequence index read from the kind
+// at each use 125 (re-measured, listed above). Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
