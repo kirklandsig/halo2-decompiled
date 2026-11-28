@@ -1438,8 +1438,10 @@ PRIVATE __forceinline real function_1cfd11(real const *arg_0)
 	return (real)sqrt(local_0 * arg_0[1]);
 }
 
+// The fourth parameter is not read and the whole-program pass drops it. Its one caller 0x279410 hands the moving
+// entity's 0x2002 property on, and only that caller's stores of the value show the read (src/unknown_279410.cpp).
 // @retail 0x1cfd10
-void function_1cfd10(s_component_contact_pair const *contact, s_havok_component *component, real scale)
+void function_1cfd10(s_component_contact_pair const *contact, s_havok_component *component, real scale, long)
 {
 	(void)&component;
 	(void)&scale;

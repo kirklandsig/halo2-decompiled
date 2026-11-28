@@ -227,6 +227,8 @@ Declaration order of uninitialised locals moves nothing. What does move slots:
 | `sub reg, K; mov reg, [reg + N]` unfolded | A pointer local stepped back in place inside a helper (`0x30e720`) |
 | `mov eax, [mem]; cmp eax, ecx` where ours has `cmp [mem], eax` | The bound read through an accessor (`0x2fb150`) |
 | A call and its EH state that ours lacks | An empty destructor defined in the same file is dropped; define it in another file (`0x30e720`) |
+| A stack cell written and never read, its address never taken | The value is an argument for a parameter the callee does not read: the whole-program pass drops the argument and the stores stay. A local that nothing reads loses its stores (`0x279410`) |
+| A pointer parameter loaded from its home at each use, the other registers placed as if it had no say | A one-member record passed by value; it is not a register candidate (`0x279410`) |
 
 ### Things that did not work
 

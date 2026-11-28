@@ -184,8 +184,13 @@ struct contact_event_2daae0
 };
 
 struct s_component_contact_pair;
+// the contact as the game's test takes it: its pointer in a record, passed by value (src/unknown_279410.cpp)
+struct s_component_contact_reference
+{
+	s_component_contact_pair const *pair;
+};
 // whether the game slows the moving entity on this contact (game code)
-bool __cdecl function_279410(s_component_contact_pair const *pair, hkEntity *moving,
+bool __cdecl function_279410(s_component_contact_reference contact, hkEntity *moving,
 	hkEntity *opposing, real limit, real reduction, real approach);
 
 // sets a rigid body's linear velocity (game code)
@@ -233,6 +238,7 @@ static __forceinline float length_squared_2daae0(hkVector4 const &vector)
 void class_2da9f0::contact_2daae0(void *contact_)
 {
 	contact_event_2daae0 *contact = (contact_event_2daae0 *)contact_;
+	s_component_contact_reference reference = { (s_component_contact_pair const *)contact };
 	collidable_2daae0 *first = contact->first;
 	while (first->parent)
 	{
@@ -257,7 +263,7 @@ void class_2da9f0::contact_2daae0(void *contact_)
 		shape_2daae0 *shape = contact->first->shape;
 		float speed_squared = length_squared_2daae0(((hkRigidBody *)entity)->m_motion->m_linear_velocity);
 		hkEntity *other = second->entity;
-		if (function_279410((s_component_contact_pair const *)contact, entity, other,
+		if (function_279410(reference, entity, other,
 			shape->field_24, shape->field_24 - shape->field_28, contact->field_1c))
 		{
 			float const inverse = 1.0f / (float)sqrt(speed_squared);
@@ -275,7 +281,7 @@ void class_2da9f0::contact_2daae0(void *contact_)
 		shape_2daae0 *shape = contact->second->shape;
 		float speed_squared = length_squared_2daae0(((hkRigidBody *)entity)->m_motion->m_linear_velocity);
 		hkEntity *other = first->entity;
-		if (function_279410((s_component_contact_pair const *)contact, entity, other,
+		if (function_279410(reference, entity, other,
 			shape->field_24, shape->field_24 - shape->field_28, contact->field_1c))
 		{
 			float const inverse = 1.0f / (float)sqrt(speed_squared);
