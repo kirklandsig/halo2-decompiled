@@ -2629,6 +2629,11 @@ void function_2818e0(void)
 // restores ahead of the apply call (the output restore after it) 62 (0x27dff0 71, 0x285750 87, 0x288570 373); the group
 // end as `MIN(arg_5 + 8, arg_7)` 2; the destination index initialised NONE at its declaration 2; node_destination_get
 // single-exit (`bool result = false;`, the mapped test as an else arm) 2 (the 2s the same code). All restored.
+// M3 lane 6 r255 (fast screen with 0x27dff0 and the four matched walk users; control 2): the pair is region 48's two
+// reloads (count to ECX, flags to EBX) at equal height 2+1, so code-generation order decides. Blend 2's rotation with
+// its source named (`quaternionf const *source = &g_504430.rotation`) 309 (1685 B); its destination bound by
+// `quaternionf &` 352 (1685 B); in node_destination_get the mapped index as `short` 367 (1691 B, 0x27dff0 382, 0x285750
+// 390, 0x28aaa0 249), as `long const` 2, the bounds test as two nested ifs 2 (both the same code). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
