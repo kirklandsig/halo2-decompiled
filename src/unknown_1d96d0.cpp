@@ -109,6 +109,13 @@ PRIVATE __forceinline long function_1d96d4()
 // the contact index stepped by a value the compiler cannot fold: its offset is no longer carried and the frame is
 // 0xc5c again, while both entry pointers stay stepped (1000), so each of the three is reduced on its own and retail
 // has a cause for each or one that makes all three memory variables. Still BLOCKED-BY 0x20670. Body unchanged.
+// M3 lane 5 r258 (fast screen with the same ten callees, control 985 at 3660 B; plain 1088): the fixed-body flag
+// written directly (`local_19 == NULL || ...m_fixed || ...kind_code() == 6`) 1017 (3644 B); assigned from that test
+// inside the `if` 997; the other-object flag written directly into its named bool (`local_18 == NONE || !TEST...`)
+// 981 (3676 B, aligned rows 413 -> 316), plain 1069 at 3693 B, but with the test written in the `if` itself (no
+// named bool) 986 (3660 B), so the gain needs the one-use bool: a lead kept only with a match; both direct forms
+// 1012. The existing mass and keyframed members of the component are /Ob1 calls (retail expands both tests here).
+// Body unchanged; still BLOCKED-BY 0x20670.
 // @retail 0x1d96d0
 void function_1d96d0(long arg_0)
 {

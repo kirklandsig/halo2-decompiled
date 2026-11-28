@@ -1061,6 +1061,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // mk=62; `mov esi, [g_4e7408]` between pushes, frame still 0x1c; not kept: one-use local and moved statement); in shared
 // `include/axis_rotation.h` on `random_unit_vector`: `axis->*` first in rows 125 (all matched peers intact), k/j/i dot +
 // cross_k,j,i order 158 (880 B; breaks matched 0x2551f0 15, 0x1ff360 60, 0x26d570 23).
+// M3 lane 2 r163 (H2M fast with 0x118140 and 0x1462e0, MATCH unless noted; control 130). The reassociation ranks of the
+// rotation's dot read: the global's i and j leaves weigh 0x540/0x500 and the named k copy 0x280, the axis copy's j, k, i
+// 0x320/0x3a0/0x3c0, so the products sort i, j, k where retail sums (k + j) + i. Both table draws through the existing
+// random_unit_vector re-measured 125 (888 B); on it: the time product written rate first 125 and with the rate cast to
+// real 125 (same code); the frame count stored as a plain read 214 (894 B, matched 0x118140 53: the address-of read stays);
+// only the axis draw through random_unit_vector 154 (880 B); only the first draw through it 154 (880 B). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

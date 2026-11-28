@@ -1070,6 +1070,13 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // `local_25.y` in arms (`0.0f - local_23`) + `j^2+i^2` 719 (fr 0x90; MP combo 718); on GB28's 456 base: `local_6` member
 // scales 456, `0.99` swap 459 (mk 59), `local_26 *= 0.5f` early 471, retail cross order 662 (+ 0.99 + half 660),
 // `override == 0` 673, inline `(i*i+k*k)+j*j` norm 747.
+// m3 lane 13 r169 (fast with the eleven companions, control 462): the frame packer sorts the 12-byte slots by
+// refs*1000/size; local_8 (7 refs, 583) sits above the slot local_14/local_25/local_13 share (8 refs, 666). Retail reads
+// local_8.y once more (y in each arm of the side select, x after the join), which only ties the two at 666, so retail's
+// order is the quicksort's tie order. local_13 renamed to sort after local_8 462 (same code). Side point: y then x with
+// a ternary in each 722 (3514 B); local_24 and y set in each arm of an if (second arm `0.0f - local_23`) 719 (3502 B);
+// the same with `-local_23` 719; y assigned before x from local_24 706 (3499 B, first difference +0x4e); offsets
+// written distance-first 462 (same code). local_8 stays at +0x8c in all of them.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

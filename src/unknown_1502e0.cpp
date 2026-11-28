@@ -1368,6 +1368,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // through the getter with the lookup and both call arguments through the player 27 (138 B); the player fetched inside
 // the guarded block with the guard through the getter 26 (137 B); the guard and the lookup through the getter with the
 // call arguments through the player 64 (150 B).
+// M3 lane 14 r167 (H2M_FAST with 0x151aa0, 43 each time, and 0x152bf0, MATCH; control 5): the player address built in
+// two steps (`player = data; player += index & 0xffff;`) with the getter reload 5 (same code), with the plain-read
+// lookup 17 (the plain-read code); `result` given false in an else arm of each test with no initial value, getter
+// reload 49 (139 B), plain read 48 (140 B); 0xa9030's hand as `!primary` with the hand local only for the slot read 42
+// (143 B).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

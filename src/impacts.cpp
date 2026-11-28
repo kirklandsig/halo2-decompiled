@@ -846,6 +846,14 @@ struct s_227af0
 // M3 lane 3 r320 (h2m fast; control 4): the threshold test as `!(length >= 0.001f)` 313 (1692 B); with the constant
 // on the left 4; `normal` as a const pointer 4; the else-if test as `(!impact->unknowne || !unknown)` 4; the two unused
 // normalize results cast to void 4 (all four the same code).
+// M3 lane 7 r240 (fast screen; control 4). Rank reading: the first operand's offset-0 reads rank at the `normal`
+// symbol's level (2) in all three calls and the axis loads at 0, 1 and 7 (forward); the second call needs its axis read
+// at or under the normal's offset read, the third needs `forward->j` (level 4) at or under `normal->i`. Diagnostic grids
+// (unused locals in the cross block ahead of `normal` 0..7 x after it 0, 1, 2, 6, 7; float paren pairs round the first
+// length test or in the last arm's centre sum, 1..7; one pair x both local counts): best 4, and every 4 cell leaves the
+// same two products wrong; file-local cross copies with a returned pointer, one or two unused locals, or the i component
+// stored without its local, 4 each. Forms: `normal` pointing at the impact's own normal 325 (1714 B), with `up` in the
+// third call 327; the cross block in its own braces 4.
 // @retail 0x227af0
 void impact_orientation_get(
 	s_impact const *impact,
@@ -2412,6 +2420,13 @@ s_impact_component_iterator g_5021bc;
 // from the global's component field 162 (forwarded, same code); the count test through a file-local copy of 0x1d5460's
 // impact-count helper 162 (retail's movsx form, as the ternary); the component declared ahead of the loop 162; the
 // constraint index declared in the `for` 162; the impact index declared at the first find 162.
+// M3 lane GB r36 (14 fast trials with 0x226a60, 0x226f80, 0x2264a0, 0x2276d0, 0x22a560 MATCH; control 162 at 672/672 B,
+// +0x1c, fr=0x4c, al=104, mk=12; body unchanged): *(c_type_47f957 const *)& material deref 162 (on c4 164, mk=5); direct
+// impact_components_valid(datum_index, component_b) 163 (on c4 165, al=83, mk=5, 198/198 insns; loads global/constraint
+// instead of stack, proving retail reads data.component_a/b); data.unknown08 in make_room 162; reset datum_index first
+// 162; reset component = NULL 180 (688 B); == NONE ternary 163; c4 + data first + material deref 164; out-of-line
+// record_pool_iterator_step 298 (564 B); 2-use inner component_index 151 (fr=0x50, 675 B, component still ESI; not kept);
+// data at for scope 182 (681 B); while (count <= 0x20) 162; constraint_count local 194.
 // @retail 0x226ce0
 void function_226ce0(void)
 {

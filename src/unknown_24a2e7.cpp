@@ -578,6 +578,16 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // through `buffer` 97 (178 B); the plain name through it 83 (189 B); on plain locals the entry formed inside `if
 // (append)` with a nested name test and the built arm ending in `break` 84 (197 B). A forced-ranking search on the 75
 // form finds nothing lower (the pointer's register is the loop optimiser's choice). Body unchanged.
+// M3 lane 1 r180 (fast with 0x24a64d, MATCH throughout; control 67). Only the terminator moved after the search loop
+// under a flag set at the arm's end (`if (built) entries[i].field_1e4[49] = 0;`) 87 (194 B): the flag is threaded and
+// the arm's entry address is still shared with the terminator in EBX, so the loop boundary does not limit the sharing;
+// on lane 10 r119's two-member lead the terminator spelled as `entries[i + 1].field_0c[-0x26]` 39 (same code: the
+// product is canonicalised before it is shared). On main: `buffer` declared at function scope 67 (same code); `result`
+// declared ahead of the items call with the index test written `index == entries[i].index` 69; the copy and append
+// counts and the terminator index through a `long const` maximum 67 (same code); a named tag pointer for the name
+// test and the conversion with the indexed terminator 90 (184 B). Diagnostic (reverted): the index's address passed to
+// an inline helper inside the found block, on main with the indexed terminator 84 and on lane 10 r119's lead 39 (same
+// code each: the address folds before the sharing is decided). Body unchanged.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

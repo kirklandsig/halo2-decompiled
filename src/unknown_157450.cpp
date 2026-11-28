@@ -6245,6 +6245,16 @@ void __stdcall function_d6bc0(long object_index);
 // 0xd6bc0 still on the field) 207 (878 B); the reset counter as one store `value06 = reset ? 0 : value06 + 1` 182 (851
 // B). On main's body: the same countdown test on the local 254 (891 B); the same one-store reset counter 156 (861 B);
 // the switch's `default: continue;` written first 29 (same code).
+// M3 lane 5 r257 (h2m fast; base 29; flag recipe rebuilt 7 at 869 B, its field-test form 172 at 858 B). Allocator
+// reading on the field-test form: `entries` is coloured in the fourth pass at 8 (+132 over eight referencing blocks:
+// the loop-top index read at n6 24, the index test at n3 12, the 0x15aad0 call at n7 28; -124 over 37 live
+// unreferenced blocks) and takes EDI, the only register left; the countdown address is coloured only in the fifth
+// pass (6). So the field test needs `entries` 8 lower in the fourth pass (for example one candidate fewer referenced
+// in both the loop-top block and the 0x15aad0 block). Forms: the countdown field's address in a named `short *timer`
+// for the zero test, the delay store and the countdown (read, store, the reset to 1) on main's body 173 (858 B), on the
+// flag recipe 178 (853 B), on the flag + field-test form 177 (854 B); on main the countdown decremented in the field
+// (`if (--entries[i].value04 == 0)` under `if (entries[i].value04 > 0)`, no countdown local) 29 (same code); the flag +
+// field-test form with no loop-top index local (the field read at each use) 172 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

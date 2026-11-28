@@ -1637,6 +1637,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // one parent-object local for the matrix and the flag 45 (1391 B), the matrix through the existing 0xb8bd0 48 (1387 B),
 // the flag read first through object_get with the defaults in the same order 18 (1394 B, that form's code); on the base,
 // one parent-object local with the flag read first 43 (1390 B), the parent-object local for the matrix only 44 (1390 B).
+// M3 lane 4 r272 (fast screen with 0xb8bd0, 0xbdc40, 0xbfa40, 0xbdb60, all MATCH; control 20 at 1399 B). Reading: retail's
+// `mov eax, esi` before the mask is the expanded callee's own parameter copy, masked in place while the index stays live;
+// a copy written in this body is propagated away. Forms: the node argument cast to `short` 20; the matrix lookup through
+// `long object_index = parent_index;` 20 (same code); that with the defaults in an else arm 18 (1394 B), with the flag
+// read first as well 18.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

@@ -8246,6 +8246,14 @@ bool function_e63b0(vector3f const *aim, bool flag)
 // match; with main's single `aim = target` 243 at 1616 B); separate basis vectors 192/214, `cross3f` 46, inline copy-dot
 // expressions 77, without copy 239/190, `copy` declared ahead of `frame` or renamed 38.
 // GB r30 (37 valid fast trials with 6/6 peers MATCH; control 219 at 1624/1624 B, +0x54; body unchanged): passing `&direction` only by pointer via `__forceinline` inverse-transform + angles helpers reproduces retail's exact sequential `normalize3d` load-multiply-store block (no `volatile`) on every trial (`t01` 237 / `t02` 238 at 1626 B, `if(in==out)` 237, `frame` helper 240 at 1624 B fixing `fstp [esi+4]` before `pop edi`, `frame.forward` fields 252, `cross3f`/`cross3f_staged` 241, `gt` clamp 238, `inline` `i*i+j*j` 238); adding `dot_kji` (`k += j += i`) + `cross3f_staged` matches all 5 XMM loads (`xmm3/0/4/1/6`), `world` copy, all three `k/j/i` dots, both `atan2`/`sqrt` and epilogue (`228` clean at 1624 B; + `gt` clamp + `self`/`other` `223` at 1624 B also snapping `frame.forward` `edx/ecx` copy; + `frame` helper `238`; clamp+dir helper `226`; `nearest` fn-scope `228`; `hr` in inner arms `333`; `aim.z` then `x,y` `277`; `aim` scalars 3 arms `369`; zero `hr` before `if` `387`; `HEAD` + `cross3f_staged` + `gt` clamp `247`); plain 3-float `aim` without `&aim` `219` (arms `201`), `__forceinline` by-value target producer `258`. Match-only lead (per-arm `aim = target` + pointer-only `direction` + `cross3f_staged` + `dot_kji`): `190`/`196` (`+0x382`, `1628`/`1636 B`, `t14` with `cross3f` in frame helper `187` at `1627 B`, `rawcross` `207`, `dotkji +` `200`, `frame` helper `199`, `peq_ptr` `260`, `aim` 3 arms `238`, `fwd` `vassign`/`memcpy` `266`/`196`, inner-swap `196`) -- NOT kept (one-caller helpers and per-arm `aim` copy require a byte match; only `aim` carry in `ecx/eax/edx` across the clamp remains).
+// M3 lane 15 r157 (fast screen with 0xdf5f0, 0xdef60, 0x1c4590 and 0x24cf66; control 219, both flippers MATCH in the
+// reduced image): round 30's held recipe re-measured on today's tree (the three-way clamp with the copy in each arm,
+// named self/other bipeds, the existing cross3f_staged, a new one-caller inline helper for the in-place dot transform,
+// the existing 0x11df30 for the two angles) MATCHES here in the full check but loses 0x1c4590 (5), 0x24cf66 (2) and
+// 0x54590: HELD as a patch, main's body kept. Forms on main's body: the left axis through the existing cross3f_staged
+// 247 (1611 B), through cross3f 247 (1611 B); the angles through the existing 0x11df30 219 (same code here, but its
+// first reference in this file costs 0x24cf66: a layout flipper); that with cross3f_staged 247; cross3f_staged with
+// the three-way clamp 134 (1615 B, first +0x357; the per-arm copies are match-only).
 // @retail 0xe5d50
 void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offset, point3f *point)
 {

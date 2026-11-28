@@ -1185,6 +1185,19 @@ struct s_collision_result_buffer_1697c0
 // out 239; all match-only (the wrapper's body by hand), a lead. A forced-ranking search on the 124 form found no single
 // decision below it. Also `best_fraction < fraction` 239 and `0.f < best_fraction` 239 (same code); a named ray-length
 // constant 294 (1440 B).
+// M3 lane GA r38 (31 valid untried fast trials across 3 batches with 0x297660/0x297a50/0x2980d0/0x24590 MATCH, 0x297d30 23
+// unless noted; control 239 at 1427/1423 B, +0x31; body unchanged): clean trials without reused trig locals (direct in-place
+// wrapper removal 256, 0x297d30 147; cross-TU rotate_direction direct/reused 787, breaks 0x297660; header normalize3d +
+// best_direction first + NONE before ray 265; early-return norm + best_direction first + NONE before ray 244) all tie or
+// regress. Match-pursuit leads on reused/separate trig pairs (not kept without a byte match): reused sine/cosine +
+// best_direction first + NONE before ray 122 (1427 B, +0x89; with dot3f normalizer 122, with early-return norm 248 at 1423 B,
+// with dot3f in rotate_in_place 124 at 1423 B breaking 0x297d30 to 144, with axis_rotation.h 253); reused sine/cosine +
+// header normalize3d + best_direction first + NONE before ray 124 at exact 1423/1423 B (matches the entire 48-ins yaw
+// rotation 1-to-1 in opcode/operand order and the entire 92-ins tail verbatim; cosine-declared-first 124); separate
+// pitch/yaw trig pairs + single-exit normalize3d (or single-exit magnitude3d normalizer, z-prefixed names, scoped blocks,
+// or pitch-local/yaw-wrapper) 153 (1427 B, +0x3f: reproduces retail's exact {draws, pitch_sine, yaw_cosine} vs
+// {pitch_cosine, yaw_sine} transfer-slot swap, only magnitude coalesces with the wrong slot); separate/scoped/asymmetric
+// trig pairs on actor_looking_normalize3d 246/246/246/246/253 (1423 B); single reused sine/cosine 248/129.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2470,6 +2483,11 @@ struct s_actor_looking_structure_view
 // to forward declared ahead of the candidate array 142 (928 B); the clear as `forward.k = 0;` 23 (same code); the angle as
 // `(real)(i * 0.785398185)` (a double product) 150 (928 B); the angle wrapper passing `(real)sin(angle)` and
 // `(real)cos(angle)` straight to the in-place helper 23 (same code here; 0x296e60 269). Restored.
+// M3 lane 14 r167 (h2m fast with 0x296e60 at 239, 0x297660, 0x2980d0 and 0x24590 matched throughout; control 23): the
+// trace distance read into a named real before its 0.2 product 69 (first difference +0x55); the normalized length named
+// before its test 144 (928 B); both 141 (927 B); the in-place helper's rows written scalar-first (`cosine * vector->i`,
+// `sine * cross_i`) 23 and its projection written versine-first 23 (both the same code). Diagnostics: one unused
+// initialised long at the top 33; a no-op `* 1.f` on the angle 132 (928 B). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
