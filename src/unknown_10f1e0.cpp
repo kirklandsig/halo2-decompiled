@@ -738,6 +738,13 @@ void bit_vector_fill(dword *vector, long count, byte value);
 // visited words declared at the function's top 2; the node-count test joined to the entry condition as a fourth term 2;
 // the target name declared bare beside the visited words and assigned in the loop 2; `graph` declared at the function's
 // top 2; `bool found = false;` declared once ahead of the loop 2.
+// M3 lane 15 r158 (fast with 0x113ba0, 0x113c60, 0x1cbce0, all MATCH): the alternate arm as the existing
+// `state->pairs_iterate(iterator)` 2 (identical code: it now inlines, where round 48 measured 148 out of line), kept,
+// since it replaces a copy of that member's body. On it: each arm breaking on its own result with no `found` 2; the
+// graph local declared in the other arm only 2; both together 2 (same code each); the entry's node count named once
+// for the test and the clear 146 (the count is then called at the top). Allocator view: the table is temporary #24
+// (was #25 with the hand-copied arm) and the state's back-edge piece takes the fresh number 26 after the NONE and
+// 0xffff constant pieces take the two freed numbers, so the reload order is unchanged.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -758,12 +765,7 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 			{
 				bool found;
 				if (alternate)
-				{
-					graph = state->graph_get();
-					iterator->mode = state->unknown70;
-					iterator->weapon_class = state->unknown74;
-					found = function_1dcfa0(graph, iterator);
-				}
+					found = state->pairs_iterate(iterator);
 				else
 				{
 					graph = state->graph_get();
