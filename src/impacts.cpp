@@ -2420,6 +2420,13 @@ s_impact_component_iterator g_5021bc;
 // from the global's component field 162 (forwarded, same code); the count test through a file-local copy of 0x1d5460's
 // impact-count helper 162 (retail's movsx form, as the ternary); the component declared ahead of the loop 162; the
 // constraint index declared in the `for` 162; the impact index declared at the first find 162.
+// M3 lane GB r36 (14 fast trials with 0x226a60, 0x226f80, 0x2264a0, 0x2276d0, 0x22a560 MATCH; control 162 at 672/672 B,
+// +0x1c, fr=0x4c, al=104, mk=12; body unchanged): *(c_type_47f957 const *)& material deref 162 (on c4 164, mk=5); direct
+// impact_components_valid(datum_index, component_b) 163 (on c4 165, al=83, mk=5, 198/198 insns; loads global/constraint
+// instead of stack, proving retail reads data.component_a/b); data.unknown08 in make_room 162; reset datum_index first
+// 162; reset component = NULL 180 (688 B); == NONE ternary 163; c4 + data first + material deref 164; out-of-line
+// record_pool_iterator_step 298 (564 B); 2-use inner component_index 151 (fr=0x50, 675 B, component still ESI; not kept);
+// data at for scope 182 (681 B); while (count <= 0x20) 162; constraint_count local 194.
 // @retail 0x226ce0
 void function_226ce0(void)
 {

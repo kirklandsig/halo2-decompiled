@@ -1243,6 +1243,16 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
 // vector3f_scale 247 (same loop code); the origin through vector3f_add_scaled the same code (fast screen); the natural
 // forms alone (bool parameter, axes bound, world_hit above the seed block) 385; the bool parameter with world_hit,
 // excluded and cluster above the seed block and the tail order, without the block 379 (callers 0x17a8a0 and 0x23aad0 lost).
+// M3 lane GB r38 (18 plain trials with 0x17a8a0, 0x23aad0, 0x17ee20, 0x17e490 and 0x17ed70 MATCH unless noted; control 363):
+// on HEAD, typed s_decal_mesh_def_17e670 (+0x70 mesh_data) 384 (1769 B, frame 0x1174), + separate neighbour vector3f delta
+// 384 (same code), + vector3f_scale / inline search_radius * 2.0f / dword j 385 (1768 B), + c_type_47f957 unknown24 385
+// (0x17ed70 stays MATCH). On r156's 245 lead (re-measured 245 at 1787 B, +0x4e with typed s_decal_mesh_def_17e670):
+// short-circuit `||` form 389 (with sep delta + inline length 359, with length before axes + vector3f_scale 367 recovering
+// lea esi,[esp+0x74] without reversing ray products, with c_type_47f957 + -1 above seed 385, with direction/start in head
+// block 362); on the 245 base, s_decal_placement world at top of axes loop + length before axes + vector3f_scale 246 (with
+// vector3f_add_scaled) / 247 (with c_type_47f957), fixing world.unknown24=-1 placement; vector3f_add_scaled + vector3f_scale
+// in neighbour loop 245 (same neighbour XMM code); decal_placement_copy(out, in) 319-356 (breaks 0x17ed70 at 42, confirming
+// (in, out) is retail's parameter order). Body unchanged.
 // @retail 0x17e670
 void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)

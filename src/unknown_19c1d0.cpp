@@ -456,6 +456,12 @@ void function_19c6d0(s_record_pool *data, long key0)
 // && ...)` 131 (breaks `0x19c190`), single outer `for` loop 151 (breaks `0x19c190`), pre-reading `data->data`+`data->size`
 // before bitmap loop 147 (saturates all 7 registers yet still hoists `[ecx+0x38]` into `edi` and spills `data`),
 // caching `flagged.count` before Loop 3 135, flat `result = NULL` init 132.
+// GB r37 (12 untried fast trials with all 8 peers MATCH unless noted; control 65 at 400/393 B, body unchanged): on 65
+// base, flagged declared before keys 65, slot ptr + flagged.count++ 66, unsigned long flagged.count 65, second
+// get_entry_c call in flagged arm 201 (448 B), Loop 2 datum local 65, datum declared before iterator 65, ref-param
+// iterator with direct return inside for 65; on s_flagged_keys::push(long) (51): 1u<< / div-mod-32 non-forced helpers
+// outlined 82 (368 B), early-NONE return helper 47 (398 B, folds add edi,[ebx+0x44] while still hoisting edi),
+// data_iterator_next_calling 170 (350 B, breaks 0x19c190), for-loop datum walk 242 (476 B, breaks 0x19c190).
 struct s_flagged_keys
 {
 	long count;

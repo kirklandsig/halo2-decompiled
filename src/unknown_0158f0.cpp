@@ -306,6 +306,11 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 // ptr 98, `index >= 0 && index < 6` bounds guard 90 (39 B); diag `/Ob1` 99, scoped `#pragma optimize("t", on)` +
 // `auto_inline(on)` + `inline_depth(255)` 99. `D3DDevice_CreatePalette2` (`d3d8ltcg`) stays out of line in
 // every non-loop form.
+// GB r37 (12 untried fast trials with 0x1d3f0 and file peers; control 99 at 30/95 B, 0x1d3f0 77, body unchanged):
+// __fastcall without noinline 99 (0x1d3f0 75), void **out / D3DPalette *&out / struct-wrapped g_43e8d8 / 2D
+// g_43e8d8[1][6] / inline size getter / long const index / pre-initialized result+created with 2-arm assign all 99
+// (77); D3DDevice::CreatePalette with FAILED/SUCCEEDED + 2-arm tail 87 at 42 B (77, spurious HRESULT padding, not
+// kept); if (out) guard 96 (33 B); index >= 0 ternary guard 95 (34 B). CreatePalette2 stays out of line in every form.
 // @retail 0x15b10
 bool function_015b10(
 	long index,

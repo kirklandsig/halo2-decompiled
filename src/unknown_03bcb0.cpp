@@ -1312,6 +1312,17 @@ s_3c9a0_matrix g_4c1b68;
 // tangent alone in a memory home does not move them: the tangent computed ahead of the 0x3c9a0 call 302 (stored across
 // the call, then `fdiv` from memory); the aspect's 1.5 test ahead of the tangent 303; the view tangent as
 // `(real)tan(half_angle) * aspect` 291 (same code); both 302; both tangents `real const` 291 (same code).
+// M3 lane GB r38 (28 fast trials, 0x3c9a0/0x16a90 MATCH, 0x3c3c0 74 throughout; control 291 at 1330/1387 B, +0x5):
+// on HEAD: 0x3c9a0 param order `(matrix, forward, up)` 289 (0x3c9a0 MATCH), `__forceinline` ref min/max 293 (1354 B),
+// `__forceinline` ref divide 291, `__forceinline` tan*scale 291, `g_4c1b68.position = camera` + z/scale 293 (1351 B),
+// `__forceinline` 3-loop/1-loop corner transform 325/291, 2-iteration edge loop 477 (1594 B), near .x/.z before sqrt +
+// two-mul angle 266 (1396 B; statement/operand order, not kept), double divide cast 300, two separate ifs with
+// `!(width_scale > 1.0f)` or `max` ternary 306 (1321 B, still folds second compare), g_4c1b38 col order 0/2/3/1 301,
+// local scaled forward/left vectors 285 (1341 B). On r236's 210 lead (213 at 1396 B, +0x17, fr=0x4c with two-mul angle):
+// 3-loop helper / `point3f *pts` / direct `g_4c1b68.up`+`camera` / retail near .x/.z order 213 each (same code),
+// `div_ref` replacing const refs 245, two separate ifs / `max` ternary / scoped `half_angle` 211 (1389 B, still folds
+// second compare), col order 0/2/3/1 or 2/3/0/1 221/220 (1-loop 245), local scaled vectors 282 (1445 B), reused
+// `half_angle` 236. Body unchanged.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {

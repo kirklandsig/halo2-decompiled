@@ -332,6 +332,15 @@ PRIVATE inline s_object *object_get_102100(long object_index)
 // `tag_off` first); `headers` local before both offsets (`idx` / `tags` / `off_first` / no `tag` / `__forceinline` interp
 // / no-`/Ob1`) all 42: `tag_off` still takes `ECX` (coalescing with `tag_link`) and `g_4e0300->data` takes `EAX` instead
 // of retail's `ECX`/`EAX` swap, so `[ebp+0x2d4]` stays hoisted into `EAX` and SIB-folded.
+// GB r37 (24 untried fast trials across 2 batches with all 6 file peers MATCH; control 31, body unchanged):
+// `dword links` + `(s_tag_link *)(tag->links + link_index * sizeof(s_tag_link))` 31 (`offset + base` 31, + `long idx` at top 31,
+// `__forceinline` `dword`-links accessor 31); `s_tag_array` (`tag_links.h`) 31; `start + (end - start) * rate` 31; `link_rate`
+// right before `duration` 31; `0x101ec0`-style const-ref on `object` 31; `/Ox` flags 31; `union` tag flags 31; dropping `tag`
+// local with `dword links` / `.bytes` / no-`/Ob1` / `real_bounds rof` + `link_rate` / `tag_link += idx` / nested typed `links`
+// block / `tag_link_from_object` / no-`flag9` all 29 (same code: flips tail `[ecx+eax+8]`/`[ecx+esi+8]`, keeps entry SIB fold,
+// -2 under keep bar); `s_object_link` `flag6` bitfield (`TEST_FIELD_BIT`) 119 (714 B, + ternary rate + no `tag` 119);
+// `object_get_102100` for all 3 lookups 100 (704 B); `result` / `result`+`blocked` at very top 114/136 (707 B, still SIB-folds);
+// diag `flag9` read ahead of `duration` (4 BB0 `tag_link` reads) 206 (708 B, still SIB-folds first 3 float reads).
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {

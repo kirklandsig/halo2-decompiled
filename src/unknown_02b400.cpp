@@ -758,23 +758,12 @@ PRIVATE __forceinline double filter_random_fraction(void)
 
 inline void point2f_set(point2f *point, real x, real y);
 
-PRIVATE __forceinline void filter_random_pair(point2f *point)
-{
-    dword seed = g_4e7408->seed * 1664525 + 1013904223;
-    *(dword volatile *)&g_4e7408->seed = seed;
-    seed = seed * 1664525 + 1013904223;
-    g_4e7408->seed = seed;
-    /* y is the high half of the stored seed, read back as a word */
-    point2f_set(point, (real)(seed >> 16) * (1.0f / 65535.0f),
-        (real)*((word const *)&g_4e7408->seed + 1) * (1.0f / 65535.0f));
-}
-
 /* standard (frame alignment): retail's prologue realigns this frame itself
    (and esp, -8), which our build does for such a function only when its
    address escapes. It takes no arguments, so the marker changes no call.
    The body doesn't match yet, but with the marker its prologue is
    retail's; its caller 0x25a10 doesn't match yet either. */
-// score 529 (was 530): the aligned 0xb8 frame agrees. The exit displacement leads to a body 80 bytes
+// score 513 (was 529): the aligned 0xb8 frame agrees. The exit displacement leads to a body 64 bytes
 // short (the first cosine and the cube now take retail's float constants). Float angle literal 593;
 // float angle literal with promoted camera component 597; named double cosine 596; named double
 // turn increment 597; named distance span 596; plain phase pointer 597; direct phase field 597; double
@@ -859,6 +848,17 @@ PRIVATE __forceinline void filter_random_pair(point2f *point)
 // Lead from the listing: retail's first crossing arm stores through `[ebp + index*8 + 0x48/0x4c]` with the wrapped index
 // in EAX (no pointer formed) while the second forms `lea eax, [ebp + ring*8 + 0x48]` after the draws, so the two arms
 // differ before any tail could merge. Body unchanged.
+// M3 lane GB r36 (28 fast trials across b1-b2 with 0x25a10, 0x22bbca, 0x17d9a0 MATCH and 0x28580 151; plain confirmed
+// across all 21 file functions + peers + flippers 0x185be0/0x1c4590/0x24cf66 all MATCH): kept 529 -> 513 (2718/2782 B,
+// fr=0xb8): dropped filter_random_pair (and its volatile seed store) and called existing point2f_set + random_real_28580
+// directly at all six sites (pointer form 513, crossing-only 513, same code). Match-only lead (not kept: one-use local
+// ahead of seed stores): naming `long wrapped = (*ring + 3) % 4;` in arm 1 hits 491 (2734 B, al=336, mk=71; 493 crossing-only,
+// mk=67) and matches all 54 crossing instructions byte-for-byte with zero volatile. Also tried: SDK D3DXVECTOR4 constructor
+// for weights+coords 572/554 (fr=0xe0, +max 572, +subeq 561, +direct crossing 593, +x82e52f+subeq 542); 0.0001f > step/far
+// 529; wrapped local on filter_random_pair 529; x82e52f + wrapped 545/546 (arm 1 exact, arm 2 outlines x82e52f); far>near
+// if-wrap 529; real bitmap phase with floor((double)phase) 572/554 (fr=0xa8); real_point3d_set relative 533; x = scale * x
+// 529; one_minus_t local 529; 0>pin+1-t on 513 513; max+subeq on 513 546; diag same-TU far/near getters 558; diag 3-subss
+// far-near mix 518 (420 on 513, exact 3 subss).
 // @retail 0x27aa0 standard
 void function_27aa0(void)
 {
@@ -882,10 +882,10 @@ void function_27aa0(void)
     if (!state->initialized)
     {
         memset(state, 0, sizeof(*state));
-        filter_random_pair(state->points + 0);
-        filter_random_pair(state->points + 1);
-        filter_random_pair(state->points + 2);
-        filter_random_pair(state->points + 3);
+        point2f_set(&state->points[0], random_real_28580(), random_real_28580());
+        point2f_set(&state->points[1], random_real_28580(), random_real_28580());
+        point2f_set(&state->points[2], random_real_28580(), random_real_28580());
+        point2f_set(&state->points[3], random_real_28580(), random_real_28580());
         *previous = *(transform4x3f *)g_48568c;
         state->initialized = true;
     }
@@ -928,8 +928,8 @@ void function_27aa0(void)
     *ring -= (long)crossing;
     while (*ring < 0) *ring += 4;
     while (*ring >= 4) *ring -= 4;
-    if (crossing < 0.0f) filter_random_pair(state->points + ((*ring + 3) % 4));
-    else if (crossing > 0.0f) filter_random_pair(state->points + *ring);
+    if (crossing < 0.0f) point2f_set(&state->points[(*ring + 3) % 4], random_real_28580(), random_real_28580());
+    else if (crossing > 0.0f) point2f_set(&state->points[*ring], random_real_28580(), random_real_28580());
     if (state->phase < 0.0f || *phase_reference >= 1.0f) return;
     real offsets[4] = { 0.0f, 0.7135000228881836f, 0.34220001101493835f, 0.579800009727478f };
     for (long i = 0; i < 4; ++i)
@@ -1083,6 +1083,17 @@ PRIVATE __forceinline real particle_inverse_sqrt(real magnitude)
 // the loop 881 (3523 B); the limit as `g_4670fc * count` 832 (same code); the admission test as `!inside && active <=
 // limit` 844 at retail's 3483 B (state still on the stack), with the vertex pointer declared in each arm of the age
 // test as well 851 (3492 B: the state takes EBX and the function returns `ret 4` as retail, but 0x36b50 258 -> 286).
+// M3 lane GB r36 lead, HELD (a build-flag change, kept only on a byte match): with /Ob1 on this file 0x38390 stays
+// out of line as retail calls it, the state takes EBX and the function returns `ret 4` (/Ob1 alone 985, 3321 B, all
+// four loop registers as retail's). On that base the lane's form reaches 742 (3431/3483 B, al=595, mk=163; every matched
+// function in this file and the layout flippers 0x185be0/0x1c4590/0x24cf66 MATCH; 0x36b50 258 -> 286 from the `ret 4`):
+// the existing random_real_range_28580 at all 15 draws (no double constants), the body inside
+// `if (function_12de70(...)) { ... } return true;` as 0x391f0 writes it, a plain player divisor and `j < start + count`
+// loop, the volume scan reading g_4e0348 directly, each jitter field loaded before its draw, the lifetime scale per
+// branch through a two-use local, the existing vector3f_add_scaled and vector3f_rotate_into_axes for the first
+// transform, and retail's `if (!wrapped)` branch order. Writing the scale with vector3f_scale (normalize3d.h) gives 741
+// but flips 0x1c4590 and 0x24cf66. Left: the fade product folds 25.0f * 256.0f, the two lifetime arms tail-merge, and
+// transform 2's operand order.
 // @retail 0x38450
 bool __stdcall function_38450(byte *state, byte const *definition, real remaining)
 {
