@@ -437,6 +437,12 @@ PRIVATE inline bool score_team_present(long team)
 // context copied whole from the player context 16; the player context filled ahead of the player loop 242 (738 B); the
 // contexts' criteria read through a `const byte *const &` 4. Reading: with fallback captured its load is a plain memory
 // load placed ahead of criteria's spill reload; in retail both are reloads in source order.
+// M3 lane 14 r167 (h2m fast with both sorters MATCH; control 4): both contexts from an aggregate initialiser 4 (same
+// code); the team context filled at the head of the team block 125; each sorter handed its context's own fallback
+// member as the unread first argument 2 (retail's load order; only the passed address differs from retail's argument
+// slot, like the separate scratch); a null first argument 181; the criteria pointer as the first argument 201 (737 B).
+// Retail reading: retail's sort_4byte never reads its first stack argument (it pops it with `ret 0xc`), so a match
+// needs a sorter whose first parameter is kept at the call but is neither read nor address-exposed.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {
