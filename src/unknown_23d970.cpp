@@ -1064,6 +1064,14 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // operand orders; on the else arm's forward pointer (re-measured 43) K = 0..15 gives 43/47/219, the 219 at 1261 B but
 // aligned 38 against main's 26, and the same with the anchor just ahead of the first product; the pointer with the
 // staged second product K = 0..7 217..223. Body unchanged.
+// M3 lane GA r36 (`--fast 0x23de50 0x1f0870 0x130f60 0x23dda0 0x23dd30 0x23cea0 0x23e400`, control 45, 1262/1261 B,
+// 355/355i, al=26, mk=12; 34 trials, all peers unchanged): staged second cross i,j,k (a*b-b*a, b*a-b*a, retail sides,
+// return-ptr, j,i,k, out-first params) 45 each; staged k,j,i / i,k,j / partial k,j 217; both staged 49; alias-guarded
+// second/both 358/404; existing fog_direction_from_angles in else arm 47 (1264 B: else arm byte-exact, perturbs second
+// cross), with unstaged k,j,i 220; staged i,j,k store orders ikj 47, jik/jki 57, kij 56, kji 55 (moves right.i to xmm2
+// via up.k reuse); staged k,j,i store ikj/kji 217/216; unstaged second cross ijk/ikj 57, jik 215, jki 219, kij 206,
+// kji 218; local vector temp + aggregate assign ijk/kji 253/260; return-by-value 263; combined ortho_up helper with
+// function_1f087b/cross3f_staged 223/221. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

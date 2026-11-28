@@ -1196,6 +1196,13 @@ static inline long team_score_195ed0(long team)
 // rank loop's team entry bound by reference 100, the clamped score cast to `word` 100 and the player loop's flag test
 // as `!= 0` 100 (same code each); the copied team index as a `char` 299; the rank loop's team as a `short` 227
 // (1259 B). Body unchanged.
+// GB35 (10 valid fast trials + 1 pragma diag with 0x196470, 0x1587f0, 0x161e60, 0x162030, 0x199310 all MATCH; control
+// 100 at 1211/1210 B, +0xc; body unchanged): `((team_mask >> team) & 1) != 0` 160; flat `team_is_active` inside
+// `team_score_195ed0` 228 (1145 B, all 3 inline); nested `if (sb)` in `team_score_195ed0` 100; `game_engine_get_statborg`
+// in `team_score_195ed0` 223 (1257 B); separate `entry->value` stores (inline / native 3rd) 128 (1221 B)/192 (1237 B);
+// early-return `team_is_active_195ed0` 100; hoisted `records = input_device(0)` base 181; `team_rank` before `entry` +
+// `(short)` PIN bounds 100; explicit `bool active` inside `team_score_195ed0` 322 (1051 B, all 3 outline); diag
+// `#pragma auto_inline(off)` around `0x195ed0` with native 3rd arm 191 (1237 B: LTCG still auto-inlines 0x1587f0).
 // @retail 0x195ed0
 void function_195ed0(void)
 {
