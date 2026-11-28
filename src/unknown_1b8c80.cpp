@@ -601,6 +601,15 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // against a `long` count read at the outer block's top 14, against a `long const` count read in the guard block 11; the
 // bit test without the bool cast, exclusive 138 and inclusive 140 (the whole function's -1 sharing changes); the
 // exclusive scan under `if (tag->seats)` 147 (557 B). All restored.
+// M3 lane 5 r257 (h2m fast, control 8). The exclusive bound with the index declared bare at the function's top and
+// `for (i = 0; ...)` 11; with `short i = 0;` at the function's top 147 (548 B); with `short i = 0;` after `result =
+// true` (ahead of the flags test) 14 (count EBP, index ESI); that index with `if (tag->seat_count > 0)` around the
+// scan 7 (match-only, a guard that repeats the loop's bound): count ESI, index EBP, and the guard's compare and the
+// seat's NULL store take the index's EBP as retail's; left only the index's `xor ebp, ebp` (and its push) one block
+// early, ahead of the flags test, where retail has it after the count load; the index initialised ahead of the seat
+// pointer with `for (; ...)` 11 (the zero still its own EAX web). A forced-ranking search on the 6 guard form: the
+// guard block's zero piece ranks 4 and takes EAX, but ranking it at 0 or -1 still gives 6, so the zero has to join
+// the index's web (it does only when the index's 0 is defined in an earlier block). All restored.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -1156,6 +1165,13 @@ extern "C" void _ReadWriteBarrier(void);
 // the pool's data named first, then the volatile slot read, then the lookup written out 29 (the named data is
 // substituted at its use, after the read, and folds), the same without the barrier 50 (210 B); the slot read once
 // through a `s_slot *const *` to the parameter at the top 6 (same code: the indirection folds).
+// M3 lane 5 r257 (h2m fast with 0x1ba3f0/0x1ba5c0, both MATCH; control 6, no barrier 44 at 208 B): the state bound as
+// `s_slot_4c &state = *(s_slot_4c *)slot;` (`state.` at each use) 44, with the barrier 6 (same code); the actor bound as
+// `s_actor_view &actor = *actor_get(actor_index);` with no barrier 44; the flags test written `(flags & 4) == 4` with no
+// barrier 44; the actor looked up first and the state after it with no barrier 44 (listed above at 41, re-measured);
+// the slot read once through a `s_slot *const *` to the parameter with no barrier 44. Allocator view on main: the slot is
+// one candidate over the NONE block and the flags arm only (B2..B3), so its load is placed at B2's head; retail's
+// load sits in the entry block, as if a copy of the slot made there survived to allocation and was then coalesced.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

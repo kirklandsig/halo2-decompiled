@@ -405,6 +405,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // sits before the start where retail stores after the call, so this family cannot match); `bool animating;` declared
 // bare at function scope and assigned in the pane block 23 (same code); that with `long i = 0;` and the flag above the
 // pane lookup 25. Body unchanged.
+// M3 lane 4 r272 (fast screen with 0x22facd/0x22fa5b/0x22f9bf, all MATCH; control 23). Reading: the model loop's push base is
+// a memory operand given the first dead register on a per-block cursor walked backward (EAX, the model being in EDI), and
+// the later forwarding makes it the `mov eax, esi` copy; the text loop's push finds EAX live and takes ECX in both builds.
+// Forms: the block-18 element pointer declared once ahead of its loop 23; the block-18 inner counter zeroed at its
+// declaration 23 (both the same code); the flag as `function_22f0ff(...) != false` 141 (419 B).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

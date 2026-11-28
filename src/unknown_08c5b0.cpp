@@ -431,6 +431,14 @@ static inline long bungienet_user_voice_setting(short kind)
 // new inline that stores the payload setting through an out pointer when available 15; the selector's kind test negated
 // first (`if (kind != 1) setting = 1; else if (available) ...`) 4 (same code); `changed` set in both arms of an if/else
 // 25 (91 B). All restored.
+// M3 lane 6 r255 (fast screen with 0x8c5b0/0x8c660, both MATCH each run; control 4). Allocator reading: equal ranks are
+// broken by the block of each candidate's last definition, and inside a block by the earlier definition; the request's
+// is the entry, so only a kind definition in a later block can win the tie. Forms: the failing results handed to the
+// reset handler (`return bungienet_user_voice_reset(request);`, the success arm storing the payload) 76 (135 B: the two
+// stores and notify calls do not merge), with the controller index read first 72 (132 B); a received result whose block
+// is unavailable downgraded (`if (kind == 1 && !available) kind = 0;`, then the setting chosen on `kind == 1`), plain
+// read 11 (the compare stays unfolded, but the setting moves to EDX and the pair stays EAX/CX), with the existing read
+// 11; that downgrade inside the selector 11, with a plain read 12. All restored.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

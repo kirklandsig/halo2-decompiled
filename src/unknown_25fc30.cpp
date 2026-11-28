@@ -1219,6 +1219,21 @@ void __stdcall function_25eea0(
 // SI-before-CX and all 45 Loop 2 insns verbatim; `+ pos_dist` `82` at `+0xc0`, `al=22`; `+ *score` for first 2 Loop 3 adds
 // `34`, `mk=1`, matching 181 consecutive insns 407-587 verbatim), but `/Ob1` regresses `0x25eea0` (`0 -> 303`) where retail
 // auto-inlines `0x1e5240`.
+// GA39 (45 valid + 1 diag fast trials across 3 batches with 11 peers MATCH; control 111 at 1306/1306 B, +0x52, al=133, mk=13;
+// body unchanged): dropping `#pragma inline_depth(0)` with `if (!context->unknown5b)` nesting + all real helpers (`actor_get`,
+// `unit_weapon_view_get`, `vector3d_from_points3d`, `magnitude3d`, `function_1e4a50`) still auto-inlines `0x1e5240` (`362`,
+// `1336 B`), as do `distance3d` (`362`), separate `weapon` (`362`), and `__forceinline` weight/Loop 1/Loop 3 helpers
+// (`364`/`362`/`362`; non-forceinline stay out of line, `446`/`897`). Diagnostic `#pragma inline_depth(0)` around only the
+// `0x1e5240` call + all real helpers (not kept) reaches `70` (`1306/1306 B`, `343/343 insns`, `mk=4`), fixing `0x1df560`
+// SI-before-CX, Loop 1 `1.0f`-before-`0.0f` preheader order, all 42 Loop 2 x87 `fst` insns, and all 148 Loop 3/cover/epilogue
+// insns verbatim (including `addss xmm0, [ecx]`), leaving weight XMM1/XMM2, `0x1b0710` order, `inner`/`outer` load order, and
+// Loop 2 3-insn `addss`. On HEAD (`111`): `weight` top-decl/zero-init/excess-local, Loop 1 `continue`/`<`/`factor -=`, clean
+// team cast, split zone/leader, Loop 2 `continue`/scalar `dx/dy/dz` all `111`; `scale`/literal-`12.f`/`else-12`/`quot`/Loop 1
+// `bonus`/`>`+`score+`/separate `weapon`/`d` in `if`/`squad_index`/`ge_gt` `245`-`246` (`1322 B`); `double len_sq`, `weight >
+// 0.f && count > 0`, `unknown276 > 0 && count > 0`, and `0x1e4a50`-style `if`/`do-while` (`cover = NULL`) each fix Loop 3
+// `addss xmm0, [ecx]` (`mk=12`) while flipping Loop 2 to 3-insn (`245`, `1322 B`, pairs/triples `245`-`246`); Loop 3
+// `position`+`geometry` `239`, both-bonuses locals `167`, reversed `<` ternary `124`, `if/else` `line_score` `237`, Loop 2
+// `if/else` `score +=` `266`/`265`, `12.f` + `weight < 4.f` `314`.
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,

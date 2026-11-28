@@ -1143,6 +1143,17 @@ PRIVATE __forceinline void function_2922b5(vector3f *arg_0, vector3f const *arg_
 // folded, a jump-padded loop head, the rotations' operand sides and the tail); two returns with `local_13` at function
 // scope alone 266 (2888 B, aligned 67); the earlier held lead (`local_6` first and `local_13` at function scope) rebuilt
 // on this main 314 (aligned 87). Leads only: both moves are declaration moves past stores, kept only with a match.
+// GA39 (29 valid fast trials across 2 batches with 0x1e5450/0x30bf0/0x1697c0 MATCH and 0x1eb8a0=567; control 265 at
+// 2889/2886 B, +0x1d; body unchanged): on HEAD (265), `vector3f_assign(arg_3, 0, 0, 0)` 265 (same code), tail `k, j, i`
+// dots 277 (`mk=88`), explicit `local_5` assigns 416 (`667/667`), explicit `local_14` assigns 448, tail `*arg_3` copy 669,
+// `*arg_3 = *g_4687a4` 697, direct 3-term tail sums (either order) 698. On the 76 lead (rebuilt 76 at 2888/2886 B, 667/667
+// insns, +0x91, al=140, mk=35): `arg_3` scalar locals 78, tail `k, j, i` dots 97, `3scales+2adds` 266 (no `k_real_max` 583
+// at 2886 B), `scale+add_scaled+scale+add` (with `local_t` or reusing `local_18`) 451 (al=117, matches final 28 tail insns
+// verbatim; no `k_real_max`/no `OBJECT_DATUM_GET` 551 at 2886 B), direct 3-term tail sums 438, `*arg_3` copy 314, `local_19`
+// default-then-if 373 (exact 2886/2886 B, fd=+0x297), `cross3f` at cross 1/2/3 279 each, `*arg_3 = *g_4687a4` without
+// `k_real_max` 681; ray-rank probes: `local_20 = 0.f` before `local_19` for all 4 rays 316, split (rays 0/1 on pre-`local_19`
+// `local_20 = 0.f`, rays 2/3 via helper) 450 (confirms retail's exact `mulss` order in all 4 rays, shifts `[esp+0x10]` to
+// `[esp+0x14]`), reusing `local_4` for rays 0/1 451, helper `*arg_3` mul 315.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
