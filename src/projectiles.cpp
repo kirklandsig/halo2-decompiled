@@ -1299,6 +1299,17 @@ real function_30bf0(vector3f *v);
 // if (0.0f > gravity) gravity = 0.0f 215 (986 B, al=216, mk=47, all 7 MATCH); no horizontal_squared / length_sq3f 261/261
 // (fr=0x2c, callers lost); 0.25f * (gravity * gravity) + 4.0f * a * distance_squared 216; num local in t2 216; -c + sqrt
 // 216; -distance_squared / (t * t) - t * t * a 216 (985 B); -(1.0f / two_a) * root 220.
+// M3 lane 11 r180 (h2m fast with 0xfa580 and the six matched callers; control 216, aligned 203). Reading: retail takes
+// the horizontal root in the entry block, stores it as a real in a dead argument home and compares it through SSE
+// (`movss xmm1, [home]; movss xmm0, [0.0001]; comiss`), sharing the loaded constant with the vertical test; here the
+// root has one use, so it is evaluated at the test and compared on the x87 stack. Diagnostic (reverted): a second use
+// of the root gives retail's whole entry block (delta.i in XMM7, the early `fsqrt`, the `fstp` to the home, the SSE
+// compare) at 262 with frame 0x2c and the six callers lost, so the open question is what holds the root in memory in
+// retail without a second use. Forms: one squared-distance variable (the planar part first, the vertical square added
+// inside the test, as `x = k * k + x` or `+=`) 216/216 (same code); the distance test held in a bool ahead of the
+// gravity tests 262 (986 B, callers lost); the vertical test written first 216 (aligned 292); the distance test as
+// `!(horizontal <= 0.0001f && delta.k <= 0.0001f)` 208 (all seven match; not kept: it compiles to `jb`/`jae` where
+// retail has `ja`/`jbe`, another unordered result).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,

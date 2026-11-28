@@ -6311,6 +6311,32 @@ void function_32ce0(long object_index, real opacity)
     }
 }
 
+// score 323: 1366 bytes against retail's 1438. Still differs: (1) retail copies the second colour vector
+// with three direct word moves (`mov edx, [eax+0x5c]` ... ) and reloads its components for the scale, where the
+// aggregate copy here forms the address once (and the frame ranks below the resource index); (2) retail stores the else arm's four 1.0
+// values and the minimum in place, this build sinks the fourth store to the join; (3) retail clamps left and right,
+// then forms and clamps top, then bottom, and takes the last clamp's result in a fresh register; (4) retail widens
+// the screen rectangle's shorts at every use from 16-bit registers and forms each integer difference twice, this build
+// shares the widened values and the differences (most of the missing 63 bytes); (5) retail lays both default-bounds
+// blocks out after the return with jumps back (same blocks and edges as here, another layout).
+// M3 lane 11 r180 (fast screens, control 323; "al" = aligned differing lines, control 212). Not kept (review): the
+// second colour copy as three member assignments 317 (the allocator then ranks the frame pointer above the resource
+// index, 53 against 42, which gives retail's EAX frame and EDX index; with the aggregate copy it is 37 against 42),
+// and the tail's copy as a vector through a cast of the four-real global plus a real 319 alone (retail's 12-byte copy
+// and `movss`), both 314 (callers 0x31170 210 -> 207, 0x404b0 178 -> 177): the cast re-types the global for codegen,
+// kept only with a byte match, and the member copy alone is under the keep bar. Also not kept: the frame's byte pointer declared first 323 (same code);
+// the else arm's 1.0 stores as four statements in address order 323; the clamps in retail's order through the
+// file's clamp helper 336 (1358 B, al 208), as the written chains 326 (al 208); one default block under
+// `resource && ...` with the resource tested again after it 431 (1259 B: the block is never duplicated), with a
+// bounds-valid flag 431, with a second has-resource flag 446, the flag stored and tested 457; the inner test negated
+// or a valid flag inside the resource arm 323 (same code); both colour copies as typed members of a frame view 323;
+// the second copy through the three-real setter 322, as a 12-byte memcpy 323, through a by-value local 323 (elided),
+// both through by-value locals 328; the mapping through a one-caller helper taking the shorts by value 301 (1388 B,
+// the shorts still shared), taking the rectangle's globals 310, the globals read at each use 331 (1358 B), a by-value
+// rectangle local 328, as two-iteration loops 323 (unrolled to the same code), the shorts fetched through
+// out-parameters or references 323 (same code). Diagnostics (reverted): three long-typed moves for the second copy
+// 309 (al 171: retail's copy exactly); else arms with their own tail and return 324 (the no-resource arm then trails
+// the return but keeps its own epilogue).
 // @retail 0x4a1e0
 void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_index,
     s_view_flags *flags, real unused_scale, bool enabled, real scale)

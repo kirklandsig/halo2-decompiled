@@ -9754,7 +9754,12 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // row, gives retail's 0x17c frame but measures 531 at 2205 bytes: this build then holds the weapon definition in EDI and
 // the aim in ESI where retail has them the other way round, and the two products of the ray sum come out in the other
 // order; the named range local stays.
-// score 388 (was 397): GB r37 typed s_unit_melee_collision::material_type as existing c_type_47f957 (matching
+// score 344 (was 388): the body is retail's 2229 bytes. Still differs: retail keeps the tag table in ESI and the pool
+// in EDI from entry (the pool's data pointer re-read at the weapon and parent lookups) and NONE in EBP for the slot
+// compare, where this build reads the pool first into a scratch register and re-reads the pool global later; the j and
+// k ray rows' product order; the point and normal copy order; the 0xcfc90 arm (inline after 0xa9260 in retail, moved
+// after the next unconditional jump here) and the tail's NONE register.
+// Earlier 388 (was 397): GB r37 typed s_unit_melee_collision::material_type as existing c_type_47f957 (matching
 // retail's constructor store before ray.j/k, 395 alone) and used existing TEST_FIELD_BIT(UNIT_SEATS(...).flags.bit11)
 // at both seat tests (matching retail's shr 0xb / test 1 at both sites, 390 alone): 397 -> 388 (-9, 2219/2229 B,
 // fr=0x17c, all 124 matched file peers/caller/flippers MATCH). Earlier at 397: GB24's 314 form is not kept (declaration and statement order are kept only on a byte match): declaring
@@ -10079,12 +10084,33 @@ void direction_scale(vector3f const *vector, real scale, vector3f *out); /* forc
 // all 3 early lookups 508 (+ c47+bit11 345 at 2236 B), weapon+parent+bit11 346 at 2229 B (reloads g_4e0300 from
 // memory via one-caller helper, not kept); negated !function_a76b0 + c47+bit11 393 (2205 B); named material ptr /
 // vector3f_assign ray + c47+bit11 388; direct UNIT_DEFINITION_GET(unit) + c47+bit11 533.
+// M3 lane 11 r180 (h2m fast with 0xcfc90, 0xcf040, 0x24f590 and 0x185be0 MATCH; control 388, aligned 238). Kept: the
+// weapon index through the existing unit_get_current_weapon (its lookup is unconditional, so the unit pointer is shared
+// with it in the entry block and the slot is a short, as retail's `movsx cx, byte` / `mov eax, [ebx+ecx*4+0x218]`):
+// 344 at retail's 2229 B (aligned 252), plain-confirmed with every file peer, the caller and the flippers unchanged.
+// Lead (not kept, the helper form scores lower): the definition read through its own lookup from the unit index, declared
+// ahead of or after the unit pointer (same code either way), with 0xcbd50 kept: 347 at 2236 B, aligned 154, first
+// difference +0xf: the tag table then sits in ESI and the pool in EDI from entry, NONE in EBP at the slot compare and the
+// data pointer is re-read at each later lookup, all as retail, but 0xcbd50's own lookup is then not shared with the
+// unit pointer. Reading: once the unit lookup is shared inside one block, its data-pointer read is no longer available
+// to the later lookups, so they re-read it as retail does; with the helper the pool global is not kept in a register
+// across the copies. On the helper form: the definition through its own lookup first 344 (same code); the weapon index
+// declared ahead of the unit 371 (2221 B, aligned 188); unit, weapon index, definition 336 (2230 B, aligned 217: a
+// declaration moved later, match-only); unit, weapon index, the definition through its own lookup 471. On 0xcbd50: the
+// definition first with the slot read through a second lookup 523; the weapon index written out from the unit pointer
+// 511 (2229 B, a byte compare of the slot); the damage index declared ahead of the weapon index on the 347 form 469;
+// the earlier 314 lead re-measured in this tree 324 (2221 B, aligned 183), with the definition's own lookup or a named
+// weapon unit 324 (same code). Diagnostics (reverted): a store through an unrelated pointer ahead of the weapon test
+// 532 (2241 B: this build then re-reads the pool global as well as its data pointer), on the 314 lead 549.
+// The slot through the existing unit_weapon_in_slot on the unit pointer 388 (the earlier code), with the definition's own
+// lookup first 344, on the helper's own view lookup 344 / 344 (the kept form's code each time): the code follows only
+// whether a second lookup of the unit stands in the entry block.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
-	long weapon_index = function_cbd50(unit_index, unit->current_weapon_index);
+	long weapon_index = unit_get_current_weapon(unit_index);
 	c_type_47f957 material_index(g_47d8e0);
 	point3f point = unit->position;
 	vector3f normal = *g_4687b0;

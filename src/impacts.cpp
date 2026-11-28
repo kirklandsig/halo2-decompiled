@@ -2427,6 +2427,19 @@ s_impact_component_iterator g_5021bc;
 // 162; reset component = NULL 180 (688 B); == NONE ternary 163; c4 + data first + material deref 164; out-of-line
 // record_pool_iterator_step 298 (564 B); 2-use inner component_index 151 (fr=0x50, 675 B, component still ESI; not kept);
 // data at for scope 182 (681 B); while (count <= 0x20) 162; constraint_count local 194.
+// M3 lane 11 r180 (fast screen with 0x226a60, 0x226f80, 0x2264a0, 0x2276d0 and 0x22a560 MATCH; control 162; the
+// count ternary with the impact pointer re-measured 164). Colouring order on that 164 form: constraint 584 (EDI,
+// 432 of it from its six reads in the impact-data block, cost 2 x weight 4 x nine candidates each), impact index 328
+// (EBX), the component 208 (ESI, it prefers ESI as 0x1d1c10's argument register), component_b 180 (EBP). Retail's
+// four registers (constraint EDI, impact index EBX, component_b ESI, component EBP) are this order with only the
+// last two exchanged, so the inner loop needs component_b above the component and nothing else.
+// A forced-ranking search over 16 priority decisions: the impact index ranked above the constraint puts the component in EBP but
+// rotates the other three (42 left, a permutation that is not retail's); the remaining decisions change nothing. The
+// outer walk differs separately: retail holds the pool in EDX, the high-water count in EDI and the bitmap in ESI,
+// where the bitmap pointer (32) is coloured here before the pool (26) and takes EDX. Forms: the impact test and the
+// creation tests as one condition 162; the second find's result named, with the component_b test in a ternary 162,
+// on the 164 form 164; the make-room's rigid body read from the impact data 162; the second find compared with NONE
+// 162 (all the same code or register-neutral).
 // @retail 0x226ce0
 void function_226ce0(void)
 {
