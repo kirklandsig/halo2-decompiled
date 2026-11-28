@@ -1031,8 +1031,9 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // the same with byte result 184; those two need the flag clear moved to the else-arm and three one-use bools (with
 // the clear left in the block 249/256, with one bool 272-279), so neither is kept without the match.
 // #1605 (11-27): with `inline` on 0xb6760's definition (see 0x166d75) the link expands the channel-2 test below
-// (150); retail calls it there. The redundant `result &&` guard ahead of that call (lane 14 r134's held bool) keeps the
-// call out of line as retail: MATCH.
+// (150); retail calls it there. A `result &&` guard ahead of that call (lane 14 r134's held bool) keeps the call out
+// of line as retail and matches, but `result` is always true there (an always-true test retail does not show), so it
+// is not kept: this function's match was traded for 0x166d75 and 0x106790 (11-28).
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
@@ -1124,7 +1125,7 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 						}
 					}
 				}
-				if (result && !function_0b6760((s_index_pair const *)&channels[2]))
+				if (!function_0b6760((s_index_pair const *)&channels[2]))
 				{
 					if (((state_flags & 0x20) || (state_flags & 0x40)) && fraction > 0.0f)
 					{
