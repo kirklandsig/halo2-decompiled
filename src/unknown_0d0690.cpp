@@ -1871,6 +1871,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // base multiply 512, early inv_square 526, post-pin inv_square LHS 238, mix helper 280, x84d9e8 304). Remaining pockets
 // on the 145 lead: single-test `test eax, ebx`, the 4-reg cyclic shift of limited_base and `1-square` (`xmm3/1/0/2` vs
 // `xmm1/3/2/0`), and lighting_rotate's dot/cross schedule.
+// M3 lane 3 r322 (fast screen with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 MATCH, all unchanged; control 529;
+// body unchanged): on main, the blend's product written lightmap first 553 (2195 B); the first luminance summed red
+// first 529, the second luminance red first 529, the value pin through the file's pinned_real 529, the bias added
+// ahead of the lightmap channels 529 (the same code each).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
