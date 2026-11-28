@@ -2156,6 +2156,9 @@ long function_10f5f0(long object_index);
 // with the do-while 615. So the rolled sum costs 84 bytes less than the unrolled one and retail is 36 bytes longer still
 // than the helper + rolled form; the stores and the rolled loop each need a steering form (a two-definition result, a
 // changed loop guard or a hand-inverted loop), none kept.
+// M3 lane 11 r179 (H2M_FAST; control 561): the flags word copied into a `dword` or `long` local 561/561, the door
+// position as an explicit ternary in place of MAX 561, the physics gate's bit 6 read from the word field 561, the
+// average guarded by `count > 0` 561 (all the same code).
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4195,6 +4198,13 @@ real g_47ff30 = 2.5f;
 // existing vector3f_add_scaled of the global up vector and the facing scaled by its -k 683 (3246 B; retail builds it on
 // the x87 stack); `facing` dropped, the local velocity read through the vehicle at each use 795 (3289 B); the bank
 // limit as a ternary with the turn-rate boost under one test 717; the climb field read at each use 738 (3223 B).
+// M3 lane 11 r179 (H2M_FAST; control 672). The mass field read at each use with the transform position as three
+// zero stores re-measured 676 (3248 B, frame 0xfc). Retail's three mass products sit in the cells the unused
+// angular-velocity output leaves after its call (forward, left, up at +0x14/+0x18/+0x1c); a rank reading of the
+// maximum speed and speed products gives boost 0xe0 against field loads of 0x0008 (wrapped), so boost is the copied
+// operand where retail loads the field. On the 676 form: the masses as one vector3f (forward, left, up) 728 (3262 B);
+// the acceleration scale field read at each use 769 (3206 B); the mass products in forward, left, up order 675. On
+// main: that order 672; that order with the three zero stores 682.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -7646,6 +7656,13 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // product in its own `{}` block 1125; the flip arm's fields through VEHICLE_GET at each use (no pointer local) 1153
 // on main, 1187 with the product form; the quaternion's vector normalised in place (no axis copy) with the product
 // form 1130 (5059 B).
+// M3 lane 11 r179 (H2M_FAST; control 959). Allocator reading on main: the index's web runs from entry to the
+// side-flip calls (priority 8, EDI, the only register left) and overlaps the forward pointer's ESI web; retail
+// ends it at 0xf44a0 and reloads the parameter home after it, so retail's index and forward can both take ESI and
+// the offset takes EDI. Retail's reversal loop is rolled and stores the acceleration in both arms (the sign of
+// the acceleration as a byte, the target's as a full register). Forms: a block-scoped `long` index 959 (same code,
+// still unrolled); the comparison's two sides swapped 959; `acceleration.n[i] <= 0.0f` 959; the store as a ternary
+// in both arms over a block-scoped `long` index 1066 (5123 B), over a block-scoped `short` index 1019 (5094 B).
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
