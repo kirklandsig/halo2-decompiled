@@ -1108,6 +1108,33 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the lowest scan's index as a long 645 (1095 B, the scan unrolled); the chosen candidate as a long 246; the chosen
 // candidate declared once ahead of the pass loop and reset per pass 144 (same code); the compaction's indices as
 // longs 259 (768 B, 0x239d50 80). Body unchanged.
+// M3 lane GB r35 (83 valid fast trials + 2 diagnostics across b1-b5 with 0x239d50, 0x239b80, 0x239cb0, all MATCH unless
+// noted; control 144 at 784/784 B, +0x2, fr 0x18; body unchanged): retail's unrotated hull loop (top test reached via jmp,
+// compaction cold, three back edges from closure) is produced cleanly without any done flag by `do { if ((short)hull_count
+// >= count) { /* compaction */ goto finished; } ... current = next; previous_angle = best_angle; if (current == NONE) goto
+// finished; if (!left_start) left_start = points2d_differ(&points[indices[0]], &points[current]); if (current ==
+// indices[0]) goto finished; } while (...);` with `bool left_start = false;`, `real previous_angle = 0.f;` before the
+// lowest scan, `lowest_y` before `lowest_x`, `short current = count;` first in the `== 2` block, and `memmove` compaction:
+// matches retail to +0x28, frame 0x14, byte flag at +0x30, hull_count in EBX at +0x10, points ESI, indices EBP, current
+// EDI, count out of EBX, and the entire candidate scan and departure block: 154 (784 B, al 93, mk 38) with `!(left_start
+// && !points2d_differ(...))` or 156 with `!left_start || points2d_differ(...)`; with positive closure (`!(left_start &&
+// fabs < eps && fabs < eps)` or `points2d_equal` helper, removing closure fxch) 175 (758 B, al 83, mk 28; 178 with current
+// last; 176 with angle/flag/current orders; 162 with `>= eps || >= eps`; 175 with `count > i`, copied low count, dim local,
+// const count, dword hull_count, `__stdcall`, forceinline predicates, pointer lowest scan, or forceinline candidate/compact
+// helpers; 178 with forceinline lowest helper, `count <= (short)hull_count`, `count > j`, `if (< count) ... else compact`,
+// or postinc; 179 with `||` departure; 157 without `(short)` cast on top test: fr 0x18, drops back-edge `mov edx` and snaps
+// epilogue 1 + compaction to retail; 222 without `(short)` on `indices[]`; 232 with `(short)(i - j)`, caller lost; 233/238
+// with short hull_count or `__stdcall` short hull_count, caller lost; 234 memcpy; 238 long flag or late heading; 216
+// replacing points2d_differ with `!points2d_equal`). Exit variations on the do-while form: `break;` 209 (784 B, mk 40) /
+// 216 (and_not, mk 35, epilogue 1 before compaction, count back in EBX); direct returns 172/182; `break` + compaction
+// return 169/182 (154 with differ; 157 with inner compaction return); `goto` inside `if (==2)` 169; `goto compact` 169/241;
+// compaction after do-while 183/212; `if (count > 0)` low guard 258; flag outer 264. Hoisting `short current = count;`
+// before `if (==2)` scores 123 (792 B, `break`, existing `points2d_differ`) or 117 (791 B, `goto`/`break`, positive
+// closure; 119 `lowest_x` first; 130 `break`+compaction return; 172 `goto` in `if`), NOT kept (declaration hoisted outside
+// `if (==2)` for the score, breaks +0x4, swaps all four registers to al 183, +7..8 B over retail). Diagnostic (volatile
+// count reads, removed): on the 175 form, volatile top test alone 211; volatile `current = count` and top test 115 (784 B,
+// +0x28, fr 0x14, al 87, mk 32), confirming that extending lowest-scan `edx` into `current` and the top compare is what
+// forces the back-edge `mov edx` reload and keeps epilogue 1 from falling through before compaction.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
