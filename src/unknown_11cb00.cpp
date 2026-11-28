@@ -270,6 +270,10 @@ __inline void quaternion_rotate_point(
 // 0x11dd80 to 4), 2-use qa=&a->rotation 77, 3-use out_pos=&out->position 11 (both 66), 3-use a_pos=&a->position before
 // qrp 68, after scale branch 4 (452 B, all 4 peers MATCH, fixes dot order leaving q.j*v.x and q.i*v.z; NOT kept: field
 // pointer without match).
+// M3 lane 4 r273 (h2m fast with 0x11dd80, 0x107ed0, 0x27a100 and 0x11d820, all MATCH; control 8): `b->scale` named
+// for its two arm uses at the top 121 (465 B), after the alias copies 106 (465 B), after the rotate call 27 (455 B);
+// the scale test as `1.f != a->scale` 19 (453 B); the closing sums spelled out-first 8 (same code); the helper's `d`
+// declared bare at its top 8 (same code, 0x11dd80 MATCH). Body unchanged.
 // @retail 0x11dbb0
 void function_11dbb0(
 	real_quaternion_transform *out,
