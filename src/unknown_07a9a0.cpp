@@ -1969,6 +1969,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // capacity `result = false; if (!result) return result;` 871; `if (summary) { ... } else return false;` 871; `spread = count -
 // first` 871; `available` after `out->player_count` 943 (2700 B, 0x73530 8); diag `#pragma inline_depth(2)` 871. Still BLOCKED
 // on the link-wide inlining split.
+// M3 lane 1 r179 (h2m fast with 0x73530, 0x63220, 0x192e60, 0x193300 and 0x1932c0, all MATCH; control 871): retail calls
+// 0x192e60 at the top and expands 0x193300's capacity switch (jump table) where this build does the reverse. Forms: the
+// player loop's lookup through the existing 0x192e60 in place of its written-out tests 1013 (2620 B); `result` declared
+// first 871; the capacity tests written `function_193300(variant) < capacity || function_1932c0(variant) > capacity` 871;
+// the machine id array declared ahead of the group count store 871 (all three the same code); the party spread computed
+// once after the party scan (`last - first`, NONE - NONE = 0 when none qualify) 907 (2748 B). Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

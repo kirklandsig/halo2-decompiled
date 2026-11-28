@@ -445,6 +445,12 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // sorted bool stop 541; `if (count == 0)` else helpers 550; `if (count > 0)` main loop 575; second evaluator nested `if`
 // 527; `+0x55` via `normalize3d` 626. Remaining -29 B gap is opposite cross-file inlining (retail inlines 0x262a30 and
 // calls 0x2600a0 at site 2; this build does the reverse). Body unchanged; still BLOCKED-BY 0x262a30.
+// M3 lane 2 r162 (fast screen with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, 0x13e2d0, 0x260060, 0x2600e0, all MATCH; control
+// 422 at 3097 B): the main loop's range read once ahead of the loop 812 (3113 B); `selected` and the sorted index as
+// long 565 (3084 B); the identity fill's index as long 577; the two sort globals set in the other order 422 (same code);
+// the reported entry copied by aggregate assignment in place of memcpy 422 (same code). Re-read: with the first pass
+// as the existing 0x2600a0 call (606, 3077 B) site 2 still expands 0x2600a0 and 0x262a30 stays a call, so the length
+// match there is not retail's inlining. Body unchanged; still BLOCKED-BY 0x262a30.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

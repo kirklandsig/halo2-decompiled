@@ -86,6 +86,11 @@ bool function_7af40(s_type_99af70 const *address);
 // EDX); the 0x7af40 result in a named bool 14; the field stored to the output first and swapped in place 14; two early
 // false returns 49 (111 B). Diagnostic: the function as a const member of the address record, `this` the address, 14
 // (LTCG does not pin `this` to ECX).
+// M3 lane 5 r256 (h2m fast with the seven callers/peers; if-form 14, address EDX): ledger again address 30 against the
+// inlined counter 31, and a forced-ranking search matches with one decision only (counter -2 or address +2). On the
+// if-form: the output as a `dword &` reference parameter (header and the four call lines changed) 14; 0x7af40's switch
+// on a short length local 14, on a long length local 14 (0x7af40 still MATCH); nested tests with a short length local
+// read after the call 14; the swap split into `output = ...; output |= ...;` 41 (115 B). All restored.
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

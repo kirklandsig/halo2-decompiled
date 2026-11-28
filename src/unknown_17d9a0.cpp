@@ -1195,6 +1195,31 @@ int __stdcall function_1429d0(transform4x3f const *matrix, long count,
 // bool parameter with a found flag, a scoped collision record, an outer adjacent record and plain axes, about 390; the
 // short-circuit `(source && source->unknown00 != 4) || function_1697c0(...)` and its spellings 349 (retail's size and
 // re-test, but -1 and the radius take EBP, the vector moves to EBX and the sixth argument to CL).
+// M3 lane 15 r156 (plain checks with 0x17a8a0, 0x23aad0, 0x17ee20, 0x17e490 and 0x17ed70, all MATCH each run; the
+// reduced image still builds this file's cluster differently). Lead, not kept (held as a patch; match-only forms): 245 at
+// 1787 B with frame 0x1170, retail's frame offsets and retail's registers through the head and the tail guard (aligned
+// rows 54). It is the sixth parameter as `bool deterministic` (no local; both callers' declarations follow) with: the
+// head from the collision record through the type arms in its own block (the axes table then shares the record's slot,
+// as retail); the collision query only for a missing or type-4 source and that test repeated inside the found block to
+// pick the record (`if (!placement || placement->unknown00 == 4) placement = &collision;`, retail's re-test); the mesh as
+// the 0xc8-byte record pointer with + 0x70 added at both 0x17ee20 calls (retail's `add ebx, 0x70`: the case-3 mesh then
+// holds EBX and the frame drops to 0x1170); the tail guard in retail's test order (radius, parameter, hit or excluded:
+// this moves the parameter into EBX, the vector into EBP from entry, the source into ESI and the point into EDI);
+// world_hit declared above the seed block; `bound ==` on the left of the neighbour test; the axes loop bounded by
+// `sizeof(axes) / sizeof(axes[0])` (retail's `jb`). Steps: the bool parameter alone 385 (1776 B), with the block 404,
+// with the re-test 352, with the mesh record 414 (frame 0x1170, the -1 constant takes EBP), with the tail order 251, with
+// world_hit above the seed block 245, with the bound and the axes bound 245. Left on that lead: retail's two -1 entry
+// stores ahead of the seed test (any -1 local declared above the seed block brings the constant back into EBP: all three
+// 353, in main's order 353, excluded or cluster alone 352/352); the copy's `lea eax, [esp + 0x6c]` (ours reuses the
+// compare's ECX, 2 bytes short, which also changes the neighbour loop's padding); the neighbour loop's direction loads in
+// xmm1/xmm2/xmm3 for i/j/k where retail has xmm3/xmm1/xmm2 (the order follows the origin rows' loads, reversed: with the
+// rows written y, z, x the loads take retail's registers but the j and k products still differ); the axes loop's pointer
+// base (+0x70 against retail's +0x74: the rays through vector3f_scale or a named axis pointer give retail's base but turn
+// the ray product round). Other forms: the head as a file-local forceinline helper with out-pointers 357 (1771 B, the
+// out-pointers are scalar-replaced); `&collision != placement` 252 (the compare turns round); the scaling through
+// vector3f_scale 247 (same loop code); the origin through vector3f_add_scaled the same code (fast screen); the natural
+// forms alone (bool parameter, axes bound, world_hit above the seed block) 385; the bool parameter with world_hit,
+// excluded and cluster above the seed block and the tail order, without the block 379 (callers 0x17a8a0 and 0x23aad0 lost).
 // @retail 0x17e670
 void function_17e670(point3f const *point, s_effect_source *source, long tag_index,
     vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)

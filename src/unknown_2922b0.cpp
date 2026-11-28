@@ -1113,6 +1113,36 @@ PRIVATE __forceinline void function_2922b5(vector3f *arg_0, vector3f const *arg_
 // 2scales+add+add_scaled 451 (al 123, mk 45; without k_real_max 554 at 2886 B), scale+add_scaled+scale+add 451 (al 119,
 // mk 54: matches all 57/57 Rotation 2 insns and final 30 tail insns verbatim, +1 pad at loop from symbol shift; without
 // k_real_max 551 at 2886 B).
+// M3 lane 3 r321 (H2M_FAST with 0x1e5450/0x30bf0/0x1697c0 MATCH and 0x1eb8a0 listed for the rotation helper's file;
+// control 265; body unchanged). The 76 lead rebuilt on this body (two returns, range read first, function-scope point
+// array, OBJECT_DATUM_GET, the named no-hit constant, local_18 declared first): 76 at 2888 B, 667/667 rows, differing in
+// four places: the three reloads of the side vector at the end of the fallback arm (retail k, j, i; ours i, k, j, three
+// loads of equal scheduler priority, so their order is the order they were generated in), rays 0 and 1's angle x root,
+// one operand side in the second rotation, and the tail. Reading for the rays, from the compiler's operand ranks: a
+// product puts the higher-ranked operand first and a local's rank is the order of its first appearance in the
+// function, with the locals of inline helpers numbered after every local of this function. Here the angle limit ranks
+// 208 and the four helper roots 480, 481, 484 and 487, so every ray is root x angle; retail's rays 0 and 1 need their
+// root in a symbol that appears before the angle limit and rays 2 and 3 in one that appears after it. On the lead: a
+// root local per ray block 76 (same code); the helper multiplying by the root read back through its out pointer 315
+// (2865 B), with a root local per ray block 76 (same code); ray 0 as `+=` and ray 2 as `local_17 = local_17 - ...` 76
+// each (same ranks); the angle limit declared just ahead of the rays 76 (same ranks). Diagnostics on the lead: ray 0's
+// root in a local declared ahead of the angle limit but first assigned in the ray still ranks above it (394, 2872 B);
+// rays 0 and 1 computing their root into the angle total first (`local_17 = sqrt(...)`, the component updated from it,
+// then `local_17 = clamp(limit * local_17)`) give retail's operand order in all four rays (ranks 207/206 under 208 for
+// rays 0/1, the helper roots above it for rays 2/3) but score 317 (2858 B): the root then lives in the total's home and
+// the component update turns x87, where retail keeps every root in the scratch slot and XMM2. Open: which early symbol
+// holds the roots of rays 0 and 1 in retail.
+// M3 lane 2 r161 (h2m fast with 0x1eb8a0's file in the image, without it 1093 at 2434 B; control 265 at 2889 B).
+// Allocator reading: the success flag's entry piece (true, read only at the inactive exit) wins EBX at priority 26, so
+// the entry pushes EBX and the exit returns `mov al, bl`; retail stores an immediate 1 and returns a literal 1.
+// `return local_0;` at the end of the active block with `return true;` after it 627 (2878 B: the entry, the flag,
+// minimum and copy homes and the inactive exit are then retail's byte for byte, aligned differences 148 -> 127, but
+// the corner block is short and the loop sits four instructions off); that with `local_6` read first in the active
+// block 623 (2873 B, the radius reload goes); that with `local_13` at function scope 223 (2888 B, aligned 66: the
+// corner block becomes retail's, the half-width reloaded and negated per corner; left: the second cross's up i
+// folded, a jump-padded loop head, the rotations' operand sides and the tail); two returns with `local_13` at function
+// scope alone 266 (2888 B, aligned 67); the earlier held lead (`local_6` first and `local_13` at function scope) rebuilt
+// on this main 314 (aligned 87). Leads only: both moves are declaration moves past stores, kept only with a match.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

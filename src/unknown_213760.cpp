@@ -2232,6 +2232,20 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // size block, the size-mismatch arm, the loop body and the function top) 157 each (same code); the size query
 // initialised to zero at its declaration 41 (930 B: the two counts tie at 3 references and take retail's homes, but the
 // store is an instruction retail lacks), that with the no-store close test 165. Body unchanged.
+// M3 lane 4 r271 (fast screen with 0x213760, 0x213800, 0x2138f0, 0x2149c0 and 0x2141f0, all MATCH each run; control 33;
+// lane 9 r132's 5 form rebuilt 5, the plain write-handle local on it 114 at 917 B). Allocator reading from a back-end
+// trace of both forms: the flags object is a register candidate local to the write block (two references, it takes the
+// first free register, EAX), while an unnamed by-value handle and the header address are scratch temporaries handed out
+// afterwards from a rotating cursor (on the 5 form: header EDX, write handle EAX, the close's by-value copy ECX).
+// Retail's registers are that scratch sequence exactly, with only the flags candidate in ECX. A named write handle is
+// itself a candidate (it takes EAX and the flags ECX, retail's write) but it removes one cursor step, so the close's
+// copy lands on EAX and disappears: the 114 plateau. So retail's write handle was unnamed, and what kept its flags
+// candidate off EAX is the open point. New forms, on the 5 form: the header strings set by a file-local helper that
+// returns the header, nested in the write's argument list 5; the close's invalidation as an aggregate assignment from
+// an invalid-handle local 5; the flags object declared at the top of the resized block ahead of the header 5 (the same
+// code each). On the write-local form: the nested header helper 114; the aggregate invalidation 114; the local copied
+// after the header strings with the header address named 114; the close's argument read through the record pointer
+// 114; the count copied into a named local used for the test and the flag 114 (the same code each). Body unchanged.
 // @retail 0x213970
 void function_213970(void)
 {
