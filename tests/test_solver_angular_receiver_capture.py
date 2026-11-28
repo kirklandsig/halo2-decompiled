@@ -80,3 +80,69 @@ def test_angular_rows_reload_receiver_after_result_store(
             traces.append((pointer_writes, receiver_writes))
         assert snapshots[0] == snapshots[1], (precision, rounding, second_receiver)
         assert traces[0] == traces[1], (precision, rounding, second_receiver)
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('rounding', range(4))
+def test_angular_error_keeps_live_a_after_saved_home_changes(
+        solver_images, precision, rounding):
+    """A preceding bounded row replaces the saved pointer through its result.
+
+    The next angular-error run retains the live A receiver. Reloading the saved
+    home at that operation boundary changes its projection and body updates.
+    """
+    frame = STACK + 32768 - 0xd0
+    output = frame + 0x24
+    retail, compiled, symbols = solver_images
+    control_word = precision | (rounding << 10)
+
+    def float_bits(bits):
+        return struct.unpack('<f', struct.pack('<I', bits))[0]
+
+    for replacement in [HEAP + 0x200, HEAP + 0x400]:
+        delta = float_bits(replacement) - float_bits(HEAP)
+        data = solver_case(4, 2)
+        put(data, STEP, '7fi', 0, 1, 1, 1, 1, 0, 0, 1)
+        put(data, OPS, '6I', 0x11801, TERMS, RESULTS, HEAP, HEAP + 0x80, 8)
+        put(data, OPS + 24, 'I3f2I',
+            4 | (16 << 8) | (4 << 16), abs(delta) * 2, -abs(delta) * 2, 0,
+            12 | (4 << 8) | (4 << 16), 0x400)
+        for body in [HEAP, HEAP + 0x80, replacement]:
+            put(data, body, 'B', 3)
+            for offset in [0x10, 0x20, 0x40, 0x50]:
+                put(data, body + offset, '4f', 0, 0, 0, 0)
+            put(data, body + 0x30, '4f', 1, 1, 1, 1)
+        put(data, replacement + 0x20, '4f', 2, 0, 0, 0)
+        put(data, TERMS, '16f',
+            0, 0, 0, 1, 0, 0, 0, delta,
+            1, 0, 0, 1, 0, 1, 0, 0)
+
+        snapshots = []
+        traces = []
+        for label, machine, entry, gate in [
+                ('retail', retail, 0x31c940, 0x480c60),
+                ('compiled', compiled, address(symbols, 'solve_operations_31c940'),
+                 address(symbols, 'g_480c60'))]:
+            machine.mem_write(frame, b'\0' * 180)
+            machine.mem_write(gate, b'\x01')
+            pointer_writes = []
+
+            def observe(current, access, va, size, value, user):
+                if va == output and size == 4:
+                    pointer_writes.append(value & 0xffffffff)
+
+            handle = machine.hook_add(UC_HOOK_MEM_WRITE, observe)
+            try:
+                snapshot = execute(
+                    machine, entry, data, [STEP, OPS, HEAP, output],
+                    precision=control_word)
+            finally:
+                machine.hook_del(handle)
+            context = (label, precision, rounding, replacement)
+            assert machine.reg_read(UC_X86_REG_FPCW) == control_word, context
+            assert snapshot[1] == 1, context
+            assert pointer_writes[:2] == [HEAP, replacement], context
+            snapshots.append(snapshot)
+            traces.append(pointer_writes)
+        assert snapshots[0] == snapshots[1], (precision, rounding, replacement)
+        assert traces[0] == traces[1], (precision, rounding, replacement)
