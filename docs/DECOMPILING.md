@@ -215,13 +215,16 @@ learned so far:
   a helper that takes a pointer, and the register arguments come back.
   The mark is on the function whose own body declares the aligned local, and
   it is set before inlining. It also costs that function's callees their `ebx`
-  arguments: every function it calls directly, and on through a callee compiled
-  with `/Ob1` to that callee's own callees. So a body with an `__m128` local
-  can break matched functions it never names (0x279410's body did this to
-  0x182b90 through 0x1cfd10). Where retail's frame is aligned and its callees
-  still take `ebx` arguments, move the aligned locals into an inline helper:
-  the helper's locals join the frame only after inlining, the code stays the
-  same and nothing is marked (`src/unknown_279410.cpp`).
+  arguments: every function it calls directly, and on through each `/Ob1`
+  callee in turn to that callee's own callees (a callee compiled with `/Ob2`
+  stops it). So a body with an `__m128` local can break matched functions it
+  never names (0x279410's body did this to 0x182b90 through 0x1cfd10). Where
+  retail's frame is aligned and its callees still take `ebx` arguments, move
+  the aligned locals into an inline helper: the helper's locals join the frame
+  only after inlining and the caller's code stays the same. The helper is then
+  the marked function, and a function the helper itself calls still loses its
+  `ebx` arguments, so keep the calls that need `ebx` out of the helper
+  (`src/unknown_279410.cpp`).
 - **Link order.** Sources link in name order, so a file named after its
   subsystem links before every `unknown_*` file. The code LTCG generates for a
   few functions depends on the order in which it reaches them. When you rename

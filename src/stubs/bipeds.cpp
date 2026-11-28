@@ -29,5 +29,4 @@ struct s_biped_ground_collision;
 
 
 
-struct s_state_c570;
 

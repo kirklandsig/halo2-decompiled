@@ -204,11 +204,6 @@ void __cdecl function_2d6fb0(void *address)
 {
 }
 
-// the game's test for slowing a body on a contact (src/unknown_279410.cpp,
-// disabled there; called from Havok code, so standard cdecl)
-struct s_component_contact_pair;
-class hkEntity;
-
 // the walk that tests a tree's nodes against planes (3124 bytes, not decompiled)
 struct pending_2ddbd0;
 struct fixed_point_2dc220;

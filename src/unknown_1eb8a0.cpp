@@ -1797,7 +1797,9 @@ counters_done:
 // docs/DECOMPILING.md); the mark passes on through 0x1ed340 (this file, /Ob1) and 0x1c4b00 stops taking an argument in
 // ebx, which is what lost matched 0x2901e0 and 0xfa100 (callers of 0x1c4b00's callers 0x119020 and 0xf8eb0) when the
 // body was enabled. With the locals in the inline helper nothing is lost in the full check (body 601, 2049 of 2140 bytes;
-// open 0x1e55d0, its caller, moves 319 -> 348 against the live body's convention).
+// open 0x1e55d0, its caller, moves 319 -> 348 against the live body's convention). The helper is the marked function now,
+// so what it calls itself cannot take an ebx argument: that is 0x1c5210, whose only register argument in retail is eax,
+// and the sphere's constructor 0x2def90 (Havok, standard convention).
 #include "unknown_1efac0.h"
 #include "unknown_1eb550.h"
 #include <xmmintrin.h>
