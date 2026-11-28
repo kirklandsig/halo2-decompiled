@@ -1059,6 +1059,17 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // retail copies all three members); the planar view built from the copy's two members (no address) 728 (3476 B);
 // local_13 declared with the opening locals 462; local_14 declared ahead of the 0x26c180 call 462; local_8 declared
 // with local_3 462 (each the same code).
+// GB35 (24 valid fast trials across 2 batches on GB15's companion list, 8/8 matched peers MATCH; control 462 at
+// 3504/3499 B, +0x100, fr 0x88, pos +0x8c; body unchanged): pre-initialized `real local_24 = local_23;` with arm-scoped
+// `cy` (`local_8.y + local_17.i * local_23` / `local_24`, or `- local_17.i * local_23` in else) recovers retail's exact
+// `fr 0x88` and `pos +0x80` (`b1_03` 709 at 3482 B; + `j^2+i^2` 709; + `vector2d_from_points2d` 709 / `+ j^2+i^2` 700;
+// + 456 base 709; + mode-2 early i/j + `byte same` 583 at 3499/3499 B; `else` sub form keeps `cy` unmerged in both arms
+// at 696 / 3504 B, 842/844 insns), but `fsub [esp+0x10]` spills `cy` and shifts `local_2` +0x1c -> +0x28 (+0x60). Also
+// tried: negated `vector2f side_perp` 714; `local_25.y` direct ternary 627 (fr 0x8c); `vector2d_from_points2d` + `j^2+i^2`
+// 665; out-param `p2_add_scaled` yx/xy 732/732 (fr 0x8c); `local_14` direct fields / `vector2f` 668 / 519 (fr 0x8c);
+// `local_25.y` in arms (`0.0f - local_23`) + `j^2+i^2` 719 (fr 0x90; MP combo 718); on GB28's 456 base: `local_6` member
+// scales 456, `0.99` swap 459 (mk 59), `local_26 *= 0.5f` early 471, retail cross order 662 (+ 0.99 + half 660),
+// `override == 0` 673, inline `(i*i+k*k)+j*j` norm 747.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

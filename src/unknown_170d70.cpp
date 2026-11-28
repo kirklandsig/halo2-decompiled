@@ -503,6 +503,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // orthogonality term through dot3f(forward, up) or dot3f(up, forward) 64 (same code); the forward and up pointers
 // declared at the function's top 112 (1396 B, aligned 48: the dot's i term gets retail's operand order, but the j
 // term still comes before it).
+// M3 lane 7 r239 (H2M_FAST with 0x16fe90 and 0x170d70, both MATCH; control 64): both unit-length tests through the
+// existing inline 0xa0190 64, that with the orthogonality dot as `dot3f(forward, up)` 64 (same code each); the explicit
+// read-only time cursor stepped last re-measured 125 (1413 B, loop exact), with the 0xa0190 tests and dot3f 125, with the
+// 0xa0190 tests alone 125. A forced-ranking search moves nothing at +0x5a (best 64): the counter and the compiler's time
+// pointer are packed by their first references in the loop's preheader (the counter's zero first), not by colouring.
+// Body unchanged.
 // @retail 0x170630
 void function_170630(long player_index)
 {

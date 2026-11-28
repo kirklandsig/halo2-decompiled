@@ -3359,6 +3359,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // in an else arm, or as an early return, 142 each (511 B: the exits then differ in value, retail's order still not
 // reached). Re-measured: both cases as early returns 16, the no-team early return with the state test in place 5, the
 // single final return 24.
+// M3 lane 3 r320 (h2m fast; control 5): the not-enemy case as an early return re-measured 16 (retail's exit order, but
+// the enemy arm then sits out of line and the not-enemy return falls through); `enemy = !(team >= 0 && team < 16 &&
+// 0xbfe60(...))` 74 (487 B); the enemy arm storing the flag first and returning the product 10; the team read into a
+// long 155 (492 B); explicit else arms for both damage returns 5; the range test held in a named bool 5.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
