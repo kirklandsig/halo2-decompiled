@@ -1833,6 +1833,17 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // On the flag form a forced-ranking search that leaves the table piece uncoloured gives 743 with retail's frame (distance
 // 928 -> 401); left there: the EBP zero of both requests' fifth kind and inheritance start, and `this` and the mode
 // exchanged between EBX and EBP in the second request.
+// M3 lane GA r36 (`--fast` with twin 0x1dbc80 and 10 matched peers 0x1dc790..0x1cc3f0, all MATCH unless noted; control
+// 812, 2825 B, al=140, mk=74; 43 valid trials on both twins): removing upfront `result = NULL` from graph_weapon_type_get
+// and graph_inherited_get 810/767/758 on 812/750/732 (breaks 5 peers incl. 0x1dc8c0 472, 0x1ddd00 47); direct urgent-only
+// request helper 1007/965/919 (2751-2785 B, breaks 5 peers; with `long found = NONE` 965/919; with early no-result 989);
+// cached inheritance_count 818/781/788 (mk=52 on 732, breaks 0x1dc8c0 272, 0x1cc3f0 290); `i = 0` before kinds + while
+// 993/967/800 (no EBP zero); paired request helper 812/750/732; explicit kinds + inheritance loop 750/732; inline named
+// lookup helper 812/750; iterator_init helper 732; c_type_709360 body ctor 732; retail TU order 812; three returns on
+// 750/812 772 (2805 B, +0x1c; with mode_reference + lookup helper 772)/1011; do-while + early no-result + lookup helper
+// 1016; `bool found = (result.index != NONE)` 755/750/1104; no-flag while on 750/732 750/1097; non-const `other =
+// (result.index == NONE)` 2528-3250 (unfolded `other` loops); diagnostic `memset` iterator zeros 1007/764 (no EBP zero;
+// `<string.h>` shifts 0x1dc790/0x1dc8c0). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2578,6 +2589,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // On the flag form a forced-ranking search that leaves the table piece uncoloured gives 743 with retail's frame (distance
 // 928 -> 401); left there: the EBP zero of both requests' fifth kind and inheritance start, and `this` and the mode
 // exchanged between EBX and EBP in the second request.
+// M3 lane GA r36 (`--fast` with twin 0x1db170 and 10 matched peers 0x1dc790..0x1cc3f0, all MATCH unless noted; control
+// 812, 2825 B, al=140, mk=74; 43 valid twin trials, identical counts to 0x1db170): removing upfront `result = NULL` from
+// graph_weapon_type_get and graph_inherited_get 810/767/758 on 812/750/732 (breaks 5 peers); direct urgent-only request
+// helper 1007/965/919 (breaks 5 peers; with `long found = NONE` 965/919; with early no-result 989); cached
+// inheritance_count 818/781/788 (mk=52 on 732, breaks 0x1dc8c0/0x1cc3f0); `i = 0` before kinds + while 993/967/800 (no
+// EBP zero); paired request helper 812/750/732; explicit kinds + inheritance loop 750/732; inline named lookup helper
+// 812/750; iterator_init helper 732; c_type_709360 body ctor 732; retail TU order 812; three returns on 750/812 772
+// (2805 B, +0x1c)/1011; do-while + early no-result + lookup helper 1016; `bool found = (result.index != NONE)`
+// 755/750/1104; no-flag while on 750/732 750/1097; non-const `other = (result.index == NONE)` 2528-3250; diagnostic
+// `memset` iterator zeros 1007/764. Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -4472,6 +4472,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // `long` locals or one or three dead `real` locals at the head 4 each (they are dropped before numbering, so the reload
 // pair does not follow the local count). On this body: the depth product reversed 9 (same code); the width computed
 // from the clamped span after `inverse_span = maximum;` 11. Body unchanged.
+// M3 lane 13 r168 (h2m fast, control 9): the allocator already gives the shifted local EAX and the selector EBX
+// (ranks 150 and 105); the code differs only because the shift is applied to EBX in place before the copy (and is
+// then scheduled above the clear), where retail copies first. Forms: the shifted local declared right after the
+// selector 937; the selector folded into the shifted local, `(dword)(small ? 5 : 4) << 24`, 976 (4840 B); both as
+// `dword` 9 (same code); the shifted local as a copy then `<<= 24` 9 (same code: folded); the selector as `4 +
+// small` 961. The reload pairs are placed in ascending piece order (the constant's piece first). Body unchanged.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
