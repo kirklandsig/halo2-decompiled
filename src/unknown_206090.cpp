@@ -1086,6 +1086,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // direct read with every square cast to double 1566 (6022 B); the input copy declared `const` 1346 (same code); the copy
 // as a separate assignment 1346 (same code); the helper as `(real)sqrt(dot3f(arg_0, arg_0))` 1624 (5990 B); the copy
 // kept with the squares summed into a `double` (k, j, i) 1370.
+// M3 lane 2 r163 (reduced-image screen, control 1345 there at 6238 B; full 1346). Diagnostic: 20 or 80 extra calls of
+// 0x2079f0 in a never-taken arm of the contact pass (6474/7242 B) still step every contact pointer, so no loop-size
+// limit stops the reduction. Forms: one counter for the first loop and the contact loop 1344; the three counters and the
+// moving-surface flag declared at the top of the function 1439; the magnitude helper's snapshot copy in its own block with
+// a named result 1368 (6211 B, frame 0x5cc: each inlined snapshot still takes a slot of its own, the five never share
+// although their ranges are disjoint); that with the shared counter 1367. Body unchanged.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
