@@ -218,7 +218,7 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 	linear_axis=a->linear;
 	linear_axis=_mm_add_ps(linear_axis,temporary);
 	a->linear=linear_axis;
-	temporary=update_b->linear;
+	temporary=_mm_load_ps(update_b->linear.m128_f32);
 	temporary=_mm_sub_ps(temporary,linear_change_b);
 	update_b->linear=temporary;
 	// Angular axes reload after both linear writes.
