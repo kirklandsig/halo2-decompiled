@@ -685,6 +685,10 @@ void session_searches_dispose(void);
 // fresh `mov esi, 0x527500` after the call, but the owner constant still loaded ahead of the first call) with 0x54590
 // lost (2 at +0xff). Body-only: 0x70190 taking the state by reference 51 (same code); the searches call's and the
 // matchmaking call's state pointer spelled through SESSION_STATE and cast back 51 / 51 (same code). Body unchanged.
+// M3 lane 5 r258 (fast screen with 0x70190 and 0x6de50, both MATCH): retail's 0x70190 never writes EAX, so retail's
+// fresh `mov esi, 0x527500` after the call means this caller was built without that callee's register summary, which
+// only the member form gave so far; the matchmaking call given the pointer just stored in the pre-game state 58 (the
+// load is forwarded and the reload stays). Body unchanged; BLOCKED-BY 0x6de50 (its member form is a contributor change).
 // @retail 0x58ee0
 bool network_session_manager_initialize(long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b)
 {

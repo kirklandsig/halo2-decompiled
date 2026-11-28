@@ -451,6 +451,13 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // the reported entry copied by aggregate assignment in place of memcpy 422 (same code). Re-read: with the first pass
 // as the existing 0x2600a0 call (606, 3077 B) site 2 still expands 0x2600a0 and 0x262a30 stays a call, so the length
 // match there is not retail's inlining. Body unchanged; still BLOCKED-BY 0x262a30.
+// M3 lane 5 r258 (fast screen with 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30, all MATCH each run; control 422; the screen
+// CAVEATs this function, so read these as relative): the target object chosen by a ternary 469; the sorted entry as
+// `positions + index` 422 (same code); `*has_path = function_2715a0(scratch);` 754 (3081 B); the first evaluator pass
+// in the helper's own pointer-walk text (`possible && e->proc`, e++) 606 (3077 B, the same code as the 0x2600a0 call);
+// the random pick handed to 0x260160 through `positions` 422 (same code). The tail block is 0x271300's body with NULL
+// location and settings plus the 0xb6-byte copy (the call measured 578 earlier). Body unchanged; still BLOCKED-BY
+// 0x262a30 (its /Ob1 file keeps it a call where retail expands it; the extra frame cell is its result).
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

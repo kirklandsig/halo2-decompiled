@@ -638,6 +638,13 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // expands here; a call to it stays out of line (399, 978 B), also with `inline` on its definition (a held form;
 // measured, reverted); a same-file forceinline copy of that body (diagnostic, a twin) gives all three rows in retail's
 // order at most symbol counts but moves the dot/cross products (39-45, exit one byte early).
+// M3 lane 5 r258 (fast screen with 0x170d70 and 0x11cc90, both MATCH each run; control 2): the timer read at each use 10;
+// the view angles passed straight to the direction call 266 (1082 B), with the timer read at each use 265; the forward
+// vector through the existing vector3f_assign 8 (k row and the dot's i term off); a grid of the timer read at each use,
+// vector3f_assign, the duration unnamed and cross3f for cross3f_staged (all 15 combinations) 8-44, none below 2; dead
+// locals 1-16 ahead of the condition on the vector3f_assign form 4-23 (no 0); the shared rotation's projection as
+// dot3f(v, axis) or dot3f(axis, v) 6/4 here but 0x29b2e0 130 -> 214 (so the helper text stays); a forced-ranking
+// search (16 colouring, pick, priority, cut and flag decisions) has no match, so the last product is code generation.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

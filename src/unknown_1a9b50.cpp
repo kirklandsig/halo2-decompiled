@@ -1058,6 +1058,12 @@ extern point2f *g_468778;
 // (1573 B), without the pointer 392, with the unit-index local 385 (the i read folds back onto the view each time and
 // the facing pointer is formed after it, so the view keeps EBX). Open: what puts the slot ahead of the facing pointer
 // in the colouring order (20 points), with every reference of the two already matching retail's. Body unchanged.
+// M3 lane 5 r258 (fast screen with 0x265d30, MATCH each run; control 280 at 1557 B): the facing pointer declared ahead
+// of the 0x110ab0 call 421 (1565 B); the slot parameter typed as the slot record, without the renaming local, 344
+// (1552 B); the alignment weight as a ternary 313 (1554 B); the distance limit chosen by a ternary inside the field_12
+// test 382 (1563 B); the facing arm's call reading the unit index from the actor, the local kept for the field_12
+// arm 280 (same code: the read is merged into the local). A forced-ranking search (30 priority, cut, pick and flag
+// decisions, the prop pointer's cuts included) has no single decision below 280. Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
