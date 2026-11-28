@@ -614,6 +614,11 @@ long g_55e6c0;
 // declared bare and set to 0 just ahead of the level loop 147 (493 B); the busy test as a positive arm with `result =
 // false;` in the else 29 (the lead's code); the height stored ahead of the width 30; the +0x8c clear after the clamp 33.
 // On this body: the missing-data counter as the first arm (`if (!data)`) 150 (487 B). All restored.
+// M3 lane 6 r255 (fast screen with 0x1dc40/0x1db10/0x1d770, all MATCH; control 29; round 51's signed pitch/packed lead
+// re-measured 29 at 484 B): the level-0 byte size named once (`size = ((width + 63) & ~63) * height * 4`, the loop's
+// bytes as `size >> (i * 2)`) ahead of the packing, on the lead 150, on main's packing 150 (the product is computed
+// there); named after the register call on the lead 43; on the lead the packing's OR written width term first 29; the
+// loop's size written height first 29 (both the lead's code). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

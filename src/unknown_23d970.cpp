@@ -1072,6 +1072,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // via up.k reuse); staged k,j,i store ikj/kji 217/216; unstaged second cross ijk/ikj 57, jik 215, jki 219, kij 206,
 // kji 218; local vector temp + aggregate assign ijk/kji 253/260; return-by-value 263; combined ortho_up helper with
 // function_1f087b/cross3f_staged 223/221. Body unchanged.
+// M3 lane 12 r200 (H2M_FAST with 0x1f0870 and 0x130f60; control 45, difflib-aligned 26). A forced-ranking search (40
+// decisions): right.j's candidate lifted above right.i (108 -> 145), or right.i coloured XMM2, gives 38 with the second
+// product's schedule still ours; nothing lower. Forms: `right` and both products in their own block 45 (same code);
+// previous_up as a const copy 45 (same code); `advance` declared just ahead of the player block 343 (1261 B, the
+// prologue and registers move); the two alias pointers declared command first 45 (same code); `right` declared at
+// function scope 45 (same code). Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

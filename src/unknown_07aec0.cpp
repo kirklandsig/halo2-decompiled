@@ -91,6 +91,12 @@ bool function_7af40(s_type_99af70 const *address);
 // if-form: the output as a `dword &` reference parameter (header and the four call lines changed) 14; 0x7af40's switch
 // on a short length local 14, on a long length local 14 (0x7af40 still MATCH); nested tests with a short length local
 // read after the call 14; the swap split into `output = ...; output |= ...;` 41 (115 B). All restored.
+// M3 lane 7 r240 (fast screen with 0x783d0, 0x784a0, 0x7ab60, 0x7acc0, 0x7acf0, 0x7af40). Ledger on the if-form: the
+// address +42 referenced (entry 8, switch head 8, loop body 12, ipv4 test 6, swap 8) and -12 live but unread = 30, the
+// counter 31; the swap value (56) colours first, so one more candidate referenced in the ipv4-test or swap block would
+// let the address share ECX with it. Forms: `if (!(byte)output) result = !result;` 14 (the if-form's code, callers
+// lost); `result |= !(byte)output;` 26 (the sete form's code); the result started from the 0x7af40 test, cleared and
+// set again under the length test 43 (117 B); both cases as returns 49 (111 B).
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

@@ -829,6 +829,20 @@ static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *o
 // the radius local left uncoloured is spilled to the frame (105), so retail's re-read is not that. On the 28 form, a
 // second definition local for the sphere part fetched again 129 (760 B: the fetch is repeated), copied from the first
 // 28 (same code: the copy is propagated), bound by const reference 28 (same code).
+// M3 lane 8 r249 (fast screen with 0xb8600 MATCH; control 17). Rank reading of the secondary sum: the x row's centre load
+// is an offset-0 load through the centre pointer, which always ranks below the definition-plus-0x24 address load
+// (one node against two), so no node phase gives the x row centre-first there; with a pointer to the sphere offset
+// both x loads rank by their pointers' symbol numbers and the y, z rows by the same numbers, so retail's order in all
+// three rows needs the offset pointer declared ahead of the centre pointers with the centre pointer at 7 mod 8.
+// Forms, radius at both uses unless noted: the offset pointer declared first 29 (centre pointer wraps to 0 mod 8);
+// that with the physics flag folded into the test 28 (all three rows retail's, only EBX/EBP exchanged; ranks 102
+// against 93); the offset pointer after the primary centre with the flag folded 31; the offset pointer first with
+// the component index read at each use 28 (all rows retail's, ranks 102 against 99: the header-free equivalent of
+// the add-helper 28 form); on that, `active` through the flag8 bit field 28, the bounding offset copied as one
+// aggregate 179 (759 B), the node matrix through a named object's node_matrices_offset 29, `0.0f < radius` 28; the
+// offset pointer first with the transform stored through the object instead of the output pointer 35 (737 B).
+// On this body (radius local): the offset pointer first 17 (the x row becomes retail's; only the radius held in xmm0
+// is left), with the component index at each use 17, with the flag folded 41.
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {

@@ -439,6 +439,29 @@ void function_19c6d0(s_record_pool *data, long key0)
 // 108 (still hoisted); `long index = flagged.count++;` 65; the iterator set up by an aggregate initialiser 65; the
 // element store through `*(flagged.elements + index)` 65; the flagged arm storing `flagged.elements[index] =
 // keys[count++] = entry->key` with the keys store in an else 106 (403 B); the flag test as `!= 0` 65.
+// M3 lane 8 r249 (fast screen with 0x19c6d0 and 0x19c190 MATCH; control 65). Reading: retail's matched 0x16b840 re-reads
+// the high-water index at its scan latch because all seven registers are busy in that loop; here
+// a forced-ranking search taking the hoisted high-water value to -4 or -8 leaves 65 (a later pass still colours it), so the re-read
+// needs the latch read not to be hoisted at all, not a lower rank. Forms: the walk's datum declared with a NULL
+// initialiser 65; the search result named as a `long found` 65; the datum declared in the loop body 65 (same code);
+// the dead `iterator.datum_index = NONE` store dropped 65; the iterator set up ahead of the sort_4byte block 67.
+// M3 lane GA r37 (21 valid untried fast trials across 2 batches with 8/8 peers MATCH unless noted; control 65 at
+// 400/393 B, +0x91; body unchanged): on 65 base, `flagged.count++; flagged.elements[flagged.count - 1] = entry->key`
+// 152 (371 B), `flagged.elements[++flagged.count - 1]` 152, `*(flagged.elements + flagged.count++)` 153 (370 B),
+// `keys[count++]` after flagged `if` 107 (393 B), `s_entry_c` 1-bit flag bitfield 65, iterator/datum declared before
+// `sort_4byte` 65, `s_flagged_keys` constructor zeroing `count` 134 (393 B), Loop 2 datum address via `data->size` 76
+// (401 B); on `s_flagged_keys::push(long)` (51, +0x11d, al=6, mk=5), `next_abs` taking `long &index` / non-inline
+// `static next_abs` / early-return `while` / nested `if` `do-while` / `goto` scan / `s_record_pool const *` / `!(index
+// >= high_water_index)` / direct `iterator->data` all 51 (still hoisting `[ebx+0x38]` into `edi`), `while (++index >= 0
+// && ...)` 131 (breaks `0x19c190`), single outer `for` loop 151 (breaks `0x19c190`), pre-reading `data->data`+`data->size`
+// before bitmap loop 147 (saturates all 7 registers yet still hoists `[ecx+0x38]` into `edi` and spills `data`),
+// caching `flagged.count` before Loop 3 135, flat `result = NULL` init 132.
+// GB r37 (12 untried fast trials with all 8 peers MATCH unless noted; control 65 at 400/393 B, body unchanged): on 65
+// base, flagged declared before keys 65, slot ptr + flagged.count++ 66, unsigned long flagged.count 65, second
+// get_entry_c call in flagged arm 201 (448 B), Loop 2 datum local 65, datum declared before iterator 65, ref-param
+// iterator with direct return inside for 65; on s_flagged_keys::push(long) (51): 1u<< / div-mod-32 non-forced helpers
+// outlined 82 (368 B), early-NONE return helper 47 (398 B, folds add edi,[ebx+0x44] while still hoisting edi),
+// data_iterator_next_calling 170 (350 B, breaks 0x19c190), for-loop datum walk 242 (476 B, breaks 0x19c190).
 struct s_flagged_keys
 {
 	long count;

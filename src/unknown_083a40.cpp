@@ -1105,6 +1105,13 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // (same code); the key through a `t_player_key const &` bound ahead of the update 45; `collection` from a reference-
 // returning inline accessor of the watcher's players 28; `register` on `collection` 28 (both the same code). All
 // restored.
+// M3 lane 6 r255 (fast screen with 0x84e90/0x84c90/0x83c90, all MATCH each run; control 28): the swap callee as
+// (collection, player, update, other) at its definition, declaration and call re-measured 32 (the swap call retail's);
+// on it the occupied key through a players-array local named in the occupied block (`players = collection->players;
+// players[i].key`) 30, as `(players + i)->key` 30, the local named just ahead of the slot search 27 (the key becomes
+// (cursor + inverse) + (collection + 4), still not retail's (collection + inverse) + cursor; lead only, a one-point
+// gain from a steering local), just after the conflict test 27 (same code), at the else arm's top 320 (1089 B); on
+// main's order the block-named players local 35, named ahead of the slot search 33. All restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

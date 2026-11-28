@@ -1844,6 +1844,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 1016; `bool found = (result.index != NONE)` 755/750/1104; no-flag while on 750/732 750/1097; non-const `other =
 // (result.index == NONE)` 2528-3250 (unfolded `other` loops); diagnostic `memset` iterator zeros 1007/764 (no EBP zero;
 // `<string.h>` shifts 0x1dc790/0x1dc8c0). Body unchanged.
+// M3 lane 12 r200 (H2M_FAST with the twin, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x2963f0, 0x1ddc70 and 0x1ddd00, all MATCH;
+// control 812 each, difflib-aligned 578). Retail ends in three epilogues (request path, `result.index == NONE` path and
+// the `weapon_class == NONE` path, which reads the default result from its home) where ours has two, keeps the loop's
+// result in ECX across the three output stores and compares `result.index` against memory. Forms, each on both twins
+// with the same counts: an extra `return result;` closing the request block 1011 (2837 B); the per-pass candidate
+// declared first in the do body 980 (2837 B), declared after the lookup call 1011 (2837 B); the three outputs declared
+// ahead of the iterator 812 (same code); the lookup under `if (weapon_type_entry)` with `while (weapon_type_entry &&
+// result.index == NONE)` 812 (same code). Body unchanged.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -2599,6 +2607,14 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // (2805 B, +0x1c)/1011; do-while + early no-result + lookup helper 1016; `bool found = (result.index != NONE)`
 // 755/750/1104; no-flag while on 750/732 750/1097; non-const `other = (result.index == NONE)` 2528-3250; diagnostic
 // `memset` iterator zeros 1007/764. Body unchanged.
+// M3 lane 12 r200 (H2M_FAST with the twin, 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x2963f0, 0x1ddc70 and 0x1ddd00, all MATCH;
+// control 812 each, difflib-aligned 578). Retail ends in three epilogues (request path, `result.index == NONE` path and
+// the `weapon_class == NONE` path, which reads the default result from its home) where ours has two, keeps the loop's
+// result in ECX across the three output stores and compares `result.index` against memory. Forms, each on both twins
+// with the same counts: an extra `return result;` closing the request block 1011 (2837 B); the per-pass candidate
+// declared first in the do body 980 (2837 B), declared after the lookup call 1011 (2837 B); the three outputs declared
+// ahead of the iterator 812 (same code); the lookup under `if (weapon_type_entry)` with `while (weapon_type_entry &&
+// result.index == NONE)` 812 (same code). Body unchanged.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
