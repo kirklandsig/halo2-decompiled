@@ -1409,6 +1409,12 @@ void function_1e3b60(long actor_index);
 // in two statements 404; the motion and context records declared at the loop body's top 404; the prior state read after
 // the flag declarations 404; the next link read after the prior state 404 (all the same code). Still BLOCKED-BY 0x262ba0
 // (0x2641c0's expansion; its noinline declaration is in another lane's file this round).
+// M3 lane 15 r157 (fast screen with 0x262ba0, 0x263210, 0x264330, 0x265680, 0x2641c0, 0x264210; 25 here in every form;
+// 0x262ba0 control 404): in 0x262ba0 a named tail index 409 (1616 B), a one-exit tail 421, typed node fields 404, the
+// named tail index with case 1 jumping to the release call 460; diagnostic, 0x264210 in an /Ob1 file with 0x2641c0's
+// noinline declaration dropped 509 there (0x264210 still expands it, 114). Retail calls 0x25c820 at the release block
+// (case 1's call tail-merged into it) where our link expands it, so the actor index stays a stack argument: BLOCKED-BY
+// 0x262ba0 (the link's inlining limit at 0x25c820's release site).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {
