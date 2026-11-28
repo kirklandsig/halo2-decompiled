@@ -913,6 +913,14 @@ PRIVATE __forceinline void decal_vector_17ef10(transform4x3f const *m,
 // block through 0x1427f0 and 0x142640 as calls 1728 (2721 B: not expanded, their file is /Ob1), and as a diagnostic
 // with that file built without /Ob1 991 (3448 B; 987 without the 0x11d000 call), so expanding the real transform
 // helpers alone does not give retail's blocks either.
+// M3 lane 14 r167 (h2m fast with 0x17e490 and 0x17ed70 MATCH; the reduced image builds this function at 841 at 3593 B
+// for the full build's 837): the result declared just ahead of the texture test 868 (3582 B); one recent-entry pointer
+// for the two loops with the fill reading the global 871 (3604 B); the basis block's two products through dot3f, either
+// argument order, 848/848 (3583 B); the sequence clamp as an if / else-if / else chain on the state's choice with no
+// local 857 (3599 B). Restored. Retail reading: its oldest-slot loop loads g_510c54 into ESI every pass so its empty-slot
+// exit can fill the entry in place on the loop's own pointer (with the lifetime from that register), then jumps past the
+// fill that follows the loop; the basis block runs two inlined vector transforms in 0x142640's shape (scale in
+// registers, the zero k in XMM7) with the scale test repeated for the second one.
 // @retail 0x17ef10
 bool function_17ef10(transform4x3f const *transform, long tag_index,
     s_decal_placement const *placement, vector3f const *direction, real radius,

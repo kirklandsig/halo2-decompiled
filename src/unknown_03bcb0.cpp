@@ -1167,6 +1167,20 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // statements (named `t = 1.0f - cosine`, `tij = (t * axis->i) * axis->j`, a shared `tk = t * axis->k`), over three
 // places for axis, scalar or vector squares, two tail orders and two places for t: 91-92 at 845 B, without the
 // shared tk 163-165 (851 B); a named t is computed early and takes another register.
+// M3 lane 14 r167 (H2M_FAST with 0x3bf00 and 0x4d640 MATCH; control 84). Lane 15 r149's 18 form rebuilt 18. LEAD,
+// match-only, 6 at 845 B without unused locals or redundant pairs: on the 18 form the angle's offset named (`real offset
+// = ...0x8c`) and the angle split into a named heading (`double heading = atan2(...); double angle = heading +
+// offset;`) 14 (these two named parts stand in for lane 16's four unused longs), plus the three shared products grouped
+// as 0x1544e0 groups its own (`((1.0f - cosine) * axis->i) * axis->j`, likewise xz and zy) 6; the residual is lane 16's
+// two schedule spots (the cosine reload ahead of the x87 sine product; up.j's subtract ahead of the left.k store).
+// Grid on the 18 form (named offset / heading split / trig pair / parameter alias, 16 forms): offset+split 14, alias
+// alone 18, the rest 51-186. On the 14 form: the same grouping on the three diagonal terms 115, on both sets 14; two
+// redundant pairs in any matrix-block expression 6, one 14, three 115 (diagnostic). On the 6 form: scalar squares 6
+// (same code); position as three statements 6; left.k stored first 7, with three position statements 7; the i sine
+// product last 185, written sine-first 6; the sine products ahead of the squares 126 (809 B); forward.i ahead of the
+// sine products 38; cosine computed first 22; a named `inverse` after the cosine 115, after the axis 115, after the
+// squares 85, after the sine products 164, after forward.i 166; permuter on the 6 form (1200 s, 136 tries) none below
+// 6. Restored (each form is match-only: the versine is still written at each use).
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1312,6 +1326,13 @@ s_3c9a0_matrix g_4c1b68;
 // tangent alone in a memory home does not move them: the tangent computed ahead of the 0x3c9a0 call 302 (stored across
 // the call, then `fdiv` from memory); the aspect's 1.5 test ahead of the tangent 303; the view tangent as
 // `(real)tan(half_angle) * aspect` 291 (same code); both 302; both tangents `real const` 291 (same code).
+// M3 lane 14 r167 (H2M_FAST; 0x3c9a0 and 0x16a90 MATCH, 0x3c3c0 74 throughout; control 291 at 1330 B): the near angle's
+// 0.04 product named first (`real near_angle = fov * 0.04f;`, then `tan(near_angle * -12.0f)`) 285 (1336 B: retail's two
+// separate multiplies, a one-use named part), written `-12.0f * near_angle` 285; the corner rows' products in x, y, z
+// order 291 (same code); the 1.5 aspect scale as a conditional expression 291 (same code); the early return as one
+// guarded block (single exit) 291 (same code). Retail reading (r151's reused pair explains it): retail stores the near
+// corners to g_4c1b08 and keeps those stores because its corner sums read them back, while the far corner's values are
+// forwarded; its near_x and far_x share one cell, as do near_y and far_y.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
