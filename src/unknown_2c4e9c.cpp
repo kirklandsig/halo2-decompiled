@@ -3443,6 +3443,12 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // the iterator's stores ordered datum index, index, pool 29 and datum index, pool, index 29 (two stores move, the id
 // still straight into EBX); the id declared, then assigned on the next line 30; a pool local read from the list at the
 // top ahead of the id 30; the guard as `if (~map_id)` 32 (83 B, `not`/`test`). All restored.
+// M3 lane 6 r255 (fast screen with 0x2c9a58 and 0x2c9ac4, both matched in each; control 30): the id from a file-local
+// inline getter of the saved map id, called at the declaration: the getter reading the field into a local and
+// returning NONE or it from two returns 30; testing the field and returning it again or NONE 36 (87 B); returning
+// `id != NONE ? id : NONE` 36 (87 B); a NONE-defaulted result set from the local when valid 30; a bool getter writing
+// the local through an out pointer under `if (getter(&map_id))` 30 (the 30s the same direct EBX load: an inlined
+// return value is propagated like a plain read). All restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

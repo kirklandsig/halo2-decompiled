@@ -1157,6 +1157,17 @@ static inline word font_character_pixel(long alpha, long color)
 // interleaving count++/length=3 between word hi and lo still fuses (74, 504 B); (word)s2|((dword)s1*256) and (word)s2+((word)s1<<8) in dword 12
 // (504 B, 32-bit movzx); word forms ((word)s2|(word)(s1*256), (word)s2+(word)((word)s1<<8), word lo+(word)(s1<<8)) 30 (508 B, 16-bit movzx+shl);
 // byte lo/hi union 99 (512 B); word-param font_argb4444 135 (544 B). Still blocked on type!=2 cross-jump and Pass-A OR-fusion.
+// M3 lane GA r37 (30 valid untried fast trials across 2 batches with 0x140960/0x122540/0x122570 MATCH unless noted;
+// control 41 at 508/504 B, +0x24; body unchanged): clean control flow on 41 base: `switch ((long)type)` with shared
+// `length = 1` after switch and literal `continue` 84 (508 B), inner `if (type == 2)` first 100 (508 B), `if (type > 2)`
+// 41, `if ((long)type >= 2)` 165 (504 B, hoists `mov ebx, 2` before outer cmp), unsigned `if (type > 1)` 41, `short type`
+// 52 (512 B), end-pointer loop 182 (breaks 0x140960), staged `p0`/`p1` in type 3 189 (524 B), `dword count` 41, inner
+// switch `default: run = 0; break;` 213 (breaks 0x140960). Literal probes on score-12 per-arm base (504 B): `hi_byte` /
+// `lo_byte` nibble or 1+7 splits (word or dword), `hi_word` nibble split, 4+4 byte bitfield structs (`hi` or `lo`),
+// `unsigned short lo` + `dword hi`, byte array ref, `(short)source[1]`, `read_be16_ptrs`, and `shift_hi_byte` all fuse in
+// Pass A to 496 B (90); `s_be16_bytes { byte lo; byte hi; }` by value (or local inside inline helper) hits exact 504/504 B
+// with first diff at +0x134 (0x122744) but still emits `dh/dl` fusion (70; `{ hi; lo }` 81, `{ word lo; word hi }` 101);
+// inline 4-nibble `font_argb4444` 135 (544 B); pre-inc `*++source` 93 (508 B); 12-bit color + alpha nibble 178 (508 B).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

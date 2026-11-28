@@ -784,6 +784,10 @@
 // 2622 B): the inverse's mode switch as `if (w8e == 1) ... else ...` 574; the perspective arm's two reciprocals ahead
 // of its two crosses 639 (2603 B); the second mode switch with case 1 ahead of the default 536 (same code); `*mode` set
 // first in each range arm 577; the plain sine's argument summed in float (no double cast) 538. Body unchanged.
+// M3 lane 3 r322 (fast screen with 0x4a1e0, unchanged at 323; control 536): the special path's first cross through the
+// existing staged helper 536, its second cross 536 (the same code each); v3 chosen by an if/else chain 718 (2680 B);
+// the default reciprocal written per shape in an if/else 602 (2623 B); one special test selecting v1 to v4 in its two
+// arms 759 (2706 B). Body unchanged.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

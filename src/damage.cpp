@@ -1936,6 +1936,11 @@ long function_1e4a10(long index);
 // `overflow * (1.0f / multiplier) + body_damage` 8, as `(1.0f / multiplier) * overflow` 8; the scaled shield damage
 // through a `real &` bound to the shield damage 8; the maximum as a `real const &` bound to the call result 8 (all the
 // same code). All restored.
+// M3 lane 6 r256 (h2m fast, control 8; every register and stack cell agrees with retail, only the three reload orders
+// differ). Existing-helper forms: the shield-damaged flag set through the file's word_flags_set idiom on the flags word
+// 8 (same code); the accumulator's flag through bit_vector_set 8 (same code); both 7; the stun ticks through
+// real_to_long with the first, the second or both setters 7 / 7 / 7, alone 7 (re-measured); slot_handler.h included
+// with nothing else changed 8. No combination below 7; all restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -3363,6 +3368,12 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // the enemy arm then sits out of line and the not-enemy return falls through); `enemy = !(team >= 0 && team < 16 &&
 // 0xbfe60(...))` 74 (487 B); the enemy arm storing the flag first and returning the product 10; the team read into a
 // long 155 (492 B); explicit else arms for both damage returns 5; the range test held in a named bool 5.
+// M3 lane 7 r240 (fast screen; control 5). Retail's engine-path `jp` lands in the epilogue of the last exit block (the
+// not-enemy stack reload in retail, the no-team xmm1 copy here), so the question is which return block falls into that
+// shared epilogue. Forms: the engine test negated with the team logic in its arm and the engine scaling last 51 (the
+// team code then comes first, its exits still not-enemy first); the zero-scale store arm with its own return 5; the
+// state read into a `long mode` local (0x20f040's spelling) 5; a positive ally flag tested false 74 (487 B); the team
+// logic in an explicit else of the engine test 5.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4061,6 +4072,12 @@ enum
 // lookup (ECX / EAX exchanged) and the event block (word in BX; retail AX, victim index in EDX). A forced-ranking search
 // on that lead lists eight register moves (2665 candidate decisions, none of the 24 tried lowers 283), so more than
 // three decisions still separate it from retail.
+// M3 lane GB r36 (14 fast trials with 0xd9b60 5, 0xdb210 and 0xd8cb0 MATCH; control 309 at 1885/1880 B, +0x21, fr=0xf4,
+// al=233, mk=21; body unchanged): object_definition before info 321 (1889 B), inside if (info) 406 (1880 B, fr=0xf0);
+// info after memset(&accumulator) 463; object_count > i + 1 311; i + 1 != object_count 310; if (object_count > 0) guard
+// 311; (word)data->unknown7e != 0xffff 310 (mk=20); nested event/info ifs 309/309; DAMAGE_OBJECT in kill block 370
+// (1914 B); definition_tag pointer local 309; object_count before objects[] 309; on r140's 283 lead: object_definition
+// first 294 (1882 B, mk=15), (word)unknown7e + guard 284 (1883 B, al=166, mk=10, 533/533 insns).
 // @retail 0xd7b80
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
@@ -5166,25 +5183,7 @@ struct s_section_lists
 
 s_section_lists *function_181a80(s_section_lists *lists, long object_index, bool all_sections);
 
-/* walks the constraints of a physics model, of six kinds */
-struct s_physics_constraint_iterator
-{
-	byte *physics;
-	short type;
-	short index;
-};
-
-struct s_physics_constraint_block
-{
-	long count;
-	byte *elements;
-};
-
-void function_1eb110(s_physics_constraint_iterator *iterator);
-void function_1eb160(s_physics_constraint_iterator *iterator);
-struct s_physics_model_shape_key;
-struct s_impact_tag_block;
-s_impact_tag_block *physics_model_shape_block_get(byte *physics_model, s_physics_model_shape_key const *key, long *element_size);
+#include "physics_constraint_iterator.h"
 long render_model_find_marker_group(long render_model_index, long index);
 
 PRIVATE inline long damage_section_list_size(s_section_lists *lists, long list_index)
@@ -5195,16 +5194,6 @@ PRIVATE inline long damage_section_list_size(s_section_lists *lists, long list_i
 PRIVATE inline long damage_section_list_entry(s_section_lists *lists, long list_index, long i)
 {
 	return list_index == NONE ? (char)lists->unlisted.sections[i] : (char)lists->lists[list_index].sections[i];
-}
-
-PRIVATE inline byte *damage_constraint_element(s_physics_constraint_iterator *iterator, long *element_size)
-{
-	s_physics_constraint_block *block = (s_physics_constraint_block *)physics_model_shape_block_get(iterator->physics,
-		(s_physics_model_shape_key const *)&iterator->type, element_size);
-
-	if (iterator->index >= block->count)
-		return NULL;
-	return block->elements + iterator->index * *element_size;
 }
 
 /* the model node a physics node belongs to (a copy of

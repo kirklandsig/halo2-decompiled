@@ -3265,6 +3265,15 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // extra test as `!= NULL` 16 (same code each). Re-measured, still 16: the index ternary, the extra by aggregate
 // assignment, the request through a `*const` pointer, the out value through a `long &`. Ledger re-read: index 48,
 // request priority 33, entry_index 32, NONE 14 (B1 holds 8 candidates, its NONE compare costs nothing).
+// M3 lane 6 r255 (fast screen; control 16). Ledger arithmetic: costed as a variable (compares and stores at 2 like the
+// index's) NONE would total 16 + 6 + 10 + 10 + 8 = 50 against the index's 48, colour first into EBX, and leave ESI to
+// the index and EBP to the request priority, which is retail's whole head; so retail's -1 was not yet a constant when
+// registers were chosen. Forms: every invalid value in the body read from one file-scope `static long const` 16; the
+// out value cleared by a four-byte memset with 0xff 16; the default marker and object index copied from the request's
+// just-stored sound index 16 (each folded back to the constant before allocation); the separate declaration's
+// `__declspec(noinline)` dropped (diagnostic) 16; the default arm as an early `if (!extra) { ...; return true; }` ahead
+// of the copy 54 (234 B). Diagnostic: a never-written file global (plain or static) holding NONE read at every use
+// 84 (253 B: the link keeps it a memory load). All restored.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -4404,6 +4413,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // EBX, animation spills); control or definition (or both) declared after the lookup's `if` 156-188, with the clears
 // early 177-198 (the 668 B ones, 191, reach retail's size and clear order but form control after the branch,
 // where retail forms it before 0x10ffc4); animation initialised at the top 182, as a ternary 177; byte flags 36.
+// Roasted-Codes (#1598, 11-28): definition, and separately control, bound as a const reference to the pointer
+// (`* const &`) with the rest unchanged: 12 each at 668 B, the same code (only two constant-pool operands move); no
+// combined form tried, and the homes of definition and control stay swapped.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

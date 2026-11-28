@@ -1127,6 +1127,11 @@ static inline bool teams_enabled_19e1c0()
 // Diagnostic re-measured: a volatile read of the count at the top 453 (1470 B: count EBP at entry, token reloaded per
 // compare, tails apart; left there: token length EBX and event EDI exchanged, the clamp's operand order, the text
 // address copied from ESI where retail forms it again). Body unchanged.
+// M3 lane 16 r201 (fast with 0x19e0f0, 0x19ea60 and 0x19eae0, all MATCH; control 390; body unchanged): the team arms
+// with the subtype named once and the team read at each use 394; that on the plain result 661 (1202 B); the subtype
+// named once with the team locals kept 397; one `text[0] = 0;` at the top for every case on the volatile result 467
+// (1390 B; the plain-result form re-measured 644 as listed); the engine arm as `if (result) return result;` ahead of
+// the token copy 390 (same code).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

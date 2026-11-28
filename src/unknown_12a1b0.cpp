@@ -1463,6 +1463,12 @@ void function_126df0(short curve, long new_sound, long old_sound, real duration)
 // the curve as `!TEST_FIELD_BIT((flags >> 10) & 1)` 2 and `!TEST_FIELD_BIT(flags & 0x400)` 2. The split list read
 // again: free numbers 4, 19, 15, 14, 21, 12, 22, pieces for NONE, zero, 0xffff, then the first index (14) and the
 // count (21); one free number or one split constant ahead of them more or fewer gives retail's order. All restored.
+// M3 lane 5 r257 (h2m fast with 0x21be20, 0x21b870, 0x126df0 and 0x12a810, MATCH each run; control 2). The split
+// pass marks the 0x80 constant of the flag set too, but it draws no piece (it is referenced only in the store block);
+// so the pieces stay NONE, zero, 0xffff, first index, count. Forms, 2 each (same code): the iterator laid out index,
+// first, count (the count keeps its slot); `register` on the walk's index; the curve as `(bool)(~(flags >> 10) & 1)`;
+// the playing element declared at the guard's scope and assigned in the loop; all five loop-body locals declared at
+// the guard's scope and assigned in the loop. All restored.
 // @retail 0x21bd00
 void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {

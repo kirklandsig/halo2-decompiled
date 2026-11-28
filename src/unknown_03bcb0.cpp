@@ -1167,6 +1167,20 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // statements (named `t = 1.0f - cosine`, `tij = (t * axis->i) * axis->j`, a shared `tk = t * axis->k`), over three
 // places for axis, scalar or vector squares, two tail orders and two places for t: 91-92 at 845 B, without the
 // shared tk 163-165 (851 B); a named t is computed early and takes another register.
+// M3 lane 14 r167 (H2M_FAST with 0x3bf00 and 0x4d640 MATCH; control 84). Lane 15 r149's 18 form rebuilt 18. LEAD,
+// match-only, 6 at 845 B without unused locals or redundant pairs: on the 18 form the angle's offset named (`real offset
+// = ...0x8c`) and the angle split into a named heading (`double heading = atan2(...); double angle = heading +
+// offset;`) 14 (these two named parts stand in for lane 16's four unused longs), plus the three shared products grouped
+// as 0x1544e0 groups its own (`((1.0f - cosine) * axis->i) * axis->j`, likewise xz and zy) 6; the residual is lane 16's
+// two schedule spots (the cosine reload ahead of the x87 sine product; up.j's subtract ahead of the left.k store).
+// Grid on the 18 form (named offset / heading split / trig pair / parameter alias, 16 forms): offset+split 14, alias
+// alone 18, the rest 51-186. On the 14 form: the same grouping on the three diagonal terms 115, on both sets 14; two
+// redundant pairs in any matrix-block expression 6, one 14, three 115 (diagnostic). On the 6 form: scalar squares 6
+// (same code); position as three statements 6; left.k stored first 7, with three position statements 7; the i sine
+// product last 185, written sine-first 6; the sine products ahead of the squares 126 (809 B); forward.i ahead of the
+// sine products 38; cosine computed first 22; a named `inverse` after the cosine 115, after the axis 115, after the
+// squares 85, after the sine products 164, after forward.i 166; permuter on the 6 form (1200 s, 136 tries) none below
+// 6. Restored (each form is match-only: the versine is still written at each use).
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1312,6 +1326,24 @@ s_3c9a0_matrix g_4c1b68;
 // tangent alone in a memory home does not move them: the tangent computed ahead of the 0x3c9a0 call 302 (stored across
 // the call, then `fdiv` from memory); the aspect's 1.5 test ahead of the tangent 303; the view tangent as
 // `(real)tan(half_angle) * aspect` 291 (same code); both 302; both tangents `real const` 291 (same code).
+// M3 lane GB r38 (28 fast trials, 0x3c9a0/0x16a90 MATCH, 0x3c3c0 74 throughout; control 291 at 1330/1387 B, +0x5):
+// on HEAD: 0x3c9a0 param order `(matrix, forward, up)` 289 (0x3c9a0 MATCH), `__forceinline` ref min/max 293 (1354 B),
+// `__forceinline` ref divide 291, `__forceinline` tan*scale 291, `g_4c1b68.position = camera` + z/scale 293 (1351 B),
+// `__forceinline` 3-loop/1-loop corner transform 325/291, 2-iteration edge loop 477 (1594 B), near .x/.z before sqrt +
+// two-mul angle 266 (1396 B; statement/operand order, not kept), double divide cast 300, two separate ifs with
+// `!(width_scale > 1.0f)` or `max` ternary 306 (1321 B, still folds second compare), g_4c1b38 col order 0/2/3/1 301,
+// local scaled forward/left vectors 285 (1341 B). On r236's 210 lead (213 at 1396 B, +0x17, fr=0x4c with two-mul angle):
+// 3-loop helper / `point3f *pts` / direct `g_4c1b68.up`+`camera` / retail near .x/.z order 213 each (same code),
+// `div_ref` replacing const refs 245, two separate ifs / `max` ternary / scoped `half_angle` 211 (1389 B, still folds
+// second compare), col order 0/2/3/1 or 2/3/0/1 221/220 (1-loop 245), local scaled vectors 282 (1445 B), reused
+// `half_angle` 236. Body unchanged.
+// M3 lane 14 r167 (H2M_FAST; 0x3c9a0 and 0x16a90 MATCH, 0x3c3c0 74 throughout; control 291 at 1330 B): the near angle's
+// 0.04 product named first (`real near_angle = fov * 0.04f;`, then `tan(near_angle * -12.0f)`) 285 (1336 B: retail's two
+// separate multiplies, a one-use named part), written `-12.0f * near_angle` 285; the corner rows' products in x, y, z
+// order 291 (same code); the 1.5 aspect scale as a conditional expression 291 (same code); the early return as one
+// guarded block (single exit) 291 (same code). Retail reading (r151's reused pair explains it): retail stores the near
+// corners to g_4c1b08 and keeps those stores because its corner sums read them back, while the far corner's values are
+// forwarded; its near_x and far_x share one cell, as do near_y and far_y.
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1604,6 +1636,19 @@ void function_41040(short index, long part_index, long group, byte weight,
 // the +0x11 arm comes first; six separate arms as in matched 0x1caa0 20, the mode word read first 66, a long
 // selection 55. In 0x1caa0 itself retail's order holds only in its exact form (grouped labels 31, the switch nested
 // 52, a branch ahead of it 53, the mode word read after it 50, a second use of the index 74).
+// M3 lane GA r38 (48 untried fast trials across 3 batches, control 305, 8/8 matched peers MATCH, 0x41040 189; body
+// unchanged): clean trials on HEAD: dropping `bool instance` 335, dropping `material` 334, dropping both 340 (with
+// `(byte)4cbb0` 340, direct `out->unknown04 * 0x132` 350, `union` 4cbb0 349, `switch` group 345), `if (4cbb0)` 319,
+// zero-first group 304, hoisting `material_index = out->unknown04` to `if (mode != NONE)` top 246 (one-use copy).
+// Match-pursuit lead on the 20 form (not kept without a byte match): testing `(signed char)out->unknown04 != NONE`
+// (or `out->unknown04 != 0xff` / `(long)(signed char)`) fixes both `out->value0c` blocks verbatim and drops 20 -> 9 at
+// exact 1204/1204 B (+0x21f), leaving only `cmp bl, 0xff` vs `cmp ebx, -1` (1 pt) and the 2-block primitive switch
+// order (+0x11 before +0x10, 8 pts). On the 9/20 form: `mode != NONE && out->unknown04 != NONE` (either order) 221/222,
+// `out->unknown04 = (byte)mode` inside if/else 242, late `out` decl 20, `> 1` group test 21, `flags` local 215,
+// `switch`/zero-first/`value0c`-after/before group 58/67/359/225, `material_index` hoisted to top of `if` 316 (also
+// fixes `value0c` but spills `material_index`), primitive switch `case 4,5` first (6 arms or grouped), `default` in
+// middle, `long primitive` 6 arms, inline sel/shader helpers all stay 9/20 (`1,2,3,default` grouped 55, `if 4||5` 65,
+// pre-init + break 80, no default 104, `1cb20` in cases 363).
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
@@ -2199,6 +2244,16 @@ void function_4d720(short, long);
 // direct shader 400, `(bool)((... >> 20) & 1)` 398, texture before bitmap 370, inline visible_entry_geometry shape 423,
 // inline 0x4dc60 color-stream twin 408 (on GB r23 401), mask = 0 430; on GB r23: `entry_index` for tail calls 383
 // (masked 67), `entry_index` + inline geometry + arm1 bitmap reset + texture first 384 (masked 59).
+// M3 lane GA r38 (29 untried fast trials across 2 batches, control 370 at 1418/1418 B, 14/14 peers MATCH; body
+// unchanged): typed 12-byte reference elements in the compound walk reproduce retail's `add eax, [esp+0x28]; mov eax,
+// [eax]` and drop HEAD 370 -> 367 (and GB r23's form 291 -> 290 at 1398 B; below keep bar). Other HEAD trials:
+// `s_sort_record *record` 370, no `record` local 370, `(bool)((entry->unknown00 >> 12) & 1)` 370, `!compound`-first
+// guards 370, non-TFB `strip` 370, `(bool)` compound 370, nested mode 18/19 370, `entry_index` + typed compound 367,
+// `tag == NONE` first 386, `mask = 0` reset 422, legal GB r23 subset + typed compound 422, hoisted `g_4e0348` 423,
+// `g_4ba138[index]` test before `entry` 435 (with short `part_index` + typed compound 425), `group_index` local 455.
+// On GB r23's 291 base: typed compound 290, `g_4ba138[index]` first / `entry` after geometry / tag store first /
+// `entry_idx` each 290, no `record` local 291, `mask = 0` reset 377, arm1 `bitmap = NONE` + size/texture order 382,
+// inline `structure` geometry 410, index/value/part decode order 418, `group_index` 428.
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)
