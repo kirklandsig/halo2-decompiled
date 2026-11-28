@@ -11,24 +11,7 @@
    whose two ends land on two different rigid bodies of the component */
 
 /* the joints of a physics model: six kinds, each a tag block */
-struct s_physics_constraint_iterator
-{
-	byte *physics;
-	short type;
-	short index;
-};
-
-struct s_physics_constraint_block
-{
-	long count;
-	byte *elements;
-};
-
-struct s_physics_model_shape_key;
-struct s_impact_tag_block;
-void function_1eb110(s_physics_constraint_iterator *iterator);
-void function_1eb160(s_physics_constraint_iterator *iterator);
-s_impact_tag_block *physics_model_shape_block_get(byte *physics_model, s_physics_model_shape_key const *key, long *element_size);
+#include "physics_constraint_iterator.h"
 bool function_db4c0(long object_index, long key_a, long key_b);
 
 struct s_list_rigid_bodies
@@ -384,23 +367,19 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // Tried: the unreachable default right after case 0 22 (same code); the object index read at the 0xdb4c0 call 27;
 // the found path ending in `break` with an explicit return after the loop 22 (same code); the iterator's index at
 // each use 449 (1808 B); the iterator's type at each use 192.
-// M3 lane 6 r256 (h2m fast; the lead confirmed with the fast and the plain check). HELD lead, a byte MATCH (1820 B): the
-// joint lookup written as the first loop's condition, through a file-local forceinline getter that holds the block
-// lookup, the index read and the element address and returns the joint or NULL (`for (begin; (joint = getter(&iterator))
-// != NULL; step)` with the index read again in the body; a `while` on the same getter with the step at the end of the
-// body matches too). It costs the layout flipper 0x24cf66 (2: the getter is one more function ahead of that file; with
-// the getter present and the loop left as it is 0x24cf66 flips as well), so main's body is restored and the form is held
-// as a patch. Cause, from diagnostics: the builder's unreachable default is emitted as the function's last block (a call
-// written ahead of its `__assume(0)` lands after the found path), so the final return is no longer the last block and
-// the found path gets its own merged epilogue; a masked eight-case switch with no default, or an unreachable `if` arm
-// outside the loops, keeps retail's tail, and an in-loop one does not. Same code as before (22 each): `while (true)`
-// with the break and the step at the end of the body; the getter called in the unconditional loop with the `break`
-// kept (so the loop's shape gives the match, not the helper); the joint declared at function scope ahead of the loop.
-// Second HELD form, measured after the first: the same loop condition through the accessor src/damage.cpp already has
-// for 0xdb810 (the block lookup, the count test and the element address), moved to a shared header and called from
-// both files with no new helper: a byte MATCH here, 0xdb810 still matched, and a full check with nothing lost
-// (0x24cf66 kept). Held as a second patch, not kept: it was measured only after the first form lost the flipper, and
-// choosing between helper spellings by what 0x24cf66 does is the reviewer's decision.
+// M3 lane 6 r256 (h2m fast; confirmed with the fast and the plain check): MATCH (1820 B) with the joint lookup written
+// as the first loop's condition, `for (begin; (joint = damage_constraint_element(&iterator, &element_size)) != NULL;
+// step)`, the index read again in the body. damage_constraint_element is the accessor src/damage.cpp already had for
+// 0xdb810 (the block lookup, the count test and the element address); it and the iterator declarations both files
+// carried now live in include/physics_constraint_iterator.h, and 0xdb810 stays matched. The same loop through a new
+// file-local getter (or a `while` on it with the step at the end of the body) matches too but costs the layout flipper
+// 0x24cf66 (2: one more function ahead of that file), so the existing accessor is used. Cause, from diagnostics: the
+// builder's unreachable default is emitted as the function's last block (a call written ahead of its `__assume(0)`
+// lands after the found path), so the final return is no longer the last block and the found path gets its own merged
+// epilogue; a masked eight-case switch with no default, or an unreachable `if` arm outside the loops, keeps retail's
+// tail, and an in-loop one does not. Same code as before (22 each): `while (true)` with the break and the step at the
+// end of the body; the getter called in the unconditional loop with the `break` kept (so the loop's shape gives the
+// match, not the helper); the joint declared at function scope ahead of the loop.
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {
@@ -410,15 +389,12 @@ void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_own
 	s_physics_constraint_iterator iterator;
 	long physics_model_index = owner->model->physics_model_index;
 	iterator.physics = g_4e3b44[physics_model_index & 0xffff].bytes;
-	for (function_1eb110(&iterator); ; function_1eb160(&iterator))
+	s_component_joint *joint;
+	long element_size;
+	for (function_1eb110(&iterator); (joint = (s_component_joint *)damage_constraint_element(&iterator, &element_size)) != NULL;
+		function_1eb160(&iterator))
 	{
-		long element_size;
-		s_physics_constraint_block *block = (s_physics_constraint_block *)physics_model_shape_block_get(iterator.physics,
-			(s_physics_model_shape_key const *)&iterator.type, &element_size);
 		long index = iterator.index;
-		s_component_joint *joint = index < block->count ? (s_component_joint *)(block->elements + index * element_size) : NULL;
-		if (!joint)
-			break;
 		long object_index = component->object_index;
 		long type = iterator.type;
 		if (!function_db4c0(object_index, type, index) && joint->frames.node_a != NONE)
