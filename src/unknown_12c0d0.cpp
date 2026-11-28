@@ -1304,6 +1304,12 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // 211. On GA25's `91` lead: `phys`+`entries`+`block` 220, `long mode = g_4e6474` 225 (snaps `pri=ECX` + `2xAND`,
 // `al=89`), `time` before `entry` 182 (`bmp=EBP`, `652 B`), hoisted `current_time = g_4e6464->time` (diagnostic) 112
 // (`658/658 B`, `mk=22`, `bmp=EBP, res=ESI, 2xAND`; takes `EDX` from `g_4e6464` so `zEBX` still does not trigger).
+// M3 lane 11 r179 (H2M_FAST with the seven peers above, MATCH throughout; GA r25's 91 rebuilt at 660 B). A
+// forced-ranking search on the 91 form finds no single decision that matches (best 81, a cut; five register moves
+// left). On the 91 form: the time store through `(word)block_index` with no mixed read 218; the entry through
+// `(word)block_index` 217; the block index tested through the pointer and then read into a local for both uses
+// (0x12c990's own idiom) 212. Without the getter reorder: the priority arm, fallback switch and mixed read 191;
+// those without the repeated arm (`if (!restricted) { ... }`) 191; 0x12c990's idiom on main 193.
 // @retail 0x12ce00
 D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
 {

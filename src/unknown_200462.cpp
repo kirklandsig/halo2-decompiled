@@ -408,6 +408,16 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // 24; the sprite width and height read into named `long` locals converted at the products 12; the two bounds spans
 // named ahead of the products 12; the pulse result declared, then assigned 12; both halvings through a file-scope
 // `static real const` 0.5 12 (the 12s the pointer form's code). All restored.
+// M3 lane 4 r272 (fast screen with 0x2008fc 0x200891, control 14; the bounds record through a one-use pointer re-measured 12).
+// Allocator reading on the pointer form: the pair is the half-height local and the draw block's piece of the stepped x,
+// both 162 (one block of 18 candidates); on equal rank the value defined first in the block colours first, so the half
+// height (defined ahead of the step) takes XMM3. Forms: the running position's address stored to a global after its
+// query (diagnostic, reverted) 167 (866 B: the stepped x is then a whole value, still 162 and still second); on the
+// pointer with the half height after the step (18, the step then wins XMM3 but the running x takes the free XMM4 and
+// the 0.5 XMM7) the 0.5 factor written first in the half height, in the half width, in both, and the step as
+// `x = product + x` 18 each (same code); a named advance between the half extents used by both steps 26, with the pulse
+// bound by `real const &` 15 (849 B; the product is formed ahead of the height conversion, the pair unchanged); a 600 s
+// permuter run on the pointer form, 55 tries, none below 12.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

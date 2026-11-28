@@ -256,6 +256,12 @@ void function_2ba3a0(s_particle_entry_group_2ba const *group, long first,
 // operands swapped 61). Forms: the wind vector zero-initialised at its declaration 59 (674 B), with round 171's form
 // 69 (680 B); a clock pointer local read twice 46 (same code), with vector3f_scale + vector3f_add 47; round 171's form
 // with the add written `vector3f_add(&delta, &particle->velocity, ...)` 29.
+// M3 lane 11 r179 (H2M_FAST with 0x2b8da0 and 0x2ba3a0, MATCH throughout; control 46; round 171's form rebuilt 7 at
+// 665 B). Rank reading: with the scale product passed as the scale helper's argument (no `amount *=`) the helper's
+// scale ranks 200, still below wind.i (202), so wind.i stays the loaded operand. Forms on main's clock: the spin and
+// push products named, then vector3f_scale + vector3f_add 47; vector3f_add_scaled straight into the velocity with the
+// product as its scale 61 (647 B); the clock read through a const reference to the globals record 46 (same code); the
+// wind cell index as `short` 59 (647 B); the time as converted ticks, then `time *= rate` 46.
 // @retail 0x2ba100
 void function_2ba100(s_particle_properties_2ba const *definition, void *system, long first, real scale)
 {

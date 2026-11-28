@@ -1292,6 +1292,13 @@ real function_30bf0(vector3f *v);
 // written i first 216; the gravity product declared ahead of the horizontal root 216 (same code); the gravity product
 // declared first of all, ahead of the delta 250 (975 B, all six callers lost). Retail takes the horizontal root (x87)
 // in the entry block and parks it in a dead argument home; ours sinks it below the gravity tests.
+// M3 lane GB r36 (13 fast trials with 0xfa580 and all 6 matched callers 0xfa6a0, 0xecdc0, 0x1f8100, 0x1f8160, 0x26f150,
+// 0x2900b0; control 216 at 983/983 B, +0x2, fr=0x28, al=228, mk=68; body unchanged): linear-first early return 208
+// (983 B, 259/259 insns, all 7 MATCH; NOT kept: arm swap inverting jbe/ja/jbe to jae/jb/jae, mk 68 -> 69); linear-first
+// single-result on scale_value 245 (fr=0x2c, 6 callers lost; plain forced 245, + maxgrav 256, + if (forced) first 286);
+// if (0.0f > gravity) gravity = 0.0f 215 (986 B, al=216, mk=47, all 7 MATCH); no horizontal_squared / length_sq3f 261/261
+// (fr=0x2c, callers lost); 0.25f * (gravity * gravity) + 4.0f * a * distance_squared 216; num local in t2 216; -c + sqrt
+// 216; -distance_squared / (t * t) - t * t * a 216 (985 B); -(1.0f / two_a) * root 220.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2798,6 +2805,15 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 // 188); the add (child, centre) with the per-component scale 4; a const source cast in the scale call 2; the centre
 // typed vector3f throughout 2; the child position read through 0xb9dd0's returned pointer inside the add 288 (2197 B);
 // the add (centre, child) with the scale helper 4.
+// M3 lane 7 r240 (fast screen with 0x1ca690 and 0xf8eb0; on the held 0x1ca690 short-parameter base with the three
+// store orders and the centre scale through vector3f_scale with the add's inputs as (child, centre), 2). Rank reading:
+// the add's operands are field loads ranked by node number; x (centre 526 over child 525) and z (child 533 over centre
+// 532) are retail's, but the centre's y carries 521 in every form measured (also with no initial copy at all), under
+// the child's 529; at 530, its place in the add, all three would be retail's. Tried on that 2: unused locals at the
+// top, 1 to 12, 2 each; the child-position call ahead of the flag sets and clears 64, between the flag sets and the
+// clears 10; the inverse declared with the centre ahead of the loop 528 (2232 B); the centre copied by memcpy 2; the
+// centre set through real_point3d_set from the origin's members 449 (2203 B); a short stuck count without the casts
+// 199 (201 without the centre forms). Diagnostic: the centre zero-initialised 449.
 // @retail 0xfc330
 void __stdcall function_fc330(long projectile_index, bool detach_contrail, real contrail_time)
 {

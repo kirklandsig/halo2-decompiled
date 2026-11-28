@@ -985,6 +985,15 @@ inline void actor_274f30_update(long actor_index, bool flag)
 // redundant Pass-B-eliminated guard `flag ? (actor_index & 0xffff) : 0` or `if (flag)` inside erase): MATCH 00274e70
 // byte-for-byte (0 diffs, 192/192 B), proving Pass-A imul CSE is the sole remaining difference (also splits 0x274f30 to
 // 568 B / 120). Body unchanged.
+// M3 lane GA r37 (21 valid untried fast trials + 1 diag across 2 batches with 0x274f30 and 7 peers MATCH unless noted;
+// control 47 at 192/192 B, +0x8, al=19, mk=16; body unchanged): `work` struct (no volatile) with `update` written out in
+// 0x274e70 (0x274f30 untouched): iter-then-w 47, w-then-iter 47, store after lookup 49, erase byte mul 47; 0x274e70-only
+// `(idx<<3)*0x111` (erase or update), `(idx*0x111)<<3`, 2D `byte[0x111][8]`, `idx*0x880+idx*8`, and diag `(idx+1)*0x888-0x888`
+// all fold before Pass A CSE -> 47; `update_ptr(actor, idx, flag)` 47; hoisted `pool` split 48; `while ((it = ...))` 47;
+// `erase_pool` / `update_iter` / `erase_ref` (inline or __forceinline with inline erase) 166-176 (64-77 B, stops inlining,
+// breaks peers); 0x274e70-only `(word)actor_index` in update (0x274f30 untouched) 15 at 193/192 B (both volatile and work-struct
+// no-volatile, al=5, mk=5, all 8 peers MATCH; NOT kept: writes update out by hand + steering `(word)` cast -> `movzx ecx, ax`
+// + `and eax, 0xffff` instead of retail's single `and eax, 0xffff; mov ecx, eax`); in erase 43 (196 B).
 // @retail 0x274e70
 void function_274e70(long ai_index, bool flag)
 {
