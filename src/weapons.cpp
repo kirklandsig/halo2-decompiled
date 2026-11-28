@@ -2119,6 +2119,11 @@ static inline bool unit_dual_wielding(long unit_index)
 // two helpers stay calls), as `bool result = function_1058b0(...); if (result) ticks;` 112 (508 B), as an early return
 // on that call 117 (503 B); on main's body `bool result = false;` first 17 (same code), that with weapon_get_102e10 at
 // lookup 1 15 (the getter's listed 15). Body unchanged.
+// M3 lane 15 r157 (fast screen with 0xc9d00, 0x1058b0 and 0xfff40, MATCH each time; control 17), on main's body: the
+// put-away guard as nested ifs 17; the definition pointer to const 17; the holder's unit index named for the unit
+// lookup and its two reads 17 (the three the same code); the weapon class chosen by a conditional expression 52 (first
+// +0xc: the class constant is set up ahead of the trigger loop), with the state arms unbraced as well 52. Body
+// unchanged; still BLOCKED-BY 0x101f20 and 0xcd660 (retail expands both here; their files are built /Ob1).
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {

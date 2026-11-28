@@ -1155,6 +1155,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `0x2c0e9a`; the unit index in a named local 529; `basis_dot_xzy` + inline obj `distance_squared` + retail sphere vel dot 490 (`3731 B`;
 // + nested vehicle `if` 490; + `moving | (sphere_flags | obstacle_flags)` 490; + 1-expr sphere `squared` + inline radius 488
 // `3731 B, mk=56`); keeping `distance_squared` 539 (`mk=47`); x-z-y + retail sphere vel dot 542 (`mk=45`).
+// M3 lane 15 r157 (fast screen with 0x2c0d00, 0x29a190 and 0x25d810; control 718, aligned 165, masked 73): the dot flag
+// kept in its own `facing_straight` and `straight` set after the actor block as `actor_index == NONE ||` that flag (so
+// the no-actor edge would store the 1 and the actor edge coalesce) 912 (+0x19, masked 135; caller 0x29a190 1), the
+// same with `!actor ||` 912; `aligned` declared ahead of `straight` 720 (+0x3c); both flags in one declaration 718
+// (same code); re-measured, the no-actor `else straight = true;` 544 (masked 66, match-only).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
