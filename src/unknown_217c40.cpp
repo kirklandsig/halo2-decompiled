@@ -291,6 +291,10 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // written constant first, `1.0f - 1.637f * absolute`, 25; the second offset after both magnitudes 25; both offsets and
 // both magnitudes in second-first order 25 (all three the same code); the sign factors as `-1.0f : 1.0f` 656 (1908 B);
 // the two quadrants in second-first order 29.
+// M3 lane 7 r241 (fast screen with 0x12b450/0x12b690, both MATCH each run; on the kept 25 body): the trigger conversions
+// moved ahead of the first stick 583 (1984 B); the clamp as a single-exit if/else-if with a result local 579 (2048 B);
+// both maxima written `c < s ? s : c` 25; the clamp taking its bounds as defaulted parameters 25; the first atan2 result
+// named as a double with the real angle converted from it 25 (the last three the same code).
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
